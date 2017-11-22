@@ -1,0 +1,27 @@
+{
+  "name": "speedscope",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "watch": "rollup -c --watch",
+    "build": "rollup -c"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/aphrodite": "^0.5.6",
+    "@types/react-dom": "^16.0.3",
+    "aphrodite": "^1.2.5",
+    "preact": "^8.2.6",
+    "react": "^16.1.1",
+    "react-dom": "^16.1.1",
+    "rollup": "^0.51.5",
+    "rollup-plugin-commonjs": "^8.2.6",
+    "rollup-plugin-node-globals": "^1.1.0",
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-replace": "^2.0.0",
+    "rollup-plugin-typescript": "^0.8.1",
+    "typescript": "^2.6.1"
+  }
+}

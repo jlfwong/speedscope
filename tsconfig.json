@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "strict": true,
+    "jsx": "react",
+    "jsxFactory": "h",
+    "target": "es2015"
+  }
+}
