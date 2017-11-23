@@ -61,29 +61,51 @@ function getOrInsert<K, V>(map: Map<K, V>, k: K, v: V): V {
 
 export class Profile {
   // Duration of the entire profile, in microseconds
-  duration: number
+  private duration: number
 
-  frames = new Map<string | number, Frame>()
-  calltreeRoots = new Map<Frame, CallTreeNode>()
+  private frames = new Map<string | number, Frame>()
+  private calltreeRoots = new Map<Frame, CallTreeNode>()
 
   // List of references to CallTreeNodes at the top of the
   // stack at the time of the sample.
-  samples: CallTreeNode[] = []
+  private samples: CallTreeNode[] = []
 
   // List of time elapsed since the preceding sample was taken.
   // The first elements it the time elapsed since the beginning
   // of recording that the sample was taken.
   // Times are in microseconds.
   // This array should be the same length as the "samples" array.
-  timeDeltas: number[] = []
+  private timeDeltas: number[] = []
 
   // List of events recorded in parallel with the call
   // stack samples. Useful for overlaying IO events on
   // the same time axis as the sampling profile.
-  events: ProfilingEvent[] = []
+  private events: ProfilingEvent[] = []
 
   constructor(duration: number) {
     this.duration = duration
+  }
+
+  forEachSample(fn: (stack: Frame[], timeDelta: number) => void) {
+    const nodeToStack = new Map<CallTreeNode, Frame[]>()
+    for (let i = 0; i < this.samples.length; i++) {
+      let topOfStackNode: CallTreeNode = this.samples[i]
+
+      // Memoize
+      if (!nodeToStack.has(topOfStackNode)) {
+        const stack: Frame[] = []
+        for (let node: CallTreeNode | null = topOfStackNode; node; node = node.parent) {
+          stack.push(node.frame)
+        }
+
+        // Reverse to order from bottom-to-top
+        stack.reverse()
+
+        nodeToStack.set(topOfStackNode, stack)
+      }
+
+      fn(nodeToStack.get(topOfStackNode)!, this.timeDeltas[i])
+    }
   }
 
   appendSample(stack: Frame[], timeDelta: number) {
