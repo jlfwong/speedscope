@@ -2,59 +2,23 @@ import {h, render, Component} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 
 import {importFromStackprof} from './stackprof'
-import {Flamechart, rectangleBatchRenderer} from './flamechart'
+import {Profile} from './profile'
+import {Flamechart, FlamechartView} from './flamechart'
 
 import { request } from 'https';
 
-interface Rect {
-  left: number
-  top: number
-  width: number
-  height: number
+interface ApplicaionState {
+  profile: Profile | null
+  flamechart: Flamechart | null
 }
 
-class Canvas extends Component<{}, void> {
-  canvasRef = (element?: Element) => {
-    if (element) {
-      const rectangles: Rect[] = []
-      const colors: [number, number, number][] = []
-
-      for (let i = 0; i < 1000; i++) {
-        rectangles.push({
-          left: 2 * Math.random() - 1,
-          top: 2 * Math.random() - 1,
-          width: 2 * Math.random(),
-          height: 2 * Math.random(),
-        })
-        colors.push([Math.random(), Math.random(), Math.random()])
-      }
-      const renderer = rectangleBatchRenderer((element as HTMLCanvasElement).getContext('webgl')!, rectangles, colors)
-
-      ;(function doit() {
-        renderer({
-          configSpaceToNDC: [
-            1, 0, 0,
-            0, 1, 0,
-            0, 0, 1,
-          ]
-        })
-        requestAnimationFrame(doit)
-      })()
-    }
-  }
-
-  render() {
-    const width = window.innerWidth
-    const height = window.innerHeight
-    return <canvas width={width} height={height} ref={this.canvasRef} className={css(style.root)}></canvas>
-  }
-}
-
-class Application extends Component<{}, void> {
+class Application extends Component<{}, ApplicaionState> {
   onDrop = (ev: DragEvent) => {
     const reader = new FileReader
     reader.addEventListener('loadend', () => {
-      console.log(importFromStackprof(reader.result))
+      const profile = importFromStackprof(reader.result)
+      const flamechart = new Flamechart(profile)
+      this.setState({profile, flamechart})
     })
     reader.readAsText(ev.dataTransfer.files.item(0))
     ev.preventDefault()
@@ -65,8 +29,9 @@ class Application extends Component<{}, void> {
   }
 
   render() {
+    const {flamechart} = this.state
     return <div onDrop={this.onDrop} onDragOver={this.onDragOver} className={css(style.root)}>
-      <Canvas />
+      {flamechart && <FlamechartView flamechart={flamechart} />}
     </div>
   }
 }

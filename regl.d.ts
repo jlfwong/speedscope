@@ -10,6 +10,10 @@ declare module "regl" {
 
   type ReglValue<P> = ReglPrimitiveValue | {(context: any, props: P, batchId: number): ReglPrimitiveValue}
 
+  export type vec2 = [number, number]
+  export type vec3 = [number, number, number]
+  export type mat3 = [number, number, number, number, number, number, number, number, number]
+
   interface ReglCommandParameters<P> {
     /** Source code of vertex shader */
     vert: string
@@ -31,7 +35,7 @@ declare module "regl" {
     offset?: number
   }
 
-  interface ReglCommand<P> {
+  export interface ReglCommand<P> {
     (p: P): void
   }
 
