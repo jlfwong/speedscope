@@ -10,6 +10,61 @@ export class Vec2 {
   flatten(): [number, number] { return [this.x, this.y] }
 }
 
+export class AffineTransform {
+  constructor(
+    readonly m00 = 1, readonly m01 = 0, readonly m02 = 0,
+    readonly m10 = 0, readonly m11 = 1, readonly m12 = 0
+  ) {}
+
+  withScale(s: Vec2) {
+    let {
+      m00, m01, m02,
+      m10, m11, m12
+    } = this
+    m00 = s.x
+    m11 = s.y
+    return new AffineTransform(m00, m01, m02, m10, m11, m12)
+  }
+  static withScale(s: Vec2) {
+    return (new AffineTransform).withScale(s)
+  }
+  getScale() { return new Vec2(this.m00, this.m11) }
+
+  withTranslation(t: Vec2) {
+    let {
+      m00, m01, m02,
+      m10, m11, m12
+    } = this
+    m02 = t.x
+    m12 = t.y
+    return new AffineTransform(m00, m01, m02, m10, m11, m12)
+  }
+  static withTranslation(t: Vec2) {
+    return (new AffineTransform).withTranslation(t)
+  }
+  getTranslation() { return new Vec2(this.m02, this.m12) }
+
+  times(other: AffineTransform) {
+    const m00 = this.m00 * other.m00 + this.m01 * other.m10
+    const m01 = this.m00 * other.m01 + this.m01 * other.m11
+    const m02 = this.m00 * other.m02 + this.m01 * other.m12 + this.m02
+
+    const m10 = this.m10 * other.m00 + this.m11 * other.m10
+    const m11 = this.m10 * other.m01 + this.m11 * other.m11
+    const m12 = this.m10 * other.m02 + this.m11 * other.m12 + this.m12
+    return new AffineTransform(m00, m01, m02, m10, m11, m12)
+  }
+
+  flatten(): [number, number, number, number, number, number, number, number, number] {
+    // Flatten into GLSL format
+    return [
+      this.m00, this.m10, 0,
+      this.m01, this.m11, 0,
+      this.m02, this.m12, 1,
+    ]
+  }
+}
+
 export class Rect {
   constructor(
     readonly origin = new Vec2(),

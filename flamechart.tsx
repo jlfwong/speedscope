@@ -3,7 +3,7 @@ import {StyleSheet, css} from 'aphrodite'
 
 import {Profile, Frame} from './profile'
 import regl, {vec2, vec3, mat3, ReglCommand, ReglCommandConstructor} from 'regl'
-import { Rect, Vec2 } from './math'
+import { Rect, Vec2, AffineTransform } from './math'
 
 interface FlamechartFrame {
   frame: Frame
@@ -63,6 +63,7 @@ interface FlamechartViewProps {
 
 export class FlamechartView extends Component<FlamechartViewProps, void> {
   renderer: ReglCommand<RectangleBatchRendererProps> | null = null
+  canvas: HTMLCanvasElement | null = null
 
   canvasRef = (element?: Element) => {
     if (element) {
@@ -85,31 +86,37 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
         }
       }
 
-      const canvas = element as HTMLCanvasElement
-      const ctx = canvas.getContext('webgl')!
+      this.canvas = element as HTMLCanvasElement
+      const ctx = this.canvas.getContext('webgl')!
       this.renderer = rectangleBatchRenderer(ctx, rects, colors)
       this.renderGL()
     }
   }
 
   renderGL() {
-    if (this.renderer) {
+    if (this.renderer && this.canvas) {
       const {flamechart} = this.props
       const layers = flamechart.getLayers()
       const duration = flamechart.getDuration()
       const maxStackHeight = layers.length
 
-      const sx = 2 / duration
-      const sy = -2 / maxStackHeight
-      const tx = -1
-      const ty = 1
+      const viewportWidth = this.canvas.width
+      const viewportHeight = this.canvas.height
+
+      let viewSpaceToNDC = AffineTransform
+        .withScale(new Vec2(2 / viewportWidth, -2 / viewportHeight))
+        .withTranslation(new Vec2(-1, 1))
+
+      const configSpaceFrameHeight = 1
+      const viewSpaceFrameHeight = 16
+      const ndcFrameHeight = viewSpaceFrameHeight * viewSpaceToNDC.getScale().y
+
+      let configSpaceToViewSpace = AffineTransform.withScale(new Vec2(viewportWidth / duration, 16))
+
+      console.log(viewSpaceToNDC.times(configSpaceToViewSpace))
 
       this.renderer({
-        configSpaceToNDC: [
-          sx,  0, 0,
-           0, sy, 0,
-          tx, ty, 1
-        ]
+        configSpaceToNDC: viewSpaceToNDC.times(configSpaceToViewSpace)
       })
     }
   }
@@ -130,7 +137,7 @@ const style = StyleSheet.create({
 
 
 interface RectangleBatchRendererProps {
-  configSpaceToNDC: mat3
+  configSpaceToNDC: AffineTransform
 }
 
 export const rectangleBatchRenderer = (ctx: WebGLRenderingContext, rects: Rect[], colors: vec3[]) => {
@@ -183,7 +190,7 @@ export const rectangleBatchRenderer = (ctx: WebGLRenderingContext, rects: Rect[]
 
     uniforms: {
       configSpaceToNDC: (context, props) => {
-        return props.configSpaceToNDC
+        return props.configSpaceToNDC.flatten()
       }
     },
 
