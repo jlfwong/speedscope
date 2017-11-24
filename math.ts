@@ -1,3 +1,9 @@
+export function clamp(x: number, minVal: number, maxVal: number) {
+  if (x < minVal) return minVal
+  if (x > maxVal) return maxVal
+  return x
+}
+
 export class Vec2 {
   constructor(readonly x = 0, readonly y = 0) {}
   plus(other: Vec2) { return new Vec2(this.x + other.x, this.y + other.y) }
@@ -6,6 +12,14 @@ export class Vec2 {
   dot(other: Vec2) { return this.x * other.x + this.y * other.y }
   length2() { return this.dot(this) }
   length() { return Math.sqrt(this.length2()) }
+
+  static min(a: Vec2, b: Vec2) {
+    return new Vec2(Math.min(a.x, b.x), Math.min(a.y, b.y))
+  }
+
+  static max(a: Vec2, b: Vec2) {
+    return new Vec2(Math.max(a.x, b.x), Math.max(a.y, b.y))
+  }
 
   flatten(): [number, number] { return [this.x, this.y] }
 }
@@ -84,4 +98,11 @@ export class Rect {
 
   bottomRight() { return this.origin.plus(this.size) }
   bottomLeft() { return this.origin.plus(new Vec2(0, this.height())) }
+
+  closestPointTo(p: Vec2) {
+    return new Vec2(
+      clamp(p.x, this.left(), this.right()),
+      clamp(p.y, this.top(), this.bottom())
+    )
+  }
 }

@@ -64,8 +64,9 @@ interface FlamechartViewProps {
 export class FlamechartView extends Component<FlamechartViewProps, void> {
   renderer: ReglCommand<RectangleBatchRendererProps> | null = null
   canvas: HTMLCanvasElement | null = null
+  worldSpaceViewportRect = new Rect()
 
-  canvasRef = (element?: Element) => {
+  private canvasRef = (element?: Element) => {
     if (element) {
       const {flamechart} = this.props
       const rects: Rect[] = []
@@ -87,44 +88,90 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
       }
 
       this.canvas = element as HTMLCanvasElement
+      const viewportWidth = this.canvas.width
+      const viewportHeight = this.canvas.height
+
+      this.worldSpaceViewportRect = new Rect(
+        new Vec2(0, 0),
+        new Vec2(viewportWidth, viewportHeight)
+      )
+
       const ctx = this.canvas.getContext('webgl')!
       this.renderer = rectangleBatchRenderer(ctx, rects, colors)
       this.renderGL()
     }
   }
 
-  renderGL() {
+  private configSpaceWidth() { return this.props.flamechart.getDuration() }
+  private configSpaceHeight() { return this.props.flamechart.getLayers().length }
+
+  private WORLD_SPACE_FRAME_HEIGHT = 16
+
+  private viewportWidth() { return this.canvas ? this.canvas.width : 0 }
+  private viewportHeight() { return this.canvas ? this.canvas.height : 0 }
+
+  private configSpaceToWorldSpace() {
+    return AffineTransform.withScale(new Vec2(
+      this.viewportWidth() / this.configSpaceWidth(),
+      this.WORLD_SPACE_FRAME_HEIGHT
+    ))
+  }
+
+  private worldSpaceToViewSpace() {
+    return AffineTransform
+      .withTranslation(this.worldSpaceViewportRect.origin.times(-1))
+  }
+
+  private viewSpaceToNDC() {
+    return AffineTransform
+      .withScale(new Vec2(2 / this.viewportWidth(), -2 / this.viewportHeight()))
+      .withTranslation(new Vec2(-1, 1))
+  }
+
+  private configSpaceToNDC() {
+    return this.viewSpaceToNDC()
+      .times(this.worldSpaceToViewSpace())
+      .times(this.configSpaceToWorldSpace())
+  }
+
+  private renderGL() {
     if (this.renderer && this.canvas) {
-      const {flamechart} = this.props
-      const layers = flamechart.getLayers()
-      const duration = flamechart.getDuration()
-      const maxStackHeight = layers.length
-
-      const viewportWidth = this.canvas.width
-      const viewportHeight = this.canvas.height
-
-      let viewSpaceToNDC = AffineTransform
-        .withScale(new Vec2(2 / viewportWidth, -2 / viewportHeight))
-        .withTranslation(new Vec2(-1, 1))
-
-      const configSpaceFrameHeight = 1
-      const viewSpaceFrameHeight = 16
-      const ndcFrameHeight = viewSpaceFrameHeight * viewSpaceToNDC.getScale().y
-
-      let configSpaceToViewSpace = AffineTransform.withScale(new Vec2(viewportWidth / duration, 16))
-
-      console.log(viewSpaceToNDC.times(configSpaceToViewSpace))
-
       this.renderer({
-        configSpaceToNDC: viewSpaceToNDC.times(configSpaceToViewSpace)
+        configSpaceToNDC: this.configSpaceToNDC()
       })
     }
+  }
+
+  private onWheel = (ev: WheelEvent) => {
+    ev.preventDefault()
+
+    const newOrigin = this.worldSpaceViewportRect.origin.plus(new Vec2(ev.deltaX, ev.deltaY))
+    const worldSpacePanningBounds = new Rect(
+      new Vec2(0, 0),
+      new Vec2(
+        this.configSpaceWidth() * this.configSpaceToWorldSpace().getScale().x - this.viewportWidth(),
+        this.configSpaceHeight() * this.configSpaceToWorldSpace().getScale().y - this.viewportHeight()
+      )
+    )
+
+    this.worldSpaceViewportRect = new Rect(
+      worldSpacePanningBounds.closestPointTo(newOrigin),
+      this.worldSpaceViewportRect.size
+    )
+    this.renderGL()
   }
 
   render() {
     const width = window.innerWidth
     const height = window.innerHeight
-    return <canvas width={width} height={height} ref={this.canvasRef} className={css(style.fullscreen)}></canvas>
+    return (
+      <canvas
+        onWheel={this.onWheel}
+        width={width} height={height}
+        ref={this.canvasRef}
+        className={css(style.fullscreen)}
+      />
+    )
   }
 }
 
