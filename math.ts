@@ -6,9 +6,13 @@ export function clamp(x: number, minVal: number, maxVal: number) {
 
 export class Vec2 {
   constructor(readonly x = 0, readonly y = 0) {}
+  withX(x: number) { return new Vec2(x, this.y) }
+  withY(y: number) { return new Vec2(this.x, y) }
+
   plus(other: Vec2) { return new Vec2(this.x + other.x, this.y + other.y) }
   minus(other: Vec2) { return new Vec2(this.x - other.x, this.y - other.y) }
   times(scalar: number) { return new Vec2(this.x * scalar, this.y * scalar) }
+  timesPointwise(other: Vec2) { return new Vec2(this.x * other.x, this.y * other.y) }
   dot(other: Vec2) { return this.x * other.x + this.y * other.y }
   length2() { return this.dot(this) }
   length() { return Math.sqrt(this.length2()) }
@@ -58,6 +62,15 @@ export class AffineTransform {
   }
   getTranslation() { return new Vec2(this.m02, this.m12) }
 
+  static betweenRects(from: Rect, to: Rect) {
+    return AffineTransform
+      .withTranslation(to.origin.minus(from.origin))
+      .withScale(new Vec2(
+        to.size.x / from.size.x,
+        to.size.y / from.size.y
+      ))
+  }
+
   times(other: AffineTransform) {
     const m00 = this.m00 * other.m00 + this.m01 * other.m10
     const m01 = this.m00 * other.m01 + this.m01 * other.m11
@@ -67,6 +80,20 @@ export class AffineTransform {
     const m11 = this.m10 * other.m01 + this.m11 * other.m11
     const m12 = this.m10 * other.m02 + this.m11 * other.m12 + this.m12
     return new AffineTransform(m00, m01, m02, m10, m11, m12)
+  }
+
+  transformVector(v: Vec2) {
+    return new Vec2(
+      v.x * this.m00 + v.y * this.m01,
+      v.x * this.m10 + v.y * this.m11
+    )
+  }
+
+  transformPosition(v: Vec2) {
+    return new Vec2(
+      v.x * this.m00 + v.y * this.m01 + this.m02,
+      v.x * this.m10 + v.y * this.m11 + this.m12
+    )
   }
 
   flatten(): [number, number, number, number, number, number, number, number, number] {
@@ -98,6 +125,9 @@ export class Rect {
 
   bottomRight() { return this.origin.plus(this.size) }
   bottomLeft() { return this.origin.plus(new Vec2(0, this.height())) }
+
+  withOrigin(origin: Vec2) { return new Rect(origin, this.size) }
+  withSize(size: Vec2) { return new Rect(this.origin, size) }
 
   closestPointTo(p: Vec2) {
     return new Vec2(

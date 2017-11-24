@@ -3,7 +3,7 @@ import {StyleSheet, css} from 'aphrodite'
 
 import {Profile, Frame} from './profile'
 import regl, {vec2, vec3, mat3, ReglCommand, ReglCommandConstructor} from 'regl'
-import { Rect, Vec2, AffineTransform } from './math'
+import { Rect, Vec2, AffineTransform, clamp } from './math'
 
 interface FlamechartFrame {
   frame: Frame
@@ -88,12 +88,10 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
       }
 
       this.canvas = element as HTMLCanvasElement
-      const viewportWidth = this.canvas.width
-      const viewportHeight = this.canvas.height
 
       this.worldSpaceViewportRect = new Rect(
         new Vec2(0, 0),
-        new Vec2(viewportWidth, viewportHeight)
+        new Vec2(this.viewportWidth(), this.viewportHeight())
       )
 
       const ctx = this.canvas.getContext('webgl')!
@@ -104,11 +102,13 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
 
   private configSpaceWidth() { return this.props.flamechart.getDuration() }
   private configSpaceHeight() { return this.props.flamechart.getLayers().length }
+  private configSpaceSize() { return new Vec2(this.configSpaceWidth(), this.configSpaceHeight()) }
 
   private WORLD_SPACE_FRAME_HEIGHT = 16
 
   private viewportWidth() { return this.canvas ? this.canvas.width : 0 }
   private viewportHeight() { return this.canvas ? this.canvas.height : 0 }
+  private viewportSize() { return new Vec2(this.viewportWidth(), this.viewportHeight()) }
 
   private configSpaceToWorldSpace() {
     return AffineTransform.withScale(new Vec2(
@@ -118,14 +118,21 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
   }
 
   private worldSpaceToViewSpace() {
-    return AffineTransform
-      .withTranslation(this.worldSpaceViewportRect.origin.times(-1))
+    const viewportRect = this.worldSpaceViewportRect
+
+    return AffineTransform.betweenRects(
+      this.worldSpaceViewportRect,
+      new Rect(new Vec2(0, 0), this.viewportSize())
+    )
   }
 
   private viewSpaceToNDC() {
-    return AffineTransform
-      .withScale(new Vec2(2 / this.viewportWidth(), -2 / this.viewportHeight()))
-      .withTranslation(new Vec2(-1, 1))
+    return AffineTransform.withScale(new Vec2(1, -1)).times(
+      AffineTransform.betweenRects(
+        new Rect(new Vec2(0, 0), this.viewportSize()),
+        new Rect(new Vec2(-1, -1), new Vec2(2, 2))
+      )
+    )
   }
 
   private configSpaceToNDC() {
@@ -142,22 +149,40 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     }
   }
 
+  private pan(deltaX: number, deltaY: number) {
+    const worldSpaceDelta = new Vec2(
+      deltaX / this.worldSpaceToViewSpace().getScale().x,
+      deltaY / this.worldSpaceToViewSpace().getScale().y
+    )
+    const newOrigin = this.worldSpaceViewportRect.origin.plus(worldSpaceDelta)
+    const worldSpacePanningBounds = new Rect(
+      new Vec2(0, 0),
+      this.configSpaceToWorldSpace().transformVector(this.configSpaceSize()).minus(this.worldSpaceViewportRect.size)
+    )
+
+    this.worldSpaceViewportRect = this.worldSpaceViewportRect
+      .withOrigin(worldSpacePanningBounds.closestPointTo(newOrigin))
+  }
+
+  private zoom(deltaY: number) {
+    const viewportRect = this.worldSpaceViewportRect
+
+    const multiplier = 1 + 0.001 * deltaY
+    const newWidth = viewportRect.size.x * multiplier
+
+    this.worldSpaceViewportRect = this.worldSpaceViewportRect
+        .withSize(viewportRect.size.withX(clamp(newWidth, 5, this.viewportWidth())))
+  }
+
   private onWheel = (ev: WheelEvent) => {
     ev.preventDefault()
 
-    const newOrigin = this.worldSpaceViewportRect.origin.plus(new Vec2(ev.deltaX, ev.deltaY))
-    const worldSpacePanningBounds = new Rect(
-      new Vec2(0, 0),
-      new Vec2(
-        this.configSpaceWidth() * this.configSpaceToWorldSpace().getScale().x - this.viewportWidth(),
-        this.configSpaceHeight() * this.configSpaceToWorldSpace().getScale().y - this.viewportHeight()
-      )
-    )
+    if (ev.metaKey) {
+      this.zoom(ev.deltaY)
+    } else {
+      this.pan(ev.deltaX, ev.deltaY)
+    }
 
-    this.worldSpaceViewportRect = new Rect(
-      worldSpacePanningBounds.closestPointTo(newOrigin),
-      this.worldSpaceViewportRect.size
-    )
     this.renderGL()
   }
 
