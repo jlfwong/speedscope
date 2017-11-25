@@ -46,6 +46,7 @@ export class AffineTransform {
   static withScale(s: Vec2) {
     return (new AffineTransform).withScale(s)
   }
+  scaledBy(s: Vec2) { return AffineTransform.withScale(s).times(this) }
   getScale() { return new Vec2(this.m00, this.m11) }
 
   withTranslation(t: Vec2) {
@@ -61,14 +62,16 @@ export class AffineTransform {
     return (new AffineTransform).withTranslation(t)
   }
   getTranslation() { return new Vec2(this.m02, this.m12) }
+  translatedBy(t: Vec2) { return AffineTransform.withTranslation(t).times(this) }
 
   static betweenRects(from: Rect, to: Rect) {
     return AffineTransform
-      .withTranslation(to.origin.minus(from.origin))
-      .withScale(new Vec2(
+      .withTranslation(from.origin.times(-1))
+      .scaledBy(new Vec2(
         to.size.x / from.size.x,
         to.size.y / from.size.y
       ))
+      .translatedBy(to.origin)
   }
 
   times(other: AffineTransform) {
@@ -82,6 +85,54 @@ export class AffineTransform {
     return new AffineTransform(m00, m01, m02, m10, m11, m12)
   }
 
+  timesScalar(s: number) {
+    const {m00, m01, m02, m10, m11, m12} = this
+    return new AffineTransform(s*m00, s*m01, s*m02, s*m10, s*m11, s*m12)
+  }
+
+  det() {
+    const {m00, m01, m02, m10, m11, m12} = this
+    const m20 = 0
+    const m21 = 0
+    const m22 = 1
+
+    return (
+      m00 * (m11 * m22 - m12 * m21) -
+      m01 * (m10 * m22 - m12 * m20) +
+      m02 * (m10 * m21 - m11 * m20)
+    )
+  }
+
+  adj() {
+    const {m00, m01, m02, m10, m11, m12} = this
+    const m20 = 0
+    const m21 = 0
+    const m22 = 1
+
+    // Adjugate matrix (a) is the transpose of the
+    // cofactor matrix (c).
+    //
+    // 00 01 02
+    // 10 11 12
+    // 20 21 22
+
+    const a00 = /* c00 = */ +(m11 * m22 - m12 * m21)
+    const a01 = /* c10 = */ -(m01 * m22 - m02 * m21)
+    const a02 = /* c20 = */ +(m01 * m12 - m02 * m11)
+    const a10 = /* c01 = */ -(m10 * m22 - m12 * m20)
+    const a11 = /* c11 = */ +(m00 * m22 - m02 * m20)
+    const a12 = /* c21 = */ -(m00 * m12 - m02 * m10)
+
+    return new AffineTransform(a00, a01, a02, a10, a11, a12)
+  }
+
+  inverted(): AffineTransform | null {
+    const det = this.det()
+    if (det === 0) return null
+    const adj = this.adj()
+    return adj.timesScalar(1 / det)
+  }
+
   transformVector(v: Vec2) {
     return new Vec2(
       v.x * this.m00 + v.y * this.m01,
@@ -89,10 +140,29 @@ export class AffineTransform {
     )
   }
 
+  inverseTransformVector(v: Vec2): Vec2 | null {
+    const inv = this.inverted()
+    if (!inv) return null
+    return inv.transformVector(v)
+  }
+
   transformPosition(v: Vec2) {
     return new Vec2(
       v.x * this.m00 + v.y * this.m01 + this.m02,
       v.x * this.m10 + v.y * this.m11 + this.m12
+    )
+  }
+
+  inverseTransformPosition(v: Vec2): Vec2 | null {
+    const inv = this.inverted()
+    if (!inv) return null
+    return inv.transformPosition(v)
+  }
+
+  transformRect(r: Rect) {
+    return new Rect(
+      this.transformPosition(r.origin),
+      this.transformVector(r.size)
     )
   }
 

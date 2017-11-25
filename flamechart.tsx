@@ -118,8 +118,6 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
   }
 
   private worldSpaceToViewSpace() {
-    const viewportRect = this.worldSpaceViewportRect
-
     return AffineTransform.betweenRects(
       this.worldSpaceViewportRect,
       new Rect(new Vec2(0, 0), this.viewportSize())
@@ -149,38 +147,52 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     }
   }
 
-  private pan(deltaX: number, deltaY: number) {
-    const worldSpaceDelta = new Vec2(
-      deltaX / this.worldSpaceToViewSpace().getScale().x,
-      deltaY / this.worldSpaceToViewSpace().getScale().y
-    )
-    const newOrigin = this.worldSpaceViewportRect.origin.plus(worldSpaceDelta)
+  private pan(viewSpaceDelta: Vec2) {
+    const worldSpaceDelta = this.worldSpaceToViewSpace().inverseTransformVector(viewSpaceDelta)
+    if (!worldSpaceDelta) return
+
+    // TODO(jlfwong): Add back clamping of panning bounds
+    /*
     const worldSpacePanningBounds = new Rect(
       new Vec2(0, 0),
       this.configSpaceToWorldSpace().transformVector(this.configSpaceSize()).minus(this.worldSpaceViewportRect.size)
     )
+    */
 
-    this.worldSpaceViewportRect = this.worldSpaceViewportRect
-      .withOrigin(worldSpacePanningBounds.closestPointTo(newOrigin))
+    this.worldSpaceViewportRect = AffineTransform.withTranslation(worldSpaceDelta)
+      .transformRect(this.worldSpaceViewportRect)
   }
 
-  private zoom(deltaY: number) {
-    const viewportRect = this.worldSpaceViewportRect
+  private zoom(worldSpaceZoomCenter: Vec2, multiplier: number) {
+    /*
+    multiplier = clamp(multiplier,
+      5 / this.worldSpaceViewportRect.width(),
+      this.viewportWidth() / this.worldSpaceViewportRect.width()
+    )
+    */
 
-    const multiplier = 1 + 0.001 * deltaY
-    const newWidth = viewportRect.size.x * multiplier
+    const zoomTransform = AffineTransform
+      .withTranslation(worldSpaceZoomCenter.times(-1))
+      .scaledBy(new Vec2(multiplier, 1))
+      .translatedBy(worldSpaceZoomCenter)
 
-    this.worldSpaceViewportRect = this.worldSpaceViewportRect
-        .withSize(viewportRect.size.withX(clamp(newWidth, 5, this.viewportWidth())))
+
+    this.worldSpaceViewportRect = zoomTransform.transformRect(this.worldSpaceViewportRect)
   }
 
   private onWheel = (ev: WheelEvent) => {
     ev.preventDefault()
 
     if (ev.metaKey) {
-      this.zoom(ev.deltaY)
+      const viewSpaceZoomCenter = new Vec2(ev.offsetX, ev.offsetY)
+      const worldSpaceZoomCenter = this.worldSpaceToViewSpace().inverseTransformPosition(viewSpaceZoomCenter)
+
+      if (worldSpaceZoomCenter) {
+        const multiplier = 1 + (ev.deltaY / 100)
+        this.zoom(worldSpaceZoomCenter, multiplier)
+      }
     } else {
-      this.pan(ev.deltaX, ev.deltaY)
+      this.pan(new Vec2(ev.deltaX, ev.deltaY))
     }
 
     this.renderGL()
