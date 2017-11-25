@@ -116,6 +116,9 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
       this.WORLD_SPACE_FRAME_HEIGHT
     ))
   }
+  private worldSpaceSize() {
+    return this.configSpaceToWorldSpace().transformVector(this.configSpaceSize())
+  }
 
   private worldSpaceToViewSpace() {
     return AffineTransform.betweenRects(
@@ -150,47 +153,52 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
   private pan(viewSpaceDelta: Vec2) {
     const worldSpaceDelta = this.worldSpaceToViewSpace().inverseTransformVector(viewSpaceDelta)
     if (!worldSpaceDelta) return
-
-    // TODO(jlfwong): Add back clamping of panning bounds
-    /*
-    const worldSpacePanningBounds = new Rect(
-      new Vec2(0, 0),
-      this.configSpaceToWorldSpace().transformVector(this.configSpaceSize()).minus(this.worldSpaceViewportRect.size)
-    )
-    */
-
-    this.worldSpaceViewportRect = AffineTransform.withTranslation(worldSpaceDelta)
-      .transformRect(this.worldSpaceViewportRect)
+    this.transformViewport(AffineTransform.withTranslation(worldSpaceDelta))
   }
 
-  private zoom(worldSpaceZoomCenter: Vec2, multiplier: number) {
-    /*
-    multiplier = clamp(multiplier,
-      5 / this.worldSpaceViewportRect.width(),
-      this.viewportWidth() / this.worldSpaceViewportRect.width()
-    )
-    */
+  private zoom(viewSpaceZoomCenter: Vec2, multiplier: number) {
+    const worldSpaceZoomCenter = this.worldSpaceToViewSpace().inverseTransformPosition(viewSpaceZoomCenter)
+    if (!worldSpaceZoomCenter) return
 
     const zoomTransform = AffineTransform
       .withTranslation(worldSpaceZoomCenter.times(-1))
       .scaledBy(new Vec2(multiplier, 1))
       .translatedBy(worldSpaceZoomCenter)
 
+    this.transformViewport(zoomTransform)
+  }
 
-    this.worldSpaceViewportRect = zoomTransform.transformRect(this.worldSpaceViewportRect)
+  private transformViewport(transform: AffineTransform) {
+    const viewportRect = transform.transformRect(this.worldSpaceViewportRect)
+
+    const worldSpaceOriginBounds = new Rect(
+      new Vec2(0, 0),
+      this.worldSpaceSize().minus(viewportRect.size)
+    )
+
+    const worldSpaceSizeBounds = new Rect(
+      new Vec2(1, viewportRect.height()),
+      new Vec2(this.worldSpaceSize().x, viewportRect.height())
+    )
+
+    this.worldSpaceViewportRect = new Rect(
+      worldSpaceOriginBounds.closestPointTo(viewportRect.origin),
+      worldSpaceSizeBounds.closestPointTo(viewportRect.size)
+    )
   }
 
   private onWheel = (ev: WheelEvent) => {
     ev.preventDefault()
 
+    // TODO(jlfwong): When scrolling and adding or releasing
+    // a modifier key, any momentum scrolling from previous
+    // initiated momentum scrolling may still take effect.
+    // Figure out how to prevent this.
+    //
+    // Also, support drag-based panning, and pinch-to-zoom
     if (ev.metaKey) {
-      const viewSpaceZoomCenter = new Vec2(ev.offsetX, ev.offsetY)
-      const worldSpaceZoomCenter = this.worldSpaceToViewSpace().inverseTransformPosition(viewSpaceZoomCenter)
-
-      if (worldSpaceZoomCenter) {
-        const multiplier = 1 + (ev.deltaY / 100)
-        this.zoom(worldSpaceZoomCenter, multiplier)
-      }
+      const multiplier = 1 + (ev.deltaY / 100)
+      this.zoom(new Vec2(ev.offsetX, ev.offsetY), multiplier)
     } else {
       this.pan(new Vec2(ev.deltaX, ev.deltaY))
     }
