@@ -61,42 +61,113 @@ interface FlamechartViewProps {
   flamechart: Flamechart
 }
 
+interface FlamechartFrameLabel {
+  configSpaceBounds: Rect
+  frame: Frame
+}
+
+function binarySearch(lo: number, hi: number, f: (val: number) => number, target: number, targetRangeSize = 1): [number, number] {
+  while (true) {
+    if (hi - lo <= targetRangeSize) return [lo, hi]
+    const mid = (hi + lo) / 2
+    const val = f(mid)
+    if (val < target) lo = mid
+    if (val > target) hi = mid
+  }
+}
+
+const ELLIPSIS = '\u2026'
+
+function buildTrimmedText(text: string, length: number) {
+  const prefixLength = Math.floor(length / 2)
+  const suffixLength = Math.ceil(length / 2)
+  const prefix = text.substr(0, prefixLength)
+  const suffix = text.substr(text.length - prefixLength, prefixLength)
+  return prefix + ELLIPSIS + suffix
+}
+
+const measureTextCache = new Map<string, number>()
+function cachedMeasureTextWidth(ctx: CanvasRenderingContext2D, text: string): number {
+  if (!measureTextCache.has(text)) {
+    measureTextCache.set(text, ctx.measureText(text).width)
+  }
+  return measureTextCache.get(text)!
+}
+
+function trimTextMid(ctx: CanvasRenderingContext2D, text: string, maxWidth: number) {
+  if (cachedMeasureTextWidth(ctx, text) <= maxWidth) return text
+  const [lo, hi] = binarySearch(0, text.length, (n) => {
+    return cachedMeasureTextWidth(ctx, buildTrimmedText(text, n))
+  }, maxWidth)
+  return buildTrimmedText(text, lo)
+}
+
 export class FlamechartView extends Component<FlamechartViewProps, void> {
   renderer: ReglCommand<RectangleBatchRendererProps> | null = null
   canvas: HTMLCanvasElement | null = null
+  overlayCanvas: HTMLCanvasElement | null = null
+  overlayCtx: CanvasRenderingContext2D | null = null
+
   worldSpaceViewportRect = new Rect()
+  labels: FlamechartFrameLabel[] = []
+
+  private preprocess() {
+    if (!this.canvas) return
+
+    const {flamechart} = this.props
+    const configSpaceRects: Rect[] = []
+    const colors: vec3[] = []
+
+    const layers = flamechart.getLayers()
+    const duration = flamechart.getDuration()
+    const maxStackHeight = layers.length
+
+    const configSpaceToWorldSpace = this.configSpaceToWorldSpace()
+
+    for (let i = 0; i < layers.length; i++) {
+      const layer = layers[i]
+      for (let flamechartFrame of layer) {
+        const configSpaceBounds = new Rect(
+          new Vec2(flamechartFrame.start, i),
+          new Vec2(flamechartFrame.end - flamechartFrame.start, 1)
+        )
+        configSpaceRects.push(configSpaceBounds)
+        colors.push([Math.random(), Math.random(), 0])
+
+        this.labels.push({
+          configSpaceBounds,
+          frame: flamechartFrame.frame
+        })
+      }
+    }
+
+    this.worldSpaceViewportRect = new Rect(
+      new Vec2(0, 0),
+      new Vec2(this.viewportWidth(), this.viewportHeight())
+    )
+
+    const ctx = this.canvas.getContext('webgl')!
+    this.renderer = rectangleBatchRenderer(ctx, configSpaceRects, colors)
+  }
 
   private canvasRef = (element?: Element) => {
     if (element) {
-      const {flamechart} = this.props
-      const rects: Rect[] = []
-      const colors: vec3[] = []
-
-      const layers = flamechart.getLayers()
-      const duration = flamechart.getDuration()
-      const maxStackHeight = layers.length
-
-      for (let i = 0; i < layers.length; i++) {
-        const layer = layers[i]
-        for (let frame of layer) {
-          rects.push(new Rect(
-            new Vec2(frame.start, i),
-            new Vec2(frame.end - frame.start, 1)
-          ))
-          colors.push([Math.random(), Math.random(), 0])
-        }
-      }
-
       this.canvas = element as HTMLCanvasElement
-
-      this.worldSpaceViewportRect = new Rect(
-        new Vec2(0, 0),
-        new Vec2(this.viewportWidth(), this.viewportHeight())
-      )
-
-      const ctx = this.canvas.getContext('webgl')!
-      this.renderer = rectangleBatchRenderer(ctx, rects, colors)
+      this.preprocess()
       this.renderGL()
+      this.renderLabels()
+    } else {
+      this.canvas = null
+    }
+  }
+
+  private overlayCanvasRef = (element?: Element) => {
+    if (element) {
+      this.overlayCanvas = element as HTMLCanvasElement
+      this.overlayCtx = this.overlayCanvas.getContext('2d')
+    } else {
+      this.overlayCanvas = null
+      this.overlayCtx = null
     }
   }
 
@@ -142,12 +213,45 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
       .times(this.configSpaceToWorldSpace())
   }
 
-  private renderGL() {
-    if (this.renderer && this.canvas) {
-      this.renderer({
-        configSpaceToNDC: this.configSpaceToNDC()
-      })
+  private renderLabels() {
+    const ctx = this.overlayCtx
+    if (!ctx) return
+
+    const configSpaceToViewSpace = this.worldSpaceToViewSpace().times(this.configSpaceToWorldSpace())
+
+    ctx.clearRect(0, 0, this.viewportWidth(), this.viewportHeight())
+
+    ctx.font = "12px/16px Courier, monospace"
+    ctx.fillStyle = 'rgba(0, 0, 0, 1)'
+    ctx.textBaseline = 'top'
+
+    const minWidthToRender = cachedMeasureTextWidth(ctx, 'M' + ELLIPSIS + 'M')
+    const viewportRect = new Rect(new Vec2(0, 0), this.viewportSize())
+
+    for (let label of this.labels) {
+      const LABEL_PADDING_PX = 2
+      let viewSpaceBounds = configSpaceToViewSpace.transformRect(label.configSpaceBounds)
+
+      viewSpaceBounds = viewSpaceBounds
+        .withOrigin(viewSpaceBounds.origin.plus(new Vec2(LABEL_PADDING_PX, LABEL_PADDING_PX)))
+        .withSize(viewSpaceBounds.size.minus(new Vec2(2 * LABEL_PADDING_PX, 2 * LABEL_PADDING_PX)))
+
+      if (viewSpaceBounds.width() < minWidthToRender) continue
+
+      // Cull text outside the viewport
+      if (viewportRect.intersectWith(viewSpaceBounds).isEmpty()) continue
+
+      const trimmedText = trimTextMid(ctx, label.frame.name, viewSpaceBounds.width())
+      ctx.fillText(trimmedText, viewSpaceBounds.left(), viewSpaceBounds.top())
     }
+  }
+
+  private renderGL() {
+    if (!this.renderer || !this.canvas) return
+    this.renderer({
+      configSpaceToNDC: this.configSpaceToNDC()
+    })
+    this.renderLabels()
   }
 
   private pan(viewSpaceDelta: Vec2) {
@@ -207,15 +311,23 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
   }
 
   render() {
+    // TODO(jlfwong): Handle node and/or window resizing
+
     const width = window.innerWidth
     const height = window.innerHeight
     return (
-      <canvas
-        onWheel={this.onWheel}
-        width={width} height={height}
-        ref={this.canvasRef}
+      <div
         className={css(style.fullscreen)}
-      />
+        onWheel={this.onWheel}>
+        *<canvas
+          width={width} height={height}
+          ref={this.canvasRef}
+          className={css(style.fill)} />
+        <canvas
+          width={width} height={height}
+          ref={this.overlayCanvasRef}
+          className={css(style.fill)} />
+      </div>
     )
   }
 }
@@ -224,6 +336,13 @@ const style = StyleSheet.create({
   fullscreen: {
     width: '100vw',
     height: '100vh',
+  },
+  fill: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    left: 0,
+    top: 0
   }
 })
 

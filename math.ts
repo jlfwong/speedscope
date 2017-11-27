@@ -182,6 +182,8 @@ export class Rect {
     readonly size = new Vec2()
   ) {}
 
+  isEmpty() { return this.width() == 0 || this.height() == 0 }
+
   width() { return this.size.x }
   height() { return this.size.y }
 
@@ -204,5 +206,12 @@ export class Rect {
       clamp(p.x, this.left(), this.right()),
       clamp(p.y, this.top(), this.bottom())
     )
+  }
+
+  intersectWith(other: Rect) {
+    const topLeft = Vec2.max(this.topLeft(), other.topLeft())
+    const bottomRight = Vec2.max(topLeft, Vec2.min(this.bottomRight(), other.bottomRight()))
+
+    return new Rect(topLeft, bottomRight.minus(topLeft))
   }
 }
