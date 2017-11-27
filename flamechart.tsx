@@ -181,6 +181,8 @@ function trimTextMid(ctx: CanvasRenderingContext2D, text: string, maxWidth: numb
   return buildTrimmedText(text, lo)
 }
 
+const DEVICE_PIXEL_RATIO = window.devicePixelRatio
+
 export class FlamechartView extends Component<FlamechartViewProps, void> {
   renderer: ReglCommand<RectangleBatchRendererProps> | null = null
   canvas: HTMLCanvasElement | null = null
@@ -223,7 +225,7 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
 
     this.worldSpaceViewportRect = new Rect(
       new Vec2(0, 0),
-      new Vec2(this.viewportWidth(), this.viewportHeight())
+      new Vec2(this.viewSpaceViewportWidth(), this.viewSpaceViewportHeight())
     )
 
     const ctx = this.canvas.getContext('webgl')!
@@ -256,14 +258,15 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
   private configSpaceSize() { return new Vec2(this.configSpaceWidth(), this.configSpaceHeight()) }
 
   private WORLD_SPACE_FRAME_HEIGHT = 16
+  private WORLD_SPACE_LABEL_FONT_SIZE = 12
 
-  private viewportWidth() { return this.canvas ? this.canvas.width : 0 }
-  private viewportHeight() { return this.canvas ? this.canvas.height : 0 }
-  private viewportSize() { return new Vec2(this.viewportWidth(), this.viewportHeight()) }
+  private viewSpaceViewportWidth() { return this.canvas ? this.canvas.width : 0 }
+  private viewSpaceViewportHeight() { return this.canvas ? this.canvas.height : 0 }
+  private viewSpaceViewportSize() { return new Vec2(this.viewSpaceViewportWidth(), this.viewSpaceViewportHeight()) }
 
   private configSpaceToWorldSpace() {
     return AffineTransform.withScale(new Vec2(
-      this.viewportWidth() / this.configSpaceWidth(),
+      this.viewSpaceViewportWidth() / this.configSpaceWidth(),
       this.WORLD_SPACE_FRAME_HEIGHT
     ))
   }
@@ -274,17 +277,21 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
   private worldSpaceToViewSpace() {
     return AffineTransform.betweenRects(
       this.worldSpaceViewportRect,
-      new Rect(new Vec2(0, 0), this.viewportSize())
+      new Rect(new Vec2(0, 0), this.viewSpaceViewportSize())
     )
   }
 
   private viewSpaceToNDC() {
     return AffineTransform.withScale(new Vec2(1, -1)).times(
       AffineTransform.betweenRects(
-        new Rect(new Vec2(0, 0), this.viewportSize()),
+        new Rect(new Vec2(0, 0), this.viewSpaceViewportSize()),
         new Rect(new Vec2(-1, -1), new Vec2(2, 2))
       )
     )
+  }
+
+  private viewSpaceToOverlaySpace() {
+    return AffineTransform.withScale(new Vec2(DEVICE_PIXEL_RATIO, DEVICE_PIXEL_RATIO))
   }
 
   private configSpaceToNDC() {
@@ -297,32 +304,37 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     const ctx = this.overlayCtx
     if (!ctx) return
 
-    const configSpaceToViewSpace = this.worldSpaceToViewSpace().times(this.configSpaceToWorldSpace())
+    const configSpaceToOverlaySpace = this.viewSpaceToOverlaySpace()
+      .times(this.worldSpaceToViewSpace())
+      .times(this.configSpaceToWorldSpace())
 
-    ctx.clearRect(0, 0, this.viewportWidth(), this.viewportHeight())
+    const overlaySpaceFontSize = this.WORLD_SPACE_LABEL_FONT_SIZE * DEVICE_PIXEL_RATIO
+    const overlaySpaceFrameHeight = this.WORLD_SPACE_FRAME_HEIGHT * DEVICE_PIXEL_RATIO
 
-    ctx.font = "12px/16px Courier, monospace"
-    ctx.fillStyle = 'rgba(0, 0, 0, 1)'
+    ctx.font = `${overlaySpaceFontSize}px/${overlaySpaceFrameHeight}px Courier, monospace`
+    ctx.fillStyle = 'rgba(15, 10, 5, 1)'
     ctx.textBaseline = 'top'
 
     const minWidthToRender = cachedMeasureTextWidth(ctx, 'M' + ELLIPSIS + 'M')
-    const viewportRect = new Rect(new Vec2(0, 0), this.viewportSize())
+    const overlaySpaceViewportRect = this.viewSpaceToOverlaySpace().transformRect(new Rect(new Vec2(0, 0), this.viewSpaceViewportSize()))
+
+    ctx.clearRect(overlaySpaceViewportRect.left(), overlaySpaceViewportRect.top(), overlaySpaceViewportRect.width(), overlaySpaceViewportRect.height())
 
     for (let label of this.labels) {
-      const LABEL_PADDING_PX = 2
-      let viewSpaceBounds = configSpaceToViewSpace.transformRect(label.configSpaceBounds)
+      const LABEL_PADDING_PX = 2 * DEVICE_PIXEL_RATIO
+      let overlaySpaceBounds = configSpaceToOverlaySpace.transformRect(label.configSpaceBounds)
 
-      viewSpaceBounds = viewSpaceBounds
-        .withOrigin(viewSpaceBounds.origin.plus(new Vec2(LABEL_PADDING_PX, LABEL_PADDING_PX)))
-        .withSize(viewSpaceBounds.size.minus(new Vec2(2 * LABEL_PADDING_PX, 2 * LABEL_PADDING_PX)))
+      overlaySpaceBounds = overlaySpaceBounds
+        .withOrigin(overlaySpaceBounds.origin.plus(new Vec2(LABEL_PADDING_PX, LABEL_PADDING_PX)))
+        .withSize(overlaySpaceBounds.size.minus(new Vec2(2 * LABEL_PADDING_PX, 2 * LABEL_PADDING_PX)))
 
-      if (viewSpaceBounds.width() < minWidthToRender) continue
+      if (overlaySpaceBounds.width() < minWidthToRender) continue
 
       // Cull text outside the viewport
-      if (viewportRect.intersectWith(viewSpaceBounds).isEmpty()) continue
+      if (overlaySpaceViewportRect.intersectWith(overlaySpaceBounds).isEmpty()) continue
 
-      const trimmedText = trimTextMid(ctx, label.frame.name, viewSpaceBounds.width())
-      ctx.fillText(trimmedText, viewSpaceBounds.left(), viewSpaceBounds.top())
+      const trimmedText = trimTextMid(ctx, label.frame.name, overlaySpaceBounds.width())
+      ctx.fillText(trimmedText, overlaySpaceBounds.left(), overlaySpaceBounds.top())
     }
   }
 
@@ -395,16 +407,22 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
 
     const width = window.innerWidth
     const height = window.innerHeight
+
     return (
       <div
         className={css(style.fullscreen)}
         onWheel={this.onWheel}>
-        *<canvas
+        <canvas
           width={width} height={height}
           ref={this.canvasRef}
           className={css(style.fill)} />
+        {/*
+          We render text at a higher resolution then scale down to
+          ensure we're rendering at 1:1 device pixel ratio.
+          This ensures our text is rendered crisply.
+        */}
         <canvas
-          width={width} height={height}
+          width={width * DEVICE_PIXEL_RATIO} height={height * DEVICE_PIXEL_RATIO}
           ref={this.overlayCanvasRef}
           className={css(style.fill)} />
       </div>
