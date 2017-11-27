@@ -391,9 +391,17 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     // initiated momentum scrolling may still take effect.
     // Figure out how to prevent this.
     //
-    // Also, support drag-based panning, and pinch-to-zoom
-    if (ev.metaKey) {
-      const multiplier = 1 + (ev.deltaY / 100)
+    // Also, support drag-based panning.
+    if (ev.metaKey || ev.ctrlKey) {
+      let multiplier = 1 + (ev.deltaY / 100)
+
+      // On Chrome & Firefox, pinch-to-zoom maps to
+      // WheelEvent + Ctrl Key. We'll accelerate it in
+      // this case, since it feels a bit sluggish otherwise.
+      if (ev.ctrlKey) {
+        multiplier = 1 + (ev.deltaY / 40)
+      }
+
       this.zoom(new Vec2(ev.offsetX, ev.offsetY), multiplier)
     } else {
       this.pan(new Vec2(ev.deltaX, ev.deltaY))
