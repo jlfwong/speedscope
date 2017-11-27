@@ -108,6 +108,10 @@ export class Profile {
     }
   }
 
+  forEachFrame(fn: (frame: Frame) => void) {
+    this.frames.forEach(fn)
+  }
+
   appendSample(stack: Frame[], timeDelta: number) {
     let node: CallTreeNode | null = null
     let children = this.calltreeRoots

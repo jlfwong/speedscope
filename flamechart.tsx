@@ -16,11 +16,13 @@ type StackLayer = FlamechartFrame[]
 export class Flamechart {
   // Bottom to top
   private layers: StackLayer[] = []
-
   private duration: number = 0
+
+  private frameColors = new Map<Frame, [number, number, number]>()
 
   getDuration() { return this.duration }
   getLayers() { return this.layers }
+  getFrameColors() { return this.frameColors }
 
   private appendFrame(layerIndex: number, frame: Frame, timeDelta: number) {
     while (layerIndex >= this.layers.length) this.layers.push([])
@@ -51,9 +53,86 @@ export class Flamechart {
     return ret
   }
 
+  private selectFrameColors(profile: Profile) {
+    const frames: Frame[] = []
+
+    function parts(f: Frame) {
+      return (f.file || '').split('/').concat(f.name.split(/\W/))
+    }
+
+    function compare(a: Frame, b: Frame) {
+      const aParts = parts(a)
+      const bParts = parts(b)
+
+      const matching = 0
+      const minLength = Math.min(aParts.length, bParts.length)
+      const maxLength = Math.max(aParts.length, bParts.length)
+
+      let prefixMatchLength = 0
+      for (let i = 0; i < minLength; i++) {
+        if (aParts[i] === bParts[i]) prefixMatchLength++
+        else break
+      }
+
+      // Weight matches at the beginning of the string more heavily
+      const score = Math.pow(0.95, prefixMatchLength)
+
+      return aParts.join() > bParts.join() ? score : -score
+    }
+
+    this.profile.forEachFrame(f => frames.push(f))
+    frames.sort(compare)
+
+    const cumulativeScores: number[] = []
+    let lastScore = 0
+    for (let i = 0; i < frames.length; i++) {
+      const score = lastScore + Math.abs(compare(frames[i], frames[(i + 1)%frames.length]))
+      cumulativeScores.push(score)
+      lastScore = score
+    }
+
+    // We now have a sorted list of frames s.t. frames with similar
+    // file paths and method names are clustered together.
+    //
+    // Now, to assign them colors, we map normalized cumulative
+    // score values onto the full range of hue values.
+    const hues: number[] = []
+    const totalScore = cumulativeScores[cumulativeScores.length - 1] || 1
+    for (let i = 0; i < cumulativeScores.length; i++) {
+      hues.push(360 * cumulativeScores[i] / totalScore)
+    }
+
+    for (let i = 0; i < hues.length; i++) {
+      // For each frame, select a random saturation in [0.1, 0.2]
+      // and a random value in [0.8, 0.9]. This helps visually
+      // differentiate otherwise very similar colors.
+      const S = 0.10 + 0.10 * Math.random()
+      const V = 0.80 + 0.10 * Math.random()
+
+      // TODO(jlfwong): Move this into color routines in a different file
+      // https://en.wikipedia.org/wiki/HSL_and_HSV#From_HSV
+
+      const C = V * S
+      const hPrime = Math.floor(hues[i] / 60)
+      const X = C * (1 - Math.abs(hPrime % 2 - 1))
+      const [R1, G1, B1] = (
+        hPrime < 1 ? [C, X, 0] :
+        hPrime < 2 ? [X, C, 0] :
+        hPrime < 3 ? [0, C, X] :
+        hPrime < 4 ? [0, X, C] :
+        hPrime < 5 ? [X, 0, C] :
+        [C, 0, X]
+      )
+
+      const m = V - C
+      this.frameColors.set(frames[i], [R1 + m, G1 + m, B1 + m])
+    }
+  }
+
   constructor(private profile: Profile) {
     profile.forEachSample(this.appendSample.bind(this))
     this.layers = this.layers.map(Flamechart.mergeAdjacentFrames)
+    this.selectFrameColors(profile)
   }
 }
 
@@ -123,6 +202,7 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     const maxStackHeight = layers.length
 
     const configSpaceToWorldSpace = this.configSpaceToWorldSpace()
+    const frameColors = flamechart.getFrameColors()
 
     for (let i = 0; i < layers.length; i++) {
       const layer = layers[i]
@@ -132,7 +212,7 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
           new Vec2(flamechartFrame.end - flamechartFrame.start, 1)
         )
         configSpaceRects.push(configSpaceBounds)
-        colors.push([Math.random(), Math.random(), 0])
+        colors.push(frameColors.get(flamechartFrame.frame) || [0, 0, 0])
 
         this.labels.push({
           configSpaceBounds,
@@ -155,7 +235,6 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
       this.canvas = element as HTMLCanvasElement
       this.preprocess()
       this.renderGL()
-      this.renderLabels()
     } else {
       this.canvas = null
     }
@@ -165,6 +244,7 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     if (element) {
       this.overlayCanvas = element as HTMLCanvasElement
       this.overlayCtx = this.overlayCanvas.getContext('2d')
+      this.renderLabels()
     } else {
       this.overlayCanvas = null
       this.overlayCtx = null
