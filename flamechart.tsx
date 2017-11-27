@@ -410,6 +410,34 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     this.renderGL()
   }
 
+  componentDidMount() {
+    window.addEventListener('resize', () => {
+      const width = window.innerWidth
+      const height = window.innerHeight
+      if (this.canvas) {
+        const oldWidth = this.canvas.width
+        const oldHeight = this.canvas.height
+        this.canvas.width = width
+        this.canvas.height = height
+
+        // Resize the world-space viewport rectangle to match the
+        // window size.
+        this.worldSpaceViewportRect = this.worldSpaceViewportRect.withSize(
+          this.worldSpaceViewportRect.size.timesPointwise(new Vec2(
+            width / oldWidth,
+            height / oldHeight
+          ))
+        )
+        this.renderGL()
+      }
+      if (this.overlayCanvas) {
+        this.overlayCanvas.width = width * DEVICE_PIXEL_RATIO
+        this.overlayCanvas.height = height * DEVICE_PIXEL_RATIO
+        this.renderLabels()
+      }
+    })
+  }
+
   render() {
     // TODO(jlfwong): Handle node and/or window resizing
 
