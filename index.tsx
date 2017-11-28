@@ -28,10 +28,21 @@ class Application extends Component<{}, ApplicaionState> {
     ev.preventDefault()
   }
 
+  componentDidMount() {
+    window.addEventListener('resize', () => {
+      this.forceUpdate()
+    })
+  }
+
   render() {
     const {flamechart} = this.state
     return <div onDrop={this.onDrop} onDragOver={this.onDragOver} className={css(style.root)}>
-      {flamechart && <FlamechartView flamechart={flamechart} />}
+      {flamechart &&
+        <FlamechartView
+          flamechart={flamechart}
+          width={window.innerWidth}
+          height={window.innerHeight}
+        />}
     </div>
   }
 }

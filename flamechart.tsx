@@ -137,6 +137,8 @@ export class Flamechart {
 }
 
 interface FlamechartViewProps {
+  width: number
+  height: number
   flamechart: Flamechart
 }
 
@@ -185,6 +187,7 @@ const DEVICE_PIXEL_RATIO = window.devicePixelRatio
 
 export class FlamechartView extends Component<FlamechartViewProps, void> {
   renderer: ReglCommand<RectangleBatchRendererProps> | null = null
+  ctx: WebGLRenderingContext | null = null
   canvas: HTMLCanvasElement | null = null
   overlayCanvas: HTMLCanvasElement | null = null
   overlayCtx: CanvasRenderingContext2D | null = null
@@ -228,15 +231,15 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
       new Vec2(this.viewSpaceViewportWidth(), this.viewSpaceViewportHeight())
     )
 
-    const ctx = this.canvas.getContext('webgl')!
-    this.renderer = rectangleBatchRenderer(ctx, configSpaceRects, colors)
+    this.ctx = this.canvas.getContext('webgl')!
+    this.renderer = rectangleBatchRenderer(this.ctx, configSpaceRects, colors)
   }
 
   private canvasRef = (element?: Element) => {
     if (element) {
       this.canvas = element as HTMLCanvasElement
       this.preprocess()
-      this.renderGL()
+      this.renderCanvas()
     } else {
       this.canvas = null
     }
@@ -246,7 +249,7 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     if (element) {
       this.overlayCanvas = element as HTMLCanvasElement
       this.overlayCtx = this.overlayCanvas.getContext('2d')
-      this.renderLabels()
+      this.renderCanvas()
     } else {
       this.overlayCanvas = null
       this.overlayCtx = null
@@ -300,9 +303,34 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
       .times(this.configSpaceToWorldSpace())
   }
 
+  private resizeOverlayCanvasIfNeeded() {
+    if (!this.overlayCanvas) return
+    let {width, height} = this.overlayCanvas.getBoundingClientRect()
+    {/*
+      We render text at a higher resolution then scale down to
+      ensure we're rendering at 1:1 device pixel ratio.
+      This ensures our text is rendered crisply.
+    */}
+    width = Math.floor(width)
+    height = Math.floor(height)
+
+    // Still initializing: don't resize yet
+    if (width === 0 || height === 0) return
+
+    const scaledWidth = width * DEVICE_PIXEL_RATIO
+    const scaledHeight = height * DEVICE_PIXEL_RATIO
+
+    if (scaledWidth === this.overlayCanvas.width &&
+        scaledHeight === this.overlayCanvas.height) return
+
+    this.overlayCanvas.width = scaledWidth
+    this.overlayCanvas.height = scaledHeight
+  }
+
   private renderLabels() {
     const ctx = this.overlayCtx
     if (!ctx) return
+    this.resizeOverlayCanvasIfNeeded()
 
     const configSpaceToOverlaySpace = this.viewSpaceToOverlaySpace()
       .times(this.worldSpaceToViewSpace())
@@ -338,12 +366,53 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     }
   }
 
-  private renderGL() {
+  private resizeCanvasIfNeeded() {
+    if (!this.canvas || !this.ctx) return
+    let {width, height} = this.canvas.getBoundingClientRect()
+    width = Math.floor(width)
+    height = Math.floor(height)
+
+    // Still initializing: don't resize yet
+    if (width === 0 || height === 0) return
+
+    // Already at the right size
+    if (width === this.canvas.width && height === this.canvas.height) return
+
+    const oldWidth = this.canvas.width
+    const oldHeight = this.canvas.height
+    this.canvas.width = width
+    this.canvas.height = height
+
+    // Resize the world-space viewport rectangle to match the
+    // window size.
+    this.worldSpaceViewportRect = this.worldSpaceViewportRect.withSize(
+      this.worldSpaceViewportRect.size.timesPointwise(new Vec2(
+        width / oldWidth,
+        height / oldHeight
+      ))
+    )
+    this.ctx.viewport(0, 0, width, height)
+  }
+
+  private renderRects() {
     if (!this.renderer || !this.canvas) return
+    this.resizeCanvasIfNeeded()
+
     this.renderer({
       configSpaceToNDC: this.configSpaceToNDC()
     })
-    this.renderLabels()
+  }
+
+  private renderCanvas() {
+    if (!this.canvas || this.canvas.getBoundingClientRect().width < 2) {
+      // If the canvs is still tiny, it means browser layout hasn't had
+      // a chance to run yet. Defer rendering until we have the real canvas
+      // size.
+      requestAnimationFrame(() => this.renderCanvas())
+    } else {
+      this.renderRects()
+      this.renderLabels()
+    }
   }
 
   private pan(viewSpaceDelta: Vec2) {
@@ -407,49 +476,24 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
       this.pan(new Vec2(ev.deltaX, ev.deltaY))
     }
 
-    this.renderGL()
+    // This is a fix to rendering in Firefox.
+    // TODO(jlfwong): Change this to do the more correct thing:
+    // debounce to rendering at most once a frame.
+    requestAnimationFrame(() => this.renderCanvas())
   }
 
-  componentDidMount() {
-    window.addEventListener('resize', () => {
-      const width = window.innerWidth
-      const height = window.innerHeight
-      if (this.canvas) {
-        const oldWidth = this.canvas.width
-        const oldHeight = this.canvas.height
-        this.canvas.width = width
-        this.canvas.height = height
-
-        // Resize the world-space viewport rectangle to match the
-        // window size.
-        this.worldSpaceViewportRect = this.worldSpaceViewportRect.withSize(
-          this.worldSpaceViewportRect.size.timesPointwise(new Vec2(
-            width / oldWidth,
-            height / oldHeight
-          ))
-        )
-        this.renderGL()
-      }
-      if (this.overlayCanvas) {
-        this.overlayCanvas.width = width * DEVICE_PIXEL_RATIO
-        this.overlayCanvas.height = height * DEVICE_PIXEL_RATIO
-        this.renderLabels()
-      }
-    })
-  }
+  componentDidUpdate() { this.renderCanvas() }
+  componentDidMount() { this.renderCanvas() }
 
   render() {
-    // TODO(jlfwong): Handle node and/or window resizing
-
-    const width = window.innerWidth
-    const height = window.innerHeight
+    const {width, height} = this.props
 
     return (
       <div
-        className={css(style.fullscreen)}
+        className={css(style.fill)}
         onWheel={this.onWheel}>
         <canvas
-          width={width} height={height}
+          width={1} height={1}
           ref={this.canvasRef}
           className={css(style.fill)} />
         {/*
@@ -458,7 +502,7 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
           This ensures our text is rendered crisply.
         */}
         <canvas
-          width={width * DEVICE_PIXEL_RATIO} height={height * DEVICE_PIXEL_RATIO}
+          width={1} height={1}
           ref={this.overlayCanvasRef}
           className={css(style.fill)} />
       </div>
@@ -467,10 +511,6 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
 }
 
 const style = StyleSheet.create({
-  fullscreen: {
-    width: '100vw',
-    height: '100vh',
-  },
   fill: {
     width: '100%',
     height: '100%',
