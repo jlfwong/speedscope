@@ -355,11 +355,21 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
       overlaySpaceBounds = overlaySpaceBounds
         .withOrigin(overlaySpaceBounds.origin.plus(new Vec2(LABEL_PADDING_PX, LABEL_PADDING_PX)))
         .withSize(overlaySpaceBounds.size.minus(new Vec2(2 * LABEL_PADDING_PX, 2 * LABEL_PADDING_PX)))
+        .intersectWith(new Rect(
+          new Vec2(LABEL_PADDING_PX + overlaySpaceViewportRect.origin.x, -Infinity),
+          new Vec2(overlaySpaceViewportRect.size.x, Infinity)
+        ))
 
       if (overlaySpaceBounds.width() < minWidthToRender) continue
 
       // Cull text outside the viewport
       if (overlaySpaceViewportRect.intersectWith(overlaySpaceBounds).isEmpty()) continue
+
+      if (overlaySpaceBounds.origin.x < 0) {
+        overlaySpaceBounds = overlaySpaceBounds.withOrigin(
+          new Vec2(0, overlaySpaceBounds.origin.y)
+        )
+      }
 
       const trimmedText = trimTextMid(ctx, label.frame.name, overlaySpaceBounds.width())
       ctx.fillText(trimmedText, overlaySpaceBounds.left(), overlaySpaceBounds.top())
