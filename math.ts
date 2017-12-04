@@ -208,6 +208,14 @@ export class Rect {
     )
   }
 
+  distanceFrom(p: Vec2) {
+    return p.minus(this.closestPointTo(p)).length()
+  }
+
+  contains(p: Vec2) {
+    return this.distanceFrom(p) === 0
+  }
+
   intersectWith(other: Rect) {
     const topLeft = Vec2.max(this.topLeft(), other.topLeft())
     const bottomRight = Vec2.max(topLeft, Vec2.min(this.bottomRight(), other.bottomRight()))

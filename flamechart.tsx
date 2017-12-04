@@ -187,13 +187,16 @@ const DEVICE_PIXEL_RATIO = window.devicePixelRatio
 
 export class FlamechartView extends Component<FlamechartViewProps, void> {
   renderer: ReglCommand<RectangleBatchRendererProps> | null = null
+
   ctx: WebGLRenderingContext | null = null
   canvas: HTMLCanvasElement | null = null
+
   overlayCanvas: HTMLCanvasElement | null = null
   overlayCtx: CanvasRenderingContext2D | null = null
 
-  worldSpaceViewportRect = new Rect()
+  configSpaceViewportRect = new Rect()
   labels: FlamechartFrameLabel[] = []
+  hoveredLabel: FlamechartFrameLabel | null = null
 
   private preprocess() {
     if (!this.canvas) return
@@ -206,7 +209,6 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     const duration = flamechart.getDuration()
     const maxStackHeight = layers.length
 
-    const configSpaceToWorldSpace = this.configSpaceToWorldSpace()
     const frameColors = flamechart.getFrameColors()
 
     for (let i = 0; i < layers.length; i++) {
@@ -225,11 +227,6 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
         })
       }
     }
-
-    this.worldSpaceViewportRect = new Rect(
-      new Vec2(0, 0),
-      new Vec2(this.viewSpaceViewportWidth(), this.viewSpaceViewportHeight())
-    )
 
     this.ctx = this.canvas.getContext('webgl')!
     this.renderer = rectangleBatchRenderer(this.ctx, configSpaceRects, colors)
@@ -256,51 +253,40 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     }
   }
 
-  private configSpaceWidth() { return this.props.flamechart.getDuration() }
-  private configSpaceHeight() { return this.props.flamechart.getLayers().length }
-  private configSpaceSize() { return new Vec2(this.configSpaceWidth(), this.configSpaceHeight()) }
-
-  private WORLD_SPACE_FRAME_HEIGHT = 16
-  private WORLD_SPACE_LABEL_FONT_SIZE = 12
-
-  private viewSpaceViewportWidth() { return this.canvas ? this.canvas.width : 0 }
-  private viewSpaceViewportHeight() { return this.canvas ? this.canvas.height : 0 }
-  private viewSpaceViewportSize() { return new Vec2(this.viewSpaceViewportWidth(), this.viewSpaceViewportHeight()) }
-
-  private configSpaceToWorldSpace() {
-    return AffineTransform.withScale(new Vec2(
-      this.viewSpaceViewportWidth() / this.configSpaceWidth(),
-      this.WORLD_SPACE_FRAME_HEIGHT
-    ))
-  }
-  private worldSpaceSize() {
-    return this.configSpaceToWorldSpace().transformVector(this.configSpaceSize())
-  }
-
-  private worldSpaceToViewSpace() {
-    return AffineTransform.betweenRects(
-      this.worldSpaceViewportRect,
-      new Rect(new Vec2(0, 0), this.viewSpaceViewportSize())
+  private configSpaceSize() {
+    return new Vec2(
+      this.props.flamechart.getDuration(),
+      this.props.flamechart.getLayers().length
     )
   }
 
-  private viewSpaceToNDC() {
+  private physicalViewSize() {
+    return new Vec2(
+      this.canvas ? this.canvas.width : 0,
+      this.canvas ? this.canvas.height : 0
+    )
+  }
+
+  private LOGICAL_VIEW_SPACE_FRAME_HEIGHT = 16
+  private LOGICAL_VIEW_SPACE_LABEL_FONT_SIZE = 12
+
+  private configSpaceToPhysicalViewSpace() {
+    return AffineTransform.betweenRects(
+      this.configSpaceViewportRect,
+      new Rect(new Vec2(0, 0), this.physicalViewSize())
+    )
+  }
+  private physicalViewSpaceToNDC() {
     return AffineTransform.withScale(new Vec2(1, -1)).times(
       AffineTransform.betweenRects(
-        new Rect(new Vec2(0, 0), this.viewSpaceViewportSize()),
+        new Rect(new Vec2(0, 0), this.physicalViewSize()),
         new Rect(new Vec2(-1, -1), new Vec2(2, 2))
       )
     )
   }
 
-  private viewSpaceToOverlaySpace() {
+  private logicalToPhysicalViewSpace() {
     return AffineTransform.withScale(new Vec2(DEVICE_PIXEL_RATIO, DEVICE_PIXEL_RATIO))
-  }
-
-  private configSpaceToNDC() {
-    return this.viewSpaceToNDC()
-      .times(this.worldSpaceToViewSpace())
-      .times(this.configSpaceToWorldSpace())
   }
 
   private resizeOverlayCanvasIfNeeded() {
@@ -332,55 +318,66 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     if (!ctx) return
     this.resizeOverlayCanvasIfNeeded()
 
-    const configSpaceToOverlaySpace = this.viewSpaceToOverlaySpace()
-      .times(this.worldSpaceToViewSpace())
-      .times(this.configSpaceToWorldSpace())
+    const configToPhysical = this.configSpaceToPhysicalViewSpace()
 
-    const overlaySpaceFontSize = this.WORLD_SPACE_LABEL_FONT_SIZE * DEVICE_PIXEL_RATIO
-    const overlaySpaceFrameHeight = this.WORLD_SPACE_FRAME_HEIGHT * DEVICE_PIXEL_RATIO
+    const physicalViewSpaceFontSize = this.LOGICAL_VIEW_SPACE_LABEL_FONT_SIZE * DEVICE_PIXEL_RATIO
+    const physicalViewSpaceFrameHeight = this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT * DEVICE_PIXEL_RATIO
 
-    ctx.font = `${overlaySpaceFontSize}px/${overlaySpaceFrameHeight}px Courier, monospace`
+    const minWidthToRender = cachedMeasureTextWidth(ctx, 'M' + ELLIPSIS + 'M')
+    const physicalViewSize = this.physicalViewSize()
+    const physicalViewBounds = new Rect(new Vec2(0, 0), physicalViewSize)
+
+    ctx.clearRect(0, 0, physicalViewSize.x, physicalViewSize.y)
+
+    ctx.strokeStyle = 'rgba(15, 10, 5, 0.5)'
+    ctx.lineWidth = 2
+
+    if (this.hoveredLabel) {
+      const physicalViewBounds = configToPhysical.transformRect(this.hoveredLabel.configSpaceBounds)
+      ctx.strokeRect(
+        Math.floor(physicalViewBounds.left()), Math.floor(physicalViewBounds.top()),
+        Math.floor(physicalViewBounds.width()), Math.floor(physicalViewBounds.height())
+      )
+    }
+
+    ctx.font = `${physicalViewSpaceFontSize}px/${physicalViewSpaceFrameHeight}px Courier, monospace`
     ctx.fillStyle = 'rgba(15, 10, 5, 1)'
     ctx.textBaseline = 'top'
 
-    const minWidthToRender = cachedMeasureTextWidth(ctx, 'M' + ELLIPSIS + 'M')
-    const overlaySpaceViewportRect = this.viewSpaceToOverlaySpace().transformRect(new Rect(new Vec2(0, 0), this.viewSpaceViewportSize()))
-
-    ctx.clearRect(overlaySpaceViewportRect.left(), overlaySpaceViewportRect.top(), overlaySpaceViewportRect.width(), overlaySpaceViewportRect.height())
-
     for (let label of this.labels) {
       const LABEL_PADDING_PX = 2 * DEVICE_PIXEL_RATIO
-      let overlaySpaceBounds = configSpaceToOverlaySpace.transformRect(label.configSpaceBounds)
+      let physicalLabelBounds = configToPhysical.transformRect(label.configSpaceBounds)
 
-      overlaySpaceBounds = overlaySpaceBounds
-        .withOrigin(overlaySpaceBounds.origin.plus(new Vec2(LABEL_PADDING_PX, LABEL_PADDING_PX)))
-        .withSize(overlaySpaceBounds.size.minus(new Vec2(2 * LABEL_PADDING_PX, 2 * LABEL_PADDING_PX)))
+      physicalLabelBounds = physicalLabelBounds
+        .withOrigin(physicalLabelBounds.origin.plus(new Vec2(LABEL_PADDING_PX, LABEL_PADDING_PX)))
+        .withSize(physicalLabelBounds.size.minus(new Vec2(2 * LABEL_PADDING_PX, 2 * LABEL_PADDING_PX)))
         .intersectWith(new Rect(
-          new Vec2(LABEL_PADDING_PX + overlaySpaceViewportRect.origin.x, -Infinity),
-          new Vec2(overlaySpaceViewportRect.size.x, Infinity)
+          new Vec2(LABEL_PADDING_PX, -Infinity),
+          new Vec2(physicalViewSize.x, Infinity)
         ))
 
-      if (overlaySpaceBounds.width() < minWidthToRender) continue
+      if (physicalLabelBounds.width() < minWidthToRender) continue
 
       // Cull text outside the viewport
-      if (overlaySpaceViewportRect.intersectWith(overlaySpaceBounds).isEmpty()) continue
+      if (physicalViewBounds.intersectWith(physicalLabelBounds).isEmpty()) continue
 
-      if (overlaySpaceBounds.origin.x < 0) {
-        overlaySpaceBounds = overlaySpaceBounds.withOrigin(
-          new Vec2(0, overlaySpaceBounds.origin.y)
+      if (physicalLabelBounds.origin.x < 0) {
+        physicalLabelBounds = physicalLabelBounds.withOrigin(
+          new Vec2(0, physicalLabelBounds.origin.y)
         )
       }
 
-      const trimmedText = trimTextMid(ctx, label.frame.name, overlaySpaceBounds.width())
-      ctx.fillText(trimmedText, overlaySpaceBounds.left(), overlaySpaceBounds.top())
+      const trimmedText = trimTextMid(ctx, label.frame.name, physicalLabelBounds.width())
+      ctx.fillText(trimmedText, physicalLabelBounds.left(), physicalLabelBounds.top())
     }
   }
 
   private resizeCanvasIfNeeded() {
     if (!this.canvas || !this.ctx) return
-    let {width, height} = this.canvas.getBoundingClientRect()
-    width = Math.floor(width)
-    height = Math.floor(height)
+    let { width, height } = this.canvas.getBoundingClientRect()
+    const logicalHeight = height
+    width = Math.floor(width) * DEVICE_PIXEL_RATIO
+    height = Math.floor(height) * DEVICE_PIXEL_RATIO
 
     // Still initializing: don't resize yet
     if (width === 0 || height === 0) return
@@ -393,14 +390,21 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     this.canvas.width = width
     this.canvas.height = height
 
-    // Resize the world-space viewport rectangle to match the
-    // window size.
-    this.worldSpaceViewportRect = this.worldSpaceViewportRect.withSize(
-      this.worldSpaceViewportRect.size.timesPointwise(new Vec2(
-        width / oldWidth,
-        height / oldHeight
-      ))
-    )
+    if (this.configSpaceViewportRect.isEmpty()) {
+      this.configSpaceViewportRect = new Rect(
+        new Vec2(0, 0),
+        new Vec2(this.configSpaceSize().x, logicalHeight / this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT)
+      )
+    } else {
+      // Resize the viewport rectangle to match the window size aspect
+      // ratio.
+      this.configSpaceViewportRect = this.configSpaceViewportRect.withSize(
+        this.configSpaceViewportRect.size.timesPointwise(new Vec2(
+          width / oldWidth,
+          height / oldHeight
+        ))
+      )
+    }
     this.ctx.viewport(0, 0, width, height)
   }
 
@@ -408,8 +412,11 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     if (!this.renderer || !this.canvas) return
     this.resizeCanvasIfNeeded()
 
+    const configSpaceToNDC = this.physicalViewSpaceToNDC().times(this.configSpaceToPhysicalViewSpace())
+
     this.renderer({
-      configSpaceToNDC: this.configSpaceToNDC()
+      configSpaceToNDC: configSpaceToNDC,
+      physicalSize: this.physicalViewSize()
     })
   }
 
@@ -425,41 +432,68 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     }
   }
 
-  private pan(viewSpaceDelta: Vec2) {
-    const worldSpaceDelta = this.worldSpaceToViewSpace().inverseTransformVector(viewSpaceDelta)
-    if (!worldSpaceDelta) return
-    this.transformViewport(AffineTransform.withTranslation(worldSpaceDelta))
+  private transformViewport(transform: AffineTransform) {
+    const viewportRect = transform.transformRect(this.configSpaceViewportRect)
+
+    const configSpaceOriginBounds = new Rect(
+      new Vec2(0, 0),
+      this.configSpaceSize().minus(viewportRect.size)
+    )
+
+    const configSpaceSizeBounds = new Rect(
+      new Vec2(1, viewportRect.height()),
+      new Vec2(this.configSpaceSize().x, viewportRect.height())
+    )
+
+    this.configSpaceViewportRect = new Rect(
+      configSpaceOriginBounds.closestPointTo(viewportRect.origin),
+      configSpaceSizeBounds.closestPointTo(viewportRect.size)
+    )
   }
 
-  private zoom(viewSpaceZoomCenter: Vec2, multiplier: number) {
-    const worldSpaceZoomCenter = this.worldSpaceToViewSpace().inverseTransformPosition(viewSpaceZoomCenter)
-    if (!worldSpaceZoomCenter) return
+  private pan(logicalViewSpaceDelta: Vec2) {
+    const physicalDelta = this.logicalToPhysicalViewSpace().transformVector(logicalViewSpaceDelta)
+    const configDelta = this.configSpaceToPhysicalViewSpace().inverseTransformVector(physicalDelta)
+
+    if (!configDelta) return
+    this.transformViewport(AffineTransform.withTranslation(configDelta))
+  }
+
+  private zoom(logicalViewSpaceCenter: Vec2, multiplier: number) {
+    const physicalCenter = this.logicalToPhysicalViewSpace().transformPosition(logicalViewSpaceCenter)
+    const configSpaceCenter = this.configSpaceToPhysicalViewSpace().inverseTransformPosition(physicalCenter)
+
+    if (!configSpaceCenter) return
 
     const zoomTransform = AffineTransform
-      .withTranslation(worldSpaceZoomCenter.times(-1))
+      .withTranslation(configSpaceCenter.times(-1))
       .scaledBy(new Vec2(multiplier, 1))
-      .translatedBy(worldSpaceZoomCenter)
+      .translatedBy(configSpaceCenter)
 
     this.transformViewport(zoomTransform)
   }
 
-  private transformViewport(transform: AffineTransform) {
-    const viewportRect = transform.transformRect(this.worldSpaceViewportRect)
+  private onMouseMove = (ev: MouseEvent) => {
+    this.hoveredLabel = null
+    const logicalViewSpaceMouse = new Vec2(ev.offsetX, ev.offsetY)
+    const physicalViewSpaceMouse = this.logicalToPhysicalViewSpace().transformPosition(logicalViewSpaceMouse)
+    const configSpaceMouse = this.configSpaceToPhysicalViewSpace().inverseTransformPosition(physicalViewSpaceMouse)
 
-    const worldSpaceOriginBounds = new Rect(
-      new Vec2(0, 0),
-      this.worldSpaceSize().minus(viewportRect.size)
-    )
+    if (!configSpaceMouse) return
 
-    const worldSpaceSizeBounds = new Rect(
-      new Vec2(1, viewportRect.height()),
-      new Vec2(this.worldSpaceSize().x, viewportRect.height())
-    )
+    let labelUnderMouse: FlamechartFrameLabel | null = null
 
-    this.worldSpaceViewportRect = new Rect(
-      worldSpaceOriginBounds.closestPointTo(viewportRect.origin),
-      worldSpaceSizeBounds.closestPointTo(viewportRect.size)
-    )
+    // This could be sped up significantly
+    for (let label of this.labels) {
+      if (label.configSpaceBounds.contains(configSpaceMouse)) {
+        this.hoveredLabel = label
+        break
+      }
+    }
+
+    // TODO(jlfwong): Change this to do the more correct thing:
+    // debounce to rendering at most once a frame.
+    requestAnimationFrame(() => this.renderCanvas())
   }
 
   private onWheel = (ev: WheelEvent) => {
@@ -490,6 +524,7 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     // TODO(jlfwong): Change this to do the more correct thing:
     // debounce to rendering at most once a frame.
     requestAnimationFrame(() => this.renderCanvas())
+    this.forceUpdate()
   }
 
   componentDidUpdate() { this.renderCanvas() }
@@ -501,16 +536,12 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     return (
       <div
         className={css(style.fill)}
+        onMouseMove={this.onMouseMove}
         onWheel={this.onWheel}>
         <canvas
           width={1} height={1}
           ref={this.canvasRef}
           className={css(style.fill)} />
-        {/*
-          We render text at a higher resolution then scale down to
-          ensure we're rendering at 1:1 device pixel ratio.
-          This ensures our text is rendered crisply.
-        */}
         <canvas
           width={1} height={1}
           ref={this.overlayCanvasRef}
@@ -533,6 +564,7 @@ const style = StyleSheet.create({
 
 interface RectangleBatchRendererProps {
   configSpaceToNDC: AffineTransform
+  physicalSize: Vec2
 }
 
 export const rectangleBatchRenderer = (ctx: WebGLRenderingContext, rects: Rect[], colors: vec3[]) => {
@@ -561,12 +593,16 @@ export const rectangleBatchRenderer = (ctx: WebGLRenderingContext, rects: Rect[]
   return regl(ctx)<RectangleBatchRendererProps>({
     vert: `
       uniform mat3 configSpaceToNDC;
+      uniform vec2 physicalSize;
       attribute vec2 position;
       attribute vec3 color;
       varying vec3 vColor;
       void main() {
         vColor = color;
-        gl_Position = vec4((configSpaceToNDC * vec3(position, 1)).xy, 0, 1);
+        vec2 roundedPosition = (configSpaceToNDC * vec3(position, 1)).xy;
+        vec2 halfSize = physicalSize / 2.0;
+        roundedPosition = floor(roundedPosition * halfSize) / halfSize;
+        gl_Position = vec4(roundedPosition, 0, 1);
       }
     `,
 
@@ -586,6 +622,9 @@ export const rectangleBatchRenderer = (ctx: WebGLRenderingContext, rects: Rect[]
     uniforms: {
       configSpaceToNDC: (context, props) => {
         return props.configSpaceToNDC.flatten()
+      },
+      physicalSize: (context, props) => {
+        return props.physicalSize.flatten()
       }
     },
 
