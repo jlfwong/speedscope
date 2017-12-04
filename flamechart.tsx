@@ -502,9 +502,6 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
   private onMouseDown = (ev: MouseEvent) => {
     this.lastDragPos = new Vec2(ev.offsetX, ev.offsetY)
   }
-  private onMouseUp = (ev: MouseEvent) => {
-    this.lastDragPos = null
-  }
 
   private onMouseDrag = (ev: MouseEvent) => {
     if (!this.lastDragPos) return
@@ -564,8 +561,17 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     this.renderCanvas()
   }
 
+  private onWindowMouseUp = (ev: MouseEvent) => {
+    this.lastDragPos = null
+  }
+
   componentDidUpdate() { this.renderCanvas() }
-  componentDidMount() { this.renderCanvas() }
+  componentDidMount() {
+    window.addEventListener('mouseup', this.onWindowMouseUp)
+  }
+  componentWillUnmount() {
+    window.removeEventListener('mouseup', this.onWindowMouseUp)
+  }
 
   render() {
     const {width, height} = this.props
@@ -574,7 +580,6 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
       <div
         className={css(style.fill)}
         onMouseDown={this.onMouseDown}
-        onMouseUp={this.onMouseUp}
         onMouseMove={this.onMouseMove}
         onWheel={this.onWheel}>
         <canvas
