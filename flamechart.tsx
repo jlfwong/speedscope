@@ -185,6 +185,41 @@ function trimTextMid(ctx: CanvasRenderingContext2D, text: string, maxWidth: numb
 
 const DEVICE_PIXEL_RATIO = window.devicePixelRatio
 
+// TODO(jlfwong): Move this to a utils file
+function atMostOnceAFrame<F extends Function>(fn: F) {
+  let frameRequest: number | null = null
+  function ret(...args: any[]) {
+    if (frameRequest == null) {
+      frameRequest = requestAnimationFrame(function () {
+        fn(...args)
+        frameRequest = null
+      })
+    }
+  }
+  return ret as any as F
+}
+
+/**
+ * Component to visualize a Flamechart and interact with it via hovering,
+ * zooming, and panning.
+ *
+ * There are 4 vector spaces involved:
+ * - Configuration Space: In this space, the horizontal unit is ms, and the
+ *   vertical unit is stack depth. Each stack frame is one unit high.
+ * - Logical view space: Origin is top-left, with +y downwards. This represents
+ *   the coordinate space of the view as specified in CSS: horizontal and vertical
+ *   units are both "logical" pixels.
+ * - Physical view space: Origin is top-left, with +y downwards. This represents
+ *   the coordinate space of the view as specified in hardware pixels: horizontal
+ *   and vertical units are both "physical" pixels.
+ * - Normalized device coordinates: Origin is center, +y upwards. This is the
+ *   coordinate space used by GL, which we use to render the frame rectangles
+ *   efficiently.
+ *
+ * We use two canvases to draw the flamechart itself: one for the rectangles,
+ * which we render via WebGL, and one for the labels, which we render via 2D
+ * canvas primitives.
+ */
 export class FlamechartView extends Component<FlamechartViewProps, void> {
   renderer: ReglCommand<RectangleBatchRendererProps> | null = null
 
@@ -420,9 +455,9 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     })
   }
 
-  private renderCanvas() {
+  private renderCanvas = atMostOnceAFrame(() => {
     if (!this.canvas || this.canvas.getBoundingClientRect().width < 2) {
-      // If the canvs is still tiny, it means browser layout hasn't had
+      // If the canvas is still tiny, it means browser layout hasn't had
       // a chance to run yet. Defer rendering until we have the real canvas
       // size.
       requestAnimationFrame(() => this.renderCanvas())
@@ -430,7 +465,7 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
       this.renderRects()
       this.renderLabels()
     }
-  }
+  })
 
   private transformViewport(transform: AffineTransform) {
     const viewportRect = transform.transformRect(this.configSpaceViewportRect)
@@ -491,9 +526,7 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
       }
     }
 
-    // TODO(jlfwong): Change this to do the more correct thing:
-    // debounce to rendering at most once a frame.
-    requestAnimationFrame(() => this.renderCanvas())
+    this.renderCanvas()
   }
 
   private onWheel = (ev: WheelEvent) => {
@@ -520,11 +553,7 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
       this.pan(new Vec2(ev.deltaX, ev.deltaY))
     }
 
-    // This is a fix to rendering in Firefox.
-    // TODO(jlfwong): Change this to do the more correct thing:
-    // debounce to rendering at most once a frame.
-    requestAnimationFrame(() => this.renderCanvas())
-    this.forceUpdate()
+    this.renderCanvas()
   }
 
   componentDidUpdate() { this.renderCanvas() }
