@@ -471,6 +471,8 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
       configSpaceOriginBounds.closestPointTo(viewportRect.origin),
       configSpaceSizeBounds.closestPointTo(viewportRect.size)
     )
+
+    this.renderCanvas()
   }
 
   private pan(logicalViewSpaceDelta: Vec2) {
@@ -495,7 +497,28 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     this.transformViewport(zoomTransform)
   }
 
+  private lastDragPos: Vec2 | null = null
+
+  private onMouseDown = (ev: MouseEvent) => {
+    this.lastDragPos = new Vec2(ev.offsetX, ev.offsetY)
+  }
+  private onMouseUp = (ev: MouseEvent) => {
+    this.lastDragPos = null
+  }
+
+  private onMouseDrag = (ev: MouseEvent) => {
+    if (!this.lastDragPos) return
+    const logicalMousePos = new Vec2(ev.offsetX, ev.offsetY)
+    this.pan(this.lastDragPos.minus(logicalMousePos))
+    this.lastDragPos = logicalMousePos
+  }
+
   private onMouseMove = (ev: MouseEvent) => {
+    if (this.lastDragPos) {
+      ev.preventDefault()
+      this.onMouseDrag(ev)
+      return
+    }
     this.hoveredLabel = null
     const logicalViewSpaceMouse = new Vec2(ev.offsetX, ev.offsetY)
     const physicalViewSpaceMouse = this.logicalToPhysicalViewSpace().transformPosition(logicalViewSpaceMouse)
@@ -523,8 +546,6 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     // a modifier key, any momentum scrolling from previous
     // initiated momentum scrolling may still take effect.
     // Figure out how to prevent this.
-    //
-    // Also, support drag-based panning.
     if (ev.metaKey || ev.ctrlKey) {
       let multiplier = 1 + (ev.deltaY / 100)
 
@@ -552,6 +573,8 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     return (
       <div
         className={css(style.fill)}
+        onMouseDown={this.onMouseDown}
+        onMouseUp={this.onMouseUp}
         onMouseMove={this.onMouseMove}
         onWheel={this.onWheel}>
         <canvas
