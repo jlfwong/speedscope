@@ -323,7 +323,6 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     const physicalViewSpaceFontSize = this.LOGICAL_VIEW_SPACE_LABEL_FONT_SIZE * DEVICE_PIXEL_RATIO
     const physicalViewSpaceFrameHeight = this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT * DEVICE_PIXEL_RATIO
 
-    const minWidthToRender = cachedMeasureTextWidth(ctx, 'M' + ELLIPSIS + 'M')
     const physicalViewSize = this.physicalViewSize()
     const physicalViewBounds = new Rect(new Vec2(0, 0), physicalViewSize)
 
@@ -344,6 +343,7 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     ctx.fillStyle = 'rgba(15, 10, 5, 1)'
     ctx.textBaseline = 'top'
 
+    const minWidthToRender = cachedMeasureTextWidth(ctx, 'M' + ELLIPSIS + 'M')
     for (let label of this.labels) {
       const LABEL_PADDING_PX = 2 * DEVICE_PIXEL_RATIO
       let physicalLabelBounds = configToPhysical.transformRect(label.configSpaceBounds)
