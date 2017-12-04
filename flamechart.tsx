@@ -4,6 +4,7 @@ import {StyleSheet, css} from 'aphrodite'
 import {Profile, Frame} from './profile'
 import regl, {vec2, vec3, mat3, ReglCommand, ReglCommandConstructor} from 'regl'
 import { Rect, Vec2, AffineTransform, clamp } from './math'
+import { atMostOnceAFrame } from "./utils";
 
 interface FlamechartFrame {
   frame: Frame
@@ -184,20 +185,6 @@ function trimTextMid(ctx: CanvasRenderingContext2D, text: string, maxWidth: numb
 }
 
 const DEVICE_PIXEL_RATIO = window.devicePixelRatio
-
-// TODO(jlfwong): Move this to a utils file
-function atMostOnceAFrame<F extends Function>(fn: F) {
-  let frameRequest: number | null = null
-  function ret(...args: any[]) {
-    if (frameRequest == null) {
-      frameRequest = requestAnimationFrame(function () {
-        fn(...args)
-        frameRequest = null
-      })
-    }
-  }
-  return ret as any as F
-}
 
 /**
  * Component to visualize a Flamechart and interact with it via hovering,
