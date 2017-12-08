@@ -13,4 +13,5 @@ Currently accepts the same folded stack format as the original FlameGraph script
 For example, try dropping this file onto the browser window: https://raw.githubusercontent.com/jlfwong/speedscope/master/sample/perf-vertx-stacks-01-collapsed-all.txt
 
 To pan, you can either scroll or click and drag.
+
 To zoom, hold cmd & scroll, or pinch-to-zoom.
