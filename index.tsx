@@ -38,11 +38,7 @@ class Application extends Component<{}, ApplicaionState> {
     const {flamechart} = this.state
     return <div onDrop={this.onDrop} onDragOver={this.onDragOver} className={css(style.root)}>
       {flamechart &&
-        <FlamechartView
-          flamechart={flamechart}
-          width={window.innerWidth}
-          height={window.innerHeight}
-        />}
+        <FlamechartView flamechart={flamechart} />}
     </div>
   }
 }

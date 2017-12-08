@@ -6,10 +6,20 @@ import regl, {vec2, vec3, mat3, ReglCommand, ReglCommandConstructor} from 'regl'
 import { Rect, Vec2, AffineTransform, clamp } from './math'
 import { atMostOnceAFrame } from "./utils";
 
+enum FontFamily {
+  MONOSPACE = "Courier, monospace"
+}
+
+enum FontSize {
+  LABEL = 12
+}
+
 interface FlamechartFrame {
   frame: Frame
   start: number
   end: number
+  parent: FlamechartFrame | null
+  children: FlamechartFrame[]
 }
 
 type StackLayer = FlamechartFrame[]
@@ -25,28 +35,58 @@ export class Flamechart {
   getLayers() { return this.layers }
   getFrameColors() { return this.frameColors }
 
-  private appendFrame(layerIndex: number, frame: Frame, timeDelta: number) {
+  private appendFrame(layerIndex: number, frame: Frame, timeDelta: number, parent: FlamechartFrame | null) {
     while (layerIndex >= this.layers.length) this.layers.push([])
-    this.layers[layerIndex].push({
+    const flamechartFrame: FlamechartFrame = {
       frame: frame,
       start: this.duration,
-      end: this.duration + timeDelta
-    })
+      end: this.duration + timeDelta,
+      parent,
+      children: []
+    }
+    this.layers[layerIndex].push(flamechartFrame)
+    if (parent) {
+      parent.children.push(flamechartFrame)
+    }
+    return flamechartFrame
   }
 
   private appendSample(stack: Frame[], timeDelta: number) {
+    let parent: FlamechartFrame | null = null
     for (let i = 0; i < stack.length; i++) {
-      this.appendFrame(i, stack[i], timeDelta)
+      parent = this.appendFrame(i, stack[i], timeDelta, parent)
     }
     this.duration += timeDelta
+  }
+
+  private static shouldMergeFrames(first: FlamechartFrame, second: FlamechartFrame): boolean {
+    if (first.frame !== second.frame) return false
+    if (first.parent !== second.parent) return false
+    if (first.end !== second.start) return false
+    return true
+  }
+
+  private static mergeFrames(first: FlamechartFrame, second: FlamechartFrame): FlamechartFrame {
+    const frame: FlamechartFrame = {
+      frame: first.frame,
+      start: first.start,
+      end: second.end,
+      parent: first.parent,
+      children: first.children.concat(second.children)
+    }
+    for (let child of frame.children) {
+      child.parent = frame
+    }
+    return frame
   }
 
   private static mergeAdjacentFrames(layer: StackLayer): StackLayer {
     const ret: StackLayer = []
     for (let flamechartFrame of layer) {
       const prev = ret.length > 0 ? ret[ret.length - 1] : null
-      if (prev && prev.frame === flamechartFrame.frame && prev.end === flamechartFrame.start) {
-        prev.end = flamechartFrame.end
+      if (prev && Flamechart.shouldMergeFrames(prev, flamechartFrame)) {
+        ret.pop()
+        ret.push(Flamechart.mergeFrames(prev, flamechartFrame))
       } else {
         ret.push(flamechartFrame)
       }
@@ -137,12 +177,6 @@ export class Flamechart {
   }
 }
 
-interface FlamechartViewProps {
-  width: number
-  height: number
-  flamechart: Flamechart
-}
-
 interface FlamechartFrameLabel {
   configSpaceBounds: Rect
   frame: Frame
@@ -207,7 +241,12 @@ const DEVICE_PIXEL_RATIO = window.devicePixelRatio
  * which we render via WebGL, and one for the labels, which we render via 2D
  * canvas primitives.
  */
-export class FlamechartView extends Component<FlamechartViewProps, void> {
+interface FlamechartPanZoomViewProps {
+  flamechart: Flamechart
+  setFrameHover: (frame: Frame | null, logicalViewSpacemous: Vec2) => void
+}
+
+export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps, void> {
   renderer: ReglCommand<RectangleBatchRendererProps> | null = null
 
   ctx: WebGLRenderingContext | null = null
@@ -342,7 +381,7 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
 
     const configToPhysical = this.configSpaceToPhysicalViewSpace()
 
-    const physicalViewSpaceFontSize = this.LOGICAL_VIEW_SPACE_LABEL_FONT_SIZE * DEVICE_PIXEL_RATIO
+    const physicalViewSpaceFontSize = FontSize.LABEL * DEVICE_PIXEL_RATIO
     const physicalViewSpaceFrameHeight = this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT * DEVICE_PIXEL_RATIO
 
     const physicalViewSize = this.physicalViewSize()
@@ -361,7 +400,7 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
       )
     }
 
-    ctx.font = `${physicalViewSpaceFontSize}px/${physicalViewSpaceFrameHeight}px Courier, monospace`
+    ctx.font = `${physicalViewSpaceFontSize}px/${physicalViewSpaceFrameHeight}px ${FontFamily.MONOSPACE}`
     ctx.fillStyle = 'rgba(15, 10, 5, 1)'
     ctx.textBaseline = 'top'
 
@@ -533,6 +572,8 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
       }
     }
 
+    this.props.setFrameHover(this.hoveredLabel ? this.hoveredLabel.frame : null, logicalViewSpaceMouse)
+
     this.renderCanvas()
   }
 
@@ -565,7 +606,8 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
     this.lastDragPos = null
   }
 
-  componentDidUpdate() { this.renderCanvas() }
+  shouldComponentUpdate() { return false }
+  componentWillReceiveProps() { this.renderCanvas() }
   componentDidMount() {
     window.addEventListener('mouseup', this.onWindowMouseUp)
   }
@@ -574,8 +616,6 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
   }
 
   render() {
-    const {width, height} = this.props
-
     return (
       <div
         className={css(style.fill)}
@@ -595,7 +635,103 @@ export class FlamechartView extends Component<FlamechartViewProps, void> {
   }
 }
 
+interface FlamechartViewProps {
+  flamechart: Flamechart
+}
+
+interface FlamechartViewState {
+  hoveredFrame: Frame | null
+  logicalSpaceMouse: Vec2
+}
+
+export class FlamechartView extends Component<FlamechartViewProps, FlamechartViewState> {
+  container: HTMLDivElement | null = null
+
+  constructor() {
+    super()
+    this.state = {
+      hoveredFrame: null,
+      logicalSpaceMouse: new Vec2()
+    }
+  }
+
+  onFrameHover = (hoveredFrame: Frame | null, logicalSpaceMouse: Vec2) => {
+    this.setState({ hoveredFrame, logicalSpaceMouse })
+  }
+
+  static TOOLTIP_WIDTH_MAX = 300
+  static TOOLTIP_HEIGHT_MAX = 50
+
+  renderTooltip() {
+    if (!this.container) return null
+
+    const { hoveredFrame, logicalSpaceMouse } = this.state
+    if (!hoveredFrame) return null
+
+    const {width, height} = this.container.getBoundingClientRect()
+
+    const positionStyle: {
+      left?: number
+      right?: number
+      top?: number
+      bottom?: number
+    } = {}
+
+    const OFFSET_FROM_MOUSE = 5
+    if (logicalSpaceMouse.x + OFFSET_FROM_MOUSE + FlamechartView.TOOLTIP_WIDTH_MAX < width) {
+      positionStyle.left = logicalSpaceMouse.x + 5
+    } else {
+      positionStyle.right = (width - logicalSpaceMouse.x) + 5
+    }
+
+    if (logicalSpaceMouse.y + OFFSET_FROM_MOUSE + FlamechartView.TOOLTIP_HEIGHT_MAX < height) {
+      positionStyle.top = logicalSpaceMouse.y + 5
+    } else {
+      positionStyle.bottom = (height - logicalSpaceMouse.y) + 5
+    }
+
+    return (
+      <div className={css(style.hoverTip)} style={positionStyle}>
+        {hoveredFrame.name}
+      </div>
+    )
+  }
+
+  containerRef = (container: HTMLDivElement) => { this.container = container }
+
+  render() {
+    const { flamechart } = this.props
+
+    return (
+      <div className={css(style.fill, style.clip)} ref={this.containerRef}>
+        <FlamechartPanZoomView
+          flamechart={this.props.flamechart}
+          setFrameHover={this.onFrameHover}
+        />
+        {this.renderTooltip()}
+      </div>
+      )
+  }
+}
+
 const style = StyleSheet.create({
+  hoverTip: {
+    position: 'absolute',
+    background: 'white',
+    border: '1px solid black',
+    textOverflow: 'ellipsis',
+    maxWidth: FlamechartView.TOOLTIP_WIDTH_MAX,
+    maxHeight: FlamechartView.TOOLTIP_HEIGHT_MAX,
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
+    padding: 2,
+    pointerEvents: 'none',
+    fontSize: FontSize.LABEL,
+    fontFamily: FontFamily.MONOSPACE
+  },
+  clip: {
+    overflow: 'hidden'
+  },
   fill: {
     width: '100%',
     height: '100%',
