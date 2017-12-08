@@ -1,7 +1,7 @@
 import {h, render, Component} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 
-import {Profile, Frame} from './profile'
+import {Profile, Frame, CallTreeNode} from './profile'
 import regl, {vec2, vec3, mat3, ReglCommand, ReglCommandConstructor} from 'regl'
 import { Rect, Vec2, AffineTransform, clamp } from './math'
 import { atMostOnceAFrame } from "./utils";
@@ -15,7 +15,7 @@ enum FontSize {
 }
 
 interface FlamechartFrame {
-  frame: Frame
+  node: CallTreeNode
   start: number
   end: number
   parent: FlamechartFrame | null
@@ -35,10 +35,10 @@ export class Flamechart {
   getLayers() { return this.layers }
   getFrameColors() { return this.frameColors }
 
-  private appendFrame(layerIndex: number, frame: Frame, timeDelta: number, parent: FlamechartFrame | null) {
+  private appendFrame(layerIndex: number, node: CallTreeNode, timeDelta: number, parent: FlamechartFrame | null) {
     while (layerIndex >= this.layers.length) this.layers.push([])
     const flamechartFrame: FlamechartFrame = {
-      frame: frame,
+      node: node,
       start: this.duration,
       end: this.duration + timeDelta,
       parent,
@@ -51,7 +51,7 @@ export class Flamechart {
     return flamechartFrame
   }
 
-  private appendSample(stack: Frame[], timeDelta: number) {
+  private appendSample(stack: CallTreeNode[], timeDelta: number) {
     let parent: FlamechartFrame | null = null
     for (let i = 0; i < stack.length; i++) {
       parent = this.appendFrame(i, stack[i], timeDelta, parent)
@@ -60,7 +60,7 @@ export class Flamechart {
   }
 
   private static shouldMergeFrames(first: FlamechartFrame, second: FlamechartFrame): boolean {
-    if (first.frame !== second.frame) return false
+    if (first.node !== second.node) return false
     if (first.parent !== second.parent) return false
     if (first.end !== second.start) return false
     return true
@@ -68,7 +68,7 @@ export class Flamechart {
 
   private static mergeFrames(first: FlamechartFrame, second: FlamechartFrame): FlamechartFrame {
     const frame: FlamechartFrame = {
-      frame: first.frame,
+      node: first.node,
       start: first.start,
       end: second.end,
       parent: first.parent,
@@ -179,7 +179,7 @@ export class Flamechart {
 
 interface FlamechartFrameLabel {
   configSpaceBounds: Rect
-  frame: Frame
+  node: CallTreeNode
 }
 
 function binarySearch(lo: number, hi: number, f: (val: number) => number, target: number, targetRangeSize = 1): [number, number] {
@@ -243,7 +243,7 @@ const DEVICE_PIXEL_RATIO = window.devicePixelRatio
  */
 interface FlamechartPanZoomViewProps {
   flamechart: Flamechart
-  setFrameHover: (frame: Frame | null, logicalViewSpacemous: Vec2) => void
+  setNodeHover: (node: CallTreeNode | null, logicalViewSpacemous: Vec2) => void
 }
 
 export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps, void> {
@@ -280,11 +280,11 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
           new Vec2(flamechartFrame.end - flamechartFrame.start, 1)
         )
         configSpaceRects.push(configSpaceBounds)
-        colors.push(frameColors.get(flamechartFrame.frame) || [0, 0, 0])
+        colors.push(frameColors.get(flamechartFrame.node.frame) || [0, 0, 0])
 
         this.labels.push({
           configSpaceBounds,
-          frame: flamechartFrame.frame
+          node: flamechartFrame.node
         })
       }
     }
@@ -428,7 +428,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
         )
       }
 
-      const trimmedText = trimTextMid(ctx, label.frame.name, physicalLabelBounds.width())
+      const trimmedText = trimTextMid(ctx, label.node.frame.name, physicalLabelBounds.width())
       ctx.fillText(trimmedText, physicalLabelBounds.left(), physicalLabelBounds.top())
     }
   }
@@ -572,7 +572,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
       }
     }
 
-    this.props.setFrameHover(this.hoveredLabel ? this.hoveredLabel.frame : null, logicalViewSpaceMouse)
+    this.props.setNodeHover(this.hoveredLabel ? this.hoveredLabel.node : null, logicalViewSpaceMouse)
 
     this.renderCanvas()
   }
@@ -640,7 +640,7 @@ interface FlamechartViewProps {
 }
 
 interface FlamechartViewState {
-  hoveredFrame: Frame | null
+  hoveredNode: CallTreeNode | null
   logicalSpaceMouse: Vec2
 }
 
@@ -650,13 +650,13 @@ export class FlamechartView extends Component<FlamechartViewProps, FlamechartVie
   constructor() {
     super()
     this.state = {
-      hoveredFrame: null,
+      hoveredNode: null,
       logicalSpaceMouse: new Vec2()
     }
   }
 
-  onFrameHover = (hoveredFrame: Frame | null, logicalSpaceMouse: Vec2) => {
-    this.setState({ hoveredFrame, logicalSpaceMouse })
+  onNodeHover = (hoveredNode: CallTreeNode | null, logicalSpaceMouse: Vec2) => {
+    this.setState({ hoveredNode, logicalSpaceMouse })
   }
 
   static TOOLTIP_WIDTH_MAX = 300
@@ -665,8 +665,8 @@ export class FlamechartView extends Component<FlamechartViewProps, FlamechartVie
   renderTooltip() {
     if (!this.container) return null
 
-    const { hoveredFrame, logicalSpaceMouse } = this.state
-    if (!hoveredFrame) return null
+    const { hoveredNode, logicalSpaceMouse } = this.state
+    if (!hoveredNode) return null
 
     const {width, height} = this.container.getBoundingClientRect()
 
@@ -677,22 +677,24 @@ export class FlamechartView extends Component<FlamechartViewProps, FlamechartVie
       bottom?: number
     } = {}
 
-    const OFFSET_FROM_MOUSE = 5
+    const OFFSET_FROM_MOUSE = 7
     if (logicalSpaceMouse.x + OFFSET_FROM_MOUSE + FlamechartView.TOOLTIP_WIDTH_MAX < width) {
-      positionStyle.left = logicalSpaceMouse.x + 5
+      positionStyle.left = logicalSpaceMouse.x + OFFSET_FROM_MOUSE
     } else {
-      positionStyle.right = (width - logicalSpaceMouse.x) + 5
+      positionStyle.right = (width - logicalSpaceMouse.x) + 1
     }
 
     if (logicalSpaceMouse.y + OFFSET_FROM_MOUSE + FlamechartView.TOOLTIP_HEIGHT_MAX < height) {
-      positionStyle.top = logicalSpaceMouse.y + 5
+      positionStyle.top = logicalSpaceMouse.y + OFFSET_FROM_MOUSE
     } else {
-      positionStyle.bottom = (height - logicalSpaceMouse.y) + 5
+      positionStyle.bottom = (height - logicalSpaceMouse.y) + 1
     }
 
     return (
       <div className={css(style.hoverTip)} style={positionStyle}>
-        {hoveredFrame.name}
+        <div>{hoveredNode.frame.name}</div>
+        <div>Total Time: {(hoveredNode.getTotalTime() / 1000).toFixed(2)}ms</div>
+        <div>Self Time: {(hoveredNode.getSelfTime() / 1000).toFixed(2)}ms</div>
       </div>
     )
   }
@@ -706,7 +708,7 @@ export class FlamechartView extends Component<FlamechartViewProps, FlamechartVie
       <div className={css(style.fill, style.clip)} ref={this.containerRef}>
         <FlamechartPanZoomView
           flamechart={this.props.flamechart}
-          setFrameHover={this.onFrameHover}
+          setNodeHover={this.onNodeHover}
         />
         {this.renderTooltip()}
       </div>
@@ -740,7 +742,6 @@ const style = StyleSheet.create({
     top: 0
   }
 })
-
 
 interface RectangleBatchRendererProps {
   configSpaceToNDC: AffineTransform

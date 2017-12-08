@@ -21,17 +21,16 @@ export interface Frame {
 }
 
 export class CallTreeNode {
-  children = new Map<Frame, CallTreeNode>()
+  children: CallTreeNode[] = []
   private selfTime = 0
   private totalTime = 0
+  constructor(readonly frame: Frame, readonly parent: CallTreeNode | null) {}
 
   getSelfTime() { return this.selfTime }
   getTotalTime() { return this.totalTime }
 
   addToTotalTime(delta: number) { this.totalTime += delta }
   addToSelfTime(delta: number) { this.selfTime += delta }
-
-  constructor(readonly frame: Frame, readonly parent: CallTreeNode | null) {}
 }
 
 export interface ProfilingEvent {
@@ -59,12 +58,16 @@ function getOrInsert<K, V>(map: Map<K, V>, k: K, v: V): V {
   return map.get(k)!
 }
 
+function lastOf<T>(ts: T[]): T | undefined {
+  return ts[ts.length-1]
+}
+
 export class Profile {
   // Duration of the entire profile, in microseconds
   private duration: number
 
   private frames = new Map<string | number, Frame>()
-  private calltreeRoots = new Map<Frame, CallTreeNode>()
+  private calltreeRoots: CallTreeNode[] = []
 
   // List of references to CallTreeNodes at the top of the
   // stack at the time of the sample.
@@ -86,16 +89,16 @@ export class Profile {
     this.duration = duration
   }
 
-  forEachSample(fn: (stack: Frame[], timeDelta: number) => void) {
-    const nodeToStack = new Map<CallTreeNode, Frame[]>()
+  forEachSample(fn: (stack: CallTreeNode[], timeDelta: number) => void) {
+    const nodeToStack = new Map<CallTreeNode, CallTreeNode[]>()
     for (let i = 0; i < this.samples.length; i++) {
       let topOfStackNode: CallTreeNode = this.samples[i]
 
       // Memoize
       if (!nodeToStack.has(topOfStackNode)) {
-        const stack: Frame[] = []
+        const stack: CallTreeNode[] = []
         for (let node: CallTreeNode | null = topOfStackNode; node; node = node.parent) {
-          stack.push(node.frame)
+          stack.push(node)
         }
 
         // Reverse to order from bottom-to-top
@@ -118,7 +121,13 @@ export class Profile {
 
     for (let frame of stack) {
       frame = getOrInsert(this.frames, frame.key, frame)
-      node = getOrInsert(children, frame, new CallTreeNode(frame, node))
+      const last = lastOf(children)
+      if (last && last.frame == frame) {
+        node = last
+      } else {
+        node = new CallTreeNode(frame, node)
+        children.push(node)
+      }
       node.addToTotalTime(timeDelta)
       children = node.children
     }
