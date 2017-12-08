@@ -660,7 +660,7 @@ export class FlamechartView extends Component<FlamechartViewProps, FlamechartVie
   }
 
   static TOOLTIP_WIDTH_MAX = 300
-  static TOOLTIP_HEIGHT_MAX = 50
+  static TOOLTIP_HEIGHT_MAX = 75
 
   renderTooltip() {
     if (!this.container) return null
@@ -692,9 +692,11 @@ export class FlamechartView extends Component<FlamechartViewProps, FlamechartVie
 
     return (
       <div className={css(style.hoverTip)} style={positionStyle}>
-        <div>{hoveredNode.frame.name}</div>
-        <div>Total Time: {(hoveredNode.getTotalTime() / 1000).toFixed(2)}ms</div>
-        <div>Self Time: {(hoveredNode.getSelfTime() / 1000).toFixed(2)}ms</div>
+        <div className={css(style.hoverTipRow)}>{hoveredNode.frame.name}</div>
+        <div className={css(style.hoverTipRow)}>Total Time: {(hoveredNode.getTotalTime() / 1000).toFixed(2)}ms</div>
+        <div className={css(style.hoverTipRow)}>Self Time: {(hoveredNode.getSelfTime() / 1000).toFixed(2)}ms</div>
+        <div className={css(style.hoverTipRow)}>Cum. Total Time: {(hoveredNode.frame.getTotalTime() / 1000).toFixed(2)}ms</div>
+        <div className={css(style.hoverTipRow)}>Cum. Self Time: {(hoveredNode.frame.getSelfTime() / 1000).toFixed(2)}ms</div>
       </div>
     )
   }
@@ -716,20 +718,27 @@ export class FlamechartView extends Component<FlamechartViewProps, FlamechartVie
   }
 }
 
+const HOVERTIP_PADDING = 2
 const style = StyleSheet.create({
   hoverTip: {
     position: 'absolute',
     background: 'white',
     border: '1px solid black',
-    textOverflow: 'ellipsis',
     maxWidth: FlamechartView.TOOLTIP_WIDTH_MAX,
-    maxHeight: FlamechartView.TOOLTIP_HEIGHT_MAX,
     overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    padding: 2,
+    paddingTop: HOVERTIP_PADDING,
+    paddingBottom: HOVERTIP_PADDING,
     pointerEvents: 'none',
     fontSize: FontSize.LABEL,
     fontFamily: FontFamily.MONOSPACE
+  },
+  hoverTipRow: {
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    paddingLeft: HOVERTIP_PADDING,
+    paddingRight: HOVERTIP_PADDING,
+    maxWidth: FlamechartView.TOOLTIP_WIDTH_MAX,
   },
   clip: {
     overflow: 'hidden'

@@ -1,4 +1,31 @@
-export interface Frame {
+export interface FrameInfo {
+  key: string | number
+
+  // Name of the frame. May be a method name, e.g.
+  // "ActiveRecord##to_hash"
+  name: string
+
+  // File path of the code corresponding to this
+  // call stack frame.
+  file?: string
+
+  // Line in the given file where this frame occurs
+  line?: number
+
+  // Column in the file
+  col?: number
+}
+
+export class HasTimings {
+  private selfTime = 0
+  private totalTime = 0
+  getSelfTime() { return this.selfTime }
+  getTotalTime() { return this.totalTime }
+  addToTotalTime(delta: number) { this.totalTime += delta }
+  addToSelfTime(delta: number) { this.selfTime += delta }
+}
+
+export class Frame extends HasTimings {
   key: string | number
 
   // Name of the frame. May be a method name, e.g.
@@ -15,22 +42,21 @@ export interface Frame {
   // Column in the file
   col?: number
 
-  // Color, if specified, to associate with this frame.
-  // If unspecified, will be generated.
-  color?: string
+  constructor(info: FrameInfo) {
+    super()
+    this.key = info.key
+    this.name = info.name
+    this.file = info.file
+    this.line = info.line
+    this.col = info.col
+  }
 }
 
-export class CallTreeNode {
+export class CallTreeNode extends HasTimings {
   children: CallTreeNode[] = []
-  private selfTime = 0
-  private totalTime = 0
-  constructor(readonly frame: Frame, readonly parent: CallTreeNode | null) {}
-
-  getSelfTime() { return this.selfTime }
-  getTotalTime() { return this.totalTime }
-
-  addToTotalTime(delta: number) { this.totalTime += delta }
-  addToSelfTime(delta: number) { this.selfTime += delta }
+  constructor(readonly frame: Frame, readonly parent: CallTreeNode | null) {
+    super()
+  }
 }
 
 export interface ProfilingEvent {
@@ -115,12 +141,12 @@ export class Profile {
     this.frames.forEach(fn)
   }
 
-  appendSample(stack: Frame[], timeDelta: number) {
+  appendSample(stack: FrameInfo[], timeDelta: number) {
     let node: CallTreeNode | null = null
     let children = this.calltreeRoots
 
-    for (let frame of stack) {
-      frame = getOrInsert(this.frames, frame.key, frame)
+    for (let frameInfo of stack) {
+      const frame = getOrInsert(this.frames, frameInfo.key, new Frame(frameInfo))
       const last = lastOf(children)
       if (last && last.frame == frame) {
         node = last
@@ -129,11 +155,13 @@ export class Profile {
         children.push(node)
       }
       node.addToTotalTime(timeDelta)
+      node.frame.addToTotalTime(timeDelta)
       children = node.children
     }
 
     if (node) {
       node.addToSelfTime(timeDelta)
+      node.frame.addToSelfTime(timeDelta)
       this.samples.push(node)
       this.timeDeltas.push(timeDelta)
     }
