@@ -259,10 +259,8 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
   labels: FlamechartFrameLabel[] = []
   hoveredLabel: FlamechartFrameLabel | null = null
 
-  private preprocess() {
-    if (!this.canvas) return
-
-    const {flamechart} = this.props
+  private preprocess(flamechart: Flamechart) {
+    if (!this.canvas || !this.ctx) return
     const configSpaceRects: Rect[] = []
     const colors: vec3[] = []
 
@@ -272,6 +270,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
     const frameColors = flamechart.getFrameColors()
 
+    this.labels = []
     for (let i = 0; i < layers.length; i++) {
       const layer = layers[i]
       for (let flamechartFrame of layer) {
@@ -289,14 +288,15 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
       }
     }
 
-    this.ctx = this.canvas.getContext('webgl')!
     this.renderer = rectangleBatchRenderer(this.ctx, configSpaceRects, colors)
+    this.configSpaceViewportRect = new Rect()
+    this.hoveredLabel = null
   }
 
   private canvasRef = (element?: Element) => {
     if (element) {
       this.canvas = element as HTMLCanvasElement
-      this.preprocess()
+      this.ctx = this.canvas.getContext('webgl')!
       this.renderCanvas()
     } else {
       this.canvas = null
@@ -442,14 +442,8 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
     // Still initializing: don't resize yet
     if (width === 0 || height === 0) return
-
-    // Already at the right size
-    if (width === this.canvas.width && height === this.canvas.height) return
-
     const oldWidth = this.canvas.width
     const oldHeight = this.canvas.height
-    this.canvas.width = width
-    this.canvas.height = height
 
     if (this.configSpaceViewportRect.isEmpty()) {
       this.configSpaceViewportRect = new Rect(
@@ -466,6 +460,13 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
         ))
       )
     }
+
+    // Already at the right size
+    if (width === oldWidth && height === oldHeight) return
+
+    this.canvas.width = width
+    this.canvas.height = height
+
     this.ctx.viewport(0, 0, width, height)
   }
 
@@ -488,6 +489,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
       // size.
       requestAnimationFrame(() => this.renderCanvas())
     } else {
+      if (!this.renderer) this.preprocess(this.props.flamechart)
       this.renderRects()
       this.renderLabels()
     }
@@ -607,7 +609,12 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
   }
 
   shouldComponentUpdate() { return false }
-  componentWillReceiveProps() { this.renderCanvas() }
+  componentWillReceiveProps(nextProps: FlamechartPanZoomViewProps) {
+    if (this.props.flamechart !== nextProps.flamechart) {
+      this.renderer = null
+    }
+    this.renderCanvas()
+  }
   componentDidMount() {
     window.addEventListener('mouseup', this.onWindowMouseUp)
   }
@@ -662,6 +669,11 @@ export class FlamechartView extends Component<FlamechartViewProps, FlamechartVie
   static TOOLTIP_WIDTH_MAX = 300
   static TOOLTIP_HEIGHT_MAX = 75
 
+  formatTime(timeInNs: number) {
+    const totalTimeNs = this.props.flamechart.getDuration()
+    return `${(timeInNs / 1000).toFixed(2)}ms (${(100 * timeInNs/totalTimeNs).toFixed()}%)`
+  }
+
   renderTooltip() {
     if (!this.container) return null
 
@@ -693,10 +705,10 @@ export class FlamechartView extends Component<FlamechartViewProps, FlamechartVie
     return (
       <div className={css(style.hoverTip)} style={positionStyle}>
         <div className={css(style.hoverTipRow)}>{hoveredNode.frame.name}</div>
-        <div className={css(style.hoverTipRow)}>Total Time: {(hoveredNode.getTotalTime() / 1000).toFixed(2)}ms</div>
-        <div className={css(style.hoverTipRow)}>Self Time: {(hoveredNode.getSelfTime() / 1000).toFixed(2)}ms</div>
-        <div className={css(style.hoverTipRow)}>Cum. Total Time: {(hoveredNode.frame.getTotalTime() / 1000).toFixed(2)}ms</div>
-        <div className={css(style.hoverTipRow)}>Cum. Self Time: {(hoveredNode.frame.getSelfTime() / 1000).toFixed(2)}ms</div>
+        <div className={css(style.hoverTipRow)}>Total Time: {this.formatTime(hoveredNode.getTotalTime())}</div>
+        <div className={css(style.hoverTipRow)}>Self Time: {this.formatTime(hoveredNode.getSelfTime())}</div>
+        <div className={css(style.hoverTipRow)}>Cum. Total Time: {this.formatTime(hoveredNode.frame.getTotalTime())}</div>
+        <div className={css(style.hoverTipRow)}>Cum. Self Time: {this.formatTime(hoveredNode.frame.getSelfTime())}</div>
       </div>
     )
   }
@@ -729,6 +741,7 @@ const style = StyleSheet.create({
     paddingTop: HOVERTIP_PADDING,
     paddingBottom: HOVERTIP_PADDING,
     pointerEvents: 'none',
+    userSelect: 'none',
     fontSize: FontSize.LABEL,
     fontFamily: FontFamily.MONOSPACE
   },

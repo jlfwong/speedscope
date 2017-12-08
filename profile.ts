@@ -142,6 +142,7 @@ export class Profile {
   }
 
   appendSample(stack: FrameInfo[], timeDelta: number) {
+    if (isNaN(timeDelta)) throw new Error('invalid timeDelta')
     let node: CallTreeNode | null = null
     let children = this.calltreeRoots
 

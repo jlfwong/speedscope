@@ -1,6 +1,6 @@
 // https://github.com/tmm1/stackprof
 
-import {Profile, Frame} from './profile'
+import {Profile, FrameInfo} from '../profile'
 
 interface StackprofFrame {
   name: string
@@ -25,7 +25,7 @@ export function importFromStackprof(contents: string): Profile {
   for (let i = 0; i < raw.length;) {
     const stackHeight = raw[i++]
 
-    const stack: Frame[] = []
+    const stack: FrameInfo[] = []
     for (let j = 0; j < stackHeight; j++) {
       const id = raw[i++]
       stack.push({

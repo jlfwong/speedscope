@@ -1,7 +1,8 @@
 import {h, render, Component} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 
-import {importFromStackprof} from './stackprof'
+import {importFromBGFlameGraph} from './import/bg-flamegraph'
+
 import {Profile} from './profile'
 import {Flamechart, FlamechartView} from './flamechart'
 
@@ -16,7 +17,7 @@ class Application extends Component<{}, ApplicaionState> {
   onDrop = (ev: DragEvent) => {
     const reader = new FileReader
     reader.addEventListener('loadend', () => {
-      const profile = importFromStackprof(reader.result)
+      const profile = importFromBGFlameGraph(reader.result)
       const flamechart = new Flamechart(profile)
       this.setState({profile, flamechart})
     })
