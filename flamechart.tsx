@@ -500,7 +500,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
     const configSpaceOriginBounds = new Rect(
       new Vec2(0, 0),
-      this.configSpaceSize().minus(viewportRect.size)
+      Vec2.max(new Vec2(0, 0), this.configSpaceSize().minus(viewportRect.size))
     )
 
     const configSpaceSizeBounds = new Rect(
@@ -599,6 +599,11 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
       this.zoom(new Vec2(ev.offsetX, ev.offsetY), multiplier)
     } else {
       this.pan(new Vec2(ev.deltaX, ev.deltaY))
+
+      // When panning by scrolling, the element under
+      // the cursor will change, so clear the hovered label.
+      this.hoveredLabel = null
+      this.props.setNodeHover(null, new Vec2())
     }
 
     this.renderCanvas()
