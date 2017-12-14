@@ -1,9 +1,10 @@
-import {h, render, Component} from 'preact'
+import {h, Component} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 
 import {Profile, Frame, CallTreeNode} from './profile'
-import regl, {vec2, vec3, mat3, ReglCommand, ReglCommandConstructor} from 'regl'
-import { Rect, Vec2, AffineTransform, clamp } from './math'
+import * as regl from 'regl'
+import { vec2, vec3, ReglCommand } from 'regl'
+import { Rect, Vec2, AffineTransform } from './math'
 import { atMostOnceAFrame } from "./utils";
 
 enum FontFamily {
@@ -105,9 +106,7 @@ export class Flamechart {
       const aParts = parts(a)
       const bParts = parts(b)
 
-      const matching = 0
       const minLength = Math.min(aParts.length, bParts.length)
-      const maxLength = Math.max(aParts.length, bParts.length)
 
       let prefixMatchLength = 0
       for (let i = 0; i < minLength; i++) {
@@ -196,7 +195,6 @@ const ELLIPSIS = '\u2026'
 
 function buildTrimmedText(text: string, length: number) {
   const prefixLength = Math.floor(length / 2)
-  const suffixLength = Math.ceil(length / 2)
   const prefix = text.substr(0, prefixLength)
   const suffix = text.substr(text.length - prefixLength, prefixLength)
   return prefix + ELLIPSIS + suffix
@@ -212,7 +210,7 @@ function cachedMeasureTextWidth(ctx: CanvasRenderingContext2D, text: string): nu
 
 function trimTextMid(ctx: CanvasRenderingContext2D, text: string, maxWidth: number) {
   if (cachedMeasureTextWidth(ctx, text) <= maxWidth) return text
-  const [lo, hi] = binarySearch(0, text.length, (n) => {
+  const [lo,] = binarySearch(0, text.length, (n) => {
     return cachedMeasureTextWidth(ctx, buildTrimmedText(text, n))
   }, maxWidth)
   return buildTrimmedText(text, lo)
@@ -246,7 +244,7 @@ interface FlamechartPanZoomViewProps {
   setNodeHover: (node: CallTreeNode | null, logicalViewSpacemous: Vec2) => void
 }
 
-export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps, void> {
+export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps, {}> {
   renderer: ReglCommand<RectangleBatchRendererProps> | null = null
 
   ctx: WebGLRenderingContext | null = null
@@ -265,9 +263,6 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     const colors: vec3[] = []
 
     const layers = flamechart.getLayers()
-    const duration = flamechart.getDuration()
-    const maxStackHeight = layers.length
-
     const frameColors = flamechart.getFrameColors()
 
     this.labels = []
@@ -329,7 +324,6 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
   }
 
   private LOGICAL_VIEW_SPACE_FRAME_HEIGHT = 16
-  private LOGICAL_VIEW_SPACE_LABEL_FONT_SIZE = 12
 
   private configSpaceToPhysicalViewSpace() {
     return AffineTransform.betweenRects(
@@ -564,8 +558,6 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
     if (!configSpaceMouse) return
 
-    let labelUnderMouse: FlamechartFrameLabel | null = null
-
     // This could be sped up significantly
     for (let label of this.labels) {
       if (label.configSpaceBounds.contains(configSpaceMouse)) {
@@ -718,11 +710,9 @@ export class FlamechartView extends Component<FlamechartViewProps, FlamechartVie
     )
   }
 
-  containerRef = (container: HTMLDivElement) => { this.container = container }
+  containerRef = (container?: Element) => { this.container = container as HTMLDivElement || null }
 
   render() {
-    const { flamechart } = this.props
-
     return (
       <div className={css(style.fill, style.clip)} ref={this.containerRef}>
         <FlamechartPanZoomView

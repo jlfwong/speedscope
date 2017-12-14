@@ -6,14 +6,12 @@ import {importFromBGFlameGraph} from './import/bg-flamegraph'
 import {Profile} from './profile'
 import {Flamechart, FlamechartView} from './flamechart'
 
-import { request } from 'https';
-
-interface ApplicaionState {
+interface ApplicationState {
   profile: Profile | null
   flamechart: Flamechart | null
 }
 
-class Application extends Component<{}, ApplicaionState> {
+class Application extends Component<{}, ApplicationState> {
   onDrop = (ev: DragEvent) => {
     const reader = new FileReader
     reader.addEventListener('loadend', () => {

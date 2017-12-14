@@ -10,10 +10,6 @@ declare module "regl" {
 
   type ReglValue<P> = ReglPrimitiveValue | {(context: any, props: P, batchId: number): ReglPrimitiveValue}
 
-  export type vec2 = [number, number]
-  export type vec3 = [number, number, number]
-  export type mat3 = [number, number, number, number, number, number, number, number, number]
-
   interface ReglCommandParameters<P> {
     /** Source code of vertex shader */
     vert: string
@@ -35,21 +31,25 @@ declare module "regl" {
     offset?: number
   }
 
-  export interface ReglCommand<P> {
-    (p: P): void
-  }
-
-  export interface ReglCommandConstructor {
-    <P>(params: ReglCommandParameters<P>): ReglCommand<P>
-  }
-
-  function ReglConstructor(): ReglCommandConstructor
-  function ReglConstructor(ctx: WebGLRenderingContext): ReglCommandConstructor
-  function ReglConstructor(canvas: HTMLCanvasElement): ReglCommandConstructor
+  function ReglConstructor(): ReglConstructor.ReglCommandConstructor
+  function ReglConstructor(ctx: WebGLRenderingContext): ReglConstructor.ReglCommandConstructor
+  function ReglConstructor(canvas: HTMLCanvasElement): ReglConstructor.ReglCommandConstructor
 
   namespace ReglConstructor {
     function prop(name: string): ReglProp
+
+    export type vec2 = [number, number]
+    export type vec3 = [number, number, number]
+    export type mat3 = [number, number, number, number, number, number, number, number, number]
+
+    interface ReglCommand<P> {
+      (p: P): void
+    }
+
+    interface ReglCommandConstructor {
+      <P>(params: ReglCommandParameters<P>): ReglCommand<P>
+    }
   }
 
-  export default ReglConstructor
+  export = ReglConstructor
 }

@@ -1,11 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>SpeedScope</title>
-  <style>
+/* http://meyerweb.com/eric/tools/css/reset/
+   v2.0 | 20110126
+   License: none (public domain)
+*/
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,
@@ -49,10 +45,3 @@ table {
 	border-collapse: collapse;
 	border-spacing: 0;
 }
-  </style>
-</head>
-<body>
-  <div id="root"></div>
-  <script src="dist/speedscope-dev.js"></script>
-</body>
-</html>

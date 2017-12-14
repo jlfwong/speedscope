@@ -3,6 +3,7 @@
     "module": "commonjs",
     "strict": true,
     "jsx": "react",
+    "noUnusedLocals": true,
     "jsxFactory": "h",
     "target": "es2015"
   }

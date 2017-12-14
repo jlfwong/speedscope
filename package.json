@@ -4,26 +4,19 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "serve": "./serveit -i node_modules 'node_modules/.bin/rollup -c rollup.config.dev.js'",
-    "release": "rollup -c rollup.config.release.js"
+    "serve": "budo index.tsx --force-default-index --css reset.css -- -p tsify",
+    "release": "browserify index.tsx -p tsify | uglifyjs -cm > dist/speedscope.js"
   },
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@types/aphrodite": "^0.5.6",
-    "@types/react-dom": "^16.0.3",
     "aphrodite": "^1.2.5",
-    "preact": "^8.2.6",
-    "react": "^16.1.1",
-    "react-dom": "^16.1.1",
+    "browserify": "^14.5.0",
+    "budo": "^10.0.4",
+    "preact": "^8.2.7",
     "regl": "^1.3.0",
-    "rollup": "^0.51.5",
-    "rollup-plugin-commonjs": "^8.2.6",
-    "rollup-plugin-node-globals": "^1.1.0",
-    "rollup-plugin-node-resolve": "^3.0.0",
-    "rollup-plugin-replace": "^2.0.0",
-    "rollup-plugin-typescript": "^0.8.1",
-    "rollup-plugin-uglify-es": "0.0.1",
-    "typescript": "^2.6.1"
+    "tsify": "^3.0.4",
+    "typescript": "^2.6.1",
+    "uglify-es": "^3.2.2"
   }
 }

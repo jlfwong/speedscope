@@ -115,6 +115,9 @@ export class Profile {
     this.duration = duration
   }
 
+  getDuration() { return this.duration }
+  getEvents() { return this.events }
+
   forEachSample(fn: (stack: CallTreeNode[], timeDelta: number) => void) {
     const nodeToStack = new Map<CallTreeNode, CallTreeNode[]>()
     for (let i = 0; i < this.samples.length; i++) {
