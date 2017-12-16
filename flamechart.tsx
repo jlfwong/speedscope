@@ -12,7 +12,7 @@ enum FontFamily {
 }
 
 enum FontSize {
-  LABEL = 12
+  LABEL = 10
 }
 
 interface FlamechartFrame {
@@ -115,7 +115,7 @@ export class Flamechart {
       }
 
       // Weight matches at the beginning of the string more heavily
-      const score = Math.pow(0.95, prefixMatchLength)
+      const score = Math.pow(0.90, prefixMatchLength)
 
       return aParts.join() > bParts.join() ? score : -score
     }
@@ -143,17 +143,16 @@ export class Flamechart {
     }
 
     for (let i = 0; i < hues.length; i++) {
-      // For each frame, select a random saturation in [0.1, 0.2]
-      // and a random value in [0.8, 0.9]. This helps visually
-      // differentiate otherwise very similar colors.
-      const S = 0.10 + 0.10 * Math.random()
-      const V = 0.80 + 0.10 * Math.random()
+      const H = hues[i]
+
+      const delta = 0.20 * Math.random() - 0.1
+      const C = 0.20 + delta
+      const Y = 0.85 - delta
 
       // TODO(jlfwong): Move this into color routines in a different file
-      // https://en.wikipedia.org/wiki/HSL_and_HSV#From_HSV
+      // https://en.wikipedia.org/wiki/HSL_and_HSV#From_luma/chroma/hue
 
-      const C = V * S
-      const hPrime = Math.floor(hues[i] / 60)
+      const hPrime = H / 60
       const X = C * (1 - Math.abs(hPrime % 2 - 1))
       const [R1, G1, B1] = (
         hPrime < 1 ? [C, X, 0] :
@@ -164,7 +163,7 @@ export class Flamechart {
         [C, 0, X]
       )
 
-      const m = V - C
+      const m = Y - (0.30 * R1 + 0.59 * G1 + 0.11 * B1)
       this.frameColors.set(frames[i], [R1 + m, G1 + m, B1 + m])
     }
   }
@@ -395,7 +394,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     }
 
     ctx.font = `${physicalViewSpaceFontSize}px/${physicalViewSpaceFrameHeight}px ${FontFamily.MONOSPACE}`
-    ctx.fillStyle = 'rgba(15, 10, 5, 1)'
+    ctx.fillStyle = 'rgba(80, 70, 70, 1)'
     ctx.textBaseline = 'top'
 
     const minWidthToRender = cachedMeasureTextWidth(ctx, 'M' + ELLIPSIS + 'M')
