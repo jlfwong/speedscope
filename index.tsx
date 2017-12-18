@@ -2,6 +2,7 @@ import {h, render, Component} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 
 import {importFromBGFlameGraph} from './import/bg-flamegraph'
+import {importFromStackprof} from './import/stackprof'
 
 import {Profile} from './profile'
 import {Flamechart, FlamechartView} from './flamechart'
@@ -13,13 +14,14 @@ interface ApplicationState {
 
 class Application extends Component<{}, ApplicationState> {
   onDrop = (ev: DragEvent) => {
+    const file = ev.dataTransfer.files.item(0)
     const reader = new FileReader
     reader.addEventListener('loadend', () => {
-      const profile = importFromBGFlameGraph(reader.result)
+      const profile = file.name.endsWith('json') ? importFromStackprof(reader.result) : importFromBGFlameGraph(reader.result)
       const flamechart = new Flamechart(profile)
       this.setState({profile, flamechart})
     })
-    reader.readAsText(ev.dataTransfer.files.item(0))
+    reader.readAsText(file)
     ev.preventDefault()
   }
 
