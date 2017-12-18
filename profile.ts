@@ -170,4 +170,37 @@ export class Profile {
       this.timeDeltas.push(timeDelta)
     }
   }
+
+  sortedAlphabetically(): Profile {
+    function key(sample: CallTreeNode) {
+      let k = ''
+      let node: CallTreeNode | null = sample
+      while (node) {
+        k = node.frame.name + ':' + k
+        node = node.parent
+      }
+      return k
+    }
+
+    let sortedSamples: [CallTreeNode, number][] = []
+    for (let i = 0; i < this.samples.length; i++) {
+      sortedSamples.push([this.samples[i], this.timeDeltas[i]])
+    }
+
+    sortedSamples.sort((a, b) => key(a[0]) < key(b[0]) ? -1 : 1)
+
+    const sortedProfile = new Profile(this.duration)
+    for (const [stackTop, timeDelta] of sortedSamples) {
+      const stack: FrameInfo[] = []
+      function visit(node: CallTreeNode) {
+        if (node.parent) visit(node.parent)
+        const frameInfo = {...node.frame}
+        frameInfo.key = frameInfo.name
+        stack.push(frameInfo)
+      }
+      visit(stackTop)
+      sortedProfile.appendSample(stack, timeDelta)
+    }
+    return sortedProfile
+  }
 }
