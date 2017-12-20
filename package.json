@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "serve": "parcel dev.html",
+    "serve": "parcel -o dev.html -d dist/dev",
     "release": "parcel build speedscope.tsx"
   },
   "author": "",
