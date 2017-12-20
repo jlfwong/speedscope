@@ -4,15 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "serve": "budo index.tsx --force-default-index --css reset.css -- -p tsify",
-    "release": "browserify index.tsx -p tsify | uglifyjs -cm > dist/speedscope.js"
+    "serve": "parcel dev.html",
+    "release": "parcel build speedscope.tsx"
   },
   "author": "",
   "license": "MIT",
   "devDependencies": {
     "aphrodite": "^1.2.5",
-    "browserify": "^14.5.0",
-    "budo": "^10.0.4",
+    "parcel-bundler": "^1.2.1",
     "preact": "^8.2.7",
     "regl": "^1.3.0",
     "tsify": "^3.0.4",
