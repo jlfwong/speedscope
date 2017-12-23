@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "serve": "parcel -o dev.html -d dist/dev",
-    "release": "parcel build speedscope.tsx"
+    "release": "tsc --noEmit && parcel build speedscope.tsx"
   },
   "author": "",
   "license": "MIT",

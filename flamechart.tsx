@@ -1,5 +1,6 @@
 import {h, Component} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
+import {ReloadableComponent} from './reloadable'
 
 import {Profile, Frame, CallTreeNode} from './profile'
 import * as regl from 'regl'
@@ -647,7 +648,7 @@ interface FlamechartViewState {
   logicalSpaceMouse: Vec2
 }
 
-export class FlamechartView extends Component<FlamechartViewProps, FlamechartViewState> {
+export class FlamechartView extends ReloadableComponent<FlamechartViewProps, FlamechartViewState> {
   container: HTMLDivElement | null = null
 
   constructor() {
