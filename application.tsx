@@ -20,7 +20,7 @@ interface ApplicationState {
   sortOrder: SortOrder
 }
 
-export class Application extends ReloadableComponent<{}, ApplicationState, {}> {
+export class Application extends ReloadableComponent<{}, ApplicationState> {
   constructor() {
     super()
     this.state = {

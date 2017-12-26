@@ -244,7 +244,7 @@ interface FlamechartPanZoomViewProps {
   setNodeHover: (node: CallTreeNode | null, logicalViewSpacemous: Vec2) => void
 }
 
-export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps, {}> {
+export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoomViewProps, {}> {
   renderer: ReglCommand<RectangleBatchRendererProps> | null = null
 
   ctx: WebGLRenderingContext | null = null
@@ -286,6 +286,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     this.renderer = rectangleBatchRenderer(this.ctx, configSpaceRects, colors)
     this.configSpaceViewportRect = new Rect()
     this.hoveredLabel = null
+
   }
 
   private canvasRef = (element?: Element) => {
@@ -697,6 +698,7 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
       positionStyle.top = logicalSpaceMouse.y + OFFSET_FROM_MOUSE
     } else {
       positionStyle.bottom = (height - logicalSpaceMouse.y) + 1
+
     }
 
     return (
@@ -712,10 +714,21 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
 
   containerRef = (container?: Element) => { this.container = container as HTMLDivElement || null }
 
+  panZoomView: FlamechartPanZoomView | null
+  panZoomRef = (view: FlamechartPanZoomView | null) => {
+    this.panZoomView = view
+  }
+  subcomponents() {
+    return {
+      panZoom: this.panZoomView
+    }
+  }
+
   render() {
     return (
       <div className={css(style.fill, style.clip)} ref={this.containerRef}>
         <FlamechartPanZoomView
+          ref={this.panZoomRef}
           flamechart={this.props.flamechart}
           setNodeHover={this.onNodeHover}
         />
@@ -767,21 +780,35 @@ interface RectangleBatchRendererProps {
 
 export const rectangleBatchRenderer = (ctx: WebGLRenderingContext, rects: Rect[], colors: vec3[]) => {
   const positions: vec2[] = []
+  const physicalSpaceOffsets: vec2[] = []
   const vertexColors: vec3[] = []
 
+  const offset = {
+    topLeft: new Vec2(1, -1),
+    topRight: new Vec2(-1, -1),
+    bottomRight: new Vec2(-1, 1),
+    bottomLeft: new Vec2(1, 1)
+  }
+
   const addRectangle = (r: Rect, color: vec3) => {
-    function addVertex(v: Vec2) {
+    function addVertex(v: Vec2, offset: Vec2) {
       positions.push(v.flatten())
+      physicalSpaceOffsets.push(offset.flatten())
       vertexColors.push(color)
     }
 
-    addVertex(r.topLeft())
-    addVertex(r.bottomLeft())
-    addVertex(r.topRight())
+    // 0 +--+ 1
+    //   | /|
+    //   |/ |
+    // 3 +--+ 2
 
-    addVertex(r.bottomLeft())
-    addVertex(r.topRight())
-    addVertex(r.bottomRight())
+    addVertex(r.topLeft(), offset.topLeft)
+    addVertex(r.bottomLeft(), offset.bottomLeft)
+    addVertex(r.topRight(), offset.topRight)
+
+    addVertex(r.bottomLeft(), offset.bottomLeft)
+    addVertex(r.topRight(), offset.topRight)
+    addVertex(r.bottomRight(), offset.bottomRight)
   }
 
   for (let i = 0; i < rects.length; i++) {
@@ -794,13 +821,15 @@ export const rectangleBatchRenderer = (ctx: WebGLRenderingContext, rects: Rect[]
       uniform vec2 physicalSize;
       attribute vec2 position;
       attribute vec3 color;
+      attribute vec2 physicalSpaceOffset;
       varying vec3 vColor;
       void main() {
         vColor = color;
-        vec2 roundedPosition = (configSpaceToNDC * vec3(position, 1)).xy;
+        vec2 roundedPosition = (configSpaceToNDC * vec3(position.xy, 1)).xy;
         vec2 halfSize = physicalSize / 2.0;
+        vec2 physicalPixelSize = 2.0 / physicalSize;
         roundedPosition = floor(roundedPosition * halfSize) / halfSize;
-        gl_Position = vec4(roundedPosition, 0, 1);
+        gl_Position = vec4(roundedPosition + physicalPixelSize * physicalSpaceOffset, 0, 1);
       }
     `,
 
@@ -814,6 +843,7 @@ export const rectangleBatchRenderer = (ctx: WebGLRenderingContext, rects: Rect[]
 
     attributes: {
       position: positions,
+      physicalSpaceOffset: physicalSpaceOffsets,
       color: vertexColors
     },
 
