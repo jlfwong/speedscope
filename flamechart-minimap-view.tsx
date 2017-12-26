@@ -1,8 +1,9 @@
-import {h, Component} from 'preact'
+import * as regl from 'regl'
+import { vec3, ReglCommand, ReglCommandConstructor } from 'regl'
+import { h, Component } from 'preact'
 import { css } from 'aphrodite'
 import { Flamechart } from './flamechart'
 import { Rect, Vec2, AffineTransform } from './math'
-import { vec3, ReglCommand } from 'regl'
 import { rectangleBatchRenderer, RectangleBatchRendererProps } from "./rectangle-batch-renderer"
 import { atMostOnceAFrame } from "./utils";
 import { style } from "./flamechart-style";
@@ -16,9 +17,10 @@ interface FlamechartMinimapViewProps {
 
 export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps, {}> {
   renderer: ReglCommand<RectangleBatchRendererProps> | null = null
-  overlayRenderer: ReglCommand<RectangleBatchRendererProps> | null = null
+  overlayRenderer: ReglCommand<OverlayRectangleRendererProps> | null = null
 
   ctx: WebGLRenderingContext | null = null
+  regl: regl.ReglCommandConstructor | null = null
   canvas: HTMLCanvasElement | null = null
 
   private physicalViewSize() {
@@ -52,7 +54,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   }
 
   private renderRects() {
-    if (!this.renderer || !this.canvas) return
+    if (!this.renderer || !this.canvas || !this.overlayRenderer) return
     this.resizeCanvasIfNeeded()
 
     const configSpaceToNDC = this.physicalViewSpaceToNDC().times(this.configSpaceToPhysicalViewSpace())
@@ -62,6 +64,18 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       physicalSize: this.physicalViewSize()
     })
 
+    this.overlayRenderer({
+      configSpaceViewportRect: this.props.configSpaceViewportRect,
+      configSpaceToPhysicalViewSpace: this.configSpaceToPhysicalViewSpace(),
+      physicalSize: this.physicalViewSize()
+    })
+  }
+
+  componentWillReceiveProps(nextProps: FlamechartMinimapViewProps) {
+    if (this.props.flamechart !== nextProps.flamechart) {
+      this.renderer = null
+    }
+    this.renderCanvas()
   }
 
   private resizeCanvasIfNeeded() {
@@ -91,7 +105,12 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       // size.
       requestAnimationFrame(() => this.renderCanvas())
     } else {
+      if (!this.regl) return;
       if (!this.renderer) this.preprocess(this.props.flamechart)
+      this.regl.clear({
+        color: [1, 1, 1, 1],
+        depth: 1
+      })
       this.renderRects()
     }
   })
@@ -100,6 +119,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     if (element) {
       this.canvas = element as HTMLCanvasElement
       this.ctx = this.canvas.getContext('webgl')!
+      this.regl = regl(this.ctx)
       this.renderCanvas()
     } else {
       this.canvas = null
@@ -107,7 +127,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   }
 
   private preprocess(flamechart: Flamechart) {
-    if (!this.canvas || !this.ctx) return
+    if (!this.canvas || !this.regl) return
     const configSpaceRects: Rect[] = []
     const colors: vec3[] = []
 
@@ -126,7 +146,8 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       }
     }
 
-    this.renderer = rectangleBatchRenderer(this.ctx, configSpaceRects, colors, 0)
+    this.renderer = rectangleBatchRenderer(this.regl, configSpaceRects, colors, 0)
+    this.overlayRenderer = overlayRectangleRenderer(this.regl);
   }
 
   render() {
@@ -140,4 +161,94 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       </div>
     )
   }
+}
+
+export interface OverlayRectangleRendererProps {
+  configSpaceToPhysicalViewSpace: AffineTransform
+  configSpaceViewportRect: Rect
+  physicalSize: Vec2
+}
+
+export const overlayRectangleRenderer = (regl: regl.ReglCommandConstructor) => {
+  return regl<OverlayRectangleRendererProps>({
+    vert: `
+      attribute vec2 position;
+
+      void main() {
+        gl_Position = vec4(position, 0, 1);
+      }
+    `,
+
+    frag: `
+      precision mediump float;
+
+      uniform mat3 configSpaceToPhysicalViewSpace;
+      uniform vec2 physicalSize;
+      uniform vec2 configSpaceViewportOrigin;
+      uniform vec2 configSpaceViewportSize;
+
+      void main() {
+        vec2 origin = (configSpaceToPhysicalViewSpace * vec3(configSpaceViewportOrigin, 1.0)).xy;
+        vec2 size = (configSpaceToPhysicalViewSpace * vec3(configSpaceViewportSize, 0.0)).xy;
+
+        // TODO(jlfwong): Simplify this with clamp()
+        if (gl_FragCoord.x > origin.x &&
+            (physicalSize.y - gl_FragCoord.y) > origin.y &&
+            gl_FragCoord.x < (origin.x + size.x) &&
+            (physicalSize.y - gl_FragCoord.y) < (origin.y + size.y)) {
+          gl_FragColor = vec4(1, 0, 0, 0.0);
+        } else {
+          gl_FragColor = vec4(0, 0, 0.1, 0.5);
+        }
+      }
+    `,
+
+    blend: {
+      enable: true,
+      func: {
+        src: 'src alpha',
+        dst: 'one minus src alpha'
+      }
+    },
+
+    depth: {
+      enable: false
+    },
+
+    attributes: {
+      // Cover full canvas with a rectangle
+      // with 2 triangles using a triangle
+      // strip.
+      //
+      // 0 +--+ 1
+      //   | /|
+      //   |/ |
+      // 2 +--+ 3
+      position: [
+        [-1, 1],
+        [1, 1],
+        [-1, -1],
+        [1, -1]
+      ]
+    },
+
+    uniforms: {
+      configSpaceToPhysicalViewSpace: (context, props) => {
+        return props.configSpaceToPhysicalViewSpace.flatten()
+      },
+      configSpaceViewportOrigin: (context, props) => {
+        return props.configSpaceViewportRect.origin.flatten()
+      },
+      configSpaceViewportSize: (context, props) => {
+        return props.configSpaceViewportRect.size.flatten()
+      },
+      physicalSize: (context, props) => {
+        return props.physicalSize.flatten()
+      }
+    },
+
+    primitive: 'triangle strip',
+
+    count: 4
+  })
 }

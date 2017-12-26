@@ -1,10 +1,13 @@
-import {h, Component} from 'preact'
+import {h} from 'preact'
 import {css} from 'aphrodite'
 import {ReloadableComponent} from './reloadable'
 
 import { CallTreeNode } from './profile'
 import { Flamechart } from './flamechart'
-import { vec3, ReglCommand } from 'regl'
+
+import * as regl from 'regl'
+import { vec3, ReglCommand, ReglCommandConstructor } from 'regl'
+
 import { Rect, Vec2, AffineTransform } from './math'
 import { atMostOnceAFrame } from "./utils";
 import { rectangleBatchRenderer, RectangleBatchRendererProps } from "./rectangle-batch-renderer"
@@ -85,6 +88,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   renderer: ReglCommand<RectangleBatchRendererProps> | null = null
 
   ctx: WebGLRenderingContext | null = null
+  regl: ReglCommandConstructor | null = null
   canvas: HTMLCanvasElement | null = null
 
   overlayCanvas: HTMLCanvasElement | null = null
@@ -100,7 +104,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   }
 
   private preprocess(flamechart: Flamechart) {
-    if (!this.canvas || !this.ctx) return
+    if (!this.canvas || !this.regl) return
     const configSpaceRects: Rect[] = []
     const colors: vec3[] = []
 
@@ -125,7 +129,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       }
     }
 
-    this.renderer = rectangleBatchRenderer(this.ctx, configSpaceRects, colors)
+    this.renderer = rectangleBatchRenderer(this.regl, configSpaceRects, colors)
     this.setConfigSpaceViewportRect(new Rect())
     this.hoveredLabel = null
   }
@@ -134,6 +138,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     if (element) {
       this.canvas = element as HTMLCanvasElement
       this.ctx = this.canvas.getContext('webgl')!
+      this.regl = regl(this.ctx)
       this.renderCanvas()
     } else {
       this.canvas = null

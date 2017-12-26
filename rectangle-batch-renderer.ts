@@ -7,7 +7,7 @@ export interface RectangleBatchRendererProps {
   physicalSize: Vec2
 }
 
-export const rectangleBatchRenderer = (ctx: WebGLRenderingContext, rects: Rect[], colors: vec3[], strokeSize = 1) => {
+export const rectangleBatchRenderer = (regl: regl.ReglCommandConstructor, rects: Rect[], colors: vec3[], strokeSize = 1) => {
   const positions: vec2[] = []
   const physicalSpaceOffsets: vec2[] = []
   const vertexColors: vec3[] = []
@@ -26,6 +26,8 @@ export const rectangleBatchRenderer = (ctx: WebGLRenderingContext, rects: Rect[]
       vertexColors.push(color)
     }
 
+    // 2 disjoint triangles.
+    //
     // 0 +--+ 1
     //   | /|
     //   |/ |
@@ -44,7 +46,7 @@ export const rectangleBatchRenderer = (ctx: WebGLRenderingContext, rects: Rect[]
     addRectangle(rects[i], colors[i])
   }
 
-  return regl(ctx)<RectangleBatchRendererProps>({
+  return regl<RectangleBatchRendererProps>({
     vert: `
       uniform mat3 configSpaceToNDC;
       uniform vec2 physicalSize;
@@ -61,6 +63,10 @@ export const rectangleBatchRenderer = (ctx: WebGLRenderingContext, rects: Rect[]
         gl_Position = vec4(roundedPosition + physicalPixelSize * physicalSpaceOffset, 0, 1);
       }
     `,
+
+    depth: {
+      enable: false
+    },
 
     frag: `
       precision mediump float;
