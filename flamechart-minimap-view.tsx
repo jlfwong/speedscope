@@ -191,14 +191,29 @@ export const overlayRectangleRenderer = (regl: regl.ReglCommandConstructor) => {
         vec2 origin = (configSpaceToPhysicalViewSpace * vec3(configSpaceViewportOrigin, 1.0)).xy;
         vec2 size = (configSpaceToPhysicalViewSpace * vec3(configSpaceViewportSize, 0.0)).xy;
 
-        // TODO(jlfwong): Simplify this with clamp()
-        if (gl_FragCoord.x > origin.x &&
-            (physicalSize.y - gl_FragCoord.y) > origin.y &&
-            gl_FragCoord.x < (origin.x + size.x) &&
-            (physicalSize.y - gl_FragCoord.y) < (origin.y + size.y)) {
-          gl_FragColor = vec4(1, 0, 0, 0.0);
+        vec2 halfSize = physicalSize / 2.0;
+
+        float borderWidth = 2.0;
+
+        origin = floor(origin * halfSize) / halfSize + borderWidth * vec2(1.0, 1.0);
+        size = floor(size * halfSize) / halfSize - 2.0 * borderWidth * vec2(1.0, 1.0);
+
+        vec2 coord = gl_FragCoord.xy;
+        coord.y = physicalSize.y - coord.y;
+        vec2 clamped = clamp(coord, origin, origin + size);
+        vec2 gap = clamped - coord;
+        float maxdist = max(abs(gap.x), abs(gap.y));
+
+        // TOOD(jlfwong): Could probably optimize this to use mix somehow.
+        if (maxdist == 0.0) {
+          // Inside viewport rectangle
+          gl_FragColor = vec4(0, 0, 0, 0);
+        } else if (maxdist < borderWidth) {
+          // Inside viewport rectangle at border
+          gl_FragColor = vec4(0.7, 0.7, 0.7, 0.8);
         } else {
-          gl_FragColor = vec4(0, 0, 0.1, 0.5);
+          // Outside viewport rectangle
+          gl_FragColor = vec4(0.7, 0.7, 0.7, 0.5);
         }
       }
     `,
@@ -206,8 +221,10 @@ export const overlayRectangleRenderer = (regl: regl.ReglCommandConstructor) => {
     blend: {
       enable: true,
       func: {
-        src: 'src alpha',
-        dst: 'one minus src alpha'
+        srcRGB: 'src alpha',
+        srcAlpha: 'one',
+        dstRGB: 'one minus src alpha',
+        dstAlpha: 'one'
       }
     },
 

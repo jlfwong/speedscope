@@ -11,10 +11,17 @@ export enum FontSize {
   LABEL = 10
 }
 
+export enum Colors {
+  MEDIUM_GRAY = "#BDBDBD",
+  LIGHT_GRAY = "#C4C4C4"
+}
+
+
 export namespace Sizes {
   export const MINIMAP_HEIGHT = 100
   export const TOOLTIP_WIDTH_MAX = 300
   export const TOOLTIP_HEIGHT_MAX = 75
+  export const SEPARATOR_HEIGHT = 2
 }
 
 export const style = StyleSheet.create({
@@ -55,12 +62,13 @@ export const style = StyleSheet.create({
     top: 0,
     height: Sizes.MINIMAP_HEIGHT,
     width: '100%',
+    borderBottom: `${Sizes.SEPARATOR_HEIGHT}px solid ${Colors.MEDIUM_GRAY}`
   },
   panZoomView: {
     position: 'absolute',
     left: 0,
-    top: Sizes.MINIMAP_HEIGHT,
+    top: Sizes.MINIMAP_HEIGHT + Sizes.SEPARATOR_HEIGHT,
     width: '100%',
-    height: `calc(100% - ${Sizes.MINIMAP_HEIGHT}px)`,
+    height: `calc(100% - ${Sizes.MINIMAP_HEIGHT + Sizes.SEPARATOR_HEIGHT}px)`,
   },
 });
