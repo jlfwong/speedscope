@@ -778,16 +778,16 @@ interface RectangleBatchRendererProps {
   physicalSize: Vec2
 }
 
-export const rectangleBatchRenderer = (ctx: WebGLRenderingContext, rects: Rect[], colors: vec3[]) => {
+export const rectangleBatchRenderer = (ctx: WebGLRenderingContext, rects: Rect[], colors: vec3[], strokeSize = 1) => {
   const positions: vec2[] = []
   const physicalSpaceOffsets: vec2[] = []
   const vertexColors: vec3[] = []
 
   const offset = {
-    topLeft: new Vec2(1, -1),
-    topRight: new Vec2(-1, -1),
-    bottomRight: new Vec2(-1, 1),
-    bottomLeft: new Vec2(1, 1)
+    topLeft: new Vec2(strokeSize, -strokeSize),
+    topRight: new Vec2(-strokeSize, -strokeSize),
+    bottomRight: new Vec2(-strokeSize, strokeSize),
+    bottomLeft: new Vec2(strokeSize, strokeSize)
   }
 
   const addRectangle = (r: Rect, color: vec3) => {
