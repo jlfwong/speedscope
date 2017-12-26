@@ -12,7 +12,7 @@ export enum FontSize {
 }
 
 export namespace Sizes {
-  export const MINIMAP_HEIGHT = 150
+  export const MINIMAP_HEIGHT = 100
   export const TOOLTIP_WIDTH_MAX = 300
   export const TOOLTIP_HEIGHT_MAX = 75
 }
