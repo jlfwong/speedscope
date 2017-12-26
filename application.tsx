@@ -6,7 +6,8 @@ import {importFromBGFlameGraph} from './import/bg-flamegraph'
 import {importFromStackprof} from './import/stackprof'
 
 import {Profile} from './profile'
-import {Flamechart, FlamechartView} from './flamechart'
+import {Flamechart} from './flamechart'
+import { FlamechartView } from './flamechart-view'
 
 const enum SortOrder {
   CHRONO,
