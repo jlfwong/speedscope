@@ -241,7 +241,8 @@ const DEVICE_PIXEL_RATIO = window.devicePixelRatio
  */
 interface FlamechartPanZoomViewProps {
   flamechart: Flamechart
-  setNodeHover: (node: CallTreeNode | null, logicalViewSpacemous: Vec2) => void
+  setNodeHover: (node: CallTreeNode | null, logicalViewSpaceMouse: Vec2) => void
+  setConfigSpaceViewportRect: (rect: Rect) => void
 }
 
 export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoomViewProps, {}> {
@@ -256,6 +257,11 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   configSpaceViewportRect = new Rect()
   labels: FlamechartFrameLabel[] = []
   hoveredLabel: FlamechartFrameLabel | null = null
+
+  private setConfigSpaceViewportRect(r: Rect) {
+    this.configSpaceViewportRect = r
+    this.props.setConfigSpaceViewportRect(r)
+  }
 
   private preprocess(flamechart: Flamechart) {
     if (!this.canvas || !this.ctx) return
@@ -284,9 +290,8 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     }
 
     this.renderer = rectangleBatchRenderer(this.ctx, configSpaceRects, colors)
-    this.configSpaceViewportRect = new Rect()
+    this.setConfigSpaceViewportRect(new Rect())
     this.hoveredLabel = null
-
   }
 
   private canvasRef = (element?: Element) => {
@@ -441,19 +446,19 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     const oldHeight = this.canvas.height
 
     if (this.configSpaceViewportRect.isEmpty()) {
-      this.configSpaceViewportRect = new Rect(
+      this.setConfigSpaceViewportRect(new Rect(
         new Vec2(0, 0),
         new Vec2(this.configSpaceSize().x, logicalHeight / this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT)
-      )
+      ))
     } else {
       // Resize the viewport rectangle to match the window size aspect
       // ratio.
-      this.configSpaceViewportRect = this.configSpaceViewportRect.withSize(
+      this.setConfigSpaceViewportRect(this.configSpaceViewportRect.withSize(
         this.configSpaceViewportRect.size.timesPointwise(new Vec2(
           width / oldWidth,
           height / oldHeight
         ))
-      )
+      ))
     }
 
     // Already at the right size
@@ -503,10 +508,10 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       new Vec2(this.configSpaceSize().x, viewportRect.height())
     )
 
-    this.configSpaceViewportRect = new Rect(
+    this.setConfigSpaceViewportRect(new Rect(
       configSpaceOriginBounds.closestPointTo(viewportRect.origin),
       configSpaceSizeBounds.closestPointTo(viewportRect.size)
-    )
+    ))
 
     this.renderCanvas()
   }
@@ -623,7 +628,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   render() {
     return (
       <div
-        className={css(style.fill)}
+        className={css(style.panZoomView)}
         onMouseDown={this.onMouseDown}
         onMouseMove={this.onMouseMove}
         onWheel={this.onWheel}>
@@ -640,14 +645,150 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   }
 }
 
+interface FlamechartMinimapViewProps {
+  flamechart: Flamechart
+  configSpaceViewportRect: Rect
+}
+
+class FlamechartMinimapView extends Component<FlamechartMinimapViewProps, {}> {
+  renderer: ReglCommand<RectangleBatchRendererProps> | null = null
+  overlayRenderer: ReglCommand<RectangleBatchRendererProps> | null = null
+
+  ctx: WebGLRenderingContext | null = null
+  canvas: HTMLCanvasElement | null = null
+
+  private physicalViewSize() {
+    return new Vec2(
+      this.canvas ? this.canvas.width : 0,
+      this.canvas ? this.canvas.height : 0
+    )
+  }
+
+  private configSpaceSize() {
+    return new Vec2(
+      this.props.flamechart.getDuration(),
+      this.props.flamechart.getLayers().length
+    )
+  }
+
+  private configSpaceToPhysicalViewSpace() {
+    return AffineTransform.betweenRects(
+      new Rect(new Vec2(0, 0), this.configSpaceSize()),
+      new Rect(new Vec2(0, 0), this.physicalViewSize())
+    )
+  }
+
+  private physicalViewSpaceToNDC() {
+    return AffineTransform.withScale(new Vec2(1, -1)).times(
+      AffineTransform.betweenRects(
+        new Rect(new Vec2(0, 0), this.physicalViewSize()),
+        new Rect(new Vec2(-1, -1), new Vec2(2, 2))
+      )
+    )
+  }
+
+  private renderRects() {
+    if (!this.renderer || !this.canvas) return
+    this.resizeCanvasIfNeeded()
+
+    const configSpaceToNDC = this.physicalViewSpaceToNDC().times(this.configSpaceToPhysicalViewSpace())
+
+    this.renderer({
+      configSpaceToNDC: configSpaceToNDC,
+      physicalSize: this.physicalViewSize()
+    })
+
+  }
+
+  private resizeCanvasIfNeeded() {
+    if (!this.canvas || !this.ctx) return
+    let { width, height } = this.canvas.getBoundingClientRect()
+    width = Math.floor(width) * DEVICE_PIXEL_RATIO
+    height = Math.floor(height) * DEVICE_PIXEL_RATIO
+
+    // Still initializing: don't resize yet
+    if (width === 0 || height === 0) return
+    const oldWidth = this.canvas.width
+    const oldHeight = this.canvas.height
+
+    // Already at the right size
+    if (width === oldWidth && height === oldHeight) return
+
+    this.canvas.width = width
+    this.canvas.height = height
+
+    this.ctx.viewport(0, 0, width, height)
+  }
+
+  private renderCanvas = atMostOnceAFrame(() => {
+    if (!this.canvas || this.canvas.getBoundingClientRect().width < 2) {
+      // If the canvas is still tiny, it means browser layout hasn't had
+      // a chance to run yet. Defer rendering until we have the real canvas
+      // size.
+      requestAnimationFrame(() => this.renderCanvas())
+    } else {
+      if (!this.renderer) this.preprocess(this.props.flamechart)
+      this.renderRects()
+    }
+  })
+
+  private canvasRef = (element?: Element) => {
+    if (element) {
+      this.canvas = element as HTMLCanvasElement
+      this.ctx = this.canvas.getContext('webgl')!
+      this.renderCanvas()
+    } else {
+      this.canvas = null
+    }
+  }
+
+  private preprocess(flamechart: Flamechart) {
+    if (!this.canvas || !this.ctx) return
+    const configSpaceRects: Rect[] = []
+    const colors: vec3[] = []
+
+    const layers = flamechart.getLayers()
+    const frameColors = flamechart.getFrameColors()
+
+    for (let i = 0; i < layers.length; i++) {
+      const layer = layers[i]
+      for (let flamechartFrame of layer) {
+        const configSpaceBounds = new Rect(
+          new Vec2(flamechartFrame.start, i),
+          new Vec2(flamechartFrame.end - flamechartFrame.start, 1)
+        )
+        configSpaceRects.push(configSpaceBounds)
+        colors.push(frameColors.get(flamechartFrame.node.frame) || [0, 0, 0])
+      }
+    }
+
+    this.renderer = rectangleBatchRenderer(this.ctx, configSpaceRects, colors, 0)
+  }
+
+  render() {
+    return (
+      <div
+        className={css(style.minimap)} >
+        <canvas
+          width={1} height={1}
+          ref={this.canvasRef}
+          className={css(style.fill)} />
+      </div>
+    )
+  }
+}
+
 interface FlamechartViewProps {
   flamechart: Flamechart
 }
 
 interface FlamechartViewState {
   hoveredNode: CallTreeNode | null
+  configSpaceViewportRect: Rect
   logicalSpaceMouse: Vec2
 }
+
+const MINIMAP_HEIGHT = 150
 
 export class FlamechartView extends ReloadableComponent<FlamechartViewProps, FlamechartViewState> {
   container: HTMLDivElement | null = null
@@ -656,12 +797,16 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
     super()
     this.state = {
       hoveredNode: null,
+      configSpaceViewportRect: new Rect(),
       logicalSpaceMouse: new Vec2()
     }
   }
 
   onNodeHover = (hoveredNode: CallTreeNode | null, logicalSpaceMouse: Vec2) => {
-    this.setState({ hoveredNode, logicalSpaceMouse })
+    this.setState({
+      hoveredNode,
+      logicalSpaceMouse: logicalSpaceMouse.plus(new Vec2(0, MINIMAP_HEIGHT))
+    });
   }
 
   static TOOLTIP_WIDTH_MAX = 300
@@ -724,13 +869,21 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
     }
   }
 
+  setConfigSpaceViewportRect = (r: Rect) => {
+    this.setState({ configSpaceViewportRect: r })
+  }
+
   render() {
     return (
       <div className={css(style.fill, style.clip)} ref={this.containerRef}>
+        <FlamechartMinimapView
+          configSpaceViewportRect={this.state.configSpaceViewportRect}
+          flamechart={this.props.flamechart} />
         <FlamechartPanZoomView
           ref={this.panZoomRef}
           flamechart={this.props.flamechart}
           setNodeHover={this.onNodeHover}
+          setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
         />
         {this.renderTooltip()}
       </div>
@@ -739,6 +892,7 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
 }
 
 const HOVERTIP_PADDING = 2
+
 const style = StyleSheet.create({
   hoverTip: {
     position: 'absolute',
@@ -770,7 +924,21 @@ const style = StyleSheet.create({
     position: 'absolute',
     left: 0,
     top: 0
-  }
+  },
+  minimap: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    height: MINIMAP_HEIGHT,
+    width: '100%',
+  },
+  panZoomView: {
+    position: 'absolute',
+    left: 0,
+    top: MINIMAP_HEIGHT,
+    width: '100%',
+    height: `calc(100% - ${MINIMAP_HEIGHT}px)`,
+  },
 })
 
 interface RectangleBatchRendererProps {
