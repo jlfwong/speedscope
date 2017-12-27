@@ -323,7 +323,36 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     })
   }
 
+  // Inertial scrolling introduces tricky interaction problems.
+  // Namely, if you start panning, and hit the edge of the scrollable
+  // area, the browser continues to receive WheelEvents from inertial
+  // scrolling. If we start zooming by holding Cmd + scrolling, then
+  // release the Cmd key, this can cause us to interpret the incoming
+  // inertial scrolling events as panning. To prevent this, we introduce
+  // a concept of an "Interaction Lock". Once a certain interaction has
+  // begun, we don't allow the other type of interaction to begin until
+  // we've received two frames with no inertial wheel events. This
+  // prevents us from accidentally switching between panning & zooming.
+  private frameHadWheelEvent = false
+  private framesWithoutWheelEvents = 0
+  private interactionLock: 'pan' | 'zoom' | null = null
+  private maybeClearInteractionLock = () => {
+    if (this.interactionLock) {
+      if (!this.frameHadWheelEvent) {
+        this.framesWithoutWheelEvents++;
+        if (this.framesWithoutWheelEvents >= 2) {
+          this.interactionLock = null
+          this.framesWithoutWheelEvents = 0
+        }
+      }
+      requestAnimationFrame(this.renderCanvas)
+    }
+    this.frameHadWheelEvent = false
+  }
+
   private renderCanvas = atMostOnceAFrame(() => {
+    this.maybeClearInteractionLock()
+
     if (!this.canvas || this.canvas.getBoundingClientRect().width < 2) {
       // If the canvas is still tiny, it means browser layout hasn't had
       // a chance to run yet. Defer rendering until we have the real canvas
@@ -360,6 +389,8 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   }
 
   private pan(logicalViewSpaceDelta: Vec2) {
+    this.interactionLock = 'pan'
+
     const physicalDelta = this.logicalToPhysicalViewSpace().transformVector(logicalViewSpaceDelta)
     const configDelta = this.configSpaceToPhysicalViewSpace().inverseTransformVector(physicalDelta)
 
@@ -368,6 +399,8 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   }
 
   private zoom(logicalViewSpaceCenter: Vec2, multiplier: number) {
+    this.interactionLock = 'zoom'
+
     const physicalCenter = this.logicalToPhysicalViewSpace().transformPosition(logicalViewSpaceCenter)
     const configSpaceCenter = this.configSpaceToPhysicalViewSpace().inverseTransformPosition(physicalCenter)
 
@@ -426,12 +459,11 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
   private onWheel = (ev: WheelEvent) => {
     ev.preventDefault()
+    this.frameHadWheelEvent = true
 
-    // TODO(jlfwong): When scrolling and adding or releasing
-    // a modifier key, any momentum scrolling from previous
-    // initiated momentum scrolling may still take effect.
-    // Figure out how to prevent this.
-    if (ev.metaKey || ev.ctrlKey) {
+    const isZoom = ev.metaKey || ev.ctrlKey
+
+    if (isZoom && this.interactionLock !== 'pan') {
       let multiplier = 1 + (ev.deltaY / 100)
 
       // On Chrome & Firefox, pinch-to-zoom maps to
@@ -442,7 +474,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       }
 
       this.zoom(new Vec2(ev.offsetX, ev.offsetY), multiplier)
-    } else {
+    } else if (this.interactionLock !== 'zoom') {
       this.pan(new Vec2(ev.deltaX, ev.deltaY))
 
       // When panning by scrolling, the element under
