@@ -74,8 +74,10 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   componentWillReceiveProps(nextProps: FlamechartMinimapViewProps) {
     if (this.props.flamechart !== nextProps.flamechart) {
       this.renderer = null
+      this.renderCanvas()
+    } else if (this.props.configSpaceViewportRect != nextProps.configSpaceViewportRect) {
+      this.renderCanvas()
     }
-    this.renderCanvas()
   }
 
   private resizeCanvasIfNeeded() {

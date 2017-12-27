@@ -456,8 +456,8 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   componentWillReceiveProps(nextProps: FlamechartPanZoomViewProps) {
     if (this.props.flamechart !== nextProps.flamechart) {
       this.renderer = null
+      this.renderCanvas()
     }
-    this.renderCanvas()
   }
   componentDidMount() {
     window.addEventListener('mouseup', this.onWindowMouseUp)
