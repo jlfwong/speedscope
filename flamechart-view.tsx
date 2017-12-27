@@ -8,7 +8,7 @@ import { Flamechart } from './flamechart'
 import * as regl from 'regl'
 import { vec3, ReglCommand, ReglCommandConstructor } from 'regl'
 
-import { Rect, Vec2, AffineTransform } from './math'
+import { Rect, Vec2, AffineTransform, clamp } from './math'
 import { atMostOnceAFrame } from "./utils";
 import { rectangleBatchRenderer, RectangleBatchRendererProps } from "./rectangle-batch-renderer"
 import { FlamechartMinimapView } from "./flamechart-minimap-view"
@@ -403,7 +403,6 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
     const physicalCenter = this.logicalToPhysicalViewSpace().transformPosition(logicalViewSpaceCenter)
     const configSpaceCenter = this.configSpaceToPhysicalViewSpace().inverseTransformPosition(physicalCenter)
-
     if (!configSpaceCenter) return
 
     if (multiplier < 1 && this.configSpaceViewportRect.width() <= this.minConfigSpaceViewportRectWidth()) {
@@ -472,6 +471,8 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       if (ev.ctrlKey) {
         multiplier = 1 + (ev.deltaY / 40)
       }
+
+      multiplier = clamp(multiplier, 0.1, 10.0)
 
       this.zoom(new Vec2(ev.offsetX, ev.offsetY), multiplier)
     } else if (this.interactionLock !== 'zoom') {

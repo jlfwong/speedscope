@@ -161,7 +161,9 @@ export class Flamechart {
     this.minFrameWidth = Infinity
     for (let layer of this.layers) {
       for (let frame of layer) {
-        this.minFrameWidth = Math.min(this.minFrameWidth, frame.end - frame.start)
+        const width = frame.end - frame.start
+        if (!width) continue
+        this.minFrameWidth = Math.min(this.minFrameWidth, width)
       }
     }
     this.selectFrameColors(profile)
