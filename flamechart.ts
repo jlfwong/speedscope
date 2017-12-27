@@ -14,12 +14,14 @@ export class Flamechart {
   // Bottom to top
   private layers: StackLayer[] = []
   private duration: number = 0
+  private minFrameWidth: number = 1
 
   private frameColors = new Map<Frame, [number, number, number]>()
 
   getDuration() { return this.duration }
   getLayers() { return this.layers }
   getFrameColors() { return this.frameColors }
+  getMinFrameWidth() { return this.minFrameWidth }
 
   private appendFrame(layerIndex: number, node: CallTreeNode, timeDelta: number, parent: FlamechartFrame | null) {
     while (layerIndex >= this.layers.length) this.layers.push([])
@@ -156,6 +158,12 @@ export class Flamechart {
   constructor(private profile: Profile) {
     profile.forEachSample(this.appendSample.bind(this))
     this.layers = this.layers.map(Flamechart.mergeAdjacentFrames)
+    this.minFrameWidth = Infinity
+    for (let layer of this.layers) {
+      for (let frame of layer) {
+        this.minFrameWidth = Math.min(this.minFrameWidth, frame.end - frame.start)
+      }
+    }
     this.selectFrameColors(profile)
   }
 }

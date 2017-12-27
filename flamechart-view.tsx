@@ -336,6 +336,8 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     }
   })
 
+  private minConfigSpaceViewportRectWidth() { return 3 * this.props.flamechart.getMinFrameWidth(); }
+
   private transformViewport(transform: AffineTransform) {
     const viewportRect = transform.transformRect(this.configSpaceViewportRect)
 
@@ -345,7 +347,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     )
 
     const configSpaceSizeBounds = new Rect(
-      new Vec2(1, viewportRect.height()),
+      new Vec2(this.minConfigSpaceViewportRectWidth(), viewportRect.height()),
       new Vec2(this.configSpaceSize().x, viewportRect.height())
     )
 
@@ -370,6 +372,10 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     const configSpaceCenter = this.configSpaceToPhysicalViewSpace().inverseTransformPosition(physicalCenter)
 
     if (!configSpaceCenter) return
+
+    if (multiplier < 1 && this.configSpaceViewportRect.width() <= this.minConfigSpaceViewportRectWidth()) {
+      return
+    }
 
     const zoomTransform = AffineTransform
       .withTranslation(configSpaceCenter.times(-1))
