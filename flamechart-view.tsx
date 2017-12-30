@@ -13,7 +13,8 @@ import { atMostOnceAFrame } from "./utils";
 import { rectangleBatchRenderer, RectangleBatchRendererProps } from "./rectangle-batch-renderer"
 import { FlamechartMinimapView } from "./flamechart-minimap-view"
 
-import { style, Sizes, FontSize, FontFamily } from './flamechart-style'
+import { style, Sizes } from './flamechart-style'
+import { FontSize, FontFamily } from './style'
 
 interface FlamechartFrameLabel {
   configSpaceBounds: Rect
@@ -81,6 +82,7 @@ const DEVICE_PIXEL_RATIO = window.devicePixelRatio
 interface FlamechartPanZoomViewProps {
   flamechart: Flamechart
   setNodeHover: (node: CallTreeNode | null, logicalViewSpaceMouse: Vec2) => void
+  configSpaceViewportRect: Rect
   setConfigSpaceViewportRect: (rect: Rect) => void
 }
 
@@ -94,12 +96,10 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   overlayCanvas: HTMLCanvasElement | null = null
   overlayCtx: CanvasRenderingContext2D | null = null
 
-  configSpaceViewportRect = new Rect()
   labels: FlamechartFrameLabel[] = []
   hoveredLabel: FlamechartFrameLabel | null = null
 
   private setConfigSpaceViewportRect(r: Rect) {
-    this.configSpaceViewportRect = r
     this.props.setConfigSpaceViewportRect(r)
   }
 
@@ -174,7 +174,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
   private configSpaceToPhysicalViewSpace() {
     return AffineTransform.betweenRects(
-      this.configSpaceViewportRect,
+      this.props.configSpaceViewportRect,
       new Rect(new Vec2(0, 0), this.physicalViewSize())
     )
   }
@@ -219,6 +219,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     const ctx = this.overlayCtx
     if (!ctx) return
     this.resizeOverlayCanvasIfNeeded()
+    if (this.props.configSpaceViewportRect.isEmpty()) return
 
     const configToPhysical = this.configSpaceToPhysicalViewSpace()
 
@@ -286,7 +287,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     const oldWidth = this.canvas.width
     const oldHeight = this.canvas.height
 
-    if (this.configSpaceViewportRect.isEmpty()) {
+    if (this.props.configSpaceViewportRect.isEmpty()) {
       this.setConfigSpaceViewportRect(new Rect(
         new Vec2(0, 0),
         new Vec2(this.configSpaceSize().x, logicalHeight / this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT)
@@ -294,8 +295,8 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     } else {
       // Resize the viewport rectangle to match the window size aspect
       // ratio.
-      this.setConfigSpaceViewportRect(this.configSpaceViewportRect.withSize(
-        this.configSpaceViewportRect.size.timesPointwise(new Vec2(
+      this.setConfigSpaceViewportRect(this.props.configSpaceViewportRect.withSize(
+        this.props.configSpaceViewportRect.size.timesPointwise(new Vec2(
           width / oldWidth,
           height / oldHeight
         ))
@@ -314,6 +315,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   private renderRects() {
     if (!this.renderer || !this.canvas) return
     this.resizeCanvasIfNeeded()
+    if (this.props.configSpaceViewportRect.isEmpty()) return
 
     const configSpaceToNDC = this.physicalViewSpaceToNDC().times(this.configSpaceToPhysicalViewSpace())
 
@@ -368,7 +370,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   private minConfigSpaceViewportRectWidth() { return 3 * this.props.flamechart.getMinFrameWidth(); }
 
   private transformViewport(transform: AffineTransform) {
-    const viewportRect = transform.transformRect(this.configSpaceViewportRect)
+    const viewportRect = transform.transformRect(this.props.configSpaceViewportRect)
 
     const configSpaceOriginBounds = new Rect(
       new Vec2(0, 0),
@@ -405,7 +407,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     const configSpaceCenter = this.configSpaceToPhysicalViewSpace().inverseTransformPosition(physicalCenter)
     if (!configSpaceCenter) return
 
-    if (multiplier < 1 && this.configSpaceViewportRect.width() <= this.minConfigSpaceViewportRectWidth()) {
+    if (multiplier < 1 && this.props.configSpaceViewportRect.width() <= this.minConfigSpaceViewportRectWidth()) {
       return
     }
 
@@ -590,11 +592,10 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
 
     return (
       <div className={css(style.hoverTip)} style={positionStyle}>
-        <div className={css(style.hoverTipRow)}>{hoveredNode.frame.name}</div>
-        <div className={css(style.hoverTipRow)}>Total Time: {this.formatTime(hoveredNode.getTotalTime())}</div>
-        <div className={css(style.hoverTipRow)}>Self Time: {this.formatTime(hoveredNode.getSelfTime())}</div>
-        <div className={css(style.hoverTipRow)}>Cum. Total Time: {this.formatTime(hoveredNode.frame.getTotalTime())}</div>
-        <div className={css(style.hoverTipRow)}>Cum. Self Time: {this.formatTime(hoveredNode.frame.getSelfTime())}</div>
+        <div className={css(style.hoverTipRow)}>
+          <span className={css(style.hoverCount)}>{this.formatTime(hoveredNode.getTotalTime())}</span>{' '}
+          {hoveredNode.frame.name}
+        </div>
       </div>
     )
   }
@@ -625,6 +626,7 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
           ref={this.panZoomRef}
           flamechart={this.props.flamechart}
           setNodeHover={this.onNodeHover}
+          configSpaceViewportRect={this.state.configSpaceViewportRect}
           setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
         />
         {this.renderTooltip()}

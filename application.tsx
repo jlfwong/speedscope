@@ -8,6 +8,7 @@ import {importFromStackprof} from './import/stackprof'
 import {Profile} from './profile'
 import {Flamechart} from './flamechart'
 import { FlamechartView } from './flamechart-view'
+import { FontFamily, FontSize } from './style'
 
 const enum SortOrder {
   CHRONO,
@@ -19,6 +20,14 @@ interface ApplicationState {
   flamechart: Flamechart | null
   sortedFlamechart: Flamechart | null
   sortOrder: SortOrder
+}
+
+export class Toolbar extends ReloadableComponent<{}, ApplicationState> {
+  render() {
+    return <div className={css(style.toolbar)}>
+      speedscope
+    </div>
+  }
 }
 
 export class Application extends ReloadableComponent<{}, ApplicationState> {
@@ -86,6 +95,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     const flamechartToView = sortOrder == SortOrder.CHRONO ? flamechart : sortedFlamechart
 
     return <div onDrop={this.onDrop} onDragOver={this.onDragOver} className={css(style.root)}>
+      <Toolbar />
       {flamechartToView &&
         <FlamechartView ref={this.flamechartRef} flamechart={flamechartToView} />}
     </div>
@@ -96,7 +106,19 @@ const style = StyleSheet.create({
   root: {
     width: '100vw',
     height: '100vh',
-    overflow: 'hidden'
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    position: 'relative',
+  },
+  toolbar: {
+    height: 18,
+    background: 'black',
+    color: 'white',
+    textAlign: 'center',
+    fontFamily: FontFamily.MONOSPACE,
+    fontSize: FontSize.TITLE,
+    lineHeight: '18px'
   }
 })
 

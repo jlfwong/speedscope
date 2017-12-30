@@ -1,21 +1,7 @@
 import {StyleSheet} from 'aphrodite'
+import { FontFamily, FontSize, Colors } from './style'
 
 const HOVERTIP_PADDING = 2
-
-
-export enum FontFamily {
-  MONOSPACE = "Courier, monospace"
-}
-
-export enum FontSize {
-  LABEL = 10
-}
-
-export enum Colors {
-  MEDIUM_GRAY = "#BDBDBD",
-  LIGHT_GRAY = "#C4C4C4"
-}
-
 
 export namespace Sizes {
   export const MINIMAP_HEIGHT = 100
@@ -45,6 +31,9 @@ export const style = StyleSheet.create({
     paddingLeft: HOVERTIP_PADDING,
     paddingRight: HOVERTIP_PADDING,
     maxWidth: Sizes.TOOLTIP_WIDTH_MAX,
+  },
+  hoverCount: {
+    color: '#6FCF97'
   },
   clip: {
     overflow: 'hidden'
