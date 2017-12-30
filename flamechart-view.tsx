@@ -432,6 +432,8 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   private lastDragPos: Vec2 | null = null
 
   private onMouseDown = (ev: MouseEvent) => {
+    document.body.style.cursor = 'grabbing'
+    document.body.style.cursor = '-webkit-grabbing'
     this.lastDragPos = new Vec2(ev.offsetX, ev.offsetY)
   }
 
@@ -507,6 +509,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   }
 
   private onWindowMouseUp = (ev: MouseEvent) => {
+    document.body.style.cursor = 'default'
     this.lastDragPos = null
   }
 
