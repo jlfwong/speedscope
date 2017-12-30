@@ -458,6 +458,11 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     this.renderCanvas()
   }
 
+  private onMouseLeave = (ev: MouseEvent) => {
+    this.props.setNodeHover(null, new Vec2())
+    this.renderCanvas()
+  }
+
   private onWheel = (ev: WheelEvent) => {
     ev.preventDefault()
     this.frameHadWheelEvent = true
@@ -513,6 +518,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
         className={css(style.panZoomView, style.vbox)}
         onMouseDown={this.onMouseDown}
         onMouseMove={this.onMouseMove}
+        onMouseLeave={this.onMouseLeave}
         onWheel={this.onWheel}>
         <canvas
           width={1} height={1}

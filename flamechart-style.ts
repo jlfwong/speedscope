@@ -16,7 +16,6 @@ export const style = StyleSheet.create({
     background: 'white',
     border: '1px solid black',
     maxWidth: Sizes.TOOLTIP_WIDTH_MAX,
-    overflow: 'hidden',
     paddingTop: HOVERTIP_PADDING,
     paddingBottom: HOVERTIP_PADDING,
     pointerEvents: 'none',
@@ -27,7 +26,7 @@ export const style = StyleSheet.create({
   hoverTipRow: {
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
-    overflow: 'hidden',
+    overflowX: 'hidden',
     paddingLeft: HOVERTIP_PADDING,
     paddingRight: HOVERTIP_PADDING,
     maxWidth: Sizes.TOOLTIP_WIDTH_MAX,
