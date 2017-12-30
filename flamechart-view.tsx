@@ -508,7 +508,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   render() {
     return (
       <div
-        className={css(style.panZoomView)}
+        className={css(style.panZoomView, style.vbox)}
         onMouseDown={this.onMouseDown}
         onMouseMove={this.onMouseMove}
         onWheel={this.onWheel}>
@@ -617,7 +617,7 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
 
   render() {
     return (
-      <div className={css(style.fill, style.clip)} ref={this.containerRef}>
+      <div className={css(style.fill, style.clip, style.vbox)} ref={this.containerRef}>
         <FlamechartMinimapView
           configSpaceViewportRect={this.state.configSpaceViewportRect}
           flamechart={this.props.flamechart} />

@@ -1,5 +1,5 @@
 import * as regl from 'regl'
-import { vec3, ReglCommand, ReglCommandConstructor } from 'regl'
+import { vec3, ReglCommand } from 'regl'
 import { h, Component } from 'preact'
 import { css } from 'aphrodite'
 import { Flamechart } from './flamechart'
@@ -155,7 +155,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   render() {
     return (
       <div
-        className={css(style.minimap)} >
+        className={css(style.minimap, style.vbox)} >
         <canvas
           width={1} height={1}
           ref={this.canvasRef}

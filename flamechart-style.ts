@@ -49,6 +49,11 @@ export const style = StyleSheet.create({
   clip: {
     overflow: 'hidden'
   },
+  vbox: {
+    display: 'flex',
+    flexDirection: 'column',
+    position: 'relative',
+  },
   fill: {
     width: '100%',
     height: '100%',
@@ -57,18 +62,10 @@ export const style = StyleSheet.create({
     top: 0
   },
   minimap: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
     height: Sizes.MINIMAP_HEIGHT,
-    width: '100%',
     borderBottom: `${Sizes.SEPARATOR_HEIGHT}px solid ${Colors.MEDIUM_GRAY}`
   },
   panZoomView: {
-    position: 'absolute',
-    left: 0,
-    top: Sizes.MINIMAP_HEIGHT + Sizes.SEPARATOR_HEIGHT,
-    width: '100%',
-    height: `calc(100% - ${Sizes.MINIMAP_HEIGHT + Sizes.SEPARATOR_HEIGHT}px)`,
+    flex: 1
   },
 });
