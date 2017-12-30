@@ -395,7 +395,9 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       configSpaceSizeBounds.closestPointTo(viewportRect.size)
     ))
 
-    this.renderCanvas()
+    // Clear hovered labels when the viewport changes
+    this.hoveredLabel = null
+    this.props.setNodeHover(null, new Vec2())
   }
 
   private pan(logicalViewSpaceDelta: Vec2) {
@@ -438,6 +440,12 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     const logicalMousePos = new Vec2(ev.offsetX, ev.offsetY)
     this.pan(this.lastDragPos.minus(logicalMousePos))
     this.lastDragPos = logicalMousePos
+
+    // When panning by scrolling, the element under
+    // the cursor will change, so clear the hovered label.
+    if (this.hoveredLabel) {
+      this.props.setNodeHover(this.hoveredLabel.node, logicalMousePos)
+    }
   }
 
   private onMouseMove = (ev: MouseEvent) => {
@@ -467,6 +475,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   }
 
   private onMouseLeave = (ev: MouseEvent) => {
+    this.hoveredLabel = null
     this.props.setNodeHover(null, new Vec2())
     this.renderCanvas()
   }
@@ -492,11 +501,6 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       this.zoom(new Vec2(ev.offsetX, ev.offsetY), multiplier)
     } else if (this.interactionLock !== 'zoom') {
       this.pan(new Vec2(ev.deltaX, ev.deltaY))
-
-      // When panning by scrolling, the element under
-      // the cursor will change, so clear the hovered label.
-      this.hoveredLabel = null
-      this.props.setNodeHover(null, new Vec2())
     }
 
     this.renderCanvas()
