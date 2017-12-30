@@ -8,6 +8,7 @@ export namespace Sizes {
   export const TOOLTIP_WIDTH_MAX = 300
   export const TOOLTIP_HEIGHT_MAX = 75
   export const SEPARATOR_HEIGHT = 2
+  export const FRAME_HEIGHT = 16
 }
 
 export const style = StyleSheet.create({

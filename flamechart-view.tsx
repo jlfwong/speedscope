@@ -213,6 +213,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
     this.overlayCanvas.width = scaledWidth
     this.overlayCanvas.height = scaledHeight
+
   }
 
   private renderLabels() {
@@ -275,7 +276,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     }
   }
 
-  private resizeCanvasIfNeeded() {
+  private resizeCanvasIfNeeded(windowResized = false) {
     if (!this.canvas || !this.ctx) return
     let { width, height } = this.canvas.getBoundingClientRect()
     const logicalHeight = height
@@ -283,7 +284,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     height = Math.floor(height) * DEVICE_PIXEL_RATIO
 
     // Still initializing: don't resize yet
-    if (width === 0 || height === 0) return
+    if (width < 2 || height < 2) return
     const oldWidth = this.canvas.width
     const oldHeight = this.canvas.height
 
@@ -292,7 +293,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
         new Vec2(0, 0),
         new Vec2(this.configSpaceSize().x, logicalHeight / this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT)
       ))
-    } else {
+    } else if (windowResized) {
       // Resize the viewport rectangle to match the window size aspect
       // ratio.
       this.setConfigSpaceViewportRect(this.props.configSpaceViewportRect.withSize(
@@ -312,9 +313,16 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     this.ctx.viewport(0, 0, width, height)
   }
 
+  onWindowResize = () => {
+    this.resizeCanvasIfNeeded(true)
+    this.renderCanvas()
+  }
+
   private renderRects() {
     if (!this.renderer || !this.canvas) return
     this.resizeCanvasIfNeeded()
+
+
     if (this.props.configSpaceViewportRect.isEmpty()) return
 
     const configSpaceToNDC = this.physicalViewSpaceToNDC().times(this.configSpaceToPhysicalViewSpace())
@@ -503,13 +511,17 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     if (this.props.flamechart !== nextProps.flamechart) {
       this.renderer = null
       this.renderCanvas()
+    } else if (this.props.configSpaceViewportRect !== nextProps.configSpaceViewportRect) {
+      this.renderCanvas()
     }
   }
   componentDidMount() {
     window.addEventListener('mouseup', this.onWindowMouseUp)
+    window.addEventListener('resize', this.onWindowResize)
   }
   componentWillUnmount() {
     window.removeEventListener('mouseup', this.onWindowMouseUp)
+    window.removeEventListener('resize', this.onWindowResize)
   }
 
   render() {
@@ -593,7 +605,6 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
       positionStyle.top = logicalSpaceMouse.y + OFFSET_FROM_MOUSE
     } else {
       positionStyle.bottom = (height - logicalSpaceMouse.y) + 1
-
     }
 
     return (

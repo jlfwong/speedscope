@@ -66,19 +66,11 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     }
   }
 
-  onWindowResize = () => {
-    this.forceUpdate()
-  }
-
   componentDidMount() {
-    window.addEventListener('resize', this.onWindowResize)
-    // TODO(jlfwong): for this to be safely embeddable, there'll need to be some
-    // way of specify event focus.
     window.addEventListener('keypress', this.onWindowKeyPress)
   }
 
   componentWillUnmount() {
-    window.removeEventListener('resize', this.onWindowResize)
     window.removeEventListener('keypress', this.onWindowKeyPress)
   }
 

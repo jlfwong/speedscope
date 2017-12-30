@@ -13,6 +13,7 @@ export class Vec2 {
   minus(other: Vec2) { return new Vec2(this.x - other.x, this.y - other.y) }
   times(scalar: number) { return new Vec2(this.x * scalar, this.y * scalar) }
   timesPointwise(other: Vec2) { return new Vec2(this.x * other.x, this.y * other.y) }
+  dividedByPointwise(other: Vec2) { return new Vec2(this.x / other.x, this.y / other.y) }
   dot(other: Vec2) { return this.x * other.x + this.y * other.y }
   length2() { return this.dot(this) }
   length() { return Math.sqrt(this.length2()) }
