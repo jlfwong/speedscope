@@ -430,7 +430,6 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   }
 
   private lastDragPos: Vec2 | null = null
-
   private onMouseDown = (ev: MouseEvent) => {
     document.body.style.cursor = 'grabbing'
     document.body.style.cursor = '-webkit-grabbing'
@@ -448,6 +447,11 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     if (this.hoveredLabel) {
       this.props.setNodeHover(this.hoveredLabel.node, logicalMousePos)
     }
+  }
+
+  private onWindowMouseUp = (ev: MouseEvent) => {
+    document.body.style.cursor = 'default'
+    this.lastDragPos = null
   }
 
   private onMouseMove = (ev: MouseEvent) => {
@@ -506,11 +510,6 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     }
 
     this.renderCanvas()
-  }
-
-  private onWindowMouseUp = (ev: MouseEvent) => {
-    document.body.style.cursor = 'default'
-    this.lastDragPos = null
   }
 
   shouldComponentUpdate() { return false }
@@ -645,6 +644,7 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
       <div className={css(style.fill, style.clip, style.vbox)} ref={this.containerRef}>
         <FlamechartMinimapView
           configSpaceViewportRect={this.state.configSpaceViewportRect}
+          setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
           flamechart={this.props.flamechart} />
         <FlamechartPanZoomView
           ref={this.panZoomRef}

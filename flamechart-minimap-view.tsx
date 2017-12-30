@@ -13,6 +13,7 @@ const DEVICE_PIXEL_RATIO = window.devicePixelRatio
 interface FlamechartMinimapViewProps {
   flamechart: Flamechart
   configSpaceViewportRect: Rect
+  setConfigSpaceViewportRect: (rect: Rect) => void
 }
 
 export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps, {}> {
@@ -128,6 +129,92 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     }
   }
 
+  private minConfigSpaceViewportRectWidth() { return 3 * this.props.flamechart.getMinFrameWidth(); }
+
+  private transformViewport(transform: AffineTransform) {
+    const viewportRect = transform.transformRect(this.props.configSpaceViewportRect)
+    this.setConfigSpaceViewportRect(viewportRect)
+  }
+
+  private setConfigSpaceViewportRect(viewportRect: Rect) {
+    const configSpaceOriginBounds = new Rect(
+      new Vec2(0, 0),
+      Vec2.max(new Vec2(0, 0), this.configSpaceSize().minus(viewportRect.size))
+    )
+
+    // TODO(jlfwong): De-dup this with FlamechartPanZoomView
+    const configSpaceSizeBounds = new Rect(
+      new Vec2(this.minConfigSpaceViewportRectWidth(), viewportRect.height()),
+      new Vec2(this.configSpaceSize().x, viewportRect.height())
+    )
+
+    this.props.setConfigSpaceViewportRect(new Rect(
+      configSpaceOriginBounds.closestPointTo(viewportRect.origin),
+      configSpaceSizeBounds.closestPointTo(viewportRect.size)
+    ))
+  }
+
+  private logicalToPhysicalViewSpace() {
+    return AffineTransform.withScale(new Vec2(DEVICE_PIXEL_RATIO, DEVICE_PIXEL_RATIO))
+  }
+
+  private pan(logicalViewSpaceDelta: Vec2) {
+    const physicalDelta = this.logicalToPhysicalViewSpace().transformVector(logicalViewSpaceDelta)
+    const configDelta = this.configSpaceToPhysicalViewSpace().inverseTransformVector(physicalDelta)
+
+    if (!configDelta) return
+    this.transformViewport(AffineTransform.withTranslation(configDelta))
+  }
+
+  private onWheel = (ev: WheelEvent) => {
+    ev.preventDefault()
+    this.pan(new Vec2(ev.deltaX, ev.deltaY))
+    this.renderCanvas()
+  }
+
+  private dragStartPos: Vec2 | null = null
+  private onMouseDown = (ev: MouseEvent) => {
+    this.dragStartPos = new Vec2(ev.offsetX, ev.offsetY)
+  }
+
+  private onMouseDrag = (ev: MouseEvent) => {
+    if (!this.dragStartPos) return
+
+    const logicalStart = this.dragStartPos
+    const physicalStart = this.logicalToPhysicalViewSpace().transformPosition(logicalStart)
+    const configStart = this.configSpaceToPhysicalViewSpace().inverseTransformPosition(physicalStart)
+
+    const logicalEnd = new Vec2(ev.offsetX, ev.offsetY)
+    const physicalEnd = this.logicalToPhysicalViewSpace().transformPosition(logicalEnd)
+    const configEnd = this.configSpaceToPhysicalViewSpace().inverseTransformPosition(physicalEnd)
+
+    if (!configStart || !configEnd) return
+
+    const left = Math.min(configStart.x, configEnd.x)
+    const right = Math.max(configStart.x, configEnd.x)
+
+    const width = right - left
+    const height = this.props.configSpaceViewportRect.height()
+
+    this.setConfigSpaceViewportRect(new Rect(
+      new Vec2(left, configEnd.y - height / 2),
+      new Vec2(width, height)
+    ))
+  }
+
+  private onMouseMove = (ev: MouseEvent) => {
+    if (this.dragStartPos) {
+      ev.preventDefault()
+      this.onMouseDrag(ev)
+      return
+    }
+  }
+
+  private onWindowMouseUp = (ev: MouseEvent) => {
+    document.body.style.cursor = 'default'
+    this.dragStartPos = null
+  }
+
   private preprocess(flamechart: Flamechart) {
     if (!this.canvas || !this.regl) return
     const configSpaceRects: Rect[] = []
@@ -152,9 +239,20 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     this.overlayRenderer = overlayRectangleRenderer(this.regl);
   }
 
+  componentDidMount() {
+    window.addEventListener('mouseup', this.onWindowMouseUp)
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('mouseup', this.onWindowMouseUp)
+  }
+
   render() {
     return (
       <div
+        onWheel={this.onWheel}
+        onMouseDown={this.onMouseDown}
+        onMouseMove={this.onMouseMove}
         className={css(style.minimap, style.vbox)} >
         <canvas
           width={1} height={1}
