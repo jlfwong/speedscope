@@ -14,9 +14,7 @@ export interface StackprofProfile {
   raw_timestamp_deltas: number[]
 }
 
-export function importFromStackprof(contents: string): Profile {
-  const stackprofProfile = JSON.parse(contents) as StackprofProfile
-
+export function importFromStackprof(stackprofProfile: StackprofProfile): Profile {
   const duration = stackprofProfile.raw_timestamp_deltas.reduce((a, b) => a + b, 0)
   const profile = new Profile(duration)
 

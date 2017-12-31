@@ -54,13 +54,13 @@ export class Flamechart {
     return true
   }
 
-  private static mergeFrames(first: FlamechartFrame, second: FlamechartFrame): FlamechartFrame {
+  private static mergeFrames(frames: FlamechartFrame[]): FlamechartFrame {
     const frame: FlamechartFrame = {
-      node: first.node,
-      start: first.start,
-      end: second.end,
-      parent: first.parent,
-      children: first.children.concat(second.children)
+      node: frames[0].node,
+      start: frames[0].start,
+      end: frames[frames.length-1].end,
+      parent: frames[0].parent,
+      children: ([] as FlamechartFrame[]).concat(...frames.map(f => f.children))
     }
     for (let child of frame.children) {
       child.parent = frame
@@ -70,14 +70,22 @@ export class Flamechart {
 
   private static mergeAdjacentFrames(layer: StackLayer): StackLayer {
     const ret: StackLayer = []
+
+    let partition: FlamechartFrame[] = []
+
     for (let flamechartFrame of layer) {
-      const prev = ret.length > 0 ? ret[ret.length - 1] : null
-      if (prev && Flamechart.shouldMergeFrames(prev, flamechartFrame)) {
-        ret.pop()
-        ret.push(Flamechart.mergeFrames(prev, flamechartFrame))
-      } else {
-        ret.push(flamechartFrame)
+      const prev: FlamechartFrame | undefined = partition[partition.length-1]
+      if (prev && !Flamechart.shouldMergeFrames(prev, flamechartFrame)) {
+        if (partition.length > 0) {
+          ret.push(Flamechart.mergeFrames(partition))
+        }
+        partition = []
       }
+      partition.push(flamechartFrame)
+    }
+
+    if (partition.length > 0) {
+      ret.push(Flamechart.mergeFrames(partition))
     }
     return ret
   }

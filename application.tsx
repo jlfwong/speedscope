@@ -4,6 +4,7 @@ import {ReloadableComponent} from './reloadable'
 
 import {importFromBGFlameGraph} from './import/bg-flamegraph'
 import {importFromStackprof} from './import/stackprof'
+import {importFromChrome} from './import/chrome'
 
 import {Profile} from './profile'
 import {Flamechart} from './flamechart'
@@ -41,14 +42,25 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     }
   }
 
+  importJSON(parsed: any): Profile {
+    if (Array.isArray(parsed) && parsed[parsed.length - 1].name === "CpuProfile") {
+      return importFromChrome(parsed)
+    } else {
+      return importFromStackprof(parsed)
+    }
+  }
+
   onDrop = (ev: DragEvent) => {
     const file = ev.dataTransfer.files.item(0)
     const reader = new FileReader
     reader.addEventListener('loadend', () => {
-      const profile = file.name.endsWith('json') ? importFromStackprof(reader.result) : importFromBGFlameGraph(reader.result)
+      console.time('import')
+      const profile = file.name.endsWith('json') ? this.importJSON(JSON.parse(reader.result)) : importFromBGFlameGraph(reader.result)
       const flamechart = new Flamechart(profile)
       const sortedFlamechart = new Flamechart(profile.sortedAlphabetically())
-      this.setState({profile, flamechart, sortedFlamechart})
+      this.setState({ profile, flamechart, sortedFlamechart }, () => {
+        console.timeEnd('import')
+      })
     })
     reader.readAsText(file)
     ev.preventDefault()
