@@ -84,7 +84,7 @@ export function importFromChrome(events: TimelineEvent[]) {
   }
 
   for (let i = 0; i < samples.length; i++) {
-    const timeDelta = timeDeltas[i]
+    const timeDelta = timeDeltas[i+1] || 0
     const nodeId = samples[i]
     let node = nodeById.get(nodeId)
     if (!node) continue
