@@ -1,3 +1,5 @@
+import { lastOf } from './utils'
+
 export interface FrameInfo {
   key: string | number
 
@@ -84,10 +86,6 @@ function getOrInsert<K, V>(map: Map<K, V>, k: K, v: V): V {
   return map.get(k)!
 }
 
-function lastOf<T>(ts: T[]): T | undefined {
-  return ts[ts.length-1]
-}
-
 export class Profile {
   // Duration of the entire profile, in microseconds
   private duration: number
@@ -137,6 +135,41 @@ export class Profile {
       }
 
       fn(nodeToStack.get(topOfStackNode)!, this.timeDeltas[i])
+    }
+  }
+
+  forEachCall(
+    openFrame: (node: CallTreeNode, value: number) => void,
+    closeFrame: (node: CallTreeNode, value: number) => void
+  ) {
+    let prevStack: CallTreeNode[] = []
+    let value = 0
+
+    let sampleIndex = 0
+    for (let stackTop of this.samples) {
+      // Close frames that are no longer open
+      while (prevStack.length > 0 && lastOf(prevStack) != stackTop) {
+        closeFrame(prevStack.pop()!, value)
+      }
+
+      // Open frames that are now becoming open
+      const toOpen: CallTreeNode[] = []
+      for (let node: CallTreeNode | null = stackTop; node && node != lastOf(prevStack); node = node.parent) {
+        toOpen.push(node)
+      }
+
+      for (let i = toOpen.length - 1; i >= 0; i--) {
+        const node = toOpen[i]
+        openFrame(node, value)
+      }
+
+      prevStack = prevStack.concat(toOpen)
+      value += this.timeDeltas[sampleIndex++]
+    }
+
+    // Close frames that are open at the end of the trace
+    for (let i = prevStack.length - 1; i >= 0; i--) {
+      closeFrame(prevStack[i], value)
     }
   }
 

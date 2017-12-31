@@ -22,12 +22,13 @@ interface FlamechartFrameLabel {
 }
 
 function binarySearch(lo: number, hi: number, f: (val: number) => number, target: number, targetRangeSize = 1): [number, number] {
+  console.assert(!isNaN(targetRangeSize) && !isNaN(target))
   while (true) {
     if (hi - lo <= targetRangeSize) return [lo, hi]
     const mid = (hi + lo) / 2
     const val = f(mid)
     if (val < target) lo = mid
-    if (val > target) hi = mid
+    else hi = mid
   }
 }
 

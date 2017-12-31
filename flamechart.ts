@@ -1,5 +1,7 @@
 import {Profile, Frame, CallTreeNode} from './profile'
 
+import { lastOf } from './utils'
+
 interface FlamechartFrame {
   node: CallTreeNode
   start: number
@@ -22,73 +24,6 @@ export class Flamechart {
   getLayers() { return this.layers }
   getFrameColors() { return this.frameColors }
   getMinFrameWidth() { return this.minFrameWidth }
-
-  private appendFrame(layerIndex: number, node: CallTreeNode, timeDelta: number, parent: FlamechartFrame | null) {
-    while (layerIndex >= this.layers.length) this.layers.push([])
-    const flamechartFrame: FlamechartFrame = {
-      node: node,
-      start: this.duration,
-      end: this.duration + timeDelta,
-      parent,
-      children: []
-    }
-    this.layers[layerIndex].push(flamechartFrame)
-    if (parent) {
-      parent.children.push(flamechartFrame)
-    }
-    return flamechartFrame
-  }
-
-  private appendSample(stack: CallTreeNode[], timeDelta: number) {
-    let parent: FlamechartFrame | null = null
-    for (let i = 0; i < stack.length; i++) {
-      parent = this.appendFrame(i, stack[i], timeDelta, parent)
-    }
-    this.duration += timeDelta
-  }
-
-  private static shouldMergeFrames(first: FlamechartFrame, second: FlamechartFrame): boolean {
-    if (first.node !== second.node) return false
-    if (first.parent !== second.parent) return false
-    if (first.end !== second.start) return false
-    return true
-  }
-
-  private static mergeFrames(frames: FlamechartFrame[]): FlamechartFrame {
-    const frame: FlamechartFrame = {
-      node: frames[0].node,
-      start: frames[0].start,
-      end: frames[frames.length-1].end,
-      parent: frames[0].parent,
-      children: ([] as FlamechartFrame[]).concat(...frames.map(f => f.children))
-    }
-    for (let child of frame.children) {
-      child.parent = frame
-    }
-    return frame
-  }
-
-  private static mergeAdjacentFrames(layer: StackLayer): StackLayer {
-    const ret: StackLayer = []
-
-    let partition: FlamechartFrame[] = []
-
-    for (let flamechartFrame of layer) {
-      const prev: FlamechartFrame | undefined = partition[partition.length-1]
-      if (prev && !Flamechart.shouldMergeFrames(prev, flamechartFrame)) {
-        if (partition.length > 0) {
-          ret.push(Flamechart.mergeFrames(partition))
-        }
-        partition = []
-      }
-      partition.push(flamechartFrame)
-    }
-
-    if (partition.length > 0) {
-      ret.push(Flamechart.mergeFrames(partition))
-    }
-    return ret
-  }
 
   private selectFrameColors(profile: Profile) {
     const frames: Frame[] = []
@@ -164,16 +99,35 @@ export class Flamechart {
   }
 
   constructor(private profile: Profile) {
-    profile.forEachSample(this.appendSample.bind(this))
-    this.layers = this.layers.map(Flamechart.mergeAdjacentFrames)
-    this.minFrameWidth = Infinity
-    for (let layer of this.layers) {
-      for (let frame of layer) {
-        const width = frame.end - frame.start
-        if (!width) continue
-        this.minFrameWidth = Math.min(this.minFrameWidth, width)
+    const stack: FlamechartFrame[] = []
+    const openFrame = (node: CallTreeNode, value: number) => {
+      const parent = lastOf(stack)
+      const frame: FlamechartFrame = {
+        node,
+        parent,
+        children: [],
+        start: value,
+        end: value,
       }
+      if (parent) {
+        parent.children.push(frame)
+      }
+      stack.push(frame)
     }
+
+    this.minFrameWidth = Infinity
+    const closeFrame = (node: CallTreeNode, value: number) => {
+      console.assert(stack.length > 0)
+      const stackTop = stack.pop()!
+      stackTop.end = value
+      const layerIndex = stack.length
+      while (this.layers.length <= layerIndex) this.layers.push([])
+      this.layers[layerIndex].push(stackTop)
+      this.minFrameWidth = Math.min(this.minFrameWidth, stackTop.end - stackTop.start)
+    }
+
+    this.duration = profile.getDuration()
+    profile.forEachCall(openFrame, closeFrame)
     this.selectFrameColors(profile)
   }
 }

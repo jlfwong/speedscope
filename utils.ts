@@ -10,3 +10,7 @@ export function atMostOnceAFrame<F extends Function>(fn: F) {
   }
   return ret as any as F
 }
+
+export function lastOf<T>(ts: T[]): T | null {
+  return ts[ts.length-1] || null
+}
