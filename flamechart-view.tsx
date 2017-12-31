@@ -159,7 +159,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
   private configSpaceSize() {
     return new Vec2(
-      this.props.flamechart.getDuration(),
+      this.props.flamechart.getTotalWeight(),
       this.props.flamechart.getLayers().length
     )
   }
@@ -582,7 +582,7 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
   }
 
   formatTime(timeInNs: number) {
-    const totalTimeNs = this.props.flamechart.getDuration()
+    const totalTimeNs = this.props.flamechart.getTotalWeight()
     return `${(timeInNs / 1000).toFixed(2)}ms (${(100 * timeInNs/totalTimeNs).toFixed()}%)`
   }
 

@@ -12,20 +12,32 @@ interface FlamechartFrame {
 
 type StackLayer = FlamechartFrame[]
 
+interface FlamechartDataSource {
+  getTotalWeight(): number
+
+  forEachCall(
+    openFrame: (node: CallTreeNode, value: number) => void,
+    closeFrame: (value: number) => void
+  ): void
+
+  forEachFrame(fn: (frame: Frame) => void): void
+}
+
 export class Flamechart {
   // Bottom to top
   private layers: StackLayer[] = []
-  private duration: number = 0
+  private totalWeight: number = 0
   private minFrameWidth: number = 1
 
   private frameColors = new Map<Frame, [number, number, number]>()
 
-  getDuration() { return this.duration }
+  getTotalWeight() { return this.totalWeight }
   getLayers() { return this.layers }
   getFrameColors() { return this.frameColors }
   getMinFrameWidth() { return this.minFrameWidth }
 
-  private selectFrameColors(profile: Profile) {
+  // TODO(jlfwong): Move this a color generation file
+  private selectFrameColors(source: FlamechartDataSource) {
     const frames: Frame[] = []
 
     function parts(f: Frame) {
@@ -50,7 +62,7 @@ export class Flamechart {
       return aParts.join() > bParts.join() ? score : -score
     }
 
-    this.profile.forEachFrame(f => frames.push(f))
+    this.source.forEachFrame(f => frames.push(f))
     frames.sort(compare)
 
     const cumulativeScores: number[] = []
@@ -98,7 +110,7 @@ export class Flamechart {
     }
   }
 
-  constructor(private profile: Profile) {
+  constructor(private source: FlamechartDataSource) {
     const stack: FlamechartFrame[] = []
     const openFrame = (node: CallTreeNode, value: number) => {
       const parent = lastOf(stack)
@@ -116,7 +128,7 @@ export class Flamechart {
     }
 
     this.minFrameWidth = Infinity
-    const closeFrame = (node: CallTreeNode, value: number) => {
+    const closeFrame = (value: number) => {
       console.assert(stack.length > 0)
       const stackTop = stack.pop()!
       stackTop.end = value
@@ -126,8 +138,8 @@ export class Flamechart {
       this.minFrameWidth = Math.min(this.minFrameWidth, stackTop.end - stackTop.start)
     }
 
-    this.duration = profile.getDuration()
-    profile.forEachCall(openFrame, closeFrame)
-    this.selectFrameColors(profile)
+    this.totalWeight = source.getTotalWeight()
+    source.forEachCall(openFrame, closeFrame)
+    this.selectFrameColors(source)
   }
 }

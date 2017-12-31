@@ -33,7 +33,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
 
   private configSpaceSize() {
     return new Vec2(
-      this.props.flamechart.getDuration(),
+      this.props.flamechart.getTotalWeight(),
       this.props.flamechart.getLayers().length
     )
   }

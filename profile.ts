@@ -18,16 +18,16 @@ export interface FrameInfo {
   col?: number
 }
 
-export class HasTimings {
-  private selfTime = 0
-  private totalTime = 0
-  getSelfTime() { return this.selfTime }
-  getTotalTime() { return this.totalTime }
-  addToTotalTime(delta: number) { this.totalTime += delta }
-  addToSelfTime(delta: number) { this.selfTime += delta }
+export class HasWeights {
+  private selfWeight = 0
+  private totalWeight = 0
+  getSelfTime() { return this.selfWeight }
+  getTotalTime() { return this.totalWeight }
+  addToTotalWeight(delta: number) { this.totalWeight += delta }
+  addToSelfWeight(delta: number) { this.selfWeight += delta }
 }
 
-export class Frame extends HasTimings {
+export class Frame extends HasWeights {
   key: string | number
 
   // Name of the frame. May be a method name, e.g.
@@ -54,7 +54,7 @@ export class Frame extends HasTimings {
   }
 }
 
-export class CallTreeNode extends HasTimings {
+export class CallTreeNode extends HasWeights {
   children: CallTreeNode[] = []
   constructor(readonly frame: Frame, readonly parent: CallTreeNode | null) {
     super()
@@ -96,51 +96,17 @@ export class Profile {
   // List of references to CallTreeNodes at the top of the
   // stack at the time of the sample.
   private samples: CallTreeNode[] = []
-
-  // List of time elapsed since the preceding sample was taken.
-  // The first elements it the time elapsed since the beginning
-  // of recording that the sample was taken.
-  // Times are in microseconds.
-  // This array should be the same length as the "samples" array.
-  private timeDeltas: number[] = []
-
-  // List of events recorded in parallel with the call
-  // stack samples. Useful for overlaying IO events on
-  // the same time axis as the sampling profile.
-  private events: ProfilingEvent[] = []
+  private weights: number[] = []
 
   constructor(duration: number) {
     this.duration = duration
   }
 
-  getDuration() { return this.duration }
-  getEvents() { return this.events }
-
-  forEachSample(fn: (stack: CallTreeNode[], timeDelta: number) => void) {
-    const nodeToStack = new Map<CallTreeNode, CallTreeNode[]>()
-    for (let i = 0; i < this.samples.length; i++) {
-      let topOfStackNode: CallTreeNode = this.samples[i]
-
-      // Memoize
-      if (!nodeToStack.has(topOfStackNode)) {
-        const stack: CallTreeNode[] = []
-        for (let node: CallTreeNode | null = topOfStackNode; node; node = node.parent) {
-          stack.push(node)
-        }
-
-        // Reverse to order from bottom-to-top
-        stack.reverse()
-
-        nodeToStack.set(topOfStackNode, stack)
-      }
-
-      fn(nodeToStack.get(topOfStackNode)!, this.timeDeltas[i])
-    }
-  }
+  getTotalWeight() { return this.duration }
 
   forEachCall(
     openFrame: (node: CallTreeNode, value: number) => void,
-    closeFrame: (node: CallTreeNode, value: number) => void
+    closeFrame: (value: number) => void
   ) {
     let prevStack: CallTreeNode[] = []
     let value = 0
@@ -149,7 +115,8 @@ export class Profile {
     for (let stackTop of this.samples) {
       // Close frames that are no longer open
       while (prevStack.length > 0 && lastOf(prevStack) != stackTop) {
-        closeFrame(prevStack.pop()!, value)
+        prevStack.pop()
+        closeFrame(value)
       }
 
       // Open frames that are now becoming open
@@ -164,12 +131,12 @@ export class Profile {
       }
 
       prevStack = prevStack.concat(toOpen)
-      value += this.timeDeltas[sampleIndex++]
+      value += this.weights[sampleIndex++]
     }
 
     // Close frames that are open at the end of the trace
     for (let i = prevStack.length - 1; i >= 0; i--) {
-      closeFrame(prevStack[i], value)
+      closeFrame(value)
     }
   }
 
@@ -177,8 +144,8 @@ export class Profile {
     this.frames.forEach(fn)
   }
 
-  appendSample(stack: FrameInfo[], timeDelta: number) {
-    if (isNaN(timeDelta)) throw new Error('invalid timeDelta')
+  appendSample(stack: FrameInfo[], weight: number) {
+    if (isNaN(weight)) throw new Error('invalid weight')
     let node: CallTreeNode | null = null
     let children = this.calltreeRoots
 
@@ -191,49 +158,20 @@ export class Profile {
         node = new CallTreeNode(frame, node)
         children.push(node)
       }
-      node.addToTotalTime(timeDelta)
-      node.frame.addToTotalTime(timeDelta)
+      node.addToTotalWeight(weight)
+
+      // TODO(jlfwong): Do this in a set to avoid
+      // multiple-counting recursive calls
+      node.frame.addToTotalWeight(weight)
+
       children = node.children
     }
 
     if (node) {
-      node.addToSelfTime(timeDelta)
-      node.frame.addToSelfTime(timeDelta)
+      node.addToSelfWeight(weight)
+      node.frame.addToSelfWeight(weight)
       this.samples.push(node)
-      this.timeDeltas.push(timeDelta)
+      this.weights.push(weight)
     }
-  }
-
-  sortedAlphabetically(): Profile {
-    function key(sample: CallTreeNode) {
-      let k = ''
-      let node: CallTreeNode | null = sample
-      while (node) {
-        k = node.frame.name + ':' + k
-        node = node.parent
-      }
-      return k
-    }
-
-    let sortedSamples: [CallTreeNode, number][] = []
-    for (let i = 0; i < this.samples.length; i++) {
-      sortedSamples.push([this.samples[i], this.timeDeltas[i]])
-    }
-
-    sortedSamples.sort((a, b) => key(a[0]) < key(b[0]) ? -1 : 1)
-
-    const sortedProfile = new Profile(this.duration)
-    for (const [stackTop, timeDelta] of sortedSamples) {
-      const stack: FrameInfo[] = []
-      function visit(node: CallTreeNode) {
-        if (node.parent) visit(node.parent)
-        const frameInfo = {...node.frame}
-        frameInfo.key = frameInfo.name
-        stack.push(frameInfo)
-      }
-      visit(stackTop)
-      sortedProfile.appendSample(stack, timeDelta)
-    }
-    return sortedProfile
   }
 }
