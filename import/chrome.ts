@@ -94,7 +94,7 @@ export function importFromChrome(events: TimelineEvent[]) {
     for (let node = nodeById.get(nodeId); node; node = node.parent) {
       stack.push({
         key: node.id,
-        name: node.callFrame.functionName,
+        name: node.callFrame.functionName || "(anonymous)",
         file: node.callFrame.url,
         line: node.callFrame.lineNumber,
         col: node.callFrame.columnNumber
