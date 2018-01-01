@@ -1,4 +1,4 @@
-import {Profile, Frame, CallTreeNode} from './profile'
+import {Frame, CallTreeNode} from './profile'
 
 import { lastOf } from './utils'
 

@@ -92,6 +92,8 @@ export function importFromChrome(events: TimelineEvent[]) {
     // TODO(jlfwong): This is silly and slow, but good enough for now
     const stack: FrameInfo[] = []
     for (let node = nodeById.get(nodeId); node; node = node.parent) {
+      if (node.callFrame.functionName === '(root)') continue
+      if (node.callFrame.functionName === '(idle)') continue
       stack.push({
         key: node.id,
         name: node.callFrame.functionName || "(anonymous)",

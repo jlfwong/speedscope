@@ -61,48 +61,62 @@ export class CallTreeNode extends HasWeights {
   }
 }
 
-export interface ProfilingEvent {
-  // Name of the event, e.g. "SQL Query"
-  name: string
-
-  // Details (e.g. the SQL query)
-  details?: string
-
-  // Bottom of the stack of the call-tree
-  stack: CallTreeNode
-
-  // Elapsed time since the start of the profile,
-  // in microseconds
-  start: number
-  end: number
-
-  // Color, if specified to associate with this event.
-  // If unspecified, will be generated based on the name.
-  color?: string
-}
-
 function getOrInsert<K, V>(map: Map<K, V>, k: K, v: V): V {
   if (!map.has(k)) map.set(k, v)
   return map.get(k)!
 }
 
+const rootFrame = new Frame({
+  key: '(speedscope root)',
+  name: '(speedscope root)',
+})
+
 export class Profile {
-  // Duration of the entire profile, in microseconds
-  private duration: number
+  private totalWeight: number
 
   private frames = new Map<string | number, Frame>()
-  private calltreeRoots: CallTreeNode[] = []
+  private appendOrderCalltreeRoot = new CallTreeNode(rootFrame, null)
+  private groupedCalltreeRoot = new CallTreeNode(rootFrame, null)
 
   // List of references to CallTreeNodes at the top of the
   // stack at the time of the sample.
   private samples: CallTreeNode[] = []
   private weights: number[] = []
 
-  constructor(duration: number) {
-    this.duration = duration
+  constructor(totalWeight: number) {
+    this.totalWeight = totalWeight
   }
 
-  getTotalWeight() { return this.duration }
+  getTotalWeight() { return this.totalWeight }
+  getTotalNonIdleWeight() {
+    return this.groupedCalltreeRoot.children.reduce((n, c) => n + c.getTotalTime(), 0)
+  }
+
+  forEachCallGrouped(
+    openFrame: (node: CallTreeNode, value: number) => void,
+    closeFrame: (value: number) => void
+  ) {
+    function visit(node: CallTreeNode, start: number) {
+      if (node.frame !== rootFrame) {
+        openFrame(node, start)
+      }
+
+      let childTime = 0
+
+      const children = [...node.children]
+      children.sort((a, b) => a.getTotalTime() > b.getTotalTime() ? -1 : 1)
+
+      children.forEach(function (child) {
+        visit(child, start + childTime)
+        childTime += child.getTotalTime()
+      })
+
+      if (node.frame !== rootFrame) {
+        closeFrame(start + node.getTotalTime())
+      }
+    }
+    visit(this.groupedCalltreeRoot, 0)
+  }
 
   forEachCall(
     openFrame: (node: CallTreeNode, value: number) => void,
@@ -113,20 +127,35 @@ export class Profile {
 
     let sampleIndex = 0
     for (let stackTop of this.samples) {
+      // Find lowest common ancestor of the current stack and the previous one
+      let lca: CallTreeNode | null = null
+
+      // This is O(n^2), but n should be relatively small here (stack height),
+      // so hopefully this isn't much of a problem
+      for (
+        lca = stackTop;
+        lca && lca.frame != rootFrame && prevStack.indexOf(lca) === -1;
+        lca = lca.parent
+      ) {}
+
       // Close frames that are no longer open
-      while (prevStack.length > 0 && lastOf(prevStack) != stackTop) {
+      while (prevStack.length > 0 && lastOf(prevStack) != lca) {
         prevStack.pop()
         closeFrame(value)
       }
 
       // Open frames that are now becoming open
       const toOpen: CallTreeNode[] = []
-      for (let node: CallTreeNode | null = stackTop; node && node != lastOf(prevStack); node = node.parent) {
+      for (
+        let node: CallTreeNode | null = stackTop;
+        node && node.frame != rootFrame && node != lca;
+        node = node.parent
+      ) {
         toOpen.push(node)
       }
+      toOpen.reverse()
 
-      for (let i = toOpen.length - 1; i >= 0; i--) {
-        const node = toOpen[i]
+      for (let node of toOpen) {
         openFrame(node, value)
       }
 
@@ -144,34 +173,48 @@ export class Profile {
     this.frames.forEach(fn)
   }
 
-  appendSample(stack: FrameInfo[], weight: number) {
+  _appendSample(stack: FrameInfo[], weight: number, useAppendOrder: boolean) {
     if (isNaN(weight)) throw new Error('invalid weight')
-    let node: CallTreeNode | null = null
-    let children = this.calltreeRoots
+    let node = useAppendOrder ? this.appendOrderCalltreeRoot : this.groupedCalltreeRoot
+
+    let framesInStack = new Set<Frame>()
 
     for (let frameInfo of stack) {
       const frame = getOrInsert(this.frames, frameInfo.key, new Frame(frameInfo))
-      const last = lastOf(children)
+      const last = useAppendOrder ? lastOf(node.children) : node.children.find(c => c.frame === frame)
       if (last && last.frame == frame) {
         node = last
       } else {
+        const parent = node
         node = new CallTreeNode(frame, node)
-        children.push(node)
+        parent.children.push(node)
       }
       node.addToTotalWeight(weight)
 
-      // TODO(jlfwong): Do this in a set to avoid
-      // multiple-counting recursive calls
-      node.frame.addToTotalWeight(weight)
-
-      children = node.children
+      // It's possible for the same frame to occur multiple
+      // times in the same call stack due to either direct
+      // or indirect recursion. We want to avoid counting that
+      // frame multiple times for a single sample, we so just
+      // track all of the unique frames that participated in
+      // this call stack, then add to their weight at the end.
+      framesInStack.add(node.frame)
     }
+    node.addToSelfWeight(weight)
 
-    if (node) {
-      node.addToSelfWeight(weight)
+    if (useAppendOrder) {
       node.frame.addToSelfWeight(weight)
+
+      for (let frame of framesInStack) {
+        frame.addToTotalWeight(weight)
+      }
+
       this.samples.push(node)
       this.weights.push(weight)
     }
+  }
+
+  appendSample(stack: FrameInfo[], weight: number) {
+    this._appendSample(stack, weight, true)
+    this._appendSample(stack, weight, false)
   }
 }

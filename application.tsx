@@ -57,7 +57,11 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       console.time('import')
       const profile = file.name.endsWith('json') ? this.importJSON(JSON.parse(reader.result)) : importFromBGFlameGraph(reader.result)
       const flamechart = new Flamechart(profile)
-      const sortedFlamechart = new Flamechart(profile)
+      const sortedFlamechart = new Flamechart({
+        getTotalWeight: profile.getTotalNonIdleWeight.bind(profile),
+        forEachCall: profile.forEachCallGrouped.bind(profile),
+        forEachFrame: profile.forEachFrame.bind(profile)
+      })
       this.setState({ profile, flamechart, sortedFlamechart }, () => {
         console.timeEnd('import')
       })
