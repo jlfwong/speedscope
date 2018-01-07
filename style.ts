@@ -4,11 +4,14 @@ export enum FontFamily {
 
 export enum FontSize {
   LABEL = 10,
-  TITLE = 12
+  TITLE = 12,
+  BIG_BUTTON = 36
 }
 
 export enum Colors {
   LIGHT_GRAY = "#C4C4C4",
   MEDIUM_GRAY = "#BDBDBD",
-  GRAY = '#666666'
+  GRAY = '#666666',
+  LIGHT_BLUE = '#56CCF2',
+  DARK_BLUE = '#2F80ED'
 }
