@@ -127,7 +127,8 @@ const style = StyleSheet.create({
     textAlign: 'center',
     fontFamily: FontFamily.MONOSPACE,
     fontSize: FontSize.TITLE,
-    lineHeight: '18px'
+    lineHeight: '18px',
+    userSelect: 'none'
   }
 })
 
