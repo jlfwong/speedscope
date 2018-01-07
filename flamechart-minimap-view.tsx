@@ -91,6 +91,9 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     const left = 0
     const right = this.configSpaceSize().x
 
+    // TODO(jlfwong): There's a huge amount of code duplication here between
+    // this and the FlamechartView.renderOverlays(). Consolidate.
+
     // We want about 10 gridlines to be visible, and want the unit to be
     // 1eN, 2eN, or 5eN for some N
 

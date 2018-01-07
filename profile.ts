@@ -84,19 +84,19 @@ export class RawValueFormatter implements ValueFormatter {
 export class TimeFormatter implements ValueFormatter {
   private multiplier : number
 
-  constructor(unit: 'ns' | 'us' | 'ms' | 's' = 'ns') {
-    if (unit === 'ns') this.multiplier = 1e-9
-    else if (unit === 'us') this.multiplier = 1e-6
-    else if (unit === 'ms') this.multiplier = 1e-3
+  constructor(unit: 'nanoseconds' | 'microseconds' | 'milliseconds' | 'seconds') {
+    if (unit === 'nanoseconds') this.multiplier = 1e-9
+    else if (unit === 'microseconds') this.multiplier = 1e-6
+    else if (unit === 'milliseconds') this.multiplier = 1e-3
     else this.multiplier = 1
   }
 
   format(v: number) {
     const s = v * this.multiplier
 
-    if (s / 1e0 > 1) return `${s.toFixed(2)}s`
-    if (s / 1e-3 > 1) return `${(s / 1e-3).toFixed(2)}ms`
-    if (s / 1e-6 > 1) return `${(s / 1e-6).toFixed(2)}us`
+    if (s / 1e0 >= 1) return `${s.toFixed(2)}s`
+    if (s / 1e-3 >= 1) return `${(s / 1e-3).toFixed(2)}ms`
+    if (s / 1e-6 >= 1) return `${(s / 1e-6).toFixed(2)}µs`
     else return `${(s / 1e-9).toFixed(2)}ms`
   }
 }

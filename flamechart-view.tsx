@@ -610,7 +610,14 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
 
   formatValue(weight: number) {
     const totalWeight = this.props.flamechart.getTotalWeight()
-    return `${this.props.flamechart.formatValue(weight)} (${(100 * weight/totalWeight).toFixed()}%)`
+    const percent = 100 * weight / totalWeight
+    let formattedPercent = `${percent.toFixed(0)}%`
+    if (percent === 100) formattedPercent = '100%'
+    else if (percent > 99) formattedPercent = '>99%'
+    else if (percent < 1) formattedPercent = `${percent.toFixed(2)}%`
+    else if (percent < 10) formattedPercent = `${percent.toFixed(1)}%`
+
+    return `${this.props.flamechart.formatValue(weight)} (${formattedPercent})`
   }
 
   renderTooltip() {

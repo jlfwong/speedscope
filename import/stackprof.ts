@@ -41,6 +41,6 @@ export function importFromStackprof(stackprofProfile: StackprofProfile): Profile
     profile.appendSample(stack, sampleDuration)
   }
 
-  profile.setValueFormatter(new TimeFormatter('us'))
+  profile.setValueFormatter(new TimeFormatter('microseconds'))
   return profile
 }

@@ -107,6 +107,6 @@ export function importFromChrome(events: TimelineEvent[]) {
     profile.appendSample(stack, timeDelta)
   }
 
-  profile.setValueFormatter(new TimeFormatter('us'))
+  profile.setValueFormatter(new TimeFormatter('microseconds'))
   return profile
 }
