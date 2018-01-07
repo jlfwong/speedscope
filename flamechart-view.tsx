@@ -540,6 +540,28 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     this.renderCanvas()
   }
 
+  onWindowKeyPress = (ev: KeyboardEvent) => {
+    if (!this.canvas) return
+    const {width, height} = this.canvas.getBoundingClientRect()
+
+    if (ev.key === '=' || ev.key === '+') {
+      this.zoom(new Vec2(width / 2, height / 2), 0.5)
+      ev.preventDefault()
+    } else if (ev.key === '-' || ev.key === '_') {
+      this.zoom(new Vec2(width / 2, height / 2), 2)
+      ev.preventDefault()
+    } else if (ev.key === 'ArrowRight' || ev.key === 'd') {
+      this.pan(new Vec2(100, 0))
+    } else if (ev.key === 'ArrowLeft' || ev.key === 'a') {
+      this.pan(new Vec2(-100, 0))
+    } else if (ev.key === 'ArrowUp' || ev.key === 'w') {
+      this.pan(new Vec2(0, -100))
+    } else if (ev.key === 'ArrowDown' || ev.key === 's') {
+      this.pan(new Vec2(0, 100))
+    }
+  }
+
+
   shouldComponentUpdate() { return false }
   componentWillReceiveProps(nextProps: FlamechartPanZoomViewProps) {
     if (this.props.flamechart !== nextProps.flamechart) {
@@ -552,10 +574,12 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   componentDidMount() {
     window.addEventListener('mouseup', this.onWindowMouseUp)
     window.addEventListener('resize', this.onWindowResize)
+    window.addEventListener('keydown', this.onWindowKeyPress)
   }
   componentWillUnmount() {
     window.removeEventListener('mouseup', this.onWindowMouseUp)
     window.removeEventListener('resize', this.onWindowResize)
+    window.removeEventListener('keydown', this.onWindowKeyPress)
   }
 
   render() {

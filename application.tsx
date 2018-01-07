@@ -13,7 +13,7 @@ import { FontFamily, FontSize } from './style'
 
 const enum SortOrder {
   CHRONO,
-  ALPHA
+  LEFT_HEAVY
 }
 
 interface ApplicationState {
@@ -76,9 +76,13 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   onWindowKeyPress = (ev: KeyboardEvent) => {
-    if (ev.key == 'a') {
+    if (ev.key === '1') {
       this.setState({
-        sortOrder: this.state.sortOrder === SortOrder.CHRONO ? SortOrder.ALPHA : SortOrder.CHRONO
+        sortOrder: SortOrder.CHRONO
+      })
+    } else if (ev.key === '2') {
+      this.setState({
+        sortOrder: SortOrder.LEFT_HEAVY
       })
     }
   }
