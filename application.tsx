@@ -1,4 +1,4 @@
-import {h, Component} from 'preact'
+import {h} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 import {ReloadableComponent} from './reloadable'
 
