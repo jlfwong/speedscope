@@ -15,6 +15,8 @@ type StackLayer = FlamechartFrame[]
 interface FlamechartDataSource {
   getTotalWeight(): number
 
+  formatValue(v: number): string
+
   forEachCall(
     openFrame: (node: CallTreeNode, value: number) => void,
     closeFrame: (value: number) => void
@@ -35,6 +37,7 @@ export class Flamechart {
   getLayers() { return this.layers }
   getFrameColors() { return this.frameColors }
   getMinFrameWidth() { return this.minFrameWidth }
+  formatValue(v: number) { return this.source.formatValue(v) }
 
   // TODO(jlfwong): Move this a color generation file
   private selectFrameColors(source: FlamechartDataSource) {
@@ -132,6 +135,7 @@ export class Flamechart {
       console.assert(stack.length > 0)
       const stackTop = stack.pop()!
       stackTop.end = value
+      if (stackTop.end - stackTop.start === 0) return
       const layerIndex = stack.length
       while (this.layers.length <= layerIndex) this.layers.push([])
       this.layers[layerIndex].push(stackTop)

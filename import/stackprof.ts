@@ -1,6 +1,6 @@
 // https://github.com/tmm1/stackprof
 
-import {Profile, FrameInfo} from '../profile'
+import {Profile, TimeFormatter, FrameInfo} from '../profile'
 
 interface StackprofFrame {
   name: string
@@ -41,5 +41,6 @@ export function importFromStackprof(stackprofProfile: StackprofProfile): Profile
     profile.appendSample(stack, sampleDuration)
   }
 
+  profile.setValueFormatter(new TimeFormatter('us'))
   return profile
 }

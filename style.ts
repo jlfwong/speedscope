@@ -8,6 +8,7 @@ export enum FontSize {
 }
 
 export enum Colors {
+  LIGHT_GRAY = "#C4C4C4",
   MEDIUM_GRAY = "#BDBDBD",
-  LIGHT_GRAY = "#C4C4C4"
+  GRAY = '#666666'
 }

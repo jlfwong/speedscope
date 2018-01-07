@@ -1,4 +1,4 @@
-import {Profile, FrameInfo} from '../profile'
+import {Profile, TimeFormatter, FrameInfo} from '../profile'
 
 interface TimelineEvent {
   pid: number,
@@ -106,5 +106,7 @@ export function importFromChrome(events: TimelineEvent[]) {
 
     profile.appendSample(stack, timeDelta)
   }
+
+  profile.setValueFormatter(new TimeFormatter('us'))
   return profile
 }

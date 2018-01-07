@@ -14,3 +14,12 @@ export function atMostOnceAFrame<F extends Function>(fn: F) {
 export function lastOf<T>(ts: T[]): T | null {
   return ts[ts.length-1] || null
 }
+
+// NOTE: This blindly assumes the same result across contexts.
+const measureTextCache = new Map<string, number>()
+export function cachedMeasureTextWidth(ctx: CanvasRenderingContext2D, text: string): number {
+  if (!measureTextCache.has(text)) {
+    measureTextCache.set(text, ctx.measureText(text).width)
+  }
+  return measureTextCache.get(text)!
+}

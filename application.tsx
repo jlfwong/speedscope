@@ -60,7 +60,8 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       const sortedFlamechart = new Flamechart({
         getTotalWeight: profile.getTotalNonIdleWeight.bind(profile),
         forEachCall: profile.forEachCallGrouped.bind(profile),
-        forEachFrame: profile.forEachFrame.bind(profile)
+        formatValue: profile.formatValue.bind(profile),
+        forEachFrame: profile.forEachFrame.bind(profile),
       })
       this.setState({ profile, flamechart, sortedFlamechart }, () => {
         console.timeEnd('import')

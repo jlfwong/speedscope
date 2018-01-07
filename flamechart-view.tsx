@@ -9,12 +9,12 @@ import * as regl from 'regl'
 import { vec3, ReglCommand, ReglCommandConstructor } from 'regl'
 
 import { Rect, Vec2, AffineTransform, clamp } from './math'
-import { atMostOnceAFrame } from "./utils";
+import { atMostOnceAFrame, cachedMeasureTextWidth } from "./utils";
 import { rectangleBatchRenderer, RectangleBatchRendererProps } from "./rectangle-batch-renderer"
 import { FlamechartMinimapView } from "./flamechart-minimap-view"
 
 import { style, Sizes } from './flamechart-style'
-import { FontSize, FontFamily } from './style'
+import { FontSize, FontFamily, Colors } from './style'
 
 interface FlamechartFrameLabel {
   configSpaceBounds: Rect
@@ -39,14 +39,6 @@ function buildTrimmedText(text: string, length: number) {
   const prefix = text.substr(0, prefixLength)
   const suffix = text.substr(text.length - prefixLength, prefixLength)
   return prefix + ELLIPSIS + suffix
-}
-
-const measureTextCache = new Map<string, number>()
-function cachedMeasureTextWidth(ctx: CanvasRenderingContext2D, text: string): number {
-  if (!measureTextCache.has(text)) {
-    measureTextCache.set(text, ctx.measureText(text).width)
-  }
-  return measureTextCache.get(text)!
 }
 
 function trimTextMid(ctx: CanvasRenderingContext2D, text: string, maxWidth: number) {
@@ -117,7 +109,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       const layer = layers[i]
       for (let flamechartFrame of layer) {
         const configSpaceBounds = new Rect(
-          new Vec2(flamechartFrame.start, i),
+          new Vec2(flamechartFrame.start, i+1),
           new Vec2(flamechartFrame.end - flamechartFrame.start, 1)
         )
         configSpaceRects.push(configSpaceBounds)
@@ -214,10 +206,9 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
     this.overlayCanvas.width = scaledWidth
     this.overlayCanvas.height = scaledHeight
-
   }
 
-  private renderLabels() {
+  private renderOverlays() {
     const ctx = this.overlayCtx
     if (!ctx) return
     this.resizeOverlayCanvasIfNeeded()
@@ -245,12 +236,13 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     }
 
     ctx.font = `${physicalViewSpaceFontSize}px/${physicalViewSpaceFrameHeight}px ${FontFamily.MONOSPACE}`
-    ctx.fillStyle = 'rgba(80, 70, 70, 1)'
+    ctx.fillStyle = Colors.GRAY
     ctx.textBaseline = 'top'
 
     const minWidthToRender = cachedMeasureTextWidth(ctx, 'M' + ELLIPSIS + 'M')
+    const LABEL_PADDING_PX = (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2
+
     for (let label of this.labels) {
-      const LABEL_PADDING_PX = 2 * DEVICE_PIXEL_RATIO
       let physicalLabelBounds = configToPhysical.transformRect(label.configSpaceBounds)
 
       physicalLabelBounds = physicalLabelBounds
@@ -274,6 +266,41 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
       const trimmedText = trimTextMid(ctx, label.node.frame.name, physicalLabelBounds.width())
       ctx.fillText(trimmedText, physicalLabelBounds.left(), physicalLabelBounds.top())
+    }
+
+    const left = this.props.configSpaceViewportRect.left()
+    const right = this.props.configSpaceViewportRect.right()
+
+    // We want about 10 gridlines to be visible, and want the unit to be
+    // 1eN, 2eN, or 5eN for some N
+
+    // Ideally, we want an interval every 100 logical screen pixels
+    const logicalToConfig = (this.configSpaceToPhysicalViewSpace().inverted() || new AffineTransform()).times(this.logicalToPhysicalViewSpace())
+    const targetInterval = logicalToConfig.transformVector(new Vec2(200, 1)).x
+
+    const minInterval = Math.pow(10, Math.floor(Math.log10(targetInterval)))
+    let interval = minInterval
+
+    if (targetInterval / interval > 5) {
+      interval *= 5
+    } else if (targetInterval / interval > 2) {
+      interval *= 2
+    }
+
+    {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
+      ctx.fillRect(0, 0, physicalViewSize.x, physicalViewSpaceFrameHeight)
+
+      ctx.fillStyle = Colors.GRAY
+      for (let x = Math.ceil(left / interval) * interval; x < right; x += interval) {
+        // TODO(jlfwong): Ensure that labels do not overlap
+        const pos = Math.round(configToPhysical.transformPosition(new Vec2(x, 0)).x)
+        const labelText = this.props.flamechart.formatValue(x)
+        const textWidth = cachedMeasureTextWidth(ctx, labelText)
+
+        ctx.fillText(labelText, pos - textWidth - 5, 2)
+        ctx.fillRect(pos, 0, 1, physicalViewSize.y)
+      }
     }
   }
 
@@ -372,7 +399,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     } else {
       if (!this.renderer) this.preprocess(this.props.flamechart)
       this.renderRects()
-      this.renderLabels()
+      this.renderOverlays()
     }
   })
 
@@ -581,9 +608,9 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
     });
   }
 
-  formatTime(timeInNs: number) {
-    const totalTimeNs = this.props.flamechart.getTotalWeight()
-    return `${(timeInNs / 1000).toFixed(2)}ms (${(100 * timeInNs/totalTimeNs).toFixed()}%)`
+  formatValue(weight: number) {
+    const totalWeight = this.props.flamechart.getTotalWeight()
+    return `${this.props.flamechart.formatValue(weight)} (${(100 * weight/totalWeight).toFixed()}%)`
   }
 
   renderTooltip() {
@@ -617,7 +644,7 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
     return (
       <div className={css(style.hoverTip)} style={positionStyle}>
         <div className={css(style.hoverTipRow)}>
-          <span className={css(style.hoverCount)}>{this.formatTime(hoveredNode.getTotalTime())}</span>{' '}
+          <span className={css(style.hoverCount)}>{this.formatValue(hoveredNode.getTotalWeight())}</span>{' '}
           {hoveredNode.frame.name}
         </div>
       </div>

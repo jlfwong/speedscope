@@ -21,8 +21,8 @@ export interface FrameInfo {
 export class HasWeights {
   private selfWeight = 0
   private totalWeight = 0
-  getSelfTime() { return this.selfWeight }
-  getTotalTime() { return this.totalWeight }
+  getSelfWeight() { return this.selfWeight }
+  getTotalWeight() { return this.totalWeight }
   addToTotalWeight(delta: number) { this.totalWeight += delta }
   addToSelfWeight(delta: number) { this.selfWeight += delta }
 }
@@ -71,6 +71,36 @@ const rootFrame = new Frame({
   name: '(speedscope root)',
 })
 
+export interface ValueFormatter {
+  format(v: number): string
+}
+
+export class RawValueFormatter implements ValueFormatter {
+  format(v: number) {
+    return v.toLocaleString()
+  }
+}
+
+export class TimeFormatter implements ValueFormatter {
+  private multiplier : number
+
+  constructor(unit: 'ns' | 'us' | 'ms' | 's' = 'ns') {
+    if (unit === 'ns') this.multiplier = 1e-9
+    else if (unit === 'us') this.multiplier = 1e-6
+    else if (unit === 'ms') this.multiplier = 1e-3
+    else this.multiplier = 1
+  }
+
+  format(v: number) {
+    const s = v * this.multiplier
+
+    if (s / 1e0 > 1) return `${s.toFixed(2)}s`
+    if (s / 1e-3 > 1) return `${(s / 1e-3).toFixed(2)}ms`
+    if (s / 1e-6 > 1) return `${(s / 1e-6).toFixed(2)}us`
+    else return `${(s / 1e-9).toFixed(2)}ms`
+  }
+}
+
 export class Profile {
   private totalWeight: number
 
@@ -83,13 +113,18 @@ export class Profile {
   private samples: CallTreeNode[] = []
   private weights: number[] = []
 
+  private valueFormatter: ValueFormatter = new RawValueFormatter()
+
   constructor(totalWeight: number) {
     this.totalWeight = totalWeight
   }
 
+  formatValue(v: number) { return this.valueFormatter.format(v) }
+  setValueFormatter(f: ValueFormatter) { this.valueFormatter = f }
+
   getTotalWeight() { return this.totalWeight }
   getTotalNonIdleWeight() {
-    return this.groupedCalltreeRoot.children.reduce((n, c) => n + c.getTotalTime(), 0)
+    return this.groupedCalltreeRoot.children.reduce((n, c) => n + c.getTotalWeight(), 0)
   }
 
   forEachCallGrouped(
@@ -104,15 +139,15 @@ export class Profile {
       let childTime = 0
 
       const children = [...node.children]
-      children.sort((a, b) => a.getTotalTime() > b.getTotalTime() ? -1 : 1)
+      children.sort((a, b) => a.getTotalWeight() > b.getTotalWeight() ? -1 : 1)
 
       children.forEach(function (child) {
         visit(child, start + childTime)
-        childTime += child.getTotalTime()
+        childTime += child.getTotalWeight()
       })
 
       if (node.frame !== rootFrame) {
-        closeFrame(start + node.getTotalTime())
+        closeFrame(start + node.getTotalWeight())
       }
     }
     visit(this.groupedCalltreeRoot, 0)

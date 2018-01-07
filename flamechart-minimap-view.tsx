@@ -5,8 +5,9 @@ import { css } from 'aphrodite'
 import { Flamechart } from './flamechart'
 import { Rect, Vec2, AffineTransform } from './math'
 import { rectangleBatchRenderer, RectangleBatchRendererProps } from "./rectangle-batch-renderer"
-import { atMostOnceAFrame } from "./utils";
-import { style } from "./flamechart-style";
+import { atMostOnceAFrame, cachedMeasureTextWidth } from "./utils";
+import { style, Sizes } from "./flamechart-style";
+import { FontFamily, FontSize, Colors } from "./style"
 
 const DEVICE_PIXEL_RATIO = window.devicePixelRatio
 
@@ -18,11 +19,14 @@ interface FlamechartMinimapViewProps {
 
 export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps, {}> {
   renderer: ReglCommand<RectangleBatchRendererProps> | null = null
-  overlayRenderer: ReglCommand<OverlayRectangleRendererProps> | null = null
+  viewportRectRenderer: ReglCommand<OverlayRectangleRendererProps> | null = null
 
   ctx: WebGLRenderingContext | null = null
   regl: regl.ReglCommandConstructor | null = null
   canvas: HTMLCanvasElement | null = null
+
+  overlayCanvas: HTMLCanvasElement | null = null
+  overlayCtx: CanvasRenderingContext2D | null = null
 
   private physicalViewSize() {
     return new Vec2(
@@ -39,9 +43,11 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   }
 
   private configSpaceToPhysicalViewSpace() {
+    const minimapOrigin = new Vec2(0, Sizes.FRAME_HEIGHT * DEVICE_PIXEL_RATIO)
+
     return AffineTransform.betweenRects(
       new Rect(new Vec2(0, 0), this.configSpaceSize()),
-      new Rect(new Vec2(0, 0), this.physicalViewSize())
+      new Rect(minimapOrigin, this.physicalViewSize().minus(minimapOrigin))
     )
   }
 
@@ -55,7 +61,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   }
 
   private renderRects() {
-    if (!this.renderer || !this.canvas || !this.overlayRenderer) return
+    if (!this.renderer || !this.canvas || !this.viewportRectRenderer) return
     this.resizeCanvasIfNeeded()
 
     const configSpaceToNDC = this.physicalViewSpaceToNDC().times(this.configSpaceToPhysicalViewSpace())
@@ -65,11 +71,64 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       physicalSize: this.physicalViewSize()
     })
 
-    this.overlayRenderer({
+    this.viewportRectRenderer({
       configSpaceViewportRect: this.props.configSpaceViewportRect,
       configSpaceToPhysicalViewSpace: this.configSpaceToPhysicalViewSpace(),
       physicalSize: this.physicalViewSize()
     })
+  }
+
+  private renderOverlays() {
+    const ctx = this.overlayCtx
+    if (!ctx) return
+    const physicalViewSize = this.physicalViewSize()
+    ctx.clearRect(0, 0, physicalViewSize.x, physicalViewSize.y)
+
+    this.resizeOverlayCanvasIfNeeded()
+
+    const configToPhysical = this.configSpaceToPhysicalViewSpace()
+
+    const left = 0
+    const right = this.configSpaceSize().x
+
+    // We want about 10 gridlines to be visible, and want the unit to be
+    // 1eN, 2eN, or 5eN for some N
+
+    // Ideally, we want an interval every 100 logical screen pixels
+    const logicalToConfig = (this.configSpaceToPhysicalViewSpace().inverted() || new AffineTransform()).times(this.logicalToPhysicalViewSpace())
+    const targetInterval = logicalToConfig.transformVector(new Vec2(200, 1)).x
+
+    const physicalViewSpaceFrameHeight = Sizes.FRAME_HEIGHT * DEVICE_PIXEL_RATIO
+    const physicalViewSpaceFontSize = FontSize.LABEL * DEVICE_PIXEL_RATIO
+    const LABEL_PADDING_PX = (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2
+
+    ctx.font = `${physicalViewSpaceFontSize}px/${physicalViewSpaceFrameHeight}px ${FontFamily.MONOSPACE}`
+    ctx.textBaseline = 'top'
+
+    const minInterval = Math.pow(10, Math.floor(Math.log10(targetInterval)))
+    let interval = minInterval
+
+    if (targetInterval / interval > 5) {
+      interval *= 5
+    } else if (targetInterval / interval > 2) {
+      interval *= 2
+    }
+
+    {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
+      ctx.fillRect(0, 0, physicalViewSize.x, physicalViewSpaceFrameHeight)
+
+      ctx.fillStyle = Colors.GRAY
+      for (let x = Math.ceil(left / interval) * interval; x < right; x += interval) {
+        // TODO(jlfwong): Ensure that labels do not overlap
+        const pos = Math.round(configToPhysical.transformPosition(new Vec2(x, 0)).x)
+        const labelText = this.props.flamechart.formatValue(x)
+        const textWidth = Math.ceil(cachedMeasureTextWidth(ctx, labelText))
+
+        ctx.fillText(labelText, pos - textWidth - LABEL_PADDING_PX, LABEL_PADDING_PX)
+        ctx.fillRect(pos, 0, 1, physicalViewSize.y)
+      }
+    }
   }
 
   componentWillReceiveProps(nextProps: FlamechartMinimapViewProps) {
@@ -101,6 +160,30 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     this.ctx.viewport(0, 0, width, height)
   }
 
+  private resizeOverlayCanvasIfNeeded() {
+    if (!this.overlayCanvas) return
+    let {width, height} = this.overlayCanvas.getBoundingClientRect()
+    {/*
+      We render text at a higher resolution then scale down to
+      ensure we're rendering at 1:1 device pixel ratio.
+      This ensures our text is rendered crisply.
+    */}
+    width = Math.floor(width)
+    height = Math.floor(height)
+
+    // Still initializing: don't resize yet
+    if (width === 0 || height === 0) return
+
+    const scaledWidth = width * DEVICE_PIXEL_RATIO
+    const scaledHeight = height * DEVICE_PIXEL_RATIO
+
+    if (scaledWidth === this.overlayCanvas.width &&
+        scaledHeight === this.overlayCanvas.height) return
+
+    this.overlayCanvas.width = scaledWidth
+    this.overlayCanvas.height = scaledHeight
+  }
+
   private renderCanvas = atMostOnceAFrame(() => {
     if (!this.canvas || this.canvas.getBoundingClientRect().width < 2) {
       // If the canvas is still tiny, it means browser layout hasn't had
@@ -115,6 +198,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
         depth: 1
       })
       this.renderRects()
+      this.renderOverlays()
     }
   })
 
@@ -236,7 +320,18 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     }
 
     this.renderer = rectangleBatchRenderer(this.regl, configSpaceRects, colors, 0)
-    this.overlayRenderer = overlayRectangleRenderer(this.regl);
+    this.viewportRectRenderer = viewportRectangleRenderer(this.regl);
+  }
+
+  private overlayCanvasRef = (element?: Element) => {
+    if (element) {
+      this.overlayCanvas = element as HTMLCanvasElement
+      this.overlayCtx = this.overlayCanvas.getContext('2d')
+      this.renderCanvas()
+    } else {
+      this.overlayCanvas = null
+      this.overlayCtx = null
+    }
   }
 
   componentDidMount() {
@@ -258,6 +353,10 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
           width={1} height={1}
           ref={this.canvasRef}
           className={css(style.fill)} />
+        <canvas
+          width={1} height={1}
+          ref={this.overlayCanvasRef}
+          className={css(style.fill)} />
       </div>
     )
   }
@@ -269,7 +368,7 @@ export interface OverlayRectangleRendererProps {
   physicalSize: Vec2
 }
 
-export const overlayRectangleRenderer = (regl: regl.ReglCommandConstructor) => {
+export const viewportRectangleRenderer = (regl: regl.ReglCommandConstructor) => {
   return regl<OverlayRectangleRendererProps>({
     vert: `
       attribute vec2 position;
