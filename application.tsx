@@ -4,7 +4,7 @@ import {ReloadableComponent} from './reloadable'
 
 import {importFromBGFlameGraph} from './import/bg-flamegraph'
 import {importFromStackprof} from './import/stackprof'
-import {importFromChrome} from './import/chrome'
+import {importFromChromeTimeline, importFromChromeCPUProfile} from './import/chrome'
 
 import {Profile, Frame} from './profile'
 import {Flamechart} from './flamechart'
@@ -81,7 +81,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
 
   importJSON(parsed: any): Profile {
     if (Array.isArray(parsed) && parsed[parsed.length - 1].name === "CpuProfile") {
-      return importFromChrome(parsed)
+      return importFromChromeTimeline(parsed)
     } else {
       return importFromStackprof(parsed)
     }
@@ -89,7 +89,11 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
 
   loadFromString(fileName: string, contents: string) {
     console.time('import')
-    const profile = fileName.endsWith('json') ? this.importJSON(JSON.parse(contents)) : importFromBGFlameGraph(contents)
+    console.log(fileName)
+    const profile =
+      fileName.endsWith('json') ? this.importJSON(JSON.parse(contents))
+        : fileName.endsWith('cpuprofile') ? importFromChromeCPUProfile(JSON.parse(contents))
+        : importFromBGFlameGraph(contents)
     profile.setName(fileName)
     document.title = `${fileName} - speedscope`
 
@@ -174,7 +178,9 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   renderLanding() {
     return <div className={css(style.landingContainer)}>
       <div className={css(style.landingMessage)}>
-        <p className={css(style.landingP)}>👋 Hi there! Welcome to 🔬speedscope.</p>
+        <p className={css(style.landingP)}>👋 Hi there! Welcome to 🔬speedscope, an interactive{' '}
+        <a className={css(style.link)} href="http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html">flamegraph</a> visualizer.
+        Use it to help you make your software faster.</p>
         <p className={css(style.landingP)}>Drag and drop a profile file onto this window to get started,
         click the big blue button below to browse for a profile to explore, or{' '}
           <a className={css(style.link)} onClick={this.loadExample}>click here</a>{' '}
@@ -221,7 +227,8 @@ const style = StyleSheet.create({
     display: 'flex',
     flexDirection: 'column',
     position: 'relative',
-    fontFamily: FontFamily.MONOSPACE
+    fontFamily: FontFamily.MONOSPACE,
+    lineHeight: '20px'
   },
   landingContainer: {
     display: 'flex',

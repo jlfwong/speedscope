@@ -41,9 +41,13 @@ interface CPUProfile {
   timeDeltas: number[]
 }
 
-export function importFromChrome(events: TimelineEvent[]) {
+export function importFromChromeTimeline(events: TimelineEvent[]) {
   const profileEvent = events[events.length - 1]
   const chromeProfile = profileEvent.args.data.cpuProfile as CPUProfile
+  return importFromChromeCPUProfile(chromeProfile)
+}
+
+export function importFromChromeCPUProfile(chromeProfile: CPUProfile) {
   const profile = new Profile(chromeProfile.endTime - chromeProfile.startTime)
 
   const nodeById = new Map<number, CPUProfileNode>()
