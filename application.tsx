@@ -23,10 +23,46 @@ interface ApplicationState {
   sortOrder: SortOrder
 }
 
-export class Toolbar extends ReloadableComponent<{}, ApplicationState> {
+interface ToolbarProps extends ApplicationState {
+  setSortOrder(order: SortOrder): void
+}
+
+export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
+  setTimeOrder = () => {
+    this.props.setSortOrder(SortOrder.CHRONO)
+  }
+
+  setLeftHeavyOrder = () => {
+    this.props.setSortOrder(SortOrder.LEFT_HEAVY)
+  }
+
   render() {
+    const help = (
+      <div className={css(style.toolbarTab)}>
+        <a href="https://github.com/jlfwong/speedscope#usage" className={css(style.noLinkStyle)} target="_blank">
+          <span className={css(style.emoji)}>❓</span>Help
+        </a>
+      </div>
+    )
+
+    if (!this.props.profile) {
+      return <div className={css(style.toolbar)}>
+        <div className={css(style.toolbarLeft)}>{help}</div>
+        🔬speedscope
+      </div>
+    }
     return <div className={css(style.toolbar)}>
-      speedscope
+      <div className={css(style.toolbarLeft)}>
+        <div className={css(style.toolbarTab, this.props.sortOrder === SortOrder.CHRONO && style.toolbarTabActive)} onClick={this.setTimeOrder}>
+          <span className={css(style.emoji)}>🕰</span>Time Order
+        </div>
+        <div className={css(style.toolbarTab, this.props.sortOrder === SortOrder.LEFT_HEAVY && style.toolbarTabActive)} onClick={this.setLeftHeavyOrder}>
+          <span className={css(style.emoji)}>⬅️</span>Left Heavy
+        </div>
+        {help}
+      </div>
+      {this.props.profile.getName()}
+      <div className={css(style.toolbarRight)}>🔬speedscope</div>
     </div>
   }
 }
@@ -53,6 +89,8 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   loadFromString(fileName: string, contents: string) {
     console.time('import')
     const profile = fileName.endsWith('json') ? this.importJSON(JSON.parse(contents)) : importFromBGFlameGraph(contents)
+    profile.setName(fileName)
+    document.title = `${fileName} - speedscope`
     const flamechart = new Flamechart(profile)
     const sortedFlamechart = new Flamechart({
       getTotalWeight: profile.getTotalNonIdleWeight.bind(profile),
@@ -145,12 +183,16 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     </div>
   }
 
+  setSortOrder = (sortOrder: SortOrder) => {
+    this.setState({ sortOrder })
+  }
+
   render() {
-    const {flamechart, sortedFlamechart, sortOrder} = this.state
+    const {profile, flamechart, sortedFlamechart, sortOrder} = this.state
     const flamechartToView = sortOrder == SortOrder.CHRONO ? flamechart : sortedFlamechart
 
     return <div onDrop={this.onDrop} onDragOver={this.onDragOver} className={css(style.root)}>
-      <Toolbar />
+      <Toolbar setSortOrder={this.setSortOrder} {...this.state} />
       {flamechartToView ?
         <FlamechartView ref={this.flamechartRef} flamechart={flamechartToView} /> :
         this.renderLanding()}
@@ -167,16 +209,6 @@ const style = StyleSheet.create({
     flexDirection: 'column',
     position: 'relative',
     fontFamily: FontFamily.MONOSPACE
-  },
-  toolbar: {
-    height: 18,
-    background: 'black',
-    color: 'white',
-    textAlign: 'center',
-    fontFamily: FontFamily.MONOSPACE,
-    fontSize: FontSize.TITLE,
-    lineHeight: '18px',
-    userSelect: 'none'
   },
   landingContainer: {
     display: 'flex',
@@ -214,6 +246,64 @@ const style = StyleSheet.create({
     color: Colors.LIGHT_BLUE,
     cursor: 'pointer',
     textDecoration: 'none'
+  },
+  toolbar: {
+    height: 18,
+    background: 'black',
+    color: 'white',
+    textAlign: 'center',
+    fontFamily: FontFamily.MONOSPACE,
+    fontSize: FontSize.TITLE,
+    lineHeight: '18px',
+    userSelect: 'none'
+  },
+  toolbarLeft: {
+    position: 'absolute',
+    height: 18,
+    overflow: 'hidden',
+    top: 0,
+    left: 0,
+    marginRight: 2,
+    textAlign: 'left',
+  },
+  toolbarRight: {
+    height: 18,
+    overflow: 'hidden',
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    marginRight: 2,
+    textAlign: 'right',
+  },
+  toolbarTab: {
+    background: Colors.DARK_GRAY,
+    marginTop: 2,
+    height: 16,
+    lineHeight: '16px',
+    paddingLeft: 2,
+    paddingRight: 8,
+    display: 'inline-block',
+    marginLeft: 2,
+    ':hover': {
+      background: Colors.GRAY,
+      cursor: 'pointer'
+    }
+  },
+  toolbarTabActive: {
+    background: Colors.LIGHT_BLUE,
+    ':hover': {
+      background: Colors.LIGHT_BLUE
+    }
+  },
+  noLinkStyle: {
+    textDecoration: 'none',
+    color: 'inherit'
+  },
+  emoji: {
+    display: 'inline-block',
+    verticalAlign: 'middle',
+    paddingTop: '0px',
+    marginRight: '0.3em'
   }
 })
 

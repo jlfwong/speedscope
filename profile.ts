@@ -102,6 +102,8 @@ export class TimeFormatter implements ValueFormatter {
 }
 
 export class Profile {
+  private name: string
+
   private totalWeight: number
 
   private frames = new Map<string | number, Frame>()
@@ -121,6 +123,9 @@ export class Profile {
 
   formatValue(v: number) { return this.valueFormatter.format(v) }
   setValueFormatter(f: ValueFormatter) { this.valueFormatter = f }
+
+  getName() { return this.name }
+  setName(name: string) { this.name = name }
 
   getTotalWeight() { return this.totalWeight }
   getTotalNonIdleWeight() {
