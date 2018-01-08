@@ -102,7 +102,6 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     const colors: vec3[] = []
 
     const layers = flamechart.getLayers()
-    const frameColors = flamechart.getFrameColors()
 
     this.labels = []
     for (let i = 0; i < layers.length; i++) {
@@ -113,7 +112,8 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
           new Vec2(flamechartFrame.end - flamechartFrame.start, 1)
         )
         configSpaceRects.push(configSpaceBounds)
-        colors.push(frameColors.get(flamechartFrame.node.frame) || [0, 0, 0])
+        const color = flamechart.getColorForFrame(flamechartFrame.node.frame)
+        colors.push([color.r, color.g, color.b])
 
         this.labels.push({
           configSpaceBounds,

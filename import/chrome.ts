@@ -94,12 +94,18 @@ export function importFromChrome(events: TimelineEvent[]) {
     for (let node = nodeById.get(nodeId); node; node = node.parent) {
       if (node.callFrame.functionName === '(root)') continue
       if (node.callFrame.functionName === '(idle)') continue
+
+      const name = node.callFrame.functionName || "(anonymous)"
+      const file = node.callFrame.url
+      const line = node.callFrame.lineNumber
+      const col = node.callFrame.columnNumber
+
       stack.push({
-        key: node.id,
-        name: node.callFrame.functionName || "(anonymous)",
-        file: node.callFrame.url,
-        line: node.callFrame.lineNumber,
-        col: node.callFrame.columnNumber
+        key: `${name}:${file}:${line}:${col}`,
+        name,
+        file,
+        line,
+        col
       })
     }
     stack.reverse()

@@ -6,10 +6,11 @@ import {importFromBGFlameGraph} from './import/bg-flamegraph'
 import {importFromStackprof} from './import/stackprof'
 import {importFromChrome} from './import/chrome'
 
-import {Profile} from './profile'
+import {Profile, Frame} from './profile'
 import {Flamechart} from './flamechart'
 import { FlamechartView } from './flamechart-view'
 import { FontFamily, FontSize, Colors } from './style'
+import { FrameColorGenerator } from './color'
 
 const enum SortOrder {
   CHRONO,
@@ -91,13 +92,25 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     const profile = fileName.endsWith('json') ? this.importJSON(JSON.parse(contents)) : importFromBGFlameGraph(contents)
     profile.setName(fileName)
     document.title = `${fileName} - speedscope`
-    const flamechart = new Flamechart(profile)
+
+    const frames: Frame[] = []
+    profile.forEachFrame(f => frames.push(f))
+    const colorGenerator = new FrameColorGenerator(frames)
+
+    const flamechart = new Flamechart({
+      getTotalWeight: profile.getTotalWeight.bind(profile),
+      forEachCall: profile.forEachCall.bind(profile),
+      formatValue: profile.formatValue.bind(profile),
+      getColorForFrame: colorGenerator.getColorForFrame.bind(colorGenerator)
+    })
+
     const sortedFlamechart = new Flamechart({
       getTotalWeight: profile.getTotalNonIdleWeight.bind(profile),
       forEachCall: profile.forEachCallGrouped.bind(profile),
       formatValue: profile.formatValue.bind(profile),
-      forEachFrame: profile.forEachFrame.bind(profile),
+      getColorForFrame: colorGenerator.getColorForFrame.bind(colorGenerator)
     })
+
     this.setState({ profile, flamechart, sortedFlamechart }, () => {
       console.timeEnd('import')
     })
@@ -188,7 +201,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   render() {
-    const {profile, flamechart, sortedFlamechart, sortOrder} = this.state
+    const {flamechart, sortedFlamechart, sortOrder} = this.state
     const flamechartToView = sortOrder == SortOrder.CHRONO ? flamechart : sortedFlamechart
 
     return <div onDrop={this.onDrop} onDragOver={this.onDragOver} className={css(style.root)}>
