@@ -255,6 +255,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       if (physicalLabelBounds.left() < 0) {
         physicalLabelBounds = physicalLabelBounds
           .withOrigin(physicalLabelBounds.origin.withX(0))
+          .withSize(physicalLabelBounds.size.withX(physicalLabelBounds.size.x + physicalLabelBounds.left()))
       }
       if (physicalLabelBounds.right() > physicalViewSize.x) {
         physicalLabelBounds = physicalLabelBounds
