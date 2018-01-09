@@ -220,7 +220,6 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     const physicalViewSpaceFrameHeight = this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT * DEVICE_PIXEL_RATIO
 
     const physicalViewSize = this.physicalViewSize()
-    const physicalViewBounds = new Rect(new Vec2(0, 0), physicalViewSize)
 
     ctx.clearRect(0, 0, physicalViewSize.x, physicalViewSize.y)
 

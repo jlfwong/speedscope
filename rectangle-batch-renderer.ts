@@ -1,6 +1,6 @@
 import * as regl from 'regl'
 import { Rect, Vec2, AffineTransform } from './math'
-import { vec2, vec3 } from 'regl'
+import { vec3 } from 'regl'
 
 export interface RectangleBatchRendererProps {
   configSpaceToNDC: AffineTransform
