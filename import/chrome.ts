@@ -87,15 +87,36 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile) {
     timeDeltas.push(elapsed)
   }
 
+  let lastNonGCStackTop: CPUProfileNode | null = null
   for (let i = 0; i < samples.length; i++) {
     const timeDelta = timeDeltas[i+1] || 0
     const nodeId = samples[i]
     let node = nodeById.get(nodeId)
     if (!node) continue
 
-    // TODO(jlfwong): This is silly and slow, but good enough for now
     const stack: FrameInfo[] = []
-    for (let node = nodeById.get(nodeId); node; node = node.parent) {
+
+    if (node.callFrame.functionName === "(garbage collector)") {
+      // Place GC calls on top of the previous call stack
+      stack.push({
+        key: node.callFrame.functionName,
+        name: node.callFrame.functionName,
+        file: node.callFrame.url,
+        line: node.callFrame.lineNumber,
+        col: node.callFrame.columnNumber
+      })
+      if (!lastNonGCStackTop) {
+        profile.appendSample(stack, timeDelta)
+        continue
+      } else {
+        node = lastNonGCStackTop
+      }
+    }
+
+    lastNonGCStackTop = node
+
+    // TODO(jlfwong): This is silly and slow, but good enough for now
+    for (; node; node = node.parent) {
       if (node.callFrame.functionName === '(root)') continue
       if (node.callFrame.functionName === '(idle)') continue
 
