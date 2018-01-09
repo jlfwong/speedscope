@@ -217,7 +217,18 @@ export class Rect {
     return this.distanceFrom(p) === 0
   }
 
-  intersectWith(other: Rect) {
+  hasInteractionWith(other: Rect) {
+    const top = Math.max(this.top(), other.top())
+    const bottom = Math.max(top, Math.min(this.bottom(), other.bottom()))
+    if (bottom - top === 0) return false
+
+    const left = Math.max(this.left(), other.left())
+    const right = Math.max(left, Math.min(this.right(), other.right()))
+    if (right - left === 0) return false
+    return true
+  }
+
+  intersectWith(other: Rect): Rect {
     const topLeft = Vec2.max(this.topLeft(), other.topLeft())
     const bottomRight = Vec2.max(topLeft, Vec2.min(this.bottomRight(), other.bottomRight()))
 

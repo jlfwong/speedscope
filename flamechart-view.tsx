@@ -240,29 +240,31 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     ctx.textBaseline = 'top'
 
     const minWidthToRender = cachedMeasureTextWidth(ctx, 'M' + ELLIPSIS + 'M')
+    const minConfigSpaceWidthToRender = (configToPhysical.inverseTransformVector(new Vec2(minWidthToRender, 0)) || new Vec2(0, 0)).x
     const LABEL_PADDING_PX = (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2
+    const PADDING_OFFSET = new Vec2(LABEL_PADDING_PX, LABEL_PADDING_PX)
+    const SIZE_OFFSET = new Vec2(2 * LABEL_PADDING_PX, 2 * LABEL_PADDING_PX)
 
     for (let label of this.labels) {
-      let physicalLabelBounds = configToPhysical.transformRect(label.configSpaceBounds)
-
-      physicalLabelBounds = physicalLabelBounds
-        .withOrigin(physicalLabelBounds.origin.plus(new Vec2(LABEL_PADDING_PX, LABEL_PADDING_PX)))
-        .withSize(physicalLabelBounds.size.minus(new Vec2(2 * LABEL_PADDING_PX, 2 * LABEL_PADDING_PX)))
-        .intersectWith(new Rect(
-          new Vec2(LABEL_PADDING_PX, -Infinity),
-          new Vec2(physicalViewSize.x, Infinity)
-        ))
-
-      if (physicalLabelBounds.width() < minWidthToRender) continue
+      if (label.configSpaceBounds.width() < minConfigSpaceWidthToRender) continue
 
       // Cull text outside the viewport
-      if (physicalViewBounds.intersectWith(physicalLabelBounds).isEmpty()) continue
+      if (!label.configSpaceBounds.hasInteractionWith(this.props.configSpaceViewportRect)) continue
 
-      if (physicalLabelBounds.origin.x < 0) {
-        physicalLabelBounds = physicalLabelBounds.withOrigin(
-          new Vec2(0, physicalLabelBounds.origin.y)
-        )
+      let physicalLabelBounds = configToPhysical.transformRect(label.configSpaceBounds)
+
+      if (physicalLabelBounds.left() < 0) {
+        physicalLabelBounds = physicalLabelBounds
+          .withOrigin(physicalLabelBounds.origin.withX(0))
       }
+      if (physicalLabelBounds.right() > physicalViewSize.x) {
+        physicalLabelBounds = physicalLabelBounds
+          .withSize(physicalLabelBounds.size.withX(physicalViewSize.x - physicalLabelBounds.left()))
+      }
+
+      physicalLabelBounds = physicalLabelBounds
+        .withOrigin(physicalLabelBounds.origin.plus(PADDING_OFFSET))
+        .withSize(physicalLabelBounds.size.minus(SIZE_OFFSET))
 
       const trimmedText = trimTextMid(ctx, label.node.frame.name, physicalLabelBounds.width())
       ctx.fillText(trimmedText, physicalLabelBounds.left(), physicalLabelBounds.top())
