@@ -8,9 +8,9 @@ export interface RectangleBatchRendererProps {
 }
 
 export const rectangleBatchRenderer = (regl: regl.ReglCommandConstructor, rects: Rect[], colors: vec3[], strokeSize = 1) => {
-  const positions: vec2[] = []
-  const physicalSpaceOffsets: vec2[] = []
-  const vertexColors: vec3[] = []
+  const positions = new Float32Array(rects.length * 6 * 2)
+  const physicalSpaceOffsets = new Float32Array(rects.length * 6 * 2)
+  const vertexColors = new Float32Array(rects.length * 6 * 3)
 
   const offset = {
     topLeft: new Vec2(strokeSize, -strokeSize),
@@ -19,12 +19,26 @@ export const rectangleBatchRenderer = (regl: regl.ReglCommandConstructor, rects:
     bottomLeft: new Vec2(strokeSize, strokeSize)
   }
 
-  const addRectangle = (r: Rect, color: vec3) => {
-    function addVertex(v: Vec2, offset: Vec2) {
-      positions.push(v.flatten())
-      physicalSpaceOffsets.push(offset.flatten())
-      vertexColors.push(color)
-    }
+  let vertexIndex = 0
+  function addVertex(y: number, x: number, offset: Vec2, color: vec3) {
+    const index = vertexIndex++
+    positions[index * 2] = x
+    positions[index * 2 + 1] = y
+    physicalSpaceOffsets[index * 2] = offset.x
+    physicalSpaceOffsets[index * 2 + 1] = offset.y
+    vertexColors[index * 3] = color[0]
+    vertexColors[index * 3 + 1] = color[1]
+    vertexColors[index * 3 + 2] = color[2]
+  }
+
+  for (let i = 0; i < rects.length; i++) {
+    const r = rects[i]
+    const color = colors[i]
+
+    const top = r.top()
+    const bottom = r.bottom()
+    const left = r.left()
+    const right = r.right()
 
     // 2 disjoint triangles.
     //
@@ -32,18 +46,13 @@ export const rectangleBatchRenderer = (regl: regl.ReglCommandConstructor, rects:
     //   | /|
     //   |/ |
     // 3 +--+ 2
+    addVertex(top, left, offset.topLeft, color)
+    addVertex(bottom, left, offset.bottomLeft, color)
+    addVertex(top, right, offset.topRight, color)
 
-    addVertex(r.topLeft(), offset.topLeft)
-    addVertex(r.bottomLeft(), offset.bottomLeft)
-    addVertex(r.topRight(), offset.topRight)
-
-    addVertex(r.bottomLeft(), offset.bottomLeft)
-    addVertex(r.topRight(), offset.topRight)
-    addVertex(r.bottomRight(), offset.bottomRight)
-  }
-
-  for (let i = 0; i < rects.length; i++) {
-    addRectangle(rects[i], colors[i])
+    addVertex(bottom, left, offset.bottomLeft, color)
+    addVertex(top, right, offset.topRight, color)
+    addVertex(bottom, right, offset.bottomRight, color)
   }
 
   return regl<RectangleBatchRendererProps>({
@@ -77,9 +86,24 @@ export const rectangleBatchRenderer = (regl: regl.ReglCommandConstructor, rects:
     `,
 
     attributes: {
-      position: positions,
-      physicalSpaceOffset: physicalSpaceOffsets,
-      color: vertexColors
+      position: {
+        buffer: regl.buffer(positions),
+        offset: 0,
+        stride: 2 * 4,
+        size: 2
+      },
+      physicalSpaceOffset: {
+        buffer: regl.buffer(physicalSpaceOffsets),
+        offset: 0,
+        stride: 2 * 4,
+        size: 2
+      },
+      color: {
+        buffer: regl.buffer(vertexColors),
+        offset: 0,
+        stride: 3 * 4,
+        size: 3
+      }
     },
 
     uniforms: {
@@ -93,6 +117,6 @@ export const rectangleBatchRenderer = (regl: regl.ReglCommandConstructor, rects:
 
     primitive: 'triangles',
 
-    count: vertexColors.length
+    count: vertexColors.length / 3
   })
 }

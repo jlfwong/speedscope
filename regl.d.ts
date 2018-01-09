@@ -1,11 +1,14 @@
 declare module "regl" {
   interface ReglProp {}
 
+  interface ReglBuffer {}
+
   type ReglPrimitiveValue =
     boolean |
     number |
     number[] |
     number[][] |
+    ReglBuffer |
     ReglProp
 
   type ReglValue<P> = ReglPrimitiveValue | {(context: any, props: P, batchId: number): ReglPrimitiveValue}
@@ -77,11 +80,14 @@ declare module "regl" {
 
     interface ReglCommandConstructor {
       <P>(params: ReglCommandParameters<P>): ReglCommand<P>
+
       clear(args: {
         color?: [number, number, number, number],
         depth?: number,
         stencil?: number,
       }): void
+
+      buffer(data: Float32Array): ReglBuffer
     }
   }
 
