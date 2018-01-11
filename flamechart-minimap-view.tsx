@@ -18,6 +18,11 @@ interface FlamechartMinimapViewProps {
   setConfigSpaceViewportRect: (rect: Rect) => void
 }
 
+enum DraggingMode {
+  DRAW_NEW_VIEWPORT,
+  TRANSLATE_VIEWPORT
+}
+
 export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps, {}> {
   renderer: ReglCommand<RectangleBatchRendererProps> | null = null
   viewportRectRenderer: ReglCommand<OverlayRectangleRendererProps> | null = null
@@ -59,6 +64,16 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
         new Rect(new Vec2(-1, -1), new Vec2(2, 2))
       )
     )
+  }
+
+  private logicalToPhysicalViewSpace() {
+    return AffineTransform.withScale(new Vec2(DEVICE_PIXEL_RATIO, DEVICE_PIXEL_RATIO))
+  }
+
+  private windowToLogicalViewSpace() {
+    if (!this.canvas) return new AffineTransform()
+    const bounds = this.canvas.getBoundingClientRect()
+    return AffineTransform.withTranslation(new Vec2(-bounds.left, -bounds.top))
   }
 
   private renderRects() {
@@ -217,12 +232,6 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     }
   }
 
-  private minConfigSpaceViewportRectWidth() { return 3 * this.props.flamechart.getMinFrameWidth(); }
-
-  private logicalToPhysicalViewSpace() {
-    return AffineTransform.withScale(new Vec2(DEVICE_PIXEL_RATIO, DEVICE_PIXEL_RATIO))
-  }
-
   private pan(logicalViewSpaceDelta: Vec2) {
     const physicalDelta = this.logicalToPhysicalViewSpace().transformVector(logicalViewSpaceDelta)
     const configDelta = this.configSpaceToPhysicalViewSpace().inverseTransformVector(physicalDelta)
@@ -237,47 +246,103 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     this.renderCanvas()
   }
 
-  private dragStartPos: Vec2 | null = null
+  private configSpaceMouse(ev: MouseEvent): Vec2 | null {
+    const logicalSpaceMouse = this.windowToLogicalViewSpace().transformPosition(new Vec2(ev.clientX, ev.clientY))
+    const physicalSpaceMouse = this.logicalToPhysicalViewSpace().transformPosition(logicalSpaceMouse)
+    return this.configSpaceToPhysicalViewSpace().inverseTransformPosition(physicalSpaceMouse)
+  }
+
+  private dragStartConfigSpaceMouse: Vec2 | null = null
+  private dragConfigSpaceViewportOffset: Vec2 | null = null
+  private draggingMode: DraggingMode | null = null
   private onMouseDown = (ev: MouseEvent) => {
-    this.dragStartPos = new Vec2(ev.offsetX, ev.offsetY)
-  }
+    if (!this.canvas) return
+    const configSpaceMouse = this.configSpaceMouse(ev)
 
-  private onMouseDrag = (ev: MouseEvent) => {
-    if (!this.dragStartPos) return
+    if (configSpaceMouse) {
+      if (this.props.configSpaceViewportRect.contains(configSpaceMouse)) {
+        // If dragging starting inside the viewport rectangle,
+        // we'll move the existing viewport
+        this.draggingMode = DraggingMode.TRANSLATE_VIEWPORT
+        this.dragConfigSpaceViewportOffset = configSpaceMouse.minus(this.props.configSpaceViewportRect.origin)
+      } else {
+        // If dragging starts outside the the viewport rectangle,
+        // we'll start drawing a new viewport
+        this.draggingMode = DraggingMode.DRAW_NEW_VIEWPORT
+      }
 
-    const logicalStart = this.dragStartPos
-    const physicalStart = this.logicalToPhysicalViewSpace().transformPosition(logicalStart)
-    const configStart = this.configSpaceToPhysicalViewSpace().inverseTransformPosition(physicalStart)
-
-    const logicalEnd = new Vec2(ev.offsetX, ev.offsetY)
-    const physicalEnd = this.logicalToPhysicalViewSpace().transformPosition(logicalEnd)
-    const configEnd = this.configSpaceToPhysicalViewSpace().inverseTransformPosition(physicalEnd)
-
-    if (!configStart || !configEnd) return
-
-    const left = Math.min(configStart.x, configEnd.x)
-    const right = Math.max(configStart.x, configEnd.x)
-
-    const width = right - left
-    const height = this.props.configSpaceViewportRect.height()
-
-    this.props.setConfigSpaceViewportRect(new Rect(
-      new Vec2(left, configEnd.y - height / 2),
-      new Vec2(width, height)
-    ))
-  }
-
-  private onMouseMove = (ev: MouseEvent) => {
-    if (this.dragStartPos) {
-      ev.preventDefault()
-      this.onMouseDrag(ev)
-      return
+      this.dragStartConfigSpaceMouse = configSpaceMouse
+      window.addEventListener('mousemove', this.onWindowMouseMove)
+      window.addEventListener('mouseup', this.onWindowMouseUp)
+      this.updateCursor(configSpaceMouse)
     }
   }
 
+  private onWindowMouseMove = (ev: MouseEvent) => {
+    if (!this.dragStartConfigSpaceMouse || !this.canvas) return
+    let configSpaceMouse = this.configSpaceMouse(ev)
+
+    if (!configSpaceMouse) return
+    this.updateCursor(configSpaceMouse)
+
+    // Clamp the mouse position to avoid weird behavior when outside the canvas bounds
+    configSpaceMouse = new Rect(new Vec2(0, 0), this.configSpaceSize()).closestPointTo(configSpaceMouse)
+
+    if (this.draggingMode === DraggingMode.DRAW_NEW_VIEWPORT) {
+      const configStart = this.dragStartConfigSpaceMouse
+      let configEnd = configSpaceMouse
+
+      if (!configStart || !configEnd) return
+      const left = Math.min(configStart.x, configEnd.x)
+      const right = Math.max(configStart.x, configEnd.x)
+
+      const width = right - left
+      const height = this.props.configSpaceViewportRect.height()
+
+      this.props.setConfigSpaceViewportRect(new Rect(
+        new Vec2(left, configEnd.y - height / 2),
+        new Vec2(width, height)
+      ))
+    } else if (this.draggingMode === DraggingMode.TRANSLATE_VIEWPORT) {
+      if (!this.dragConfigSpaceViewportOffset) return
+
+      const newOrigin = configSpaceMouse.minus(this.dragConfigSpaceViewportOffset)
+      this.props.setConfigSpaceViewportRect(
+        this.props.configSpaceViewportRect.withOrigin(newOrigin)
+      )
+    }
+  }
+
+  private updateCursor = (configSpaceMouse: Vec2) => {
+    if (this.draggingMode === DraggingMode.TRANSLATE_VIEWPORT) {
+      document.body.style.cursor = 'grabbing'
+      document.body.style.cursor = '-webkit-grabbing'
+    } else if (this.draggingMode === DraggingMode.DRAW_NEW_VIEWPORT) {
+      document.body.style.cursor = 'col-resize'
+    } else if (this.props.configSpaceViewportRect.contains(configSpaceMouse)) {
+      document.body.style.cursor = 'grab'
+      document.body.style.cursor = '-webkit-grab'
+    } else {
+      document.body.style.cursor = 'col-resize'
+    }
+  }
+
+  private onMouseMove = (ev: MouseEvent) => {
+    if (!this.canvas) return
+
+    const configSpaceMouse = this.configSpaceMouse(ev)
+    if (!configSpaceMouse) return
+    this.updateCursor(configSpaceMouse)
+  }
+
   private onWindowMouseUp = (ev: MouseEvent) => {
-    document.body.style.cursor = 'default'
-    this.dragStartPos = null
+    this.draggingMode = null
+    window.removeEventListener('mousemove', this.onWindowMouseMove)
+    window.removeEventListener('mouseup', this.onWindowMouseUp)
+
+    const configSpaceMouse = this.configSpaceMouse(ev)
+    if (!configSpaceMouse) return
+    this.updateCursor(configSpaceMouse)
   }
 
   private preprocess(flamechart: Flamechart) {
@@ -312,14 +377,6 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       this.overlayCanvas = null
       this.overlayCtx = null
     }
-  }
-
-  componentDidMount() {
-    window.addEventListener('mouseup', this.onWindowMouseUp)
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('mouseup', this.onWindowMouseUp)
   }
 
   render() {

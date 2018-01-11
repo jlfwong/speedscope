@@ -433,9 +433,9 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
   private lastDragPos: Vec2 | null = null
   private onMouseDown = (ev: MouseEvent) => {
-    document.body.style.cursor = 'grabbing'
-    document.body.style.cursor = '-webkit-grabbing'
     this.lastDragPos = new Vec2(ev.offsetX, ev.offsetY)
+    this.updateCursor()
+    window.addEventListener('mouseup', this.onWindowMouseUp)
   }
 
   private onMouseDrag = (ev: MouseEvent) => {
@@ -451,12 +451,23 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     }
   }
 
+  private updateCursor() {
+    if (this.lastDragPos) {
+      document.body.style.cursor = 'grabbing'
+      document.body.style.cursor = '-webkit-grabbing'
+    } else {
+      document.body.style.cursor = 'default'
+    }
+  }
+
   private onWindowMouseUp = (ev: MouseEvent) => {
-    document.body.style.cursor = 'default'
     this.lastDragPos = null
+    this.updateCursor()
+    window.removeEventListener('mouseup', this.onWindowMouseUp)
   }
 
   private onMouseMove = (ev: MouseEvent) => {
+    this.updateCursor()
     if (this.lastDragPos) {
       ev.preventDefault()
       this.onMouseDrag(ev)
@@ -548,12 +559,10 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     }
   }
   componentDidMount() {
-    window.addEventListener('mouseup', this.onWindowMouseUp)
     window.addEventListener('resize', this.onWindowResize)
     window.addEventListener('keydown', this.onWindowKeyPress)
   }
   componentWillUnmount() {
-    window.removeEventListener('mouseup', this.onWindowMouseUp)
     window.removeEventListener('resize', this.onWindowResize)
     window.removeEventListener('keydown', this.onWindowKeyPress)
   }
