@@ -14,6 +14,7 @@ const DEVICE_PIXEL_RATIO = window.devicePixelRatio
 interface FlamechartMinimapViewProps {
   flamechart: Flamechart
   configSpaceViewportRect: Rect
+  transformViewport: (transform: AffineTransform) => void
   setConfigSpaceViewportRect: (rect: Rect) => void
 }
 
@@ -218,29 +219,6 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
 
   private minConfigSpaceViewportRectWidth() { return 3 * this.props.flamechart.getMinFrameWidth(); }
 
-  private transformViewport(transform: AffineTransform) {
-    const viewportRect = transform.transformRect(this.props.configSpaceViewportRect)
-    this.setConfigSpaceViewportRect(viewportRect)
-  }
-
-  private setConfigSpaceViewportRect(viewportRect: Rect) {
-    const configSpaceOriginBounds = new Rect(
-      new Vec2(0, 0),
-      Vec2.max(new Vec2(0, 0), this.configSpaceSize().minus(viewportRect.size))
-    )
-
-    // TODO(jlfwong): De-dup this with FlamechartPanZoomView
-    const configSpaceSizeBounds = new Rect(
-      new Vec2(this.minConfigSpaceViewportRectWidth(), viewportRect.height()),
-      new Vec2(this.configSpaceSize().x, viewportRect.height())
-    )
-
-    this.props.setConfigSpaceViewportRect(new Rect(
-      configSpaceOriginBounds.closestPointTo(viewportRect.origin),
-      configSpaceSizeBounds.closestPointTo(viewportRect.size)
-    ))
-  }
-
   private logicalToPhysicalViewSpace() {
     return AffineTransform.withScale(new Vec2(DEVICE_PIXEL_RATIO, DEVICE_PIXEL_RATIO))
   }
@@ -250,7 +228,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     const configDelta = this.configSpaceToPhysicalViewSpace().inverseTransformVector(physicalDelta)
 
     if (!configDelta) return
-    this.transformViewport(AffineTransform.withTranslation(configDelta))
+    this.props.transformViewport(AffineTransform.withTranslation(configDelta))
   }
 
   private onWheel = (ev: WheelEvent) => {
@@ -283,7 +261,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     const width = right - left
     const height = this.props.configSpaceViewportRect.height()
 
-    this.setConfigSpaceViewportRect(new Rect(
+    this.props.setConfigSpaceViewportRect(new Rect(
       new Vec2(left, configEnd.y - height / 2),
       new Vec2(width, height)
     ))

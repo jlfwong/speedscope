@@ -76,6 +76,7 @@ interface FlamechartPanZoomViewProps {
   flamechart: Flamechart
   setNodeHover: (node: CallTreeNode | null, logicalViewSpaceMouse: Vec2) => void
   configSpaceViewportRect: Rect
+  transformViewport: (transform: AffineTransform) => void
   setConfigSpaceViewportRect: (rect: Rect) => void
 }
 
@@ -405,31 +406,6 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     }
   })
 
-  private minConfigSpaceViewportRectWidth() { return 3 * this.props.flamechart.getMinFrameWidth(); }
-
-  private transformViewport(transform: AffineTransform) {
-    const viewportRect = transform.transformRect(this.props.configSpaceViewportRect)
-
-    const configSpaceOriginBounds = new Rect(
-      new Vec2(0, 0),
-      Vec2.max(new Vec2(0, 0), this.configSpaceSize().minus(viewportRect.size))
-    )
-
-    const configSpaceSizeBounds = new Rect(
-      new Vec2(this.minConfigSpaceViewportRectWidth(), viewportRect.height()),
-      new Vec2(this.configSpaceSize().x, viewportRect.height())
-    )
-
-    this.setConfigSpaceViewportRect(new Rect(
-      configSpaceOriginBounds.closestPointTo(viewportRect.origin),
-      configSpaceSizeBounds.closestPointTo(viewportRect.size)
-    ))
-
-    // Clear hovered labels when the viewport changes
-    this.hoveredLabel = null
-    this.props.setNodeHover(null, new Vec2())
-  }
-
   private pan(logicalViewSpaceDelta: Vec2) {
     this.interactionLock = 'pan'
 
@@ -437,7 +413,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     const configDelta = this.configSpaceToPhysicalViewSpace().inverseTransformVector(physicalDelta)
 
     if (!configDelta) return
-    this.transformViewport(AffineTransform.withTranslation(configDelta))
+    this.props.transformViewport(AffineTransform.withTranslation(configDelta))
   }
 
   private zoom(logicalViewSpaceCenter: Vec2, multiplier: number) {
@@ -447,16 +423,12 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     const configSpaceCenter = this.configSpaceToPhysicalViewSpace().inverseTransformPosition(physicalCenter)
     if (!configSpaceCenter) return
 
-    if (multiplier < 1 && this.props.configSpaceViewportRect.width() <= this.minConfigSpaceViewportRectWidth()) {
-      return
-    }
-
     const zoomTransform = AffineTransform
       .withTranslation(configSpaceCenter.times(-1))
       .scaledBy(new Vec2(multiplier, 1))
       .translatedBy(configSpaceCenter)
 
-    this.transformViewport(zoomTransform)
+    this.props.transformViewport(zoomTransform)
   }
 
   private lastDragPos: Vec2 | null = null
@@ -629,6 +601,39 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
     }
   }
 
+  private configSpaceSize() {
+    return new Vec2(
+      this.props.flamechart.getTotalWeight(),
+      this.props.flamechart.getLayers().length
+    )
+  }
+
+  private minConfigSpaceViewportRectWidth() { return 3 * this.props.flamechart.getMinFrameWidth(); }
+
+  private setConfigSpaceViewportRect = (viewportRect: Rect): void => {
+    const configSpaceOriginBounds = new Rect(
+      new Vec2(0, 0),
+      Vec2.max(new Vec2(0, 0), this.configSpaceSize().minus(viewportRect.size))
+    )
+
+    const configSpaceSizeBounds = new Rect(
+      new Vec2(this.minConfigSpaceViewportRectWidth(), viewportRect.height()),
+      new Vec2(this.configSpaceSize().x, viewportRect.height())
+    )
+
+    this.setState({
+      configSpaceViewportRect: new Rect(
+        configSpaceOriginBounds.closestPointTo(viewportRect.origin),
+        configSpaceSizeBounds.closestPointTo(viewportRect.size)
+      )
+    })
+  }
+
+  private transformViewport = (transform: AffineTransform): void => {
+    const viewportRect = transform.transformRect(this.state.configSpaceViewportRect)
+    this.setConfigSpaceViewportRect(viewportRect)
+  }
+
   onNodeHover = (hoveredNode: CallTreeNode | null, logicalSpaceMouse: Vec2) => {
     this.setState({
       hoveredNode,
@@ -698,21 +703,19 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
     }
   }
 
-  setConfigSpaceViewportRect = (r: Rect) => {
-    this.setState({ configSpaceViewportRect: r })
-  }
-
   render() {
     return (
       <div className={css(style.fill, style.clip, style.vbox)} ref={this.containerRef}>
         <FlamechartMinimapView
           configSpaceViewportRect={this.state.configSpaceViewportRect}
+          transformViewport={this.transformViewport}
           setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
           flamechart={this.props.flamechart} />
         <FlamechartPanZoomView
           ref={this.panZoomRef}
           flamechart={this.props.flamechart}
           setNodeHover={this.onNodeHover}
+          transformViewport={this.transformViewport}
           configSpaceViewportRect={this.state.configSpaceViewportRect}
           setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
         />
