@@ -3,7 +3,7 @@ import { vec3, ReglCommand } from 'regl'
 import { h, Component } from 'preact'
 import { css } from 'aphrodite'
 import { Flamechart } from './flamechart'
-import { Rect, Vec2, AffineTransform } from './math'
+import { Rect, Vec2, AffineTransform, clamp } from './math'
 import { rectangleBatchRenderer, RectangleBatchRendererProps } from "./rectangle-batch-renderer"
 import { atMostOnceAFrame, cachedMeasureTextWidth } from "./utils";
 import { style, Sizes } from "./flamechart-style";
@@ -204,6 +204,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   }
 
   private renderCanvas = atMostOnceAFrame(() => {
+    this.maybeClearInteractionLock()
     if (!this.canvas || this.canvas.getBoundingClientRect().width < 2) {
       // If the canvas is still tiny, it means browser layout hasn't had
       // a chance to run yet. Defer rendering until we have the real canvas
@@ -232,7 +233,35 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     }
   }
 
+  // Inertial scrolling introduces tricky interaction problems.
+  // Namely, if you start panning, and hit the edge of the scrollable
+  // area, the browser continues to receive WheelEvents from inertial
+  // scrolling. If we start zooming by holding Cmd + scrolling, then
+  // release the Cmd key, this can cause us to interpret the incoming
+  // inertial scrolling events as panning. To prevent this, we introduce
+  // a concept of an "Interaction Lock". Once a certain interaction has
+  // begun, we don't allow the other type of interaction to begin until
+  // we've received two frames with no inertial wheel events. This
+  // prevents us from accidentally switching between panning & zooming.
+  private frameHadWheelEvent = false
+  private framesWithoutWheelEvents = 0
+  private interactionLock: 'pan' | 'zoom' | null = null
+  private maybeClearInteractionLock = () => {
+    if (this.interactionLock) {
+      if (!this.frameHadWheelEvent) {
+        this.framesWithoutWheelEvents++;
+        if (this.framesWithoutWheelEvents >= 2) {
+          this.interactionLock = null
+          this.framesWithoutWheelEvents = 0
+        }
+      }
+      requestAnimationFrame(this.renderCanvas)
+    }
+    this.frameHadWheelEvent = false
+  }
+
   private pan(logicalViewSpaceDelta: Vec2) {
+    this.interactionLock = 'pan'
     const physicalDelta = this.logicalToPhysicalViewSpace().transformVector(logicalViewSpaceDelta)
     const configDelta = this.configSpaceToPhysicalViewSpace().inverseTransformVector(physicalDelta)
 
@@ -240,9 +269,45 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     this.props.transformViewport(AffineTransform.withTranslation(configDelta))
   }
 
+  private zoom(multiplier: number) {
+    this.interactionLock = 'zoom'
+    const configSpaceViewport = this.props.configSpaceViewportRect
+    const configSpaceCenter = configSpaceViewport.origin.plus(configSpaceViewport.size.times(1/2))
+    if (!configSpaceCenter) return
+
+    const zoomTransform = AffineTransform
+      .withTranslation(configSpaceCenter.times(-1))
+      .scaledBy(new Vec2(multiplier, 1))
+      .translatedBy(configSpaceCenter)
+
+    this.props.transformViewport(zoomTransform)
+  }
+
   private onWheel = (ev: WheelEvent) => {
     ev.preventDefault()
-    this.pan(new Vec2(ev.deltaX, ev.deltaY))
+
+    this.frameHadWheelEvent = true
+
+    const isZoom = ev.metaKey || ev.ctrlKey
+
+    if (isZoom && this.interactionLock !== 'pan') {
+      let multiplier = 1 + (ev.deltaY / 100)
+
+      // On Chrome & Firefox, pinch-to-zoom maps to
+      // WheelEvent + Ctrl Key. We'll accelerate it in
+      // this case, since it feels a bit sluggish otherwise.
+      if (ev.ctrlKey) {
+        multiplier = 1 + (ev.deltaY / 40)
+      }
+
+      multiplier = clamp(multiplier, 0.1, 10.0)
+
+      this.zoom(multiplier)
+    } else if (this.interactionLock !== 'zoom') {
+      this.pan(new Vec2(ev.deltaX, ev.deltaY))
+    }
+
+
     this.renderCanvas()
   }
 
