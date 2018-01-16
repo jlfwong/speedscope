@@ -28,6 +28,55 @@ interface ToolbarProps extends ApplicationState {
   setSortOrder(order: SortOrder): void
 }
 
+function importProfile(contents: string, fileName: string): Profile | null {
+  try {
+    // First pass: Check known file format names to infer the file type
+    if (fileName.endsWith('.cpuprofile')) {
+      console.log('Importing as Chrome CPU Profile')
+      return importFromChromeCPUProfile(JSON.parse(contents))
+    } else if (fileName.endsWith('.chrome.json') || /Profile-\d{8}T\d{6}/.exec(fileName)) {
+      console.log('Importing as Chrome Timeline')
+      return importFromChromeTimeline(JSON.parse(contents))
+    } else if (fileName.endsWith('.stackprof.json')) {
+      console.log('Importing as stackprof profile')
+      return importFromStackprof(JSON.parse(contents))
+    } else if (fileName.endsWith('.txt')) {
+      console.log('Importing as collapsed stack format')
+      return importFromBGFlameGraph(contents)
+    }
+
+    // Second pass: Try to guess what file format it is based on structure
+    try {
+      const parsed = JSON.parse(contents)
+      if (Array.isArray(parsed) && parsed[parsed.length - 1].name === "CpuProfile") {
+        console.log('Importing as Chrome CPU Profile')
+        return importFromChromeTimeline(parsed)
+      } else if ('nodes' in parsed && 'samples' in parsed && 'timeDeltas' in parsed) {
+        console.log('Importing as Chrome Timeline')
+        return importFromChromeCPUProfile(parsed)
+      } else if ('mode' in parsed && 'frames' in parsed) {
+        console.log('Importing as stackprof profile')
+        return importFromStackprof(parsed)
+      }
+    } catch (e) {
+      // Format is not JSON
+
+      // If every line ends with a space followed by a number, it's probably
+      // the collapsed stack format.
+      const lineCount = contents.split(/\n/).length
+      if (lineCount > 1 && lineCount === contents.split(/ \d+\n/).length) {
+        console.log('Importing as collapsed stack format')
+        return importFromBGFlameGraph(contents)
+      }
+    }
+
+    return null
+  } catch (e) {
+    console.error(e)
+    return null
+  }
+}
+
 export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
   setTimeOrder = () => {
     this.props.setSortOrder(SortOrder.CHRONO)
@@ -79,21 +128,15 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     }
   }
 
-  importJSON(parsed: any): Profile {
-    if (Array.isArray(parsed) && parsed[parsed.length - 1].name === "CpuProfile") {
-      return importFromChromeTimeline(parsed)
-    } else {
-      return importFromStackprof(parsed)
-    }
-  }
-
   loadFromString(fileName: string, contents: string) {
     console.time('import')
-    console.log(fileName)
-    const profile =
-      fileName.endsWith('json') ? this.importJSON(JSON.parse(contents))
-        : fileName.endsWith('cpuprofile') ? importFromChromeCPUProfile(JSON.parse(contents))
-        : importFromBGFlameGraph(contents)
+    const profile = importProfile(contents, fileName)
+    if (profile == null) {
+      // TODO(jlfwong): Make this a nicer overlay
+      alert('Unrecognized format! See documentation about supported formats.')
+      return
+    }
+
     profile.setName(fileName)
     document.title = `${fileName} - speedscope`
 
@@ -114,9 +157,11 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       formatValue: profile.formatValue.bind(profile),
       getColorForFrame: colorGenerator.getColorForFrame.bind(colorGenerator)
     })
+    console.timeEnd('import')
 
+    console.time('first render')
     this.setState({ profile, flamechart, sortedFlamechart }, () => {
-      console.timeEnd('import')
+      console.timeEnd('first render')
     })
   }
 
