@@ -159,9 +159,9 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     })
     console.timeEnd('import')
 
-    console.time('first render')
+    console.time('first setState')
     this.setState({ profile, flamechart, sortedFlamechart }, () => {
-      console.timeEnd('first render')
+      console.timeEnd('first setState')
     })
   }
 

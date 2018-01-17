@@ -99,6 +99,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
   private preprocess(flamechart: Flamechart) {
     if (!this.canvas || !this.regl) return
+    console.time('panzoom preprocess')
     const configSpaceRects: Rect[] = []
     const colors: vec3[] = []
 
@@ -126,6 +127,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     this.renderer = rectangleBatchRenderer(this.regl, configSpaceRects, colors)
     this.setConfigSpaceViewportRect(new Rect())
     this.hoveredLabel = null
+    console.timeEnd('panzoom preprocess')
   }
 
   private canvasRef = (element?: Element) => {
