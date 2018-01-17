@@ -22,7 +22,7 @@ export function sortBy<T>(ts: T[], key: (t: T) => number | string): void {
   ts.sort(comparator)
 }
 
-export function getOrInsert<K, V>(map: Map<K, V>, k: K, fallback: (k?: K) => V): V {
+export function getOrInsert<K, V>(map: Map<K, V>, k: K, fallback: (k: K) => V): V {
   if (!map.has(k)) map.set(k, fallback(k))
   return map.get(k)!
 }

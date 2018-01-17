@@ -1,4 +1,5 @@
 import {Profile, TimeFormatter, FrameInfo} from '../profile'
+import {getOrInsert} from '../utils'
 
 interface TimelineEvent {
   pid: number,
@@ -18,14 +19,16 @@ interface PositionTickInfo {
   ticks: number
 }
 
+interface CPUProfileCallFrame {
+  columnNumber: number,
+  functionName: string,
+  lineNumber: number,
+  scriptId: string,
+  url: string
+}
+
 interface CPUProfileNode {
-  callFrame: {
-    columnNumber: number,
-    functionName: string,
-    lineNumber: number,
-    scriptId: string,
-    url: string
-  },
+  callFrame: CPUProfileCallFrame
   hitCount: number
   id: number
   children?: number[]
@@ -87,6 +90,8 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile) {
     timeDeltas.push(elapsed)
   }
 
+  const callFrameToFrameInfo = new Map<CPUProfileCallFrame, FrameInfo>()
+
   let lastNonGCStackTop: CPUProfileNode | null = null
   for (let i = 0; i < samples.length; i++) {
     const timeDelta = timeDeltas[i+1] || 0
@@ -98,13 +103,14 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile) {
 
     if (node.callFrame.functionName === "(garbage collector)") {
       // Place GC calls on top of the previous call stack
-      stack.push({
-        key: node.callFrame.functionName,
-        name: node.callFrame.functionName,
-        file: node.callFrame.url,
-        line: node.callFrame.lineNumber,
-        col: node.callFrame.columnNumber
-      })
+      const frame = getOrInsert(callFrameToFrameInfo, node.callFrame, (callFrame) => ({
+        key: callFrame.functionName,
+        name: callFrame.functionName,
+        file: callFrame.url,
+        line: callFrame.lineNumber,
+        col: callFrame.columnNumber
+      }))
+      stack.push(frame)
       if (!lastNonGCStackTop) {
         profile.appendSample(stack, timeDelta)
         continue
@@ -120,18 +126,20 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile) {
       if (node.callFrame.functionName === '(root)') continue
       if (node.callFrame.functionName === '(idle)') continue
 
-      const name = node.callFrame.functionName || "(anonymous)"
-      const file = node.callFrame.url
-      const line = node.callFrame.lineNumber
-      const col = node.callFrame.columnNumber
-
-      stack.push({
-        key: `${name}:${file}:${line}:${col}`,
-        name,
-        file,
-        line,
-        col
+      const frame = getOrInsert(callFrameToFrameInfo, node.callFrame, (callFrame) => {
+        const name = callFrame.functionName || "(anonymous)"
+        const file = callFrame.url
+        const line = callFrame.lineNumber
+        const col = callFrame.columnNumber
+        return {
+          key: `${name}:${file}:${line}:${col}`,
+          name,
+          file,
+          line,
+          col
+        }
       })
+      stack.push(frame)
     }
     stack.reverse()
 
