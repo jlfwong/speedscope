@@ -288,16 +288,26 @@ export class Profile {
     let stack = useAppendOrder ? this.appendOrderStack : this.groupedOrderStack
     this.addWeightsToNodes(value, stack)
 
-    let node = lastOf(stack)
-    if (node) {
-      const last = useAppendOrder ? lastOf(node.children) : node.children.find(c => c.frame === frame)
+    let prevTop = lastOf(stack)
+
+    if (prevTop) {
+      if (useAppendOrder) {
+        const delta = value - this.lastValue!
+        if (delta > 0) {
+          this.samples.push(prevTop)
+          this.weights.push(value - this.lastValue!)
+        }
+      }
+
+      const last = useAppendOrder ? lastOf(prevTop.children) : prevTop.children.find(c => c.frame === frame)
+      let node: CallTreeNode
       if (last && last.frame == frame) {
         node = last
       } else {
-        const parent = node
-        node = new CallTreeNode(frame, node)
-        parent.children.push(node)
+        node = new CallTreeNode(frame, prevTop)
+        prevTop.children.push(node)
       }
+      stack.push(node)
     }
   }
   enterFrame(frameInfo: FrameInfo, value: number) {
@@ -317,7 +327,12 @@ export class Profile {
     this.addWeightsToNodes(value, stack)
 
     if (useAppendOrder) {
-      this.appendOrderStack.pop()
+      const leavingStackTop = this.appendOrderStack.pop()
+      const delta = value - this.lastValue!
+      if (delta > 0) {
+        this.samples.push(leavingStackTop!)
+        this.weights.push(value - this.lastValue!)
+      }
     } else {
       this.groupedOrderStack.pop()
     }
@@ -325,6 +340,7 @@ export class Profile {
   leaveFrame(frameInfo: FrameInfo, value: number) {
     const frame = getOrInsert(this.frames, frameInfo.key, () => new Frame(frameInfo))
     this.addWeightsToFrames(value)
+
     this._leaveFrame(frame, value, true)
     this._leaveFrame(frame, value, false)
 
@@ -334,7 +350,7 @@ export class Profile {
     if (frameCount === 1) {
       this.framesInStack.delete(frame)
     } else {
-      this.framesInStack.set(frame, frameCount)
+      this.framesInStack.set(frame, frameCount - 1)
     }
     this.lastValue = value
   }

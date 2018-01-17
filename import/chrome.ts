@@ -1,5 +1,5 @@
 import {Profile, TimeFormatter, FrameInfo} from '../profile'
-import {getOrInsert} from '../utils'
+import {getOrInsert, lastOf} from '../utils'
 
 interface TimelineEvent {
   pid: number,
@@ -50,6 +50,24 @@ export function importFromChromeTimeline(events: TimelineEvent[]) {
   return importFromChromeCPUProfile(chromeProfile)
 }
 
+
+const callFrameToFrameInfo = new Map<CPUProfileCallFrame, FrameInfo>()
+function frameInfoForCallFrame(callFrame: CPUProfileCallFrame) {
+  return getOrInsert(callFrameToFrameInfo, callFrame, (callFrame) => {
+    const name = callFrame.functionName || "(anonymous)"
+    const file = callFrame.url
+    const line = callFrame.lineNumber
+    const col = callFrame.columnNumber
+    return {
+      key: `${name}:${file}:${line}:${col}`,
+      name,
+      file,
+      line,
+      col
+    }
+  })
+}
+
 export function importFromChromeCPUProfile(chromeProfile: CPUProfile) {
   const profile = new Profile(chromeProfile.endTime - chromeProfile.startTime)
 
@@ -90,60 +108,56 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile) {
     timeDeltas.push(elapsed)
   }
 
-  const callFrameToFrameInfo = new Map<CPUProfileCallFrame, FrameInfo>()
+  let prevStack: CPUProfileNode[] = []
 
-  let lastNonGCStackTop: CPUProfileNode | null = null
+  let value = 0
   for (let i = 0; i < samples.length; i++) {
     const timeDelta = timeDeltas[i+1] || 0
     const nodeId = samples[i]
-    let node = nodeById.get(nodeId)
-    if (!node) continue
+    let stackTop = nodeById.get(nodeId)
+    if (!stackTop) continue
 
-    const stack: FrameInfo[] = []
+    // Find lowest common ancestor of the current stack and the previous one
+    let lca: CPUProfileNode | null = null
 
-    if (node.callFrame.functionName === "(garbage collector)") {
+    // This is O(n^2), but n should be relatively small here (stack height),
+    // so hopefully this isn't much of a problem
+    for (
+      lca = stackTop;
+      lca && prevStack.indexOf(lca) === -1;
+      lca = lca.callFrame.functionName === "(garbage collector)" ? lastOf(prevStack) : lca.parent || null
+    ) {}
+
+    // Close frames that are no longer open
+    while (prevStack.length > 0 && lastOf(prevStack) != lca) {
+      const closingNode = prevStack.pop()!
+      const frame = frameInfoForCallFrame(closingNode.callFrame)
+      profile.leaveFrame(frame, value)
+    }
+
+    // Open frames that are now becoming open
+    const toOpen: CPUProfileNode[] = []
+    for (
+      let node: CPUProfileNode | null = stackTop;
+      node && node != lca;
       // Place GC calls on top of the previous call stack
-      const frame = getOrInsert(callFrameToFrameInfo, node.callFrame, (callFrame) => ({
-        key: callFrame.functionName,
-        name: callFrame.functionName,
-        file: callFrame.url,
-        line: callFrame.lineNumber,
-        col: callFrame.columnNumber
-      }))
-      stack.push(frame)
-      if (!lastNonGCStackTop) {
-        profile.appendSample(stack, timeDelta)
-        continue
-      } else {
-        node = lastNonGCStackTop
-      }
+      node = node.callFrame.functionName === "(garbage collector)" ? lastOf(prevStack) : node.parent || null
+    ) {
+      toOpen.push(node)
+    }
+    toOpen.reverse()
+
+    for (let node of toOpen) {
+      profile.enterFrame(frameInfoForCallFrame(node.callFrame), value)
     }
 
-    lastNonGCStackTop = node
+    prevStack = prevStack.concat(toOpen)
+    value += timeDelta
+  }
 
-    // TODO(jlfwong): This is silly and slow, but good enough for now
-    for (; node; node = node.parent) {
-      if (node.callFrame.functionName === '(root)') continue
-      if (node.callFrame.functionName === '(idle)') continue
-
-      const frame = getOrInsert(callFrameToFrameInfo, node.callFrame, (callFrame) => {
-        const name = callFrame.functionName || "(anonymous)"
-        const file = callFrame.url
-        const line = callFrame.lineNumber
-        const col = callFrame.columnNumber
-        return {
-          key: `${name}:${file}:${line}:${col}`,
-          name,
-          file,
-          line,
-          col
-        }
-      })
-      stack.push(frame)
-    }
-    stack.reverse()
-
-    profile.appendSample(stack, timeDelta)
+  // Close frames that are open at the end of the trace
+  for (let i = prevStack.length - 1; i >= 0; i--) {
+    profile.leaveFrame(frameInfoForCallFrame(prevStack[i].callFrame), value)
   }
 
   profile.setValueFormatter(new TimeFormatter('microseconds'))

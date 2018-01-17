@@ -69,5 +69,7 @@ export class Flamechart {
 
     this.totalWeight = source.getTotalWeight()
     source.forEachCall(openFrame, closeFrame)
+
+    if (!isFinite(this.minFrameWidth)) this.minFrameWidth = 1
   }
 }
