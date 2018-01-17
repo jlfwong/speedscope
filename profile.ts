@@ -1,4 +1,4 @@
-import { lastOf } from './utils'
+import { lastOf, getOrInsert } from './utils'
 
 export interface FrameInfo {
   key: string | number
@@ -59,11 +59,6 @@ export class CallTreeNode extends HasWeights {
   constructor(readonly frame: Frame, readonly parent: CallTreeNode | null) {
     super()
   }
-}
-
-function getOrInsert<K, V>(map: Map<K, V>, k: K, v: V): V {
-  if (!map.has(k)) map.set(k, v)
-  return map.get(k)!
 }
 
 const rootFrame = new Frame({
@@ -220,7 +215,7 @@ export class Profile {
     let framesInStack = new Set<Frame>()
 
     for (let frameInfo of stack) {
-      const frame = getOrInsert(this.frames, frameInfo.key, new Frame(frameInfo))
+      const frame = getOrInsert(this.frames, frameInfo.key, () => new Frame(frameInfo))
       const last = useAppendOrder ? lastOf(node.children) : node.children.find(c => c.frame === frame)
       if (last && last.frame == frame) {
         node = last
@@ -256,5 +251,91 @@ export class Profile {
   appendSample(stack: FrameInfo[], weight: number) {
     this._appendSample(stack, weight, true)
     this._appendSample(stack, weight, false)
+  }
+
+  // As an alternative API for importing profiles more efficiently, provide a
+  // way to open & close frames directly without needing to construct tons of
+  // arrays as intermediaries.
+  private appendOrderStack: CallTreeNode[] = [this.appendOrderCalltreeRoot]
+  private groupedOrderStack: CallTreeNode[] = [this.groupedCalltreeRoot]
+  private framesInStack = new Map<Frame, number>()
+  private stack: Frame[] = []
+
+  private lastValue: number | null = null
+  private addWeightsToFrames(value: number) {
+    if (this.lastValue == null) this.lastValue = value
+    const delta = value - this.lastValue!
+    for (let frame of this.framesInStack.keys()) {
+      frame.addToTotalWeight(delta)
+    }
+    const stackTop = lastOf(this.stack)
+    if (stackTop) {
+      stackTop.addToSelfWeight(delta)
+    }
+  }
+  private addWeightsToNodes(value: number, stack: CallTreeNode[]) {
+    const delta = value - this.lastValue!
+    for (let node of stack) {
+      node.addToTotalWeight(delta)
+    }
+    const stackTop = lastOf(stack)
+    if (stackTop) {
+      stackTop.addToSelfWeight(delta)
+    }
+  }
+
+  private _enterFrame(frame: Frame, value: number, useAppendOrder: boolean) {
+    let stack = useAppendOrder ? this.appendOrderStack : this.groupedOrderStack
+    this.addWeightsToNodes(value, stack)
+
+    let node = lastOf(stack)
+    if (node) {
+      const last = useAppendOrder ? lastOf(node.children) : node.children.find(c => c.frame === frame)
+      if (last && last.frame == frame) {
+        node = last
+      } else {
+        const parent = node
+        node = new CallTreeNode(frame, node)
+        parent.children.push(node)
+      }
+    }
+  }
+  enterFrame(frameInfo: FrameInfo, value: number) {
+    const frame = getOrInsert(this.frames, frameInfo.key, () => new Frame(frameInfo))
+    this.addWeightsToFrames(value)
+    this._enterFrame(frame, value, true)
+    this._enterFrame(frame, value, false)
+
+    this.stack.push(frame)
+    const frameCount = this.framesInStack.get(frame) || 0
+    this.framesInStack.set(frame, frameCount + 1)
+    this.lastValue = value
+  }
+
+  private _leaveFrame(frame: Frame, value: number, useAppendOrder: boolean) {
+    let stack = useAppendOrder ? this.appendOrderStack : this.groupedOrderStack
+    this.addWeightsToNodes(value, stack)
+
+    if (useAppendOrder) {
+      this.appendOrderStack.pop()
+    } else {
+      this.groupedOrderStack.pop()
+    }
+  }
+  leaveFrame(frameInfo: FrameInfo, value: number) {
+    const frame = getOrInsert(this.frames, frameInfo.key, () => new Frame(frameInfo))
+    this.addWeightsToFrames(value)
+    this._leaveFrame(frame, value, true)
+    this._leaveFrame(frame, value, false)
+
+    this.stack.pop()
+    const frameCount = this.framesInStack.get(frame)
+    if (frameCount == null) return
+    if (frameCount === 1) {
+      this.framesInStack.delete(frame)
+    } else {
+      this.framesInStack.set(frame, frameCount)
+    }
+    this.lastValue = value
   }
 }
