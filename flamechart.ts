@@ -3,7 +3,7 @@ import { Color } from './color'
 
 import { lastOf } from './utils'
 
-interface FlamechartFrame {
+export interface FlamechartFrame {
   node: CallTreeNode
   start: number
   end: number

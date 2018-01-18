@@ -217,7 +217,7 @@ export class Rect {
     return this.distanceFrom(p) === 0
   }
 
-  hasInteractionWith(other: Rect) {
+  hasIntersectionWith(other: Rect) {
     const top = Math.max(this.top(), other.top())
     const bottom = Math.max(top, Math.min(this.bottom(), other.bottom()))
     if (bottom - top === 0) return false

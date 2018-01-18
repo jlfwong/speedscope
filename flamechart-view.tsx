@@ -3,7 +3,7 @@ import {css} from 'aphrodite'
 import {ReloadableComponent} from './reloadable'
 
 import { CallTreeNode } from './profile'
-import { Flamechart } from './flamechart'
+import { Flamechart, FlamechartFrame } from './flamechart'
 
 import * as regl from 'regl'
 import { vec3, ReglCommand, ReglCommandConstructor } from 'regl'
@@ -90,7 +90,6 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   overlayCanvas: HTMLCanvasElement | null = null
   overlayCtx: CanvasRenderingContext2D | null = null
 
-  labels: FlamechartFrameLabel[] = []
   hoveredLabel: FlamechartFrameLabel | null = null
 
   private setConfigSpaceViewportRect(r: Rect) {
@@ -105,7 +104,6 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
     const layers = flamechart.getLayers()
 
-    this.labels = []
     for (let i = 0; i < layers.length; i++) {
       const layer = layers[i]
       for (let flamechartFrame of layer) {
@@ -116,11 +114,6 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
         configSpaceRects.push(configSpaceBounds)
         const color = flamechart.getColorForFrame(flamechartFrame.node.frame)
         colors.push([color.r, color.g, color.b])
-
-        this.labels.push({
-          configSpaceBounds,
-          node: flamechartFrame.node
-        })
       }
     }
 
@@ -247,30 +240,46 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     const PADDING_OFFSET = new Vec2(LABEL_PADDING_PX, LABEL_PADDING_PX)
     const SIZE_OFFSET = new Vec2(2 * LABEL_PADDING_PX, 2 * LABEL_PADDING_PX)
 
-    for (let label of this.labels) {
-      if (label.configSpaceBounds.width() < minConfigSpaceWidthToRender) continue
+    const renderFrameLabelAndChildren = (frame: FlamechartFrame, depth = 0) => {
+      const width = frame.end - frame.start
+      const configSpaceBounds = new Rect(
+        new Vec2(frame.start, depth + 1),
+        new Vec2(width, 1)
+      )
 
-      // Cull text outside the viewport
-      if (!label.configSpaceBounds.hasInteractionWith(this.props.configSpaceViewportRect)) continue
+      if (width < minConfigSpaceWidthToRender) return
+      if (configSpaceBounds.left() > this.props.configSpaceViewportRect.right()) return
+      if (configSpaceBounds.right() < this.props.configSpaceViewportRect.left()) return
+      if (configSpaceBounds.top() > this.props.configSpaceViewportRect.bottom()) return
 
-      let physicalLabelBounds = configToPhysical.transformRect(label.configSpaceBounds)
+      if (configSpaceBounds.hasIntersectionWith(this.props.configSpaceViewportRect)) {
+        let physicalLabelBounds = configToPhysical.transformRect(configSpaceBounds)
 
-      if (physicalLabelBounds.left() < 0) {
+        if (physicalLabelBounds.left() < 0) {
+          physicalLabelBounds = physicalLabelBounds
+            .withOrigin(physicalLabelBounds.origin.withX(0))
+            .withSize(physicalLabelBounds.size.withX(physicalLabelBounds.size.x + physicalLabelBounds.left()))
+        }
+        if (physicalLabelBounds.right() > physicalViewSize.x) {
+          physicalLabelBounds = physicalLabelBounds
+            .withSize(physicalLabelBounds.size.withX(physicalViewSize.x - physicalLabelBounds.left()))
+        }
+
         physicalLabelBounds = physicalLabelBounds
-          .withOrigin(physicalLabelBounds.origin.withX(0))
-          .withSize(physicalLabelBounds.size.withX(physicalLabelBounds.size.x + physicalLabelBounds.left()))
-      }
-      if (physicalLabelBounds.right() > physicalViewSize.x) {
-        physicalLabelBounds = physicalLabelBounds
-          .withSize(physicalLabelBounds.size.withX(physicalViewSize.x - physicalLabelBounds.left()))
+          .withOrigin(physicalLabelBounds.origin.plus(PADDING_OFFSET))
+          .withSize(physicalLabelBounds.size.minus(SIZE_OFFSET))
+
+        const trimmedText = trimTextMid(ctx, frame.node.frame.name, physicalLabelBounds.width())
+        ctx.fillText(trimmedText, physicalLabelBounds.left(), physicalLabelBounds.top())
       }
 
-      physicalLabelBounds = physicalLabelBounds
-        .withOrigin(physicalLabelBounds.origin.plus(PADDING_OFFSET))
-        .withSize(physicalLabelBounds.size.minus(SIZE_OFFSET))
+      for (let child of frame.children) {
+        renderFrameLabelAndChildren(child, depth + 1)
+      }
+    }
 
-      const trimmedText = trimTextMid(ctx, label.node.frame.name, physicalLabelBounds.width())
-      ctx.fillText(trimmedText, physicalLabelBounds.left(), physicalLabelBounds.top())
+    for (let frame of (this.props.flamechart.getLayers()[0] || [])) {
+      renderFrameLabelAndChildren(frame)
     }
 
     const left = this.props.configSpaceViewportRect.left()
@@ -483,6 +492,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     if (!configSpaceMouse) return
 
     // This could be sped up significantly
+    /*
     for (let label of this.labels) {
       if (label.configSpaceBounds.contains(configSpaceMouse)) {
         this.hoveredLabel = label
@@ -491,6 +501,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     }
 
     this.props.setNodeHover(this.hoveredLabel ? this.hoveredLabel.node : null, logicalViewSpaceMouse)
+    */
 
     this.renderCanvas()
   }
