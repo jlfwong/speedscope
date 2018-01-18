@@ -491,17 +491,36 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
     if (!configSpaceMouse) return
 
-    // This could be sped up significantly
-    /*
-    for (let label of this.labels) {
-      if (label.configSpaceBounds.contains(configSpaceMouse)) {
-        this.hoveredLabel = label
-        break
+    const setHoveredLabel = (frame: FlamechartFrame, depth = 0) => {
+      const width = frame.end - frame.start
+      const configSpaceBounds = new Rect(
+        new Vec2(frame.start, depth + 1),
+        new Vec2(width, 1)
+      )
+      if (configSpaceMouse.x < configSpaceBounds.left()) return null
+      if (configSpaceMouse.x > configSpaceBounds.right()) return null
+
+      if (configSpaceBounds.contains(configSpaceMouse)) {
+        this.hoveredLabel = {
+          configSpaceBounds,
+          node: frame.node
+        }
+      }
+
+      for (let child of frame.children) {
+        setHoveredLabel(child, depth + 1)
       }
     }
 
-    this.props.setNodeHover(this.hoveredLabel ? this.hoveredLabel.node : null, logicalViewSpaceMouse)
-    */
+    for (let frame of (this.props.flamechart.getLayers()[0] || [])) {
+      setHoveredLabel(frame)
+    }
+
+    if (this.hoveredLabel) {
+      this.props.setNodeHover(this.hoveredLabel!.node, logicalViewSpaceMouse)
+    } else {
+      this.props.setNodeHover(null, logicalViewSpaceMouse)
+    }
 
     this.renderCanvas()
   }
@@ -669,6 +688,7 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
     let formattedPercent = `${percent.toFixed(0)}%`
     if (percent === 100) formattedPercent = '100%'
     else if (percent > 99) formattedPercent = '>99%'
+    else if (percent < 0.01) formattedPercent = '<0.01%'
     else if (percent < 1) formattedPercent = `${percent.toFixed(2)}%`
     else if (percent < 10) formattedPercent = `${percent.toFixed(1)}%`
 
