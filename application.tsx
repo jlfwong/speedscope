@@ -22,6 +22,7 @@ interface ApplicationState {
   flamechart: Flamechart | null
   sortedFlamechart: Flamechart | null
   sortOrder: SortOrder
+  loading: boolean
 }
 
 interface ToolbarProps extends ApplicationState {
@@ -121,6 +122,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   constructor() {
     super()
     this.state = {
+      loading: false,
       profile: null,
       flamechart: null,
       sortedFlamechart: null,
@@ -132,6 +134,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     console.time('import')
     const profile = importProfile(contents, fileName)
     if (profile == null) {
+      this.setState({ loading: false })
       // TODO(jlfwong): Make this a nicer overlay
       alert('Unrecognized format! See documentation about supported formats.')
       return
@@ -160,20 +163,25 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     console.timeEnd('import')
 
     console.time('first setState')
-    this.setState({ profile, flamechart, sortedFlamechart }, () => {
+    this.setState({ profile, flamechart, sortedFlamechart, loading: false }, () => {
       console.timeEnd('first setState')
     })
   }
 
   loadFromFile(file: File) {
-    const reader = new FileReader
-    reader.addEventListener('loadend', () => {
-      this.loadFromString(file.name, reader.result)
+    this.setState({ loading: true }, () => {
+      requestAnimationFrame(() => {
+        const reader = new FileReader
+        reader.addEventListener('loadend', () => {
+          this.loadFromString(file.name, reader.result)
+        })
+        reader.readAsText(file)
+      })
     })
-    reader.readAsText(file)
   }
 
   loadExample = () => {
+    this.setState({ loading: true })
     fetch('dist/perf-vertx-stacks-01-collapsed-all.txt').then(resp => resp.text()).then(data => {
       this.loadFromString('perf-vertx-stacks-01-collapsed-all.txt', data)
     })
@@ -247,24 +255,46 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     </div>
   }
 
+  renderLoadingBar() {
+    return <div className={css(style.loading)}></div>
+  }
+
   setSortOrder = (sortOrder: SortOrder) => {
     this.setState({ sortOrder })
   }
 
   render() {
-    const {flamechart, sortedFlamechart, sortOrder} = this.state
+    const {flamechart, sortedFlamechart, sortOrder, loading} = this.state
     const flamechartToView = sortOrder == SortOrder.CHRONO ? flamechart : sortedFlamechart
 
     return <div onDrop={this.onDrop} onDragOver={this.onDragOver} className={css(style.root)}>
       <Toolbar setSortOrder={this.setSortOrder} {...this.state} />
-      {flamechartToView ?
-        <FlamechartView ref={this.flamechartRef} flamechart={flamechartToView} /> :
-        this.renderLanding()}
+      {loading ?
+        this.renderLoadingBar() :
+        flamechartToView ?
+          <FlamechartView ref={this.flamechartRef} flamechart={flamechartToView} /> :
+          this.renderLanding()}
     </div>
   }
 }
 
 const style = StyleSheet.create({
+  loading: {
+    height: 3,
+    marginBottom: -3,
+    background: Colors.DARK_BLUE,
+    transformOrigin: '0% 50%',
+    animationName: [{
+      from: {
+        transform: `scaleX(0)`
+      },
+      to: {
+        transform: `scaleX(1)`
+      }
+    }],
+    animationTimingFunction: "cubic-bezier(0, 1, 0, 1)",
+    animationDuration: "30s"
+  },
   root: {
     width: '100vw',
     height: '100vh',
