@@ -117,7 +117,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       }
     }
 
-    this.renderer = rectangleBatchRenderer(this.regl, configSpaceRects, colors)
+    this.renderer = rectangleBatchRenderer(this.regl, this.configSpaceSize(), configSpaceRects, colors)
     this.setConfigSpaceViewportRect(new Rect())
     this.hoveredLabel = null
     console.timeEnd('panzoom preprocess')

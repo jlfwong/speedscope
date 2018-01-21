@@ -429,7 +429,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       }
     }
 
-    this.renderer = rectangleBatchRenderer(this.regl, configSpaceRects, colors, 0)
+    this.renderer = rectangleBatchRenderer(this.regl, this.configSpaceSize(), configSpaceRects, colors, 0)
     this.viewportRectRenderer = viewportRectangleRenderer(this.regl);
   }
 
