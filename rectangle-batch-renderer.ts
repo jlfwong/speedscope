@@ -13,11 +13,31 @@ export interface RectangleBatchRendererProps {
 // & colors into a texture, then the offset & color could each
 // be an index into that texture rather than a vec2/vec3 respectively.
 class RectangleBucket {
-  private vertexCapacity = 6000
+  private vertexCapacity = 60
   private vertexCount = 0
   private positions = new Float32Array(this.vertexCapacity * 6 * 2)
   private physicalSpaceOffsets = new Float32Array(this.vertexCapacity * 6 * 2)
   private vertexColors = new Float32Array(this.vertexCapacity * 6 * 3)
+
+  getVertexCount() { return this.vertexCount }
+
+  private positionBuffer: any = null
+  getPositions() {
+    if (!this.positionBuffer) this.positionBuffer = this.regl.buffer(this.positions)
+    return this.positionBuffer
+  }
+
+  private offsetBuffer: any = null
+  getPhysicalSpaceOffsets() {
+    if (!this.offsetBuffer) this.offsetBuffer = this.regl.buffer(this.physicalSpaceOffsets)
+    return this.offsetBuffer
+  }
+
+  private colorBuffer: any = null
+  getVertexColors() {
+    if (!this.colorBuffer) this.colorBuffer = this.regl.buffer(this.vertexColors)
+    return this.colorBuffer
+  }
 
   private offset: {
     topLeft: Vec2,
@@ -41,14 +61,12 @@ class RectangleBucket {
     }
   }
 
-  getVertexCount() { return this.vertexCount }
-
   private addVertex(y: number, x: number, offset: Vec2, color: vec3) {
     const index = this.vertexCount++
     if (index >= this.vertexCapacity) {
 
       // Not enough capacity, time to resize! We'll quadruple the capacity each time.
-      this.vertexCapacity *= 4
+      this.vertexCapacity *= 2
       const positions = new Float32Array(this.vertexCapacity * 6 * 2)
       const physicalSpaceOffsets = new Float32Array(this.vertexCapacity * 6 * 2)
       const vertexColors = new Float32Array(this.vertexCapacity * 6 * 3)
@@ -90,77 +108,6 @@ class RectangleBucket {
     this.addVertex(top, right, this.offset.topRight, color)
     this.addVertex(bottom, right, this.offset.bottomRight, color)
   }
-
-  private renderer: ReglCommand<RectangleBatchRendererProps> | null = null
-  render(props: RectangleBatchRendererProps): void {
-    if (!this.renderer) {
-      this.renderer = this.regl<RectangleBatchRendererProps>({
-        vert: `
-        uniform mat3 configSpaceToNDC;
-        uniform vec2 physicalSize;
-        attribute vec2 position;
-        attribute vec3 color;
-        attribute vec2 physicalSpaceOffset;
-        varying vec3 vColor;
-        void main() {
-          vColor = color;
-          vec2 roundedPosition = (configSpaceToNDC * vec3(position.xy, 1)).xy;
-          vec2 halfSize = physicalSize / 2.0;
-          vec2 physicalPixelSize = 2.0 / physicalSize;
-          roundedPosition = floor(roundedPosition * halfSize) / halfSize;
-          gl_Position = vec4(roundedPosition + physicalPixelSize * physicalSpaceOffset, 0, 1);
-        }
-      `,
-
-        depth: {
-          enable: false
-        },
-
-        frag: `
-        precision mediump float;
-        varying vec3 vColor;
-        void main() {
-          gl_FragColor = vec4(vColor, 1);
-        }
-      `,
-
-        attributes: {
-          position: {
-            buffer: this.regl.buffer(this.positions),
-            offset: 0,
-            stride: 2 * 4,
-            size: 2
-          },
-          physicalSpaceOffset: {
-            buffer: this.regl.buffer(this.physicalSpaceOffsets),
-            offset: 0,
-            stride: 2 * 4,
-            size: 2
-          },
-          color: {
-            buffer: this.regl.buffer(this.vertexColors),
-            offset: 0,
-            stride: 3 * 4,
-            size: 3
-          }
-        },
-
-        uniforms: {
-          configSpaceToNDC: (context, props) => {
-            return props.configSpaceToNDC.flatten()
-          },
-          physicalSize: (context, props) => {
-            return props.physicalSize.flatten()
-          }
-        },
-
-        primitive: 'triangles',
-
-        count: this.vertexCount
-      })
-    }
-    this.renderer(props)
-  }
 }
 
 export const rectangleBatchRenderer = (
@@ -170,10 +117,10 @@ export const rectangleBatchRenderer = (
   colors: vec3[],
   strokeSize = 1
 ) => {
-  const N_BUCKET_COLUMNS = 16
+  const N_BUCKET_COLUMNS = 4
 
   function bucketKeyForRect(rect: Rect) {
-    const widthBucket = Math.ceil(Math.log2(rect.width()))
+    const widthBucket = Math.ceil(Math.log10(rect.width()))
 
     let leftBucket = Math.floor((rect.left() / configSpaceSize.x) * N_BUCKET_COLUMNS)
     if (leftBucket === N_BUCKET_COLUMNS) leftBucket--
@@ -185,7 +132,7 @@ export const rectangleBatchRenderer = (
     const widthBucket = Math.floor(key / N_BUCKET_COLUMNS)
     const leftBucket = key % N_BUCKET_COLUMNS
 
-    const maxWidth = Math.pow(2, widthBucket)
+    const maxWidth = Math.pow(10, widthBucket)
     const minLeft = (leftBucket / N_BUCKET_COLUMNS) * configSpaceSize.x
     const maxRight = ((leftBucket + 1) / N_BUCKET_COLUMNS) * configSpaceSize.x + maxWidth
 
@@ -198,6 +145,84 @@ export const rectangleBatchRenderer = (
     const bucket = getOrInsert(buckets, bucketKeyForRect(rect), createBucket)
     bucket.addRect(rect, colors[i])
   }
+
+  for (let bucket of buckets.values()) {
+    // Upload all the buffers to the GPU to prevent hitching when panning & zooming
+    bucket.getPhysicalSpaceOffsets()
+    bucket.getPositions()
+    bucket.getVertexColors()
+  }
+
+  const bucketRenderer = regl<RectangleBatchRendererProps & { bucket: RectangleBucket }>({
+    vert: `
+      uniform mat3 configSpaceToNDC;
+      uniform vec2 physicalSize;
+      attribute vec2 position;
+      attribute vec3 color;
+      attribute vec2 physicalSpaceOffset;
+      varying vec3 vColor;
+      void main() {
+        vColor = color;
+        vec2 roundedPosition = (configSpaceToNDC * vec3(position.xy, 1)).xy;
+        vec2 halfSize = physicalSize / 2.0;
+        vec2 physicalPixelSize = 2.0 / physicalSize;
+        roundedPosition = floor(roundedPosition * halfSize) / halfSize;
+        gl_Position = vec4(roundedPosition + physicalPixelSize * physicalSpaceOffset, 0, 1);
+      }
+    `,
+
+    depth: {
+      enable: false
+    },
+
+    frag: `
+      precision mediump float;
+      varying vec3 vColor;
+      void main() {
+        gl_FragColor = vec4(vColor, 1);
+      }
+    `,
+
+    attributes: {
+      position: (context, props) => {
+        return {
+          buffer: props.bucket.getPositions(),
+          offset: 0,
+          stride: 2 * 4,
+          size: 2
+        }
+      },
+      physicalSpaceOffset: (context, props) => {
+        return {
+          buffer: props.bucket.getPhysicalSpaceOffsets(),
+          offset: 0,
+          stride: 2 * 4,
+          size: 2
+        }
+      },
+      color: (context, props) => {
+        return {
+          buffer: props.bucket.getVertexColors(),
+          offset: 0,
+          stride: 3 * 4,
+          size: 3
+        }
+      }
+    },
+
+    uniforms: {
+      configSpaceToNDC: (context, props) => {
+        return props.configSpaceToNDC.flatten()
+      },
+      physicalSize: (context, props) => {
+        return props.physicalSize.flatten()
+      }
+    },
+
+    primitive: 'triangles',
+
+    count: (context, props) => props.bucket.getVertexCount()
+  })
 
   return (props: RectangleBatchRendererProps) => {
     const singlePixelNDCSize = new Vec2(
@@ -222,7 +247,7 @@ export const rectangleBatchRenderer = (
         // Entire bucket is outside the viewport bounds to the left
         continue
       }
-      bucket.render(props)
+      bucketRenderer({ ...props, bucket })
     }
   }
 }

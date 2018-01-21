@@ -12,6 +12,7 @@ declare module "regl" {
     ReglProp
 
   type ReglValue<P> = ReglPrimitiveValue | {(context: any, props: P, batchId: number): ReglPrimitiveValue}
+  type MaybeComputed<P, T> = T | { (context: any, props: P, batchId: number): T }
 
   type BlendEquation = 'add' | 'subtract' | 'reverse subtract' | 'min' | 'max'
 
@@ -54,7 +55,7 @@ declare module "regl" {
     }
 
     /** Number of vertices to draw */
-    count: number
+    count: MaybeComputed<P, number>
 
     /** */
     primitive?: 'points' | 'lines' | 'line strip' | 'triangles' | 'triangle strip' | 'triangle fan'
