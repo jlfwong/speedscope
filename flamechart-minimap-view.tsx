@@ -412,6 +412,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
 
   private preprocess(flamechart: Flamechart) {
     if (!this.canvas || !this.regl) return
+    console.time('minimap preprocess')
     const configSpaceRects: Rect[] = []
     const colors: vec3[] = []
 
@@ -431,6 +432,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
 
     this.renderer = rectangleBatchRenderer(this.regl, configSpaceRects, colors, 0)
     this.viewportRectRenderer = viewportRectangleRenderer(this.regl);
+    console.timeEnd('minimap preprocess')
   }
 
   private overlayCanvasRef = (element?: Element) => {
