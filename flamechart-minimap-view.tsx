@@ -1,10 +1,10 @@
 import * as regl from 'regl'
-import { vec3, Command } from 'regl'
+import { Command } from 'regl'
 import { h, Component } from 'preact'
 import { css } from 'aphrodite'
 import { Flamechart } from './flamechart'
 import { Rect, Vec2, AffineTransform, clamp } from './math'
-import { rectangleBatchRenderer, RectangleBatchRendererProps } from "./rectangle-batch-renderer"
+import { RectangleBatchRenderer, RectangleBatch } from "./rectangle-batch-renderer"
 import { atMostOnceAFrame, cachedMeasureTextWidth } from "./utils";
 import { style, Sizes } from "./flamechart-style";
 import { FontFamily, FontSize, Colors } from "./style"
@@ -14,6 +14,13 @@ const DEVICE_PIXEL_RATIO = window.devicePixelRatio
 interface FlamechartMinimapViewProps {
   flamechart: Flamechart
   configSpaceViewportRect: Rect
+
+  // TODO(jlfwong): Encapsulate the regl.Instance and the batch renderer
+  // in a CanvasContext object or something along those lines
+  gl: regl.Instance
+  renderer: RectangleBatchRenderer
+  rectangles: RectangleBatch
+
   transformViewport: (transform: AffineTransform) => void
   setConfigSpaceViewportRect: (rect: Rect) => void
 }
@@ -24,11 +31,8 @@ enum DraggingMode {
 }
 
 export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps, {}> {
-  renderer: Command<RectangleBatchRendererProps> | null = null
   viewportRectRenderer: Command<OverlayRectangleRendererProps> | null = null
 
-  ctx: WebGLRenderingContext | null = null
-  gl: regl.Instance | null = null
   canvas: HTMLCanvasElement | null = null
 
   overlayCanvas: HTMLCanvasElement | null = null
@@ -77,21 +81,39 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   }
 
   private renderRects() {
-    if (!this.renderer || !this.canvas || !this.viewportRectRenderer) return
+    if (!this.canvas) return
     this.resizeCanvasIfNeeded()
-
     const configSpaceToNDC = this.physicalViewSpaceToNDC().times(this.configSpaceToPhysicalViewSpace())
 
-    this.renderer({
-      configSpaceToNDC: configSpaceToNDC,
-      physicalSize: this.physicalViewSize()
+    const bounds = this.canvas.getBoundingClientRect()
+    const physicalBounds = this.logicalToPhysicalViewSpace().transformRect(new Rect(
+      new Vec2(bounds.left, bounds.top),
+      new Vec2(bounds.width, bounds.height)
+    ))
+
+    this.props.gl({
+      viewport: {
+        x: physicalBounds.left(),
+        y: window.devicePixelRatio * window.innerHeight - physicalBounds.top() - physicalBounds.height(),
+        width: physicalBounds.width(),
+        height: physicalBounds.height()
+      }
+    })(() => {
+      this.props.renderer.render({
+        configSpaceToNDC: configSpaceToNDC,
+        physicalSize: this.physicalViewSize(),
+        strokeSize: 0,
+        batch: this.props.rectangles
+      })
     })
 
+    /*
     this.viewportRectRenderer({
       configSpaceViewportRect: this.props.configSpaceViewportRect,
       configSpaceToPhysicalViewSpace: this.configSpaceToPhysicalViewSpace(),
       physicalSize: this.physicalViewSize()
     })
+    */
   }
 
   private renderOverlays() {
@@ -152,7 +174,6 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
 
   componentWillReceiveProps(nextProps: FlamechartMinimapViewProps) {
     if (this.props.flamechart !== nextProps.flamechart) {
-      this.renderer = null
       this.renderCanvas()
     } else if (this.props.configSpaceViewportRect != nextProps.configSpaceViewportRect) {
       this.renderCanvas()
@@ -160,7 +181,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   }
 
   private resizeCanvasIfNeeded() {
-    if (!this.canvas || !this.ctx) return
+    if (!this.canvas) return
     let { width, height } = this.canvas.getBoundingClientRect()
     width = Math.floor(width) * DEVICE_PIXEL_RATIO
     height = Math.floor(height) * DEVICE_PIXEL_RATIO
@@ -175,8 +196,6 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
 
     this.canvas.width = width
     this.canvas.height = height
-
-    this.ctx.viewport(0, 0, width, height)
   }
 
   private resizeOverlayCanvasIfNeeded() {
@@ -211,12 +230,6 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       // size.
       requestAnimationFrame(() => this.renderCanvas())
     } else {
-      if (!this.gl) return;
-      if (!this.renderer) this.preprocess(this.props.flamechart)
-      this.gl.clear({
-        color: [1, 1, 1, 1],
-        depth: 1
-      })
       this.renderRects()
       this.renderOverlays()
     }
@@ -225,8 +238,6 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   private canvasRef = (element?: Element) => {
     if (element) {
       this.canvas = element as HTMLCanvasElement
-      this.ctx = this.canvas.getContext('webgl')!
-      this.gl = regl(this.ctx)
       this.renderCanvas()
     } else {
       this.canvas = null
@@ -408,31 +419,6 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     const configSpaceMouse = this.configSpaceMouse(ev)
     if (!configSpaceMouse) return
     this.updateCursor(configSpaceMouse)
-  }
-
-  private preprocess(flamechart: Flamechart) {
-    if (!this.canvas || !this.gl) return
-    console.time('minimap preprocess')
-    const configSpaceRects: Rect[] = []
-    const colors: vec3[] = []
-
-    const layers = flamechart.getLayers()
-    for (let i = 0; i < layers.length; i++) {
-      const layer = layers[i]
-      for (let flamechartFrame of layer) {
-        const configSpaceBounds = new Rect(
-          new Vec2(flamechartFrame.start, i),
-          new Vec2(flamechartFrame.end - flamechartFrame.start, 1)
-        )
-        configSpaceRects.push(configSpaceBounds)
-        const color = flamechart.getColorForFrame(flamechartFrame.node.frame)
-        colors.push([color.r, color.g, color.b])
-      }
-    }
-
-    this.renderer = rectangleBatchRenderer(this.gl, configSpaceRects, colors, 0)
-    this.viewportRectRenderer = viewportRectangleRenderer(this.gl);
-    console.timeEnd('minimap preprocess')
   }
 
   private overlayCanvasRef = (element?: Element) => {

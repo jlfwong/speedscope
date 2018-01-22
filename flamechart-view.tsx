@@ -1,3 +1,4 @@
+import * as regl from 'regl'
 import {h} from 'preact'
 import {css} from 'aphrodite'
 import {ReloadableComponent} from './reloadable'
@@ -5,12 +6,9 @@ import {ReloadableComponent} from './reloadable'
 import { CallTreeNode } from './profile'
 import { Flamechart, FlamechartFrame } from './flamechart'
 
-import * as regl from 'regl'
-import { vec3, Command, Instance } from 'regl'
-
 import { Rect, Vec2, AffineTransform, clamp } from './math'
 import { atMostOnceAFrame, cachedMeasureTextWidth } from "./utils";
-import { rectangleBatchRenderer, RectangleBatchRendererProps } from "./rectangle-batch-renderer"
+import { RectangleBatchRenderer, RectangleBatch } from "./rectangle-batch-renderer"
 import { FlamechartMinimapView } from "./flamechart-minimap-view"
 
 import { style, Sizes } from './flamechart-style'
@@ -74,6 +72,11 @@ const DEVICE_PIXEL_RATIO = window.devicePixelRatio
  */
 interface FlamechartPanZoomViewProps {
   flamechart: Flamechart
+
+  gl: regl.Instance
+  renderer: RectangleBatchRenderer
+  rectangles: RectangleBatch
+
   setNodeHover: (node: CallTreeNode | null, logicalViewSpaceMouse: Vec2) => void
   configSpaceViewportRect: Rect
   transformViewport: (transform: AffineTransform) => void
@@ -81,10 +84,6 @@ interface FlamechartPanZoomViewProps {
 }
 
 export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoomViewProps, {}> {
-  renderer: Command<RectangleBatchRendererProps> | null = null
-
-  ctx: WebGLRenderingContext | null = null
-  gl: Instance | null = null
   canvas: HTMLCanvasElement | null = null
 
   overlayCanvas: HTMLCanvasElement | null = null
@@ -96,38 +95,9 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     this.props.setConfigSpaceViewportRect(r)
   }
 
-  private preprocess(flamechart: Flamechart) {
-    if (!this.canvas || !this.gl) return
-    console.time('panzoom preprocess')
-    const configSpaceRects: Rect[] = []
-    const colors: vec3[] = []
-
-    const layers = flamechart.getLayers()
-
-    for (let i = 0; i < layers.length; i++) {
-      const layer = layers[i]
-      for (let flamechartFrame of layer) {
-        const configSpaceBounds = new Rect(
-          new Vec2(flamechartFrame.start, i+1),
-          new Vec2(flamechartFrame.end - flamechartFrame.start, 1)
-        )
-        configSpaceRects.push(configSpaceBounds)
-        const color = flamechart.getColorForFrame(flamechartFrame.node.frame)
-        colors.push([color.r, color.g, color.b])
-      }
-    }
-
-    this.renderer = rectangleBatchRenderer(this.gl, configSpaceRects, colors)
-    this.setConfigSpaceViewportRect(new Rect())
-    this.hoveredLabel = null
-    console.timeEnd('panzoom preprocess')
-  }
-
   private canvasRef = (element?: Element) => {
     if (element) {
       this.canvas = element as HTMLCanvasElement
-      this.ctx = this.canvas.getContext('webgl')!
-      this.gl = regl(this.ctx)
       this.renderCanvas()
     } else {
       this.canvas = null
@@ -319,7 +289,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   }
 
   private resizeCanvasIfNeeded(windowResized = false) {
-    if (!this.canvas || !this.ctx) return
+    if (!this.canvas) return
     let { width, height } = this.canvas.getBoundingClientRect()
     const logicalHeight = height
     width = Math.floor(width) * DEVICE_PIXEL_RATIO
@@ -351,8 +321,6 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
     this.canvas.width = width
     this.canvas.height = height
-
-    this.ctx.viewport(0, 0, width, height)
   }
 
   onWindowResize = () => {
@@ -361,17 +329,33 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   }
 
   private renderRects() {
-    if (!this.renderer || !this.canvas) return
+    if (!this.canvas) return
     this.resizeCanvasIfNeeded()
-
 
     if (this.props.configSpaceViewportRect.isEmpty()) return
 
     const configSpaceToNDC = this.physicalViewSpaceToNDC().times(this.configSpaceToPhysicalViewSpace())
 
-    this.renderer({
-      configSpaceToNDC: configSpaceToNDC,
-      physicalSize: this.physicalViewSize()
+    const bounds = this.canvas.getBoundingClientRect()
+    const physicalBounds = this.logicalToPhysicalViewSpace().transformRect(new Rect(
+      new Vec2(bounds.left, bounds.top),
+      new Vec2(bounds.width, bounds.height)
+    ))
+
+    this.props.gl({
+      viewport: {
+        x: physicalBounds.left(),
+        y: window.devicePixelRatio * window.innerHeight - physicalBounds.top() - physicalBounds.height(),
+        width: physicalBounds.width(),
+        height: physicalBounds.height()
+      }
+    })(() => {
+      this.props.renderer.render({
+        configSpaceToNDC: configSpaceToNDC,
+        physicalSize: this.physicalViewSize(),
+        strokeSize: 1,
+        batch: this.props.rectangles
+      })
     })
   }
 
@@ -411,7 +395,6 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       // size.
       requestAnimationFrame(() => this.renderCanvas())
     } else {
-      if (!this.renderer) this.preprocess(this.props.flamechart)
       this.renderRects()
       this.renderOverlays()
     }
@@ -584,7 +567,6 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   shouldComponentUpdate() { return false }
   componentWillReceiveProps(nextProps: FlamechartPanZoomViewProps) {
     if (this.props.flamechart !== nextProps.flamechart) {
-      this.renderer = null
       this.renderCanvas()
     } else if (this.props.configSpaceViewportRect !== nextProps.configSpaceViewportRect) {
       this.renderCanvas()
@@ -622,6 +604,9 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
 interface FlamechartViewProps {
   flamechart: Flamechart
+  gl: regl.Instance
+  renderer: RectangleBatchRenderer
+  rectangles: RectangleBatch
 }
 
 interface FlamechartViewState {
@@ -751,10 +736,16 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
         <FlamechartMinimapView
           configSpaceViewportRect={this.state.configSpaceViewportRect}
           transformViewport={this.transformViewport}
+          gl={this.props.gl}
+          renderer={this.props.renderer}
+          rectangles={this.props.rectangles}
           setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
           flamechart={this.props.flamechart} />
         <FlamechartPanZoomView
           ref={this.panZoomRef}
+          gl={this.props.gl}
+          renderer={this.props.renderer}
+          rectangles={this.props.rectangles}
           flamechart={this.props.flamechart}
           setNodeHover={this.onNodeHover}
           transformViewport={this.transformViewport}

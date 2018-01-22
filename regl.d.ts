@@ -285,7 +285,7 @@ declare module "regl" {
 
       uniforms?: { [uniformName: string]: MaybeComputed<P, Uniform> }
 
-      attributes: { [attributeName: string]: MaybeComputed<P, Attribute> }
+      attributes?: { [attributeName: string]: MaybeComputed<P, Attribute> }
 
       primitive?: DrawMode
 
