@@ -7,7 +7,7 @@ export interface RectangleBatchRendererProps {
   physicalSize: Vec2
 }
 
-export const rectangleBatchRenderer = (regl: regl.ReglCommandConstructor, rects: Rect[], colors: vec3[], strokeSize = 1) => {
+export const rectangleBatchRenderer = (regl: regl.Instance, rects: Rect[], colors: vec3[], strokeSize = 1) => {
   const positions = new Float32Array(rects.length * 6 * 2)
   const physicalSpaceOffsets = new Float32Array(rects.length * 6 * 2)
   const vertexColors = new Float32Array(rects.length * 6 * 3)

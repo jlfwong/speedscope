@@ -6,7 +6,7 @@ import { CallTreeNode } from './profile'
 import { Flamechart, FlamechartFrame } from './flamechart'
 
 import * as regl from 'regl'
-import { vec3, ReglCommand, ReglCommandConstructor } from 'regl'
+import { vec3, Command, Instance } from 'regl'
 
 import { Rect, Vec2, AffineTransform, clamp } from './math'
 import { atMostOnceAFrame, cachedMeasureTextWidth } from "./utils";
@@ -81,10 +81,10 @@ interface FlamechartPanZoomViewProps {
 }
 
 export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoomViewProps, {}> {
-  renderer: ReglCommand<RectangleBatchRendererProps> | null = null
+  renderer: Command<RectangleBatchRendererProps> | null = null
 
   ctx: WebGLRenderingContext | null = null
-  regl: ReglCommandConstructor | null = null
+  regl: Instance | null = null
   canvas: HTMLCanvasElement | null = null
 
   overlayCanvas: HTMLCanvasElement | null = null

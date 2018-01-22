@@ -1,5 +1,5 @@
 import * as regl from 'regl'
-import { vec3, ReglCommand } from 'regl'
+import { vec3, Command } from 'regl'
 import { h, Component } from 'preact'
 import { css } from 'aphrodite'
 import { Flamechart } from './flamechart'
@@ -24,11 +24,11 @@ enum DraggingMode {
 }
 
 export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps, {}> {
-  renderer: ReglCommand<RectangleBatchRendererProps> | null = null
-  viewportRectRenderer: ReglCommand<OverlayRectangleRendererProps> | null = null
+  renderer: Command<RectangleBatchRendererProps> | null = null
+  viewportRectRenderer: Command<OverlayRectangleRendererProps> | null = null
 
   ctx: WebGLRenderingContext | null = null
-  regl: regl.ReglCommandConstructor | null = null
+  regl: regl.Instance | null = null
   canvas: HTMLCanvasElement | null = null
 
   overlayCanvas: HTMLCanvasElement | null = null
@@ -472,7 +472,7 @@ export interface OverlayRectangleRendererProps {
   physicalSize: Vec2
 }
 
-export const viewportRectangleRenderer = (regl: regl.ReglCommandConstructor) => {
+export const viewportRectangleRenderer = (regl: regl.Instance) => {
   return regl<OverlayRectangleRendererProps>({
     vert: `
       attribute vec2 position;
