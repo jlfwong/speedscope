@@ -7,7 +7,7 @@ export interface RectangleBatchRendererProps {
   physicalSize: Vec2
 }
 
-export const rectangleBatchRenderer = (regl: regl.Instance, rects: Rect[], colors: vec3[], strokeSize = 1) => {
+export const rectangleBatchRenderer = (gl: regl.Instance, rects: Rect[], colors: vec3[], strokeSize = 1) => {
   const positions = new Float32Array(rects.length * 6 * 2)
   const physicalSpaceOffsets = new Float32Array(rects.length * 6 * 2)
   const vertexColors = new Float32Array(rects.length * 6 * 3)
@@ -55,7 +55,7 @@ export const rectangleBatchRenderer = (regl: regl.Instance, rects: Rect[], color
     addVertex(bottom, right, offset.bottomRight, color)
   }
 
-  return regl<RectangleBatchRendererProps>({
+  return gl<RectangleBatchRendererProps>({
     vert: `
       uniform mat3 configSpaceToNDC;
       uniform vec2 physicalSize;
@@ -87,19 +87,19 @@ export const rectangleBatchRenderer = (regl: regl.Instance, rects: Rect[], color
 
     attributes: {
       position: {
-        buffer: regl.buffer(positions),
+        buffer: gl.buffer(positions),
         offset: 0,
         stride: 2 * 4,
         size: 2
       },
       physicalSpaceOffset: {
-        buffer: regl.buffer(physicalSpaceOffsets),
+        buffer: gl.buffer(physicalSpaceOffsets),
         offset: 0,
         stride: 2 * 4,
         size: 2
       },
       color: {
-        buffer: regl.buffer(vertexColors),
+        buffer: gl.buffer(vertexColors),
         offset: 0,
         stride: 3 * 4,
         size: 3

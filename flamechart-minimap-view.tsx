@@ -28,7 +28,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   viewportRectRenderer: Command<OverlayRectangleRendererProps> | null = null
 
   ctx: WebGLRenderingContext | null = null
-  regl: regl.Instance | null = null
+  gl: regl.Instance | null = null
   canvas: HTMLCanvasElement | null = null
 
   overlayCanvas: HTMLCanvasElement | null = null
@@ -211,9 +211,9 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       // size.
       requestAnimationFrame(() => this.renderCanvas())
     } else {
-      if (!this.regl) return;
+      if (!this.gl) return;
       if (!this.renderer) this.preprocess(this.props.flamechart)
-      this.regl.clear({
+      this.gl.clear({
         color: [1, 1, 1, 1],
         depth: 1
       })
@@ -226,7 +226,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     if (element) {
       this.canvas = element as HTMLCanvasElement
       this.ctx = this.canvas.getContext('webgl')!
-      this.regl = regl(this.ctx)
+      this.gl = regl(this.ctx)
       this.renderCanvas()
     } else {
       this.canvas = null
@@ -411,7 +411,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   }
 
   private preprocess(flamechart: Flamechart) {
-    if (!this.canvas || !this.regl) return
+    if (!this.canvas || !this.gl) return
     console.time('minimap preprocess')
     const configSpaceRects: Rect[] = []
     const colors: vec3[] = []
@@ -430,8 +430,8 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       }
     }
 
-    this.renderer = rectangleBatchRenderer(this.regl, configSpaceRects, colors, 0)
-    this.viewportRectRenderer = viewportRectangleRenderer(this.regl);
+    this.renderer = rectangleBatchRenderer(this.gl, configSpaceRects, colors, 0)
+    this.viewportRectRenderer = viewportRectangleRenderer(this.gl);
     console.timeEnd('minimap preprocess')
   }
 

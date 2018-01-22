@@ -84,7 +84,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   renderer: Command<RectangleBatchRendererProps> | null = null
 
   ctx: WebGLRenderingContext | null = null
-  regl: Instance | null = null
+  gl: Instance | null = null
   canvas: HTMLCanvasElement | null = null
 
   overlayCanvas: HTMLCanvasElement | null = null
@@ -97,7 +97,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   }
 
   private preprocess(flamechart: Flamechart) {
-    if (!this.canvas || !this.regl) return
+    if (!this.canvas || !this.gl) return
     console.time('panzoom preprocess')
     const configSpaceRects: Rect[] = []
     const colors: vec3[] = []
@@ -117,7 +117,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       }
     }
 
-    this.renderer = rectangleBatchRenderer(this.regl, configSpaceRects, colors)
+    this.renderer = rectangleBatchRenderer(this.gl, configSpaceRects, colors)
     this.setConfigSpaceViewportRect(new Rect())
     this.hoveredLabel = null
     console.timeEnd('panzoom preprocess')
@@ -127,7 +127,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     if (element) {
       this.canvas = element as HTMLCanvasElement
       this.ctx = this.canvas.getContext('webgl')!
-      this.regl = regl(this.ctx)
+      this.gl = regl(this.ctx)
       this.renderCanvas()
     } else {
       this.canvas = null
