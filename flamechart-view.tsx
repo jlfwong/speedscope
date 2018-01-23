@@ -1,4 +1,3 @@
-import * as regl from 'regl'
 import {h} from 'preact'
 import {css} from 'aphrodite'
 import {ReloadableComponent} from './reloadable'
@@ -8,11 +7,12 @@ import { Flamechart, FlamechartFrame } from './flamechart'
 
 import { Rect, Vec2, AffineTransform, clamp } from './math'
 import { atMostOnceAFrame, cachedMeasureTextWidth } from "./utils";
-import { RectangleBatchRenderer, RectangleBatch } from "./rectangle-batch-renderer"
+import { RectangleBatch } from "./rectangle-batch-renderer"
 import { FlamechartMinimapView } from "./flamechart-minimap-view"
 
 import { style, Sizes } from './flamechart-style'
 import { FontSize, FontFamily, Colors } from './style'
+import { CanvasContext } from './canvas-context'
 
 interface FlamechartFrameLabel {
   configSpaceBounds: Rect
@@ -73,8 +73,7 @@ const DEVICE_PIXEL_RATIO = window.devicePixelRatio
 interface FlamechartPanZoomViewProps {
   flamechart: Flamechart
 
-  gl: regl.Instance
-  renderer: RectangleBatchRenderer
+  canvasContext: CanvasContext
   rectangles: RectangleBatch
 
   setNodeHover: (node: CallTreeNode | null, logicalViewSpaceMouse: Vec2) => void
@@ -336,21 +335,8 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
     const configSpaceToNDC = this.physicalViewSpaceToNDC().times(this.configSpaceToPhysicalViewSpace())
 
-    const bounds = this.canvas.getBoundingClientRect()
-    const physicalBounds = this.logicalToPhysicalViewSpace().transformRect(new Rect(
-      new Vec2(bounds.left, bounds.top),
-      new Vec2(bounds.width, bounds.height)
-    ))
-
-    this.props.gl({
-      viewport: {
-        x: physicalBounds.left(),
-        y: window.devicePixelRatio * window.innerHeight - physicalBounds.top() - physicalBounds.height(),
-        width: physicalBounds.width(),
-        height: physicalBounds.height()
-      }
-    })(() => {
-      this.props.renderer.render({
+    this.props.canvasContext.renderInto(this.canvas, () => {
+      this.props.canvasContext.drawRectangleBatch({
         configSpaceToNDC: configSpaceToNDC,
         physicalSize: this.physicalViewSize(),
         strokeSize: 1,
@@ -604,8 +590,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
 interface FlamechartViewProps {
   flamechart: Flamechart
-  gl: regl.Instance
-  renderer: RectangleBatchRenderer
+  canvasContext: CanvasContext
   rectangles: RectangleBatch
 }
 
@@ -736,15 +721,13 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
         <FlamechartMinimapView
           configSpaceViewportRect={this.state.configSpaceViewportRect}
           transformViewport={this.transformViewport}
-          gl={this.props.gl}
-          renderer={this.props.renderer}
+          canvasContext={this.props.canvasContext}
           rectangles={this.props.rectangles}
           setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
           flamechart={this.props.flamechart} />
         <FlamechartPanZoomView
           ref={this.panZoomRef}
-          gl={this.props.gl}
-          renderer={this.props.renderer}
+          canvasContext={this.props.canvasContext}
           rectangles={this.props.rectangles}
           flamechart={this.props.flamechart}
           setNodeHover={this.onNodeHover}

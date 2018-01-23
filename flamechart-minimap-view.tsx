@@ -1,13 +1,12 @@
-import * as regl from 'regl'
-import { Command } from 'regl'
 import { h, Component } from 'preact'
 import { css } from 'aphrodite'
 import { Flamechart } from './flamechart'
 import { Rect, Vec2, AffineTransform, clamp } from './math'
-import { RectangleBatchRenderer, RectangleBatch } from "./rectangle-batch-renderer"
+import { RectangleBatch } from "./rectangle-batch-renderer"
 import { atMostOnceAFrame, cachedMeasureTextWidth } from "./utils";
 import { style, Sizes } from "./flamechart-style";
 import { FontFamily, FontSize, Colors } from "./style"
+import { CanvasContext } from './canvas-context'
 
 const DEVICE_PIXEL_RATIO = window.devicePixelRatio
 
@@ -15,10 +14,7 @@ interface FlamechartMinimapViewProps {
   flamechart: Flamechart
   configSpaceViewportRect: Rect
 
-  // TODO(jlfwong): Encapsulate the regl.Instance and the batch renderer
-  // in a CanvasContext object or something along those lines
-  gl: regl.Instance
-  renderer: RectangleBatchRenderer
+  canvasContext: CanvasContext
   rectangles: RectangleBatch
 
   transformViewport: (transform: AffineTransform) => void
@@ -31,8 +27,6 @@ enum DraggingMode {
 }
 
 export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps, {}> {
-  viewportRectRenderer: Command<OverlayRectangleRendererProps> | null = null
-
   canvas: HTMLCanvasElement | null = null
 
   overlayCanvas: HTMLCanvasElement | null = null
@@ -85,35 +79,19 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     this.resizeCanvasIfNeeded()
     const configSpaceToNDC = this.physicalViewSpaceToNDC().times(this.configSpaceToPhysicalViewSpace())
 
-    const bounds = this.canvas.getBoundingClientRect()
-    const physicalBounds = this.logicalToPhysicalViewSpace().transformRect(new Rect(
-      new Vec2(bounds.left, bounds.top),
-      new Vec2(bounds.width, bounds.height)
-    ))
-
-    this.props.gl({
-      viewport: {
-        x: physicalBounds.left(),
-        y: window.devicePixelRatio * window.innerHeight - physicalBounds.top() - physicalBounds.height(),
-        width: physicalBounds.width(),
-        height: physicalBounds.height()
-      }
-    })(() => {
-      this.props.renderer.render({
+    this.props.canvasContext.renderInto(this.canvas, () => {
+      this.props.canvasContext.drawRectangleBatch({
         configSpaceToNDC: configSpaceToNDC,
         physicalSize: this.physicalViewSize(),
         strokeSize: 0,
         batch: this.props.rectangles
       })
+      this.props.canvasContext.drawViewportRectangle({
+        configSpaceViewportRect: this.props.configSpaceViewportRect,
+        configSpaceToPhysicalViewSpace: this.configSpaceToPhysicalViewSpace(),
+        physicalSize: this.physicalViewSize()
+      })
     })
-
-    /*
-    this.viewportRectRenderer({
-      configSpaceViewportRect: this.props.configSpaceViewportRect,
-      configSpaceToPhysicalViewSpace: this.configSpaceToPhysicalViewSpace(),
-      physicalSize: this.physicalViewSize()
-    })
-    */
   }
 
   private renderOverlays() {
@@ -450,111 +428,4 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       </div>
     )
   }
-}
-
-export interface OverlayRectangleRendererProps {
-  configSpaceToPhysicalViewSpace: AffineTransform
-  configSpaceViewportRect: Rect
-  physicalSize: Vec2
-}
-
-export const viewportRectangleRenderer = (regl: regl.Instance) => {
-  return regl<OverlayRectangleRendererProps>({
-    vert: `
-      attribute vec2 position;
-
-      void main() {
-        gl_Position = vec4(position, 0, 1);
-      }
-    `,
-
-    frag: `
-      precision mediump float;
-
-      uniform mat3 configSpaceToPhysicalViewSpace;
-      uniform vec2 physicalSize;
-      uniform vec2 configSpaceViewportOrigin;
-      uniform vec2 configSpaceViewportSize;
-
-      void main() {
-        vec2 origin = (configSpaceToPhysicalViewSpace * vec3(configSpaceViewportOrigin, 1.0)).xy;
-        vec2 size = (configSpaceToPhysicalViewSpace * vec3(configSpaceViewportSize, 0.0)).xy;
-
-        vec2 halfSize = physicalSize / 2.0;
-
-        float borderWidth = 2.0;
-
-        origin = floor(origin * halfSize) / halfSize + borderWidth * vec2(1.0, 1.0);
-        size = floor(size * halfSize) / halfSize - 2.0 * borderWidth * vec2(1.0, 1.0);
-
-        vec2 coord = gl_FragCoord.xy;
-        coord.y = physicalSize.y - coord.y;
-        vec2 clamped = clamp(coord, origin, origin + size);
-        vec2 gap = clamped - coord;
-        float maxdist = max(abs(gap.x), abs(gap.y));
-
-        // TOOD(jlfwong): Could probably optimize this to use mix somehow.
-        if (maxdist == 0.0) {
-          // Inside viewport rectangle
-          gl_FragColor = vec4(0, 0, 0, 0);
-        } else if (maxdist < borderWidth) {
-          // Inside viewport rectangle at border
-          gl_FragColor = vec4(0.7, 0.7, 0.7, 0.8);
-        } else {
-          // Outside viewport rectangle
-          gl_FragColor = vec4(0.7, 0.7, 0.7, 0.5);
-        }
-      }
-    `,
-
-    blend: {
-      enable: true,
-      func: {
-        srcRGB: 'src alpha',
-        srcAlpha: 'one',
-        dstRGB: 'one minus src alpha',
-        dstAlpha: 'one'
-      }
-    },
-
-    depth: {
-      enable: false
-    },
-
-    attributes: {
-      // Cover full canvas with a rectangle
-      // with 2 triangles using a triangle
-      // strip.
-      //
-      // 0 +--+ 1
-      //   | /|
-      //   |/ |
-      // 2 +--+ 3
-      position: [
-        [-1, 1],
-        [1, 1],
-        [-1, -1],
-        [1, -1]
-      ]
-    },
-
-    uniforms: {
-      configSpaceToPhysicalViewSpace: (context, props) => {
-        return props.configSpaceToPhysicalViewSpace.flatten()
-      },
-      configSpaceViewportOrigin: (context, props) => {
-        return props.configSpaceViewportRect.origin.flatten()
-      },
-      configSpaceViewportSize: (context, props) => {
-        return props.configSpaceViewportRect.size.flatten()
-      },
-      physicalSize: (context, props) => {
-        return props.physicalSize.flatten()
-      }
-    },
-
-    primitive: 'triangle strip',
-
-    count: 4
-  })
 }

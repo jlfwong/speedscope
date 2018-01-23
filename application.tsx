@@ -1,12 +1,12 @@
 import {h} from 'preact'
-import * as regl from 'regl'
 import {StyleSheet, css} from 'aphrodite'
 import {ReloadableComponent} from './reloadable'
 
 import {importFromBGFlameGraph} from './import/bg-flamegraph'
 import {importFromStackprof} from './import/stackprof'
 import {importFromChromeTimeline, importFromChromeCPUProfile} from './import/chrome'
-import { RectangleBatch, RectangleBatchRenderer } from './rectangle-batch-renderer'
+import { RectangleBatch } from './rectangle-batch-renderer'
+import { CanvasContext } from './canvas-context'
 
 import {Profile, Frame} from './profile'
 import {Flamechart} from './flamechart'
@@ -124,24 +124,25 @@ export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
 }
 
 interface GLCanvasProps {
-  setGL(gl: regl.Instance | null): void
+  setCanvasContext(canvasContext: CanvasContext | null): void
 }
 export class GLCanvas extends ReloadableComponent<GLCanvasProps, void> {
-  private canvas: HTMLCanvasElement | null
-  private gl: regl.Instance | null
+  private canvas: HTMLCanvasElement | null = null
+  private canvasContext: CanvasContext | null = null
 
   private ref = (canvas?: Element) => {
     if (canvas instanceof HTMLCanvasElement) {
       this.canvas = canvas
-      this.gl = regl(canvas)
+      this.canvasContext = new CanvasContext(canvas)
     } else {
-      this.gl = null
+      this.canvas = null
+      this.canvasContext = null
     }
-    this.props.setGL(this.gl)
+    this.props.setCanvasContext(this.canvasContext)
   }
 
   private maybeResize() {
-    if (!this.canvas || !this.gl) return
+    if (!this.canvas) return
     let { width, height } = this.canvas.getBoundingClientRect()
     width = Math.floor(width) * window.devicePixelRatio
     height = Math.floor(height) * window.devicePixelRatio
@@ -175,10 +176,10 @@ export class GLCanvas extends ReloadableComponent<GLCanvasProps, void> {
   }
 }
 
-function rectangleBatchForFlamechart(gl: regl.Instance, flamechart: Flamechart) {
+function rectangleBatchForFlamechart(canvasContext: CanvasContext, flamechart: Flamechart) {
   console.time('rectangle batch generation')
 
-  const batch = new RectangleBatch(gl)
+  const batch = canvasContext.createRectangleBatch()
 
   const layers = flamechart.getLayers()
   for (let i = 0; i < layers.length; i++) {
@@ -217,7 +218,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   loadFromString(fileName: string, contents: string) {
-    if (!this.gl) return
+    if (!this.canvasContext) return
 
     console.time('import')
     const profile = importProfile(contents, fileName)
@@ -241,7 +242,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       formatValue: profile.formatValue.bind(profile),
       getColorForFrame: colorGenerator.getColorForFrame.bind(colorGenerator)
     })
-    const flamechartRectBatch = rectangleBatchForFlamechart(this.gl, flamechart)
+    const flamechartRectBatch = rectangleBatchForFlamechart(this.canvasContext, flamechart)
 
     const sortedFlamechart = new Flamechart({
       getTotalWeight: profile.getTotalNonIdleWeight.bind(profile),
@@ -249,7 +250,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       formatValue: profile.formatValue.bind(profile),
       getColorForFrame: colorGenerator.getColorForFrame.bind(colorGenerator)
     })
-    const sortedFlamechartRectBatch = rectangleBatchForFlamechart(this.gl, sortedFlamechart)
+    const sortedFlamechartRectBatch = rectangleBatchForFlamechart(this.canvasContext, sortedFlamechart)
 
     console.timeEnd('import')
 
@@ -361,16 +362,9 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     this.setState({ sortOrder })
   }
 
-  private gl: regl.Instance | null = null
-  private rectangleBatchRenderer: RectangleBatchRenderer | null = null
-  private setGL = (gl: regl.Instance | null) => {
-    if (gl) {
-      this.gl = gl
-      this.rectangleBatchRenderer = new RectangleBatchRenderer(gl)
-    } else {
-      this.gl = null
-      this.rectangleBatchRenderer = null
-    }
+  private canvasContext: CanvasContext | null = null
+  private setCanvasContext = (canvasContext: CanvasContext | null) => {
+    this.canvasContext = canvasContext
   }
 
   render() {
@@ -379,14 +373,13 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     const rectangleBatch = sortOrder == SortOrder.CHRONO ? flamechartRectBatch : sortedFlamechartRectBatch
 
     return <div onDrop={this.onDrop} onDragOver={this.onDragOver} className={css(style.root)}>
-      <GLCanvas setGL={this.setGL} />
+      <GLCanvas setCanvasContext={this.setCanvasContext} />
       <Toolbar setSortOrder={this.setSortOrder} {...this.state} />
       {loading ?
         this.renderLoadingBar() :
-        this.gl && flamechartToView && this.rectangleBatchRenderer && rectangleBatch ?
+        this.canvasContext && flamechartToView && rectangleBatch ?
           <FlamechartView
-            gl={this.gl}
-            renderer={this.rectangleBatchRenderer}
+            canvasContext={this.canvasContext}
             rectangles={rectangleBatch}
             ref={this.flamechartRef}
             flamechart={flamechartToView} /> :
