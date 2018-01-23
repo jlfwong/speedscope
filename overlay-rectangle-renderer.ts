@@ -1,10 +1,9 @@
 import * as regl from 'regl'
-import { AffineTransform, Rect, Vec2 } from './math'
+import { AffineTransform, Rect } from './math'
 
 export interface ViewportRectangleRendererProps {
   configSpaceToPhysicalViewSpace: AffineTransform
   configSpaceViewportRect: Rect
-  physicalSize: Vec2
 }
 
 export class ViewportRectangleRenderer {
@@ -24,8 +23,10 @@ export class ViewportRectangleRenderer {
 
         uniform mat3 configSpaceToPhysicalViewSpace;
         uniform vec2 physicalSize;
+        uniform vec2 physicalOrigin;
         uniform vec2 configSpaceViewportOrigin;
         uniform vec2 configSpaceViewportSize;
+        uniform float framebufferHeight;
 
         void main() {
           vec2 origin = (configSpaceToPhysicalViewSpace * vec3(configSpaceViewportOrigin, 1.0)).xy;
@@ -39,7 +40,8 @@ export class ViewportRectangleRenderer {
           size = floor(size * halfSize) / halfSize - 2.0 * borderWidth * vec2(1.0, 1.0);
 
           vec2 coord = gl_FragCoord.xy;
-          coord.y = physicalSize.y - coord.y;
+          coord.x = coord.x - physicalOrigin.x;
+          coord.y = framebufferHeight - coord.y - physicalOrigin.y;
           vec2 clamped = clamp(coord, origin, origin + size);
           vec2 gap = clamped - coord;
           float maxdist = max(abs(gap.x), abs(gap.y));
@@ -100,7 +102,13 @@ export class ViewportRectangleRenderer {
           return props.configSpaceViewportRect.size.flatten()
         },
         physicalSize: (context, props) => {
-          return props.physicalSize.flatten()
+          return [context.viewportWidth, context.viewportHeight]
+        },
+        physicalOrigin: (context, props) => {
+          return [context.viewportX, context.viewportY]
+        },
+        framebufferHeight: (context, props) => {
+          return context.framebufferHeight
         }
       },
 

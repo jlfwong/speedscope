@@ -17,6 +17,10 @@ export class CanvasContext {
     this.viewportRectangleRenderer = new ViewportRectangleRenderer(this.gl)
 
     this.setViewportScope = this.gl({
+      context: {
+        viewportX: (context, props) => props.physicalBounds.left(),
+        viewportY: (context, props) => props.physicalBounds.top()
+      },
       viewport: (context, props) => {
         const { physicalBounds } = props
         return {
@@ -57,6 +61,7 @@ export class CanvasContext {
     }
   }
   private onBeforeFrame = () => {
+    this.gl.clear({ color: [0, 0, 0, 0] })
     this.tickNeeded = false
     for (const handler of this.beforeFrameHandlers) {
       handler()

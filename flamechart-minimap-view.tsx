@@ -91,7 +91,6 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       this.props.canvasContext.drawViewportRectangle({
         configSpaceViewportRect: this.props.configSpaceViewportRect,
         configSpaceToPhysicalViewSpace: this.configSpaceToPhysicalViewSpace(),
-        physicalSize: this.physicalViewSize()
       })
     })
   }

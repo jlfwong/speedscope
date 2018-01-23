@@ -289,6 +289,8 @@ declare module "regl" {
       /** Source code of fragment shader */
       frag?: string
 
+      context?: { [contextName: string]: MaybeComputed<P, any> }
+
       uniforms?: { [uniformName: string]: MaybeComputed<P, Uniform> }
 
       attributes?: { [attributeName: string]: MaybeComputed<P, Attribute> }
