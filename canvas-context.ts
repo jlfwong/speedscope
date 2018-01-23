@@ -62,7 +62,6 @@ export class CanvasContext {
       handler()
     }
     if (this.tick && !this.tickNeeded) {
-      console.log('Timer cancelled')
       this.tick.cancel()
       this.tick = null
     }

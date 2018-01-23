@@ -3,7 +3,7 @@ import { css } from 'aphrodite'
 import { Flamechart } from './flamechart'
 import { Rect, Vec2, AffineTransform, clamp } from './math'
 import { RectangleBatch } from "./rectangle-batch-renderer"
-import { atMostOnceAFrame, cachedMeasureTextWidth } from "./utils";
+import { cachedMeasureTextWidth } from "./utils";
 import { style, Sizes } from "./flamechart-style";
 import { FontFamily, FontSize, Colors } from "./style"
 import { CanvasContext } from './canvas-context'
@@ -193,6 +193,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   }
 
   private onBeforeFrame = () => {
+    this.maybeClearInteractionLock()
     this.renderRects()
     this.renderOverlays()
   }
@@ -214,7 +215,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   private frameHadWheelEvent = false
   private framesWithoutWheelEvents = 0
   private interactionLock: 'pan' | 'zoom' | null = null
-  private maybeClearInteractionLock = atMostOnceAFrame(() => {
+  private maybeClearInteractionLock = () => {
     if (this.interactionLock) {
       if (!this.frameHadWheelEvent) {
         this.framesWithoutWheelEvents++;
@@ -223,10 +224,10 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
           this.framesWithoutWheelEvents = 0
         }
       }
-      requestAnimationFrame(this.maybeClearInteractionLock)
+      this.props.canvasContext.requestFrame()
     }
     this.frameHadWheelEvent = false
-  })
+  }
 
   private pan(logicalViewSpaceDelta: Vec2) {
     this.interactionLock = 'pan'

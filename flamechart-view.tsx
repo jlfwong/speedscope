@@ -6,7 +6,7 @@ import { CallTreeNode } from './profile'
 import { Flamechart, FlamechartFrame } from './flamechart'
 
 import { Rect, Vec2, AffineTransform, clamp } from './math'
-import { atMostOnceAFrame, cachedMeasureTextWidth } from "./utils";
+import { cachedMeasureTextWidth } from "./utils";
 import { RectangleBatch } from "./rectangle-batch-renderer"
 import { FlamechartMinimapView } from "./flamechart-minimap-view"
 
@@ -355,7 +355,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
           this.framesWithoutWheelEvents = 0
         }
       }
-      requestAnimationFrame(this.maybeClearInteractionLock)
+      this.props.canvasContext.requestFrame()
     }
     this.frameHadWheelEvent = false
   }
@@ -363,6 +363,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   private onBeforeFrame = () => {
     this.renderRects()
     this.renderOverlays()
+    this.maybeClearInteractionLock()
   }
 
   private renderCanvas = () => {
