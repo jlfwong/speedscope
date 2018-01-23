@@ -83,24 +83,18 @@ interface FlamechartPanZoomViewProps {
 }
 
 export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoomViewProps, {}> {
-  canvas: HTMLCanvasElement | null = null
+  private container: Element | null = null
+  private containerRef = (element?: Element) => {
+    this.container = element || null
+  }
 
-  overlayCanvas: HTMLCanvasElement | null = null
-  overlayCtx: CanvasRenderingContext2D | null = null
+  private overlayCanvas: HTMLCanvasElement | null = null
+  private overlayCtx: CanvasRenderingContext2D | null = null
 
-  hoveredLabel: FlamechartFrameLabel | null = null
+  private hoveredLabel: FlamechartFrameLabel | null = null
 
   private setConfigSpaceViewportRect(r: Rect) {
     this.props.setConfigSpaceViewportRect(r)
-  }
-
-  private canvasRef = (element?: Element) => {
-    if (element) {
-      this.canvas = element as HTMLCanvasElement
-      this.renderCanvas()
-    } else {
-      this.canvas = null
-    }
   }
 
   private overlayCanvasRef = (element?: Element) => {
@@ -123,8 +117,8 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
   private physicalViewSize() {
     return new Vec2(
-      this.canvas ? this.canvas.width : 0,
-      this.canvas ? this.canvas.height : 0
+      this.overlayCanvas ? this.overlayCanvas.width : 0,
+      this.overlayCanvas ? this.overlayCanvas.height : 0
     )
   }
 
@@ -287,55 +281,49 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     }
   }
 
-  private resizeCanvasIfNeeded(windowResized = false) {
-    if (!this.canvas) return
-    let { width, height } = this.canvas.getBoundingClientRect()
-    const logicalHeight = height
-    width = Math.floor(width) * DEVICE_PIXEL_RATIO
-    height = Math.floor(height) * DEVICE_PIXEL_RATIO
+  private lastBounds: ClientRect | null = null
+  private updateConfigSpaceViewport(windowResized = false) {
+    if (!this.container) return
+    const bounds = this.container.getBoundingClientRect()
+    const { width, height } = bounds
 
     // Still initializing: don't resize yet
     if (width < 2 || height < 2) return
-    const oldWidth = this.canvas.width
-    const oldHeight = this.canvas.height
 
-    if (this.props.configSpaceViewportRect.isEmpty()) {
+    if (this.lastBounds == null) {
       this.setConfigSpaceViewportRect(new Rect(
         new Vec2(0, 0),
-        new Vec2(this.configSpaceSize().x, logicalHeight / this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT)
+        new Vec2(this.configSpaceSize().x, height / this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT)
       ))
     } else if (windowResized) {
       // Resize the viewport rectangle to match the window size aspect
       // ratio.
       this.setConfigSpaceViewportRect(this.props.configSpaceViewportRect.withSize(
         this.props.configSpaceViewportRect.size.timesPointwise(new Vec2(
-          width / oldWidth,
-          height / oldHeight
+          width / this.lastBounds.width,
+          height / this.lastBounds.height
         ))
       ))
     }
-
-    // Already at the right size
-    if (width === oldWidth && height === oldHeight) return
-
-    this.canvas.width = width
-    this.canvas.height = height
+    this.lastBounds = bounds
   }
 
   onWindowResize = () => {
-    this.resizeCanvasIfNeeded(true)
+    this.updateConfigSpaceViewport(true)
     this.renderCanvas()
   }
 
   private renderRects() {
-    if (!this.canvas) return
-    this.resizeCanvasIfNeeded()
+    if (!this.container) return
+    this.updateConfigSpaceViewport()
 
     if (this.props.configSpaceViewportRect.isEmpty()) return
 
     const configSpaceToNDC = this.physicalViewSpaceToNDC().times(this.configSpaceToPhysicalViewSpace())
 
-    this.props.canvasContext.renderInto(this.canvas, () => {
+    // console.trace('main view render')
+
+    this.props.canvasContext.renderInto(this.container, () => {
       this.props.canvasContext.drawRectangleBatch({
         configSpaceToNDC: configSpaceToNDC,
         physicalSize: this.physicalViewSize(),
@@ -367,24 +355,19 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
           this.framesWithoutWheelEvents = 0
         }
       }
-      requestAnimationFrame(this.renderCanvas)
+      requestAnimationFrame(this.maybeClearInteractionLock)
     }
     this.frameHadWheelEvent = false
   }
 
-  private renderCanvas = atMostOnceAFrame(() => {
-    this.maybeClearInteractionLock()
+  private onBeforeFrame = () => {
+    this.renderRects()
+    this.renderOverlays()
+  }
 
-    if (!this.canvas || this.canvas.getBoundingClientRect().width < 2) {
-      // If the canvas is still tiny, it means browser layout hasn't had
-      // a chance to run yet. Defer rendering until we have the real canvas
-      // size.
-      requestAnimationFrame(() => this.renderCanvas())
-    } else {
-      this.renderRects()
-      this.renderOverlays()
-    }
-  })
+  private renderCanvas = () => {
+    this.props.canvasContext.requestFrame()
+  }
 
   private pan(logicalViewSpaceDelta: Vec2) {
     this.interactionLock = 'pan'
@@ -527,8 +510,8 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   }
 
   onWindowKeyPress = (ev: KeyboardEvent) => {
-    if (!this.canvas) return
-    const {width, height} = this.canvas.getBoundingClientRect()
+    if (!this.container) return
+    const {width, height} = this.container.getBoundingClientRect()
 
     if (ev.key === '=' || ev.key === '+') {
       this.zoom(new Vec2(width / 2, height / 2), 0.5)
@@ -559,10 +542,12 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     }
   }
   componentDidMount() {
+    this.props.canvasContext.addBeforeFrameHandler(this.onBeforeFrame)
     window.addEventListener('resize', this.onWindowResize)
     window.addEventListener('keydown', this.onWindowKeyPress)
   }
   componentWillUnmount() {
+    this.props.canvasContext.removeBeforeFrameHandler(this.onBeforeFrame)
     window.removeEventListener('resize', this.onWindowResize)
     window.removeEventListener('keydown', this.onWindowKeyPress)
   }
@@ -574,11 +559,8 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
         onMouseDown={this.onMouseDown}
         onMouseMove={this.onMouseMove}
         onMouseLeave={this.onMouseLeave}
-        onWheel={this.onWheel}>
-        <canvas
-          width={1} height={1}
-          ref={this.canvasRef}
-          className={css(style.fill)} />
+        onWheel={this.onWheel}
+        ref={this.containerRef}>
         <canvas
           width={1} height={1}
           ref={this.overlayCanvasRef}

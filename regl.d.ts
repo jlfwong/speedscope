@@ -60,6 +60,10 @@ declare module "regl" {
     export type mat4 = [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number]
     type GlslPrimitive = number | vec2 | vec3 | vec4 | mat3 | mat4
 
+    interface Tick {
+      cancel(): void
+    }
+
     interface Instance {
       <P>(params: CommandOptions<P>): Command<P>
 
@@ -118,6 +122,8 @@ declare module "regl" {
       }
 
       destroy(): void
+
+      frame(callback: (context?: Context) => void): Tick
     }
 
     type TypedArray = Int8Array | Uint8Array | Uint8ClampedArray | Int16Array |

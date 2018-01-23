@@ -27,15 +27,18 @@ enum DraggingMode {
 }
 
 export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps, {}> {
-  canvas: HTMLCanvasElement | null = null
+  container: Element | null = null
+  containerRef = (element?: Element) => {
+    this.container = element || null
+  }
 
   overlayCanvas: HTMLCanvasElement | null = null
   overlayCtx: CanvasRenderingContext2D | null = null
 
   private physicalViewSize() {
     return new Vec2(
-      this.canvas ? this.canvas.width : 0,
-      this.canvas ? this.canvas.height : 0
+      this.overlayCanvas ? this.overlayCanvas.width : 0,
+      this.overlayCanvas ? this.overlayCanvas.height : 0
     )
   }
 
@@ -69,17 +72,16 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   }
 
   private windowToLogicalViewSpace() {
-    if (!this.canvas) return new AffineTransform()
-    const bounds = this.canvas.getBoundingClientRect()
+    if (!this.container) return new AffineTransform()
+    const bounds = this.container.getBoundingClientRect()
     return AffineTransform.withTranslation(new Vec2(-bounds.left, -bounds.top))
   }
 
   private renderRects() {
-    if (!this.canvas) return
-    this.resizeCanvasIfNeeded()
+    if (!this.container) return
     const configSpaceToNDC = this.physicalViewSpaceToNDC().times(this.configSpaceToPhysicalViewSpace())
 
-    this.props.canvasContext.renderInto(this.canvas, () => {
+    this.props.canvasContext.renderInto(this.container, () => {
       this.props.canvasContext.drawRectangleBatch({
         configSpaceToNDC: configSpaceToNDC,
         physicalSize: this.physicalViewSize(),
@@ -158,22 +160,12 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     }
   }
 
-  private resizeCanvasIfNeeded() {
-    if (!this.canvas) return
-    let { width, height } = this.canvas.getBoundingClientRect()
-    width = Math.floor(width) * DEVICE_PIXEL_RATIO
-    height = Math.floor(height) * DEVICE_PIXEL_RATIO
+  componentDidMount() {
+    this.props.canvasContext.addBeforeFrameHandler(this.onBeforeFrame)
+  }
 
-    // Still initializing: don't resize yet
-    if (width === 0 || height === 0) return
-    const oldWidth = this.canvas.width
-    const oldHeight = this.canvas.height
-
-    // Already at the right size
-    if (width === oldWidth && height === oldHeight) return
-
-    this.canvas.width = width
-    this.canvas.height = height
+  componentWillUnmount() {
+    this.props.canvasContext.removeBeforeFrameHandler(this.onBeforeFrame)
   }
 
   private resizeOverlayCanvasIfNeeded() {
@@ -200,26 +192,13 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     this.overlayCanvas.height = scaledHeight
   }
 
-  private renderCanvas = atMostOnceAFrame(() => {
-    this.maybeClearInteractionLock()
-    if (!this.canvas || this.canvas.getBoundingClientRect().width < 2) {
-      // If the canvas is still tiny, it means browser layout hasn't had
-      // a chance to run yet. Defer rendering until we have the real canvas
-      // size.
-      requestAnimationFrame(() => this.renderCanvas())
-    } else {
-      this.renderRects()
-      this.renderOverlays()
-    }
-  })
+  private onBeforeFrame = () => {
+    this.renderRects()
+    this.renderOverlays()
+  }
 
-  private canvasRef = (element?: Element) => {
-    if (element) {
-      this.canvas = element as HTMLCanvasElement
-      this.renderCanvas()
-    } else {
-      this.canvas = null
-    }
+  private renderCanvas = () => {
+    this.props.canvasContext.requestFrame()
   }
 
   // Inertial scrolling introduces tricky interaction problems.
@@ -235,7 +214,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   private frameHadWheelEvent = false
   private framesWithoutWheelEvents = 0
   private interactionLock: 'pan' | 'zoom' | null = null
-  private maybeClearInteractionLock = () => {
+  private maybeClearInteractionLock = atMostOnceAFrame(() => {
     if (this.interactionLock) {
       if (!this.frameHadWheelEvent) {
         this.framesWithoutWheelEvents++;
@@ -244,10 +223,10 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
           this.framesWithoutWheelEvents = 0
         }
       }
-      requestAnimationFrame(this.renderCanvas)
+      requestAnimationFrame(this.maybeClearInteractionLock)
     }
     this.frameHadWheelEvent = false
-  }
+  })
 
   private pan(logicalViewSpaceDelta: Vec2) {
     this.interactionLock = 'pan'
@@ -310,7 +289,6 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   private dragConfigSpaceViewportOffset: Vec2 | null = null
   private draggingMode: DraggingMode | null = null
   private onMouseDown = (ev: MouseEvent) => {
-    if (!this.canvas) return
     const configSpaceMouse = this.configSpaceMouse(ev)
 
     if (configSpaceMouse) {
@@ -333,7 +311,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   }
 
   private onWindowMouseMove = (ev: MouseEvent) => {
-    if (!this.dragStartConfigSpaceMouse || !this.canvas) return
+    if (!this.dragStartConfigSpaceMouse) return
     let configSpaceMouse = this.configSpaceMouse(ev)
 
     if (!configSpaceMouse) return
@@ -382,8 +360,6 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   }
 
   private onMouseMove = (ev: MouseEvent) => {
-    if (!this.canvas) return
-
     const configSpaceMouse = this.configSpaceMouse(ev)
     if (!configSpaceMouse) return
     this.updateCursor(configSpaceMouse)
@@ -413,14 +389,11 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   render() {
     return (
       <div
+        ref={this.containerRef}
         onWheel={this.onWheel}
         onMouseDown={this.onMouseDown}
         onMouseMove={this.onMouseMove}
         className={css(style.minimap, style.vbox)} >
-        <canvas
-          width={1} height={1}
-          ref={this.canvasRef}
-          className={css(style.fill)} />
         <canvas
           width={1} height={1}
           ref={this.overlayCanvasRef}

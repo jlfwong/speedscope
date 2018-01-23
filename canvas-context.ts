@@ -3,6 +3,7 @@ import { RectangleBatchRenderer, RectangleBatch, RectangleBatchRendererProps } f
 import { ViewportRectangleRenderer, ViewportRectangleRendererProps } from './overlay-rectangle-renderer';
 import { Vec2, Rect } from './math';
 
+type FrameCallback = () => void
 
 export class CanvasContext {
   private gl: regl.Instance
@@ -40,6 +41,33 @@ export class CanvasContext {
     })
   }
 
+  private tick: regl.Tick | null = null
+  private tickNeeded: boolean = false
+  private beforeFrameHandlers = new Set<FrameCallback>()
+  addBeforeFrameHandler(callback: FrameCallback) {
+    this.beforeFrameHandlers.add(callback)
+  }
+  removeBeforeFrameHandler(callback: FrameCallback) {
+    this.beforeFrameHandlers.delete(callback)
+  }
+  requestFrame() {
+    this.tickNeeded = true
+    if (!this.tick) {
+      this.tick = this.gl.frame(this.onBeforeFrame)
+    }
+  }
+  private onBeforeFrame = () => {
+    this.tickNeeded = false
+    for (const handler of this.beforeFrameHandlers) {
+      handler()
+    }
+    if (this.tick && !this.tickNeeded) {
+      console.log('Timer cancelled')
+      this.tick.cancel()
+      this.tick = null
+    }
+  }
+
   drawRectangleBatch(props: RectangleBatchRendererProps) {
     this.rectangleBatchRenderer.render(props)
   }
@@ -52,7 +80,7 @@ export class CanvasContext {
     this.viewportRectangleRenderer.render(props)
   }
 
-  renderInto(el: HTMLElement, cb: () => void) {
+  renderInto(el: Element, cb: () => void) {
     const bounds = el.getBoundingClientRect()
     const physicalBounds = new Rect(
       new Vec2(bounds.left * window.devicePixelRatio, bounds.top * window.devicePixelRatio),
