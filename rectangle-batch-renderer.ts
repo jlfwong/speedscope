@@ -6,9 +6,9 @@ import { Color } from './color'
 export class RectangleBatch {
   private vertexCapacity = 60
   private vertexCount = 0
-  private positions = new Float32Array(this.vertexCapacity * 6 * 2)
-  private physicalSpaceOffsets = new Float32Array(this.vertexCapacity * 6 * 2)
-  private vertexColors = new Float32Array(this.vertexCapacity * 6 * 3)
+  private positions = new Float32Array(this.vertexCapacity * 2)
+  private physicalSpaceOffsets = new Float32Array(this.vertexCapacity * 2)
+  private vertexColors = new Float32Array(this.vertexCapacity * 3)
 
   private offset = {
     topLeft: new Vec2(1, -1),
@@ -49,9 +49,9 @@ export class RectangleBatch {
     if (index >= this.vertexCapacity) {
       // Not enough capacity, time to resize! We'll double the capacity each time.
       this.vertexCapacity *= 2
-      const positions = new Float32Array(this.vertexCapacity * 6 * 2)
-      const physicalSpaceOffsets = new Float32Array(this.vertexCapacity * 6 * 2)
-      const vertexColors = new Float32Array(this.vertexCapacity * 6 * 3)
+      const positions = new Float32Array(this.vertexCapacity * 2)
+      const physicalSpaceOffsets = new Float32Array(this.vertexCapacity * 2)
+      const vertexColors = new Float32Array(this.vertexCapacity * 3)
 
       positions.set(this.positions)
       physicalSpaceOffsets.set(this.physicalSpaceOffsets)
