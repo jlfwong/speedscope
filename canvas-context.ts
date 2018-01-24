@@ -19,7 +19,12 @@ export class CanvasContext {
   private setViewportScope: regl.Command<{ physicalBounds: Rect }>
 
   constructor(canvas: HTMLCanvasElement) {
-    this.gl = regl(canvas)
+    this.gl = regl({
+      canvas: canvas,
+      optionalExtensions: ['EXT_disjoint_timer_query'],
+      profile: true
+    })
+    ;(window as any)['CanvasContext'] = this
     this.rectangleBatchRenderer = new RectangleBatchRenderer(this.gl)
     this.viewportRectangleRenderer = new ViewportRectangleRenderer(this.gl)
     this.textureRenderer = new TextureRenderer(this.gl)
