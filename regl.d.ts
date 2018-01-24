@@ -76,6 +76,7 @@ declare module "regl" {
       // TODO(jlfwong): read()
 
       buffer(args: BufferArgs): Buffer
+      texture(width: number, height: number): Texture
       texture(args: TextureArgs): Texture
       framebuffer(args: FramebufferOptions): Framebuffer
       renderbuffer(args: RenderBufferOptions): RenderBuffer
@@ -213,10 +214,13 @@ declare module "regl" {
 
       copy?: boolean
 
-      data: TextureData
+      data?: TextureData
     }
     type TextureArgs = TextureData | TextureOptions
     interface Texture {
+      width: number
+      height: number
+
       (args: TextureArgs): void
       destroy(): void
       stats: {

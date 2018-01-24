@@ -7,6 +7,7 @@ import { cachedMeasureTextWidth } from "./utils";
 import { style, Sizes } from "./flamechart-style";
 import { FontFamily, FontSize, Colors } from "./style"
 import { CanvasContext } from './canvas-context'
+import { TextureCachedRenderer } from './texture-catched-renderer'
 
 const DEVICE_PIXEL_RATIO = window.devicePixelRatio
 
@@ -77,16 +78,39 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     return AffineTransform.withTranslation(new Vec2(-bounds.left, -bounds.top))
   }
 
+  private cachedRenderer: TextureCachedRenderer<{
+    physicalSize: Vec2,
+    configSpaceToNDC: AffineTransform
+  }> | null = null
   private renderRects() {
     if (!this.container) return
+    if (!this.cachedRenderer) {
+      this.cachedRenderer = this.props.canvasContext.createTextureCachedRenderer({
+        shouldUpdate(oldProps, newProps) {
+          if (!oldProps.physicalSize.equals(newProps.physicalSize)) {
+            return true
+          } else if (!oldProps.configSpaceToNDC.equals(newProps.configSpaceToNDC)) {
+            return true
+          }
+          return false
+        },
+        render: (props) => {
+          this.props.canvasContext.drawRectangleBatch({
+            configSpaceToNDC: props.configSpaceToNDC,
+            physicalSize: props.physicalSize,
+            strokeSize: 0,
+            batch: this.props.rectangles
+          })
+        }
+      })
+    }
+
     const configSpaceToNDC = this.physicalViewSpaceToNDC().times(this.configSpaceToPhysicalViewSpace())
 
-    this.props.canvasContext.renderInto(this.container, () => {
-      this.props.canvasContext.drawRectangleBatch({
-        configSpaceToNDC: configSpaceToNDC,
-        physicalSize: this.physicalViewSize(),
-        strokeSize: 0,
-        batch: this.props.rectangles
+    this.props.canvasContext.renderInto(this.container, (context) => {
+      this.cachedRenderer!.render(context, {
+        configSpaceToNDC,
+        physicalSize: this.physicalViewSize()
       })
       this.props.canvasContext.drawViewportRectangle({
         configSpaceViewportRect: this.props.configSpaceViewportRect,

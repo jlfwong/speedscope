@@ -15,6 +15,7 @@ export class Vec2 {
   timesPointwise(other: Vec2) { return new Vec2(this.x * other.x, this.y * other.y) }
   dividedByPointwise(other: Vec2) { return new Vec2(this.x / other.x, this.y / other.y) }
   dot(other: Vec2) { return this.x * other.x + this.y * other.y }
+  equals(other: Vec2) { return this.x === other.x && this.y === other.y }
   length2() { return this.dot(this) }
   length() { return Math.sqrt(this.length2()) }
 
@@ -84,6 +85,15 @@ export class AffineTransform {
     const m11 = this.m10 * other.m01 + this.m11 * other.m11
     const m12 = this.m10 * other.m02 + this.m11 * other.m12 + this.m12
     return new AffineTransform(m00, m01, m02, m10, m11, m12)
+  }
+
+  equals(other: AffineTransform) {
+    return this.m00 == other.m00 &&
+           this.m01 == other.m01 &&
+           this.m02 == other.m02 &&
+           this.m10 == other.m10 &&
+           this.m11 == other.m11 &&
+           this.m12 == other.m12;
   }
 
   timesScalar(s: number) {
@@ -233,5 +243,9 @@ export class Rect {
     const bottomRight = Vec2.max(topLeft, Vec2.min(this.bottomRight(), other.bottomRight()))
 
     return new Rect(topLeft, bottomRight.minus(topLeft))
+  }
+
+  equals(other: Rect) {
+    return this.origin.equals(other.origin) && this.size.equals(other.size)
   }
 }

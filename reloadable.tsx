@@ -1,6 +1,6 @@
 import {Component} from 'preact'
 
-interface SerializedComponent<S> {
+export interface SerializedComponent<S> {
   state: S
   serializedSubcomponents: {[key: string]: any}
 }
