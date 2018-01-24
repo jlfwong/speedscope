@@ -21,6 +21,7 @@ export class CanvasContext {
   constructor(canvas: HTMLCanvasElement) {
     this.gl = regl({
       canvas: canvas,
+      extensions: ['ANGLE_instanced_arrays'],
       optionalExtensions: ['EXT_disjoint_timer_query'],
       profile: true
     })
