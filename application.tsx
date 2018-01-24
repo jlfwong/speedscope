@@ -1,6 +1,6 @@
 import {h} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
-import {ReloadableComponent} from './reloadable'
+import {ReloadableComponent, SerializedComponent} from './reloadable'
 
 import {importFromBGFlameGraph} from './import/bg-flamegraph'
 import {importFromStackprof} from './import/stackprof'
@@ -214,6 +214,24 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       sortedFlamechart: null,
       sortedFlamechartRectBatch: null,
       sortOrder: SortOrder.CHRONO
+    }
+  }
+
+  serialize() {
+    const result = super.serialize()
+    delete result.state.flamechartRectBatch
+    delete result.state.sortedFlamechartRectBatch
+    return result
+  }
+
+  rehydrate(serialized: SerializedComponent<ApplicationState>) {
+    super.rehydrate(serialized)
+    const { flamechart, sortedFlamechart } = serialized.state
+    if (this.canvasContext && flamechart && sortedFlamechart) {
+      this.setState({
+        flamechartRectBatch: rectangleBatchForFlamechart(this.canvasContext, flamechart),
+        sortedFlamechartRectBatch: rectangleBatchForFlamechart(this.canvasContext, sortedFlamechart)
+      })
     }
   }
 
