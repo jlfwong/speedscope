@@ -91,6 +91,15 @@ export class CanvasContext {
       this.tick.cancel()
       this.tick = null
     }
+
+    console.group('Frame')
+    console.log('Rectangle Batch Renderer: ', this.rectangleBatchRenderer.stats().gpuTime.toFixed(3), 'in', this.rectangleBatchRenderer.stats().count, 'calls')
+    console.log('Texture Renderer: ', this.textureRenderer.stats().gpuTime.toFixed(3), 'in', this.textureRenderer.stats().count, 'calls')
+    console.log('Viewport Rect Renderer: ', this.viewportRectangleRenderer.stats().gpuTime.toFixed(3), 'in', this.viewportRectangleRenderer.stats().count, 'calls')
+    console.groupEnd()
+    this.rectangleBatchRenderer.resetStats()
+    this.textureRenderer.resetStats()
+    this.viewportRectangleRenderer.resetStats()
   }
 
   drawRectangleBatch(props: RectangleBatchRendererProps) {
@@ -122,11 +131,5 @@ export class CanvasContext {
       new Vec2(bounds.width * window.devicePixelRatio, bounds.height * window.devicePixelRatio)
     )
     this.setViewportScope({ physicalBounds }, cb)
-  }
-
-  summarizePerf() {
-    console.log('Rectangle Batch Renderer: ', this.rectangleBatchRenderer.averageGPUTime(), 'ms/call')
-    console.log('Texture Renderer: ', this.textureRenderer.averageGPUTime(), 'ms/call',)
-    console.log('Viewport Rect Renderer: ', this.viewportRectangleRenderer.averageGPUTime(), 'ms/call')
   }
 }
