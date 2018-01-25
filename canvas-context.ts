@@ -120,4 +120,10 @@ export class CanvasContext {
     )
     this.setViewportScope({ physicalBounds }, cb)
   }
+
+  summarizePerf() {
+    console.log('Rectangle Batch Renderer: ', this.rectangleBatchRenderer.averageGPUTime(), 'ms/call')
+    console.log('Texture Renderer: ', this.textureRenderer.averageGPUTime(), 'ms/call',)
+    console.log('Viewport Rect Renderer: ', this.viewportRectangleRenderer.averageGPUTime(), 'ms/call')
+  }
 }

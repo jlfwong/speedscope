@@ -64,6 +64,8 @@ export class TextureRenderer {
   render(context: regl.Context, props: TextureRendererProps) {
     this.command(props)
   }
+
+  averageGPUTime() { return this.command.stats.gpuTime / this.command.stats.count }
 }
 
 export interface TextureCachedRendererOptions<T> {

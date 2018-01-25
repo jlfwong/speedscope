@@ -121,4 +121,6 @@ export class ViewportRectangleRenderer {
   render(props: ViewportRectangleRendererProps) {
     this.command(props)
   }
+
+  averageGPUTime() { return this.command.stats.gpuTime / this.command.stats.count }
 }

@@ -412,6 +412,17 @@ declare module "regl" {
       /** Scoped commands */
       (cb: (context: Context) => void): void
       (p: P, cb: (context: Context) => void): void
+
+      stats: {
+        /** Aggregate time spent on the GPU in ms */
+        gpuTime: number
+
+        /** Aggregate time spent on the CPU in ms */
+        cpuTime: number
+
+        /** Total number of calls of this command */
+        count: number
+      }
     }
   }
 

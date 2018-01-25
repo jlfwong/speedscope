@@ -173,4 +173,6 @@ export class RectangleBatchRenderer {
   render(props: RectangleBatchRendererProps) {
     this.command(props)
   }
+
+  averageGPUTime() { return this.command.stats.gpuTime / this.command.stats.count }
 }
