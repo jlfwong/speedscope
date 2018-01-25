@@ -5,7 +5,7 @@ import {ReloadableComponent, SerializedComponent} from './reloadable'
 import {importFromBGFlameGraph} from './import/bg-flamegraph'
 import {importFromStackprof} from './import/stackprof'
 import {importFromChromeTimeline, importFromChromeCPUProfile} from './import/chrome'
-import { RectangleBatch } from './rectangle-batch-renderer'
+import { FlamechartRenderer } from './flamechart-renderer'
 import { CanvasContext } from './canvas-context'
 
 import {Profile, Frame} from './profile'
@@ -23,9 +23,9 @@ const enum SortOrder {
 interface ApplicationState {
   profile: Profile | null
   flamechart: Flamechart | null
-  flamechartRectBatch: RectangleBatch | null
+  flamechartRenderer: FlamechartRenderer | null
   sortedFlamechart: Flamechart | null
-  sortedFlamechartRectBatch: RectangleBatch | null
+  sortedFlamechartRenderer: FlamechartRenderer | null
   sortOrder: SortOrder
   loading: boolean
 }
@@ -202,7 +202,6 @@ function rectangleBatchForFlamechart(canvasContext: CanvasContext, flamechart: F
   return batch
 }
 
-
 export class Application extends ReloadableComponent<{}, ApplicationState> {
   constructor() {
     super()
@@ -210,17 +209,17 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       loading: false,
       profile: null,
       flamechart: null,
-      flamechartRectBatch: null,
+      flamechartRenderer: null,
       sortedFlamechart: null,
-      sortedFlamechartRectBatch: null,
+      sortedFlamechartRenderer: null,
       sortOrder: SortOrder.CHRONO
     }
   }
 
   serialize() {
     const result = super.serialize()
-    delete result.state.flamechartRectBatch
-    delete result.state.sortedFlamechartRectBatch
+    delete result.state.flamechartRenderer
+    delete result.state.sortedFlamechartRenderer
     return result
   }
 
@@ -229,8 +228,8 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     const { flamechart, sortedFlamechart } = serialized.state
     if (this.canvasContext && flamechart && sortedFlamechart) {
       this.setState({
-        flamechartRectBatch: rectangleBatchForFlamechart(this.canvasContext, flamechart),
-        sortedFlamechartRectBatch: rectangleBatchForFlamechart(this.canvasContext, sortedFlamechart)
+        flamechartRenderer: new FlamechartRenderer(this.canvasContext, flamechart),
+        sortedFlamechartRenderer: new FlamechartRenderer(this.canvasContext, sortedFlamechart)
       })
     }
   }
@@ -260,7 +259,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       formatValue: profile.formatValue.bind(profile),
       getColorForFrame: colorGenerator.getColorForFrame.bind(colorGenerator)
     })
-    const flamechartRectBatch = rectangleBatchForFlamechart(this.canvasContext, flamechart)
+    const flamechartRenderer = new FlamechartRenderer(this.canvasContext, flamechart)
 
     const sortedFlamechart = new Flamechart({
       getTotalWeight: profile.getTotalNonIdleWeight.bind(profile),
@@ -268,7 +267,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       formatValue: profile.formatValue.bind(profile),
       getColorForFrame: colorGenerator.getColorForFrame.bind(colorGenerator)
     })
-    const sortedFlamechartRectBatch = rectangleBatchForFlamechart(this.canvasContext, sortedFlamechart)
+    const sortedFlamechartRenderer = new FlamechartRenderer(this.canvasContext, sortedFlamechart)
 
     console.timeEnd('import')
 
@@ -276,9 +275,9 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     this.setState({
       profile,
       flamechart,
-      flamechartRectBatch,
+      flamechartRenderer,
       sortedFlamechart,
-      sortedFlamechartRectBatch,
+      sortedFlamechartRenderer,
       loading: false
     }, () => {
       console.timeEnd('first setState')
@@ -386,19 +385,19 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   render() {
-    const {flamechart, flamechartRectBatch, sortedFlamechart, sortedFlamechartRectBatch, sortOrder, loading} = this.state
+    const {flamechart, flamechartRenderer, sortedFlamechart, sortedFlamechartRenderer, sortOrder, loading} = this.state
     const flamechartToView = sortOrder == SortOrder.CHRONO ? flamechart : sortedFlamechart
-    const rectangleBatch = sortOrder == SortOrder.CHRONO ? flamechartRectBatch : sortedFlamechartRectBatch
+    const flamechartRendererToUse = sortOrder == SortOrder.CHRONO ? flamechartRenderer : sortedFlamechartRenderer
 
     return <div onDrop={this.onDrop} onDragOver={this.onDragOver} className={css(style.root)}>
       <GLCanvas setCanvasContext={this.setCanvasContext} />
       <Toolbar setSortOrder={this.setSortOrder} {...this.state} />
       {loading ?
         this.renderLoadingBar() :
-        this.canvasContext && flamechartToView && rectangleBatch ?
+        this.canvasContext && flamechartToView && flamechartRendererToUse ?
           <FlamechartView
             canvasContext={this.canvasContext}
-            rectangles={rectangleBatch}
+            flamechartRenderer={flamechartRendererToUse}
             ref={this.flamechartRef}
             flamechart={flamechartToView} /> :
           this.renderLanding()}

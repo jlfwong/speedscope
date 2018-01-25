@@ -7,12 +7,12 @@ import { Flamechart, FlamechartFrame } from './flamechart'
 
 import { Rect, Vec2, AffineTransform, clamp } from './math'
 import { cachedMeasureTextWidth } from "./utils";
-import { RectangleBatch } from "./rectangle-batch-renderer"
 import { FlamechartMinimapView } from "./flamechart-minimap-view"
 
 import { style, Sizes } from './flamechart-style'
 import { FontSize, FontFamily, Colors } from './style'
 import { CanvasContext } from './canvas-context'
+import { FlamechartRenderer } from './flamechart-renderer'
 
 interface FlamechartFrameLabel {
   configSpaceBounds: Rect
@@ -74,7 +74,7 @@ interface FlamechartPanZoomViewProps {
   flamechart: Flamechart
 
   canvasContext: CanvasContext
-  rectangles: RectangleBatch
+  flamechartRenderer: FlamechartRenderer
 
   setNodeHover: (node: CallTreeNode | null, logicalViewSpaceMouse: Vec2) => void
   configSpaceViewportRect: Rect
@@ -324,10 +324,9 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     // console.trace('main view render')
 
     this.props.canvasContext.renderInto(this.container, () => {
-      this.props.canvasContext.drawRectangleBatch({
+      this.props.flamechartRenderer.render({
         configSpaceToNDC: configSpaceToNDC,
         physicalSize: this.physicalViewSize(),
-        batch: this.props.rectangles
       })
     })
   }
@@ -573,7 +572,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 interface FlamechartViewProps {
   flamechart: Flamechart
   canvasContext: CanvasContext
-  rectangles: RectangleBatch
+  flamechartRenderer: FlamechartRenderer
 }
 
 interface FlamechartViewState {
@@ -703,15 +702,15 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
         <FlamechartMinimapView
           configSpaceViewportRect={this.state.configSpaceViewportRect}
           transformViewport={this.transformViewport}
+          flamechart={this.props.flamechart}
+          flamechartRenderer={this.props.flamechartRenderer}
           canvasContext={this.props.canvasContext}
-          rectangles={this.props.rectangles}
-          setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
-          flamechart={this.props.flamechart} />
+          setConfigSpaceViewportRect={this.setConfigSpaceViewportRect} />
         <FlamechartPanZoomView
           ref={this.panZoomRef}
           canvasContext={this.props.canvasContext}
-          rectangles={this.props.rectangles}
           flamechart={this.props.flamechart}
+          flamechartRenderer={this.props.flamechartRenderer}
           setNodeHover={this.onNodeHover}
           transformViewport={this.transformViewport}
           configSpaceViewportRect={this.state.configSpaceViewportRect}

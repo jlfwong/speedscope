@@ -2,7 +2,7 @@ import { h, Component } from 'preact'
 import { css } from 'aphrodite'
 import { Flamechart } from './flamechart'
 import { Rect, Vec2, AffineTransform, clamp } from './math'
-import { RectangleBatch } from "./rectangle-batch-renderer"
+import { FlamechartRenderer } from "./flamechart-renderer"
 import { cachedMeasureTextWidth } from "./utils";
 import { style, Sizes } from "./flamechart-style";
 import { FontFamily, FontSize, Colors } from "./style"
@@ -16,7 +16,7 @@ interface FlamechartMinimapViewProps {
   configSpaceViewportRect: Rect
 
   canvasContext: CanvasContext
-  rectangles: RectangleBatch
+  flamechartRenderer: FlamechartRenderer
 
   transformViewport: (transform: AffineTransform) => void
   setConfigSpaceViewportRect: (rect: Rect) => void
@@ -95,10 +95,9 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
           return false
         },
         render: (props) => {
-          this.props.canvasContext.drawRectangleBatch({
+          this.props.flamechartRenderer.render({
             physicalSize: props.physicalSize,
             configSpaceToNDC: props.configSpaceToNDC,
-            batch: this.props.rectangles
           })
         }
       })

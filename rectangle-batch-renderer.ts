@@ -3,7 +3,7 @@ import { Rect, Vec2, AffineTransform } from './math'
 import { Color } from './color'
 
 export class RectangleBatch {
-  private rectCapacity = 10
+  private rectCapacity = 1000
   private rectCount = 0
 
   private configSpaceOffsets = new Float32Array(this.rectCapacity * 2)
