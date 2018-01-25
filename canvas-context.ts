@@ -81,25 +81,31 @@ export class CanvasContext {
       this.tick = this.gl.frame(this.onBeforeFrame)
     }
   }
-  private onBeforeFrame = () => {
+
+  private onBeforeFrame = (context: regl.Context) => {
     this.gl.clear({ color: [0, 0, 0, 0] })
     this.tickNeeded = false
+
+    let beforeHandlers = performance.now()
     for (const handler of this.beforeFrameHandlers) {
       handler()
     }
+    let cpuTimeElapsed = performance.now() - beforeHandlers;
+
     if (this.tick && !this.tickNeeded) {
       this.tick.cancel()
       this.tick = null
     }
 
+    // TODO(jlfwong): It would be really nice to have GPU
+    // stats here, but I can't figure out how to interpret
+    // the gpuTime. I suspect this is caused by executing the same
+    // program multiple times without flushing.
+    // I'll investigate this at some point and report a bug to regl.
+
     console.group('Frame')
-    console.log('Rectangle Batch Renderer: ', this.rectangleBatchRenderer.stats().gpuTime.toFixed(3), 'in', this.rectangleBatchRenderer.stats().count, 'calls')
-    console.log('Texture Renderer: ', this.textureRenderer.stats().gpuTime.toFixed(3), 'in', this.textureRenderer.stats().count, 'calls')
-    console.log('Viewport Rect Renderer: ', this.viewportRectangleRenderer.stats().gpuTime.toFixed(3), 'in', this.viewportRectangleRenderer.stats().count, 'calls')
+    console.log('CPU Frame Generation Time (ms)', cpuTimeElapsed.toFixed(2))
     console.groupEnd()
-    this.rectangleBatchRenderer.resetStats()
-    this.textureRenderer.resetStats()
-    this.viewportRectangleRenderer.resetStats()
   }
 
   drawRectangleBatch(props: RectangleBatchRendererProps) {

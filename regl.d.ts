@@ -124,7 +124,7 @@ declare module "regl" {
 
       destroy(): void
 
-      frame(callback: (context?: Context) => void): Tick
+      frame(callback: (context: Context) => void): Tick
     }
 
     type TypedArray = Int8Array | Uint8Array | Uint8ClampedArray | Int16Array |

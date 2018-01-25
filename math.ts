@@ -18,6 +18,7 @@ export class Vec2 {
   equals(other: Vec2) { return this.x === other.x && this.y === other.y }
   length2() { return this.dot(this) }
   length() { return Math.sqrt(this.length2()) }
+  abs() { return new Vec2(Math.abs(this.x), Math.abs(this.y)) }
 
   static min(a: Vec2, b: Vec2) {
     return new Vec2(Math.min(a.x, b.x), Math.min(a.y, b.y))
@@ -171,10 +172,18 @@ export class AffineTransform {
   }
 
   transformRect(r: Rect) {
-    return new Rect(
-      this.transformPosition(r.origin),
-      this.transformVector(r.size)
-    )
+    const size = this.transformVector(r.size)
+    const origin = this.transformPosition(r.origin)
+
+    if (size.x < 0 && size.y < 0) {
+      return new Rect(origin.plus(size), size.abs())
+    } else if (size.x < 0) {
+      return new Rect(origin.withX(origin.x + size.x), size.abs())
+    } else if (size.y < 0) {
+      return new Rect(origin.withY(origin.y + size.y), size.abs())
+    }
+
+    return new Rect(origin, size)
   }
 
   flatten(): [number, number, number, number, number, number, number, number, number] {

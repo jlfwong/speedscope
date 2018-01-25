@@ -1,16 +1,16 @@
-import { Flamechart, FlamechartFrame } from './flamechart'
+import { Flamechart } from './flamechart'
 import { RectangleBatch } from './rectangle-batch-renderer'
 import { CanvasContext } from './canvas-context';
 import { Vec2, Rect, AffineTransform } from './math'
 
-const MAX_BATCH_SIZE = 10000  // TODO(jlfwong): Bump this to 10000
+const MAX_BATCH_SIZE = 10000
 
 interface RangeTreeNode {
   getMinLeft(): number
   getMaxRight(): number
   getRectCount(): number
   getChildren(): RangeTreeNode[]
-  forEachBatch(cb: (batch: RectangleBatch) => void): void
+  forEachBatchInViewport(configSpaceViewport: Rect, cb: (batch: RectangleBatch) => void): void
 }
 
 class RangeTreeLeafNode implements RangeTreeNode {
@@ -20,13 +20,17 @@ class RangeTreeLeafNode implements RangeTreeNode {
     private batch: RectangleBatch,
     private minLeft: number,
     private maxRight: number
-  ) { }
+  ) {}
 
   getMinLeft() { return this.minLeft }
   getMaxRight() { return this.maxRight }
   getRectCount() { return this.batch.getRectCount() }
   getChildren() { return this.children }
-  forEachBatch(cb: (batch: RectangleBatch) => void) { cb(this.batch) }
+  forEachBatchInViewport(configSpaceViewport: Rect, cb: (batch: RectangleBatch) => void) {
+    if (this.maxRight < configSpaceViewport.left()) return
+    if (this.minLeft > configSpaceViewport.right()) return
+    cb(this.batch)
+  }
 }
 
 class RangeTreeInteriorNode implements RangeTreeNode {
@@ -44,9 +48,12 @@ class RangeTreeInteriorNode implements RangeTreeNode {
   getMaxRight() { return this.children[this.children.length - 1].getMaxRight() }
   getRectCount() { return this.rectCount }
   getChildren() { return this.children }
-  forEachBatch(cb: (batch: RectangleBatch) => void) {
+  forEachBatchInViewport(configSpaceViewport: Rect, cb: (batch: RectangleBatch) => void) {
+    // if (this.getMaxRight() < configSpaceViewport.left()) return
+    // if (this.getMinLeft() > configSpaceViewport.right()) return
+
     for (let child of this.children) {
-      child.forEachBatch(cb)
+      child.forEachBatchInViewport(configSpaceViewport, cb)
     }
   }
 }
@@ -58,7 +65,11 @@ export interface FlamechartRendererProps {
 
 class BoundedLayer {
   private rootNode: RangeTreeNode
-  constructor(private canvasContext: CanvasContext, flamechart: Flamechart, stackDepth: number) {
+  constructor(
+    private canvasContext: CanvasContext,
+    flamechart: Flamechart,
+    private stackDepth: number
+  ) {
     const leafNodes: RangeTreeLeafNode[] = []
 
     let minLeft = Infinity
@@ -76,6 +87,8 @@ class BoundedLayer {
         new Vec2(frame.start, stackDepth + 1),
         new Vec2(frame.end - frame.start, 1)
       )
+      minLeft = Math.min(minLeft, configSpaceBounds.left())
+      maxRight = Math.max(maxRight, configSpaceBounds.right())
       const color = flamechart.getColorForFrame(frame.node.frame)
       batch.addRect(configSpaceBounds, color)
     }
@@ -89,8 +102,26 @@ class BoundedLayer {
   }
 
   render(props: FlamechartRendererProps) {
-    // TODO(jlfwong): Cull batches!
-    this.rootNode.forEachBatch(batch => {
+    const configSpaceTop = this.stackDepth + 1
+    const configSpaceBottom = configSpaceTop + 1
+
+    const ndcToConfigSpace = props.configSpaceToNDC.inverted()
+    if (!ndcToConfigSpace) return
+    const configSpaceViewportRect = ndcToConfigSpace.transformRect(new Rect(
+      new Vec2(-1, -1), new Vec2(2, 2)
+    ))
+
+    if (configSpaceTop > configSpaceViewportRect.bottom()) {
+      // Entire layer is below the viewport
+      return
+    }
+
+    if (configSpaceBottom < configSpaceViewportRect.top()) {
+      // Entire layer is above the viewport
+      return
+    }
+
+    this.rootNode.forEachBatchInViewport(configSpaceViewportRect, batch => {
       this.canvasContext.drawRectangleBatch({ ...props, batch })
     })
   }
@@ -106,7 +137,6 @@ export class FlamechartRenderer {
   }
 
   render(props: FlamechartRendererProps) {
-    // TODO(jlfwong): Cull layers outside the viewport!
     for (let layer of this.layers) {
       layer.render(props)
     }
