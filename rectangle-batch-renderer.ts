@@ -81,7 +81,7 @@ export class RectangleBatchRenderer {
       uniform mat3 configSpaceToNDC;
 
       // Non-instanced
-      attribute float corner;
+      attribute vec2 corner;
 
       // Instanced
       attribute vec2 configSpaceOffset;
@@ -91,18 +91,7 @@ export class RectangleBatchRenderer {
 
       void main() {
         vColor = color;
-        vec2 configSpacePos = configSpaceOffset;
-
-        // Corners go NW, NE, SW, SE
-        if (corner == 0.0) {
-        } else if (corner == 1.0) {
-          configSpacePos.x += configSpaceSize.x;
-        } else if (corner == 2.0) {
-          configSpacePos.y += configSpaceSize.y;
-        } else if (corner == 3.0) {
-          configSpacePos += configSpaceSize;
-        }
-
+        vec2 configSpacePos = configSpaceOffset + corner * configSpaceSize;
         vec2 position = (configSpaceToNDC * vec3(configSpacePos, 1)).xy;
         gl_Position = vec4(position, 0, 1);
       }
@@ -122,7 +111,12 @@ export class RectangleBatchRenderer {
 
       attributes: {
         // Non-instanced attributes
-        corner: gl.buffer(new Float32Array([0, 1, 2, 3])),
+        corner: gl.buffer([
+          [0, 0],
+          [1, 0],
+          [0, 1],
+          [1, 1],
+        ]),
 
         // Instanced attributes
         configSpaceOffset: (context, props) => {
