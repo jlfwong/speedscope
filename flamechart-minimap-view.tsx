@@ -96,9 +96,8 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
         },
         render: (props) => {
           this.props.canvasContext.drawRectangleBatch({
-            configSpaceToNDC: props.configSpaceToNDC,
             physicalSize: props.physicalSize,
-            strokeSize: 0,
+            configSpaceToNDC: props.configSpaceToNDC,
             batch: this.props.rectangles
           })
         }

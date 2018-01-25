@@ -70,7 +70,6 @@ export class RectangleBatch {
 export interface RectangleBatchRendererProps {
   configSpaceToNDC: AffineTransform
   physicalSize: Vec2
-  strokeSize: number
   batch: RectangleBatch
 }
 
@@ -80,8 +79,6 @@ export class RectangleBatchRenderer {
     this.command = gl({
       vert: `
       uniform mat3 configSpaceToNDC;
-      uniform vec2 physicalSize;
-      uniform float strokeSize;
 
       // Non-instanced
       attribute float corner;
@@ -94,29 +91,20 @@ export class RectangleBatchRenderer {
 
       void main() {
         vColor = color;
-
         vec2 configSpacePos = configSpaceOffset;
-        vec2 physicalSpaceOffset = vec2(0, 0);
 
         // Corners go NW, NE, SW, SE
         if (corner == 0.0) {
-          physicalSpaceOffset = vec2(1, -1);
         } else if (corner == 1.0) {
-          physicalSpaceOffset = vec2(-1, -1);
           configSpacePos.x += configSpaceSize.x;
         } else if (corner == 2.0) {
-          physicalSpaceOffset = vec2(1, 1);
           configSpacePos.y += configSpaceSize.y;
         } else if (corner == 3.0) {
-          physicalSpaceOffset = vec2(-1, 1);
           configSpacePos += configSpaceSize;
         }
 
-        vec2 roundedPosition = (configSpaceToNDC * vec3(configSpacePos, 1)).xy;
-        vec2 halfSize = physicalSize / 2.0;
-        vec2 physicalPixelSize = 2.0 / physicalSize;
-        roundedPosition = floor(roundedPosition * halfSize) / halfSize;
-        gl_Position = vec4(roundedPosition + physicalPixelSize * physicalSpaceOffset * strokeSize, 0, 1);
+        vec2 position = (configSpaceToNDC * vec3(configSpacePos, 1)).xy;
+        gl_Position = vec4(position, 0, 1);
       }
     `,
 
@@ -169,12 +157,6 @@ export class RectangleBatchRenderer {
       uniforms: {
         configSpaceToNDC: (context, props) => {
           return props.configSpaceToNDC.flatten()
-        },
-        physicalSize: (context, props) => {
-          return props.physicalSize.flatten()
-        },
-        strokeSize: (context, props) => {
-          return props.strokeSize
         }
       },
 

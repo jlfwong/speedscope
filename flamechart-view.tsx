@@ -327,7 +327,6 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       this.props.canvasContext.drawRectangleBatch({
         configSpaceToNDC: configSpaceToNDC,
         physicalSize: this.physicalViewSize(),
-        strokeSize: 1,
         batch: this.props.rectangles
       })
     })
