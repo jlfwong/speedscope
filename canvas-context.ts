@@ -82,8 +82,14 @@ export class CanvasContext {
     }
   }
 
+  private perfDebug = window.location.href.indexOf('perf-debug=1') !== -1
   private onBeforeFrame = (context: regl.Context) => {
-    this.gl.clear({ color: [0, 0, 0, 0] })
+    this.gl({
+      scissor: { enable: false }
+    })(() => {
+      this.gl.clear({ color: [0, 0, 0, 0] })
+    })
+
     this.tickNeeded = false
 
     let beforeHandlers = performance.now()
@@ -93,8 +99,10 @@ export class CanvasContext {
     let cpuTimeElapsed = performance.now() - beforeHandlers;
 
     if (this.tick && !this.tickNeeded) {
-      this.tick.cancel()
-      this.tick = null
+      if (!this.perfDebug) {
+        this.tick.cancel()
+        this.tick = null
+      }
     }
 
     // TODO(jlfwong): It would be really nice to have GPU
@@ -103,9 +111,9 @@ export class CanvasContext {
     // program multiple times without flushing.
     // I'll investigate this at some point and report a bug to regl.
 
-    console.group('Frame')
-    console.log('CPU Frame Generation Time (ms)', cpuTimeElapsed.toFixed(2))
-    console.groupEnd()
+    if (this.perfDebug) {
+      console.log('CPU Frame Generation Time (ms)', cpuTimeElapsed.toFixed(2))
+    }
   }
 
   drawRectangleBatch(props: RectangleBatchRendererProps) {

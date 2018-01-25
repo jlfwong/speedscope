@@ -93,15 +93,23 @@ export class TextureCachedRenderer<T> {
   }
 
   private lastRenderProps: T | null = null
+
+  private dirty: boolean = false
+  setDirty() {
+    this.dirty = true
+  }
+
   render(context: regl.Context, props: T) {
     let needsRender = false
     if (this.texture.width !== context.viewportWidth || this.texture.height !== context.viewportHeight) {
-      this.texture({width: context.viewportWidth, height: context.viewportHeight})
-      this.framebuffer({color: [this.texture]})
+      this.texture({ width: context.viewportWidth, height: context.viewportHeight })
+      this.framebuffer({ color: [this.texture] })
       needsRender = true
     } else if (this.lastRenderProps == null) {
       needsRender = true
     } else if (this.shouldUpdate(this.lastRenderProps, props)) {
+      needsRender = true
+    } else if (this.dirty) {
       needsRender = true
     }
 
@@ -118,6 +126,7 @@ export class TextureCachedRenderer<T> {
         },
         framebuffer: this.framebuffer
       })(() => {
+        this.gl.clear({color: [0, 0, 0, 0]})
         this.renderUncached(props)
       })
     }
@@ -125,5 +134,6 @@ export class TextureCachedRenderer<T> {
     // Render from texture
     this.textureRenderer.render(context, {texture: this.texture})
     this.lastRenderProps = props
+    this.dirty = false
   }
 }
