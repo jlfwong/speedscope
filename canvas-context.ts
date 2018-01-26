@@ -1,7 +1,7 @@
 import * as regl from 'regl'
 import { RectangleBatchRenderer, RectangleBatch, RectangleBatchRendererProps } from './rectangle-batch-renderer';
 import { ViewportRectangleRenderer, ViewportRectangleRendererProps } from './overlay-rectangle-renderer';
-import { TextureCachedRenderer, TextureRenderer } from './texture-catched-renderer'
+import { TextureCachedRenderer, TextureRenderer, TextureRendererProps } from './texture-catched-renderer'
 
 import { Vec2, Rect } from './math';
 
@@ -12,7 +12,7 @@ interface SetViewportScopeProps {
 }
 
 export class CanvasContext {
-  private gl: regl.Instance
+  public gl: regl.Instance
   private rectangleBatchRenderer: RectangleBatchRenderer
   private viewportRectangleRenderer: ViewportRectangleRenderer
   private textureRenderer: TextureRenderer
@@ -120,6 +120,12 @@ export class CanvasContext {
     this.rectangleBatchRenderer.render(props)
   }
 
+  drawTexture(props: TextureRendererProps) {
+    this.gl({})((context: regl.Context) => {
+      this.textureRenderer.render(context, props)
+    })
+  }
+
   createRectangleBatch(): RectangleBatch {
     return new RectangleBatch(this.gl)
   }
@@ -145,5 +151,9 @@ export class CanvasContext {
       new Vec2(bounds.width * window.devicePixelRatio, bounds.height * window.devicePixelRatio)
     )
     this.setViewportScope({ physicalBounds }, cb)
+  }
+
+  getMaxTextureSize() {
+    return this.gl.limits.maxTextureSize
   }
 }

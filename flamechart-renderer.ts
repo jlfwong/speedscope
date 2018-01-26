@@ -1,3 +1,4 @@
+import * as regl from 'regl'
 import { Flamechart } from './flamechart'
 import { RectangleBatch } from './rectangle-batch-renderer'
 import { CanvasContext } from './canvas-context';
@@ -129,16 +130,65 @@ class BoundedLayer {
 
 export class FlamechartRenderer {
   private layers: BoundedLayer[] = []
+  private texture: regl.Texture | null = null
 
-  constructor(canvasContext: CanvasContext, flamechart: Flamechart) {
-    for (let i = 0; i < flamechart.getLayers().length; i++) {
+  constructor(private canvasContext: CanvasContext, flamechart: Flamechart) {
+    const nLayers = flamechart.getLayers().length
+    const maxTextureSize = canvasContext.getMaxTextureSize()
+
+    if (nLayers > maxTextureSize) {
+      throw new Error(`This profile has more than ${maxTextureSize} layers!`)
+    }
+
+    this.texture = canvasContext.gl.texture({
+      width: canvasContext.getMaxTextureSize(),
+      height: nLayers,
+    })
+    const fbo = canvasContext.gl.framebuffer({ color: [this.texture] })
+
+    for (let i = 0; i < nLayers; i++) {
       this.layers.push(new BoundedLayer(canvasContext, flamechart, i))
     }
+
+    const configSpaceToNDC = AffineTransform.withScale(new Vec2(1, -1)).times(
+      AffineTransform.betweenRects(
+        new Rect(new Vec2(0, 0), new Vec2(flamechart.getTotalWeight(), nLayers)),
+        new Rect(new Vec2(-1, -1), new Vec2(2, 2))
+      )
+    )
+
+    canvasContext.gl({
+      viewport: (context, props) => {
+        return {
+          x: 0,
+          y: 0,
+          width: canvasContext.getMaxTextureSize(),
+          height: nLayers
+        }
+      },
+      framebuffer: fbo
+    })((context: regl.Context) => {
+      const physicalSize = new Vec2(context.drawingBufferWidth, context.drawingBufferHeight)
+      for (let layer of this.layers) {
+        layer.render({ physicalSize, configSpaceToNDC })
+      }
+    })
+
+    fbo.destroy()
   }
 
   render(props: FlamechartRendererProps) {
+    if (!this.texture) return
+    this.canvasContext.drawTexture({
+      texture: this.texture,
+      ndcRect: new Rect(new Vec2(-1, -1), new Vec2(2, 2)),
+      uvRect: new Rect(new Vec2(0, 0), new Vec2(1, 1))
+    })
+
+    /*
     for (let layer of this.layers) {
       layer.render(props)
     }
+    */
   }
 }

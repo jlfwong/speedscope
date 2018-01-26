@@ -1,7 +1,10 @@
 import * as regl from 'regl'
+import { Vec2, Rect } from './math'
 
 export class TextureRendererProps {
   texture: regl.Texture
+  ndcRect: Rect
+  uvRect: Rect
 }
 
 export class TextureRenderer {
@@ -28,6 +31,11 @@ export class TextureRenderer {
           gl_FragColor = texture2D(texture, vUv);
         }
       `,
+
+      depth: {
+        enable: false
+      },
+
       attributes: {
         // Cover full canvas with a rectangle
         // with 2 triangles using a triangle
@@ -37,18 +45,26 @@ export class TextureRenderer {
         //   | /|
         //   |/ |
         // 2 +--+ 3
-        position: [
-          [-1, 1],
-          [1, 1],
-          [-1, -1],
-          [1, -1]
-        ],
-        uv: [
-          [0, 1],
-          [1, 1],
-          [0, 0],
-          [1, 0]
-        ]
+        position: (context, props) => {
+          const rect = props.ndcRect
+
+          return [
+            rect.topLeft().flatten(),
+            rect.topRight().flatten(),
+            rect.bottomLeft().flatten(),
+            rect.bottomRight().flatten()
+          ]
+        },
+        uv: (context, props) => {
+          const rect = props.uvRect
+
+          return [
+            rect.topLeft().flatten(),
+            rect.topRight().flatten(),
+            rect.bottomLeft().flatten(),
+            rect.bottomRight().flatten()
+          ]
+        }
       },
 
       uniforms: {
@@ -132,7 +148,11 @@ export class TextureCachedRenderer<T> {
     }
 
     // Render from texture
-    this.textureRenderer.render(context, {texture: this.texture})
+    this.textureRenderer.render(context, {
+      texture: this.texture,
+      ndcRect: new Rect(new Vec2(-1, -1), new Vec2(2, 2)),
+      uvRect: new Rect(new Vec2(0, 0), new Vec2(1, 1))
+    })
     this.lastRenderProps = props
     this.dirty = false
   }

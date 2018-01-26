@@ -176,32 +176,6 @@ export class GLCanvas extends ReloadableComponent<GLCanvasProps, void> {
   }
 }
 
-function rectangleBatchForFlamechart(canvasContext: CanvasContext, flamechart: Flamechart) {
-  console.time('rectangle batch generation')
-
-  const batch = canvasContext.createRectangleBatch()
-
-  const layers = flamechart.getLayers()
-  for (let i = 0; i < layers.length; i++) {
-    const layer = layers[i]
-    for (let flamechartFrame of layer) {
-      const configSpaceBounds = new Rect(
-        new Vec2(flamechartFrame.start, i + 1),
-        new Vec2(flamechartFrame.end - flamechartFrame.start, 1)
-      )
-      const color = flamechart.getColorForFrame(flamechartFrame.node.frame)
-      batch.addRect(configSpaceBounds, color)
-    }
-  }
-
-  // GPU upload
-  batch.uploadToGPU()
-
-  console.timeEnd('rectangle batch generation')
-
-  return batch
-}
-
 export class Application extends ReloadableComponent<{}, ApplicationState> {
   constructor() {
     super()
