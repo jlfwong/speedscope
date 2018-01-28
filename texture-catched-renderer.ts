@@ -3,8 +3,8 @@ import { Vec2, Rect } from './math'
 
 export class TextureRendererProps {
   texture: regl.Texture
-  ndcRect: Rect
-  uvRect: Rect
+  srcRect: Rect
+  dstRect: Rect
 }
 
 export class TextureRenderer {
@@ -46,23 +46,41 @@ export class TextureRenderer {
         //   |/ |
         // 2 +--+ 3
         position: (context, props) => {
-          const rect = props.ndcRect
+          const { dstRect } = props
+
+          const width = context.viewportWidth
+          const height = context.viewportHeight
+
+          const left = 2 * (dstRect.left() / width) - 1
+          const right = 2 * (dstRect.right() / width) - 1
+
+          const top = -(2 * (dstRect.top() / height) - 1)
+          const bottom = -(2 * (dstRect.bottom() / height) - 1)
 
           return [
-            rect.topLeft().flatten(),
-            rect.topRight().flatten(),
-            rect.bottomLeft().flatten(),
-            rect.bottomRight().flatten()
+            [left, top],
+            [right, top],
+            [left, bottom],
+            [right, bottom]
           ]
         },
         uv: (context, props) => {
-          const rect = props.uvRect
+          const { srcRect } = props
+
+          const width = props.texture.width
+          const height = props.texture.height
+
+          const left = srcRect.left() / width
+          const right = srcRect.right() / width
+
+          const top = 1 - srcRect.top() / height
+          const bottom = 1 - srcRect.bottom() / height
 
           return [
-            rect.topLeft().flatten(),
-            rect.topRight().flatten(),
-            rect.bottomLeft().flatten(),
-            rect.bottomRight().flatten()
+            [left, top],
+            [right, top],
+            [left, bottom],
+            [right, bottom]
           ]
         }
       },
@@ -147,11 +165,13 @@ export class TextureCachedRenderer<T> {
       })
     }
 
+    const glViewportRect = new Rect(new Vec2(), new Vec2(context.viewportWidth, context.viewportHeight))
+
     // Render from texture
     this.textureRenderer.render(context, {
       texture: this.texture,
-      ndcRect: new Rect(new Vec2(-1, -1), new Vec2(2, 2)),
-      uvRect: new Rect(new Vec2(0, 0), new Vec2(1, 1))
+      srcRect: glViewportRect,
+      dstRect: glViewportRect
     })
     this.lastRenderProps = props
     this.dirty = false

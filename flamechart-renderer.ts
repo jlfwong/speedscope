@@ -31,6 +31,10 @@ class RangeTreeLeafNode implements RangeTreeNode {
     if (this.maxRight < configSpaceViewport.left()) return
     if (this.minLeft > configSpaceViewport.right()) return
     cb(this.batch)
+
+    // TODO(jlfwong): Remove this line. This is here for now to artificially
+    // decrease rendering performance to try various optimizations.
+    cb(this.batch)
   }
 }
 
@@ -50,8 +54,8 @@ class RangeTreeInteriorNode implements RangeTreeNode {
   getRectCount() { return this.rectCount }
   getChildren() { return this.children }
   forEachBatchInViewport(configSpaceViewport: Rect, cb: (batch: RectangleBatch) => void) {
-    // if (this.getMaxRight() < configSpaceViewport.left()) return
-    // if (this.getMinLeft() > configSpaceViewport.right()) return
+    if (this.getMaxRight() < configSpaceViewport.left()) return
+    if (this.getMinLeft() > configSpaceViewport.right()) return
 
     for (let child of this.children) {
       child.forEachBatchInViewport(configSpaceViewport, cb)
@@ -59,9 +63,14 @@ class RangeTreeInteriorNode implements RangeTreeNode {
   }
 }
 
-export interface FlamechartRendererProps {
+interface BoundedLayerProps {
   configSpaceToNDC: AffineTransform
   physicalSize: Vec2
+}
+
+export interface FlamechartRendererProps {
+  configSpaceSrcRect: Rect
+  physicalSpaceDstRect: Rect
 }
 
 class BoundedLayer {
@@ -102,7 +111,7 @@ class BoundedLayer {
     this.rootNode = new RangeTreeInteriorNode(leafNodes)
   }
 
-  render(props: FlamechartRendererProps) {
+  render(props: BoundedLayerProps) {
     const configSpaceTop = this.stackDepth + 1
     const configSpaceBottom = configSpaceTop + 1
 
@@ -123,7 +132,11 @@ class BoundedLayer {
     }
 
     this.rootNode.forEachBatchInViewport(configSpaceViewportRect, batch => {
-      this.canvasContext.drawRectangleBatch({ ...props, batch })
+      this.canvasContext.drawRectangleBatch({
+        configSpaceToNDC: props.configSpaceToNDC,
+        physicalSize: props.physicalSize,
+        batch
+      })
     })
   }
 }
@@ -132,7 +145,15 @@ export class FlamechartRenderer {
   private layers: BoundedLayer[] = []
   private texture: regl.Texture | null = null
 
-  constructor(private canvasContext: CanvasContext, flamechart: Flamechart) {
+  private getConfigSpaceSize() {
+    return new Vec2(this.flamechart.getTotalWeight(), this.flamechart.getLayers().length)
+  }
+
+  private getConfigSpaceContentRect() {
+    return new Rect(new Vec2(), this.getConfigSpaceSize())
+  }
+
+  constructor(private canvasContext: CanvasContext, private flamechart: Flamechart) {
     const nLayers = flamechart.getLayers().length
     const maxTextureSize = canvasContext.getMaxTextureSize()
 
@@ -140,19 +161,21 @@ export class FlamechartRenderer {
       throw new Error(`This profile has more than ${maxTextureSize} layers!`)
     }
 
-    this.texture = canvasContext.gl.texture({
-      width: canvasContext.getMaxTextureSize(),
-      height: nLayers,
-    })
-    const fbo = canvasContext.gl.framebuffer({ color: [this.texture] })
-
     for (let i = 0; i < nLayers; i++) {
       this.layers.push(new BoundedLayer(canvasContext, flamechart, i))
     }
 
+    this.texture = canvasContext.gl.texture({
+      width: canvasContext.getMaxTextureSize(),
+      height: nLayers,
+      wrapS: 'clamp',
+      wrapT: 'clamp',
+    })
+    const fbo = canvasContext.gl.framebuffer({ color: [this.texture] })
+
     const configSpaceToNDC = AffineTransform.withScale(new Vec2(1, -1)).times(
       AffineTransform.betweenRects(
-        new Rect(new Vec2(0, 0), new Vec2(flamechart.getTotalWeight(), nLayers)),
+        this.getConfigSpaceContentRect(),
         new Rect(new Vec2(-1, -1), new Vec2(2, 2))
       )
     )
@@ -170,7 +193,10 @@ export class FlamechartRenderer {
     })((context: regl.Context) => {
       const physicalSize = new Vec2(context.drawingBufferWidth, context.drawingBufferHeight)
       for (let layer of this.layers) {
-        layer.render({ physicalSize, configSpaceToNDC })
+        layer.render({
+          physicalSize,
+          configSpaceToNDC
+        })
       }
     })
 
@@ -179,10 +205,21 @@ export class FlamechartRenderer {
 
   render(props: FlamechartRendererProps) {
     if (!this.texture) return
+
+    const { configSpaceSrcRect, physicalSpaceDstRect } = props
+    const content = this.getConfigSpaceContentRect()
+
+    const textureSize = new Vec2(this.texture.width, this.texture.height)
+
+    const physicalSpaceSrcRect = new Rect(
+      configSpaceSrcRect.origin.dividedByPointwise(content.size).timesPointwise(textureSize),
+      configSpaceSrcRect.size.dividedByPointwise(content.size).timesPointwise(textureSize)
+    )
+
     this.canvasContext.drawTexture({
       texture: this.texture,
-      ndcRect: new Rect(new Vec2(-1, -1), new Vec2(2, 2)),
-      uvRect: new Rect(new Vec2(0, 0), new Vec2(1, 1))
+      srcRect: physicalSpaceSrcRect,
+      dstRect: physicalSpaceDstRect
     })
 
     /*

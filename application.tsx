@@ -13,7 +13,6 @@ import {Flamechart} from './flamechart'
 import { FlamechartView } from './flamechart-view'
 import { FontFamily, FontSize, Colors } from './style'
 import { FrameColorGenerator } from './color'
-import { Vec2, Rect } from './math'
 
 const enum SortOrder {
   CHRONO,

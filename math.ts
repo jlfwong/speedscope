@@ -186,6 +186,12 @@ export class AffineTransform {
     return new Rect(origin, size)
   }
 
+  inverseTransformRect(r: Rect): Rect | null{
+    const inv = this.inverted()
+    if (!inv) return null
+    return inv.transformRect(r)
+  }
+
   flatten(): [number, number, number, number, number, number, number, number, number] {
     // Flatten into GLSL format
     return [

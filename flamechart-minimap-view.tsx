@@ -43,6 +43,10 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     )
   }
 
+  private minimapOrigin() {
+    return new Vec2(0, Sizes.FRAME_HEIGHT * DEVICE_PIXEL_RATIO)
+  }
+
   private configSpaceSize() {
     return new Vec2(
       this.props.flamechart.getTotalWeight(),
@@ -51,7 +55,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   }
 
   private configSpaceToPhysicalViewSpace() {
-    const minimapOrigin = new Vec2(0, Sizes.FRAME_HEIGHT * DEVICE_PIXEL_RATIO)
+    const minimapOrigin = this.minimapOrigin()
 
     return AffineTransform.betweenRects(
       new Rect(new Vec2(0, 0), this.configSpaceSize()),
@@ -96,8 +100,11 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
         },
         render: (props) => {
           this.props.flamechartRenderer.render({
-            physicalSize: props.physicalSize,
-            configSpaceToNDC: props.configSpaceToNDC,
+            physicalSpaceDstRect: new Rect(
+              this.minimapOrigin(),
+              this.physicalViewSize().minus(this.minimapOrigin())
+            ),
+            configSpaceSrcRect: new Rect(new Vec2(0, 0), this.configSpaceSize()),
           })
         }
       })

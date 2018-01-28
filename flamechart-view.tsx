@@ -130,14 +130,6 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       new Rect(new Vec2(0, 0), this.physicalViewSize())
     )
   }
-  private physicalViewSpaceToNDC() {
-    return AffineTransform.withScale(new Vec2(1, -1)).times(
-      AffineTransform.betweenRects(
-        new Rect(new Vec2(0, 0), this.physicalViewSize()),
-        new Rect(new Vec2(-1, -1), new Vec2(2, 2))
-      )
-    )
-  }
 
   private logicalToPhysicalViewSpace() {
     return AffineTransform.withScale(new Vec2(DEVICE_PIXEL_RATIO, DEVICE_PIXEL_RATIO))
@@ -319,14 +311,10 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
     if (this.props.configSpaceViewportRect.isEmpty()) return
 
-    const configSpaceToNDC = this.physicalViewSpaceToNDC().times(this.configSpaceToPhysicalViewSpace())
-
-    // console.trace('main view render')
-
     this.props.canvasContext.renderInto(this.container, () => {
       this.props.flamechartRenderer.render({
-        configSpaceToNDC: configSpaceToNDC,
-        physicalSize: this.physicalViewSize(),
+        physicalSpaceDstRect: new Rect(new Vec2(), this.physicalViewSize()),
+        configSpaceSrcRect: this.props.configSpaceViewportRect
       })
     })
   }

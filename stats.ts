@@ -22,8 +22,8 @@ export class StatsPanel {
     this.container.addEventListener('click', () => {
       this.showPanel((this.shown + 1) % this.panels.length)
     })
-    this.addPanel(this.fpsPanel)
     this.addPanel(this.msPanel)
+    this.addPanel(this.fpsPanel)
     document.body.appendChild(this.container)
   }
 
