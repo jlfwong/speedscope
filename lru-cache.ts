@@ -83,8 +83,8 @@ export class List<V> {
       node.prev.next = node.next
       node.next = null
       node.prev = null
+      this.size--
     }
-    this.size--
   }
 }
 

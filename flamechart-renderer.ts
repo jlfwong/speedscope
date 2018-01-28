@@ -4,14 +4,16 @@ import { RectangleBatch } from './rectangle-batch-renderer'
 import { CanvasContext } from './canvas-context';
 import { Vec2, Rect, AffineTransform } from './math'
 import { LRUCache } from './lru-cache'
+import { Color } from './color'
 
 const MAX_BATCH_SIZE = 10000
 
 class RowAtlas<K> {
-  private texture: regl.Texture
+  texture: regl.Texture
   private framebuffer: regl.Framebuffer
   private renderToFramebuffer: regl.Command<{}>
   private rowCache: LRUCache<K, number>
+  private clearLineBatch: RectangleBatch
 
   constructor(private canvasContext: CanvasContext) {
     this.texture = canvasContext.gl.texture({
@@ -25,6 +27,8 @@ class RowAtlas<K> {
     this.renderToFramebuffer = canvasContext.gl({
       framebuffer: this.framebuffer
     })
+    this.clearLineBatch = canvasContext.createRectangleBatch()
+    this.clearLineBatch.addRect(Rect.unit, new Color(1, 1, 1, 1))
   }
 
   has(key: K) { return this.rowCache.has(key) }
@@ -53,20 +57,23 @@ class RowAtlas<K> {
         let row = this.rowCache.get(key)
         if (row != null) {
           // Already cached!
-          return
+          continue
         }
-
         // Not cached -- we'll have to actually render
         row = this.allocateLine(key)
+
         const textureRect = new Rect(
           new Vec2(0, row),
           new Vec2(this.texture.width, 1)
         )
-
+        this.canvasContext.drawRectangleBatch({
+          batch: this.clearLineBatch,
+          configSpaceSrcRect: Rect.unit,
+          physicalSpaceDstRect: textureRect
+        })
         render(textureRect, key)
       }
     })
-    return
   }
 
   renderViaAtlas(key: K, dstRect: Rect): boolean {
@@ -165,7 +172,7 @@ export class FlamechartRenderer {
   private root: RangeTreeNode
   private rowAtlas: RowAtlas<RangeTreeLeafNode>
 
-  constructor(private canvasContext: CanvasContext, flamechart: Flamechart) {
+  constructor(private canvasContext: CanvasContext, private flamechart: Flamechart) {
     const nLayers = flamechart.getLayers().length
     this.rowAtlas = new RowAtlas(canvasContext)
 
@@ -173,7 +180,7 @@ export class FlamechartRenderer {
 
     for (let stackDepth = 0; stackDepth < nLayers; stackDepth++) {
       const leafNodes: RangeTreeLeafNode[] = []
-      const y = stackDepth + 1
+      const y = stackDepth
 
       let minLeft = Infinity
       let maxRight = -Infinity
@@ -229,9 +236,7 @@ export class FlamechartRenderer {
       // which is even more expensive than not using a cache at all! Instead,
       // we'll cache the first 2 entries in that case, and re-use that cache each time,
       // while rendering the final 2 items without use of the cache.
-      // An exception here is if the node is already in the cache!
-      let useCache = renderedBatchCount++ < cacheCapacity || this.rowAtlas.has(leaf)
-
+      let useCache = renderedBatchCount++ < cacheCapacity
       if (useCache) {
         cachedLeaves.push(leaf)
       } else {
@@ -240,17 +245,24 @@ export class FlamechartRenderer {
     })
 
     this.rowAtlas.writeToAtlasIfNeeded(cachedLeaves, (textureDstRect, leaf) => {
+      const configSpaceBounds = new Rect(
+        new Vec2(0, leaf.getBounds().top()),
+        new Vec2(this.flamechart.getTotalWeight(), 1)
+      )
       this.canvasContext.drawRectangleBatch({
         batch: leaf.getBatch(),
-        configSpaceSrcRect: leaf.getBounds(),
+        configSpaceSrcRect: configSpaceBounds,
         physicalSpaceDstRect: textureDstRect
       })
     })
 
     const configToPhysical = AffineTransform.betweenRects(configSpaceSrcRect, physicalSpaceDstRect)
     for (let leaf of cachedLeaves) {
-      const configSpaceLeafBounds = leaf.getBounds()
-      const physicalLeafBounds = configToPhysical.transformRect(configSpaceLeafBounds)
+      const configSpaceBounds = new Rect(
+        new Vec2(0, leaf.getBounds().top()),
+        new Vec2(this.flamechart.getTotalWeight(), 1)
+      )
+      const physicalLeafBounds = configToPhysical.transformRect(configSpaceBounds)
       if (!this.rowAtlas.renderViaAtlas(leaf, physicalLeafBounds)) {
         console.error('Failed to render from cache')
       }
@@ -263,5 +275,14 @@ export class FlamechartRenderer {
         physicalSpaceDstRect
       })
     }
+
+    // Overlay the atlas on top of the canvas for debugging
+    /*
+    this.canvasContext.drawTexture({
+      texture: this.rowAtlas.texture,
+      srcRect: new Rect(Vec2.zero, new Vec2(this.rowAtlas.texture.width, this.rowAtlas.texture.height)),
+      dstRect: new Rect(Vec2.zero, new Vec2(800, 800))
+    })
+    */
   }
 }

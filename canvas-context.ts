@@ -149,6 +149,10 @@ export class CanvasContext {
     this.setViewportScope({ physicalBounds }, cb)
   }
 
+  setViewport(physicalBounds: Rect, cb: (context: regl.Context) => void) {
+    this.setViewportScope({ physicalBounds }, cb)
+  }
+
   getMaxTextureSize() {
     return this.gl.limits.maxTextureSize
   }

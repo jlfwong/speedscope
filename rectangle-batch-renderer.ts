@@ -157,9 +157,8 @@ export class RectangleBatchRenderer {
 
           const viewportSize = new Vec2(context.viewportWidth, context.viewportHeight)
 
-          const physicalToNDC = AffineTransform
-            .withTranslation(new Vec2(-1, 1))
-            .withScale(new Vec2(2, -2).dividedByPointwise(viewportSize))
+          const physicalToNDC = AffineTransform.withTranslation(new Vec2(-1, 1))
+            .times(AffineTransform.withScale(new Vec2(2, -2).dividedByPointwise(viewportSize)))
 
           return physicalToNDC.times(configToPhysical).flatten()
         }

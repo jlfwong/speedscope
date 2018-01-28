@@ -195,7 +195,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     const renderFrameLabelAndChildren = (frame: FlamechartFrame, depth = 0) => {
       const width = frame.end - frame.start
       const configSpaceBounds = new Rect(
-        new Vec2(frame.start, depth + 1),
+        new Vec2(frame.start, depth),
         new Vec2(width, 1)
       )
 
@@ -281,7 +281,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
     if (this.lastBounds == null) {
       this.setConfigSpaceViewportRect(new Rect(
-        new Vec2(0, 0),
+        new Vec2(0, -1),
         new Vec2(this.configSpaceSize().x, height / this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT)
       ))
     } else if (windowResized) {
@@ -308,7 +308,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
     if (this.props.configSpaceViewportRect.isEmpty()) return
 
-    this.props.canvasContext.renderInto(this.container, () => {
+    this.props.canvasContext.renderInto(this.container, (context) => {
       this.props.flamechartRenderer.render({
         physicalSpaceDstRect: new Rect(Vec2.zero, this.physicalViewSize()),
         configSpaceSrcRect: this.props.configSpaceViewportRect
@@ -430,7 +430,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     const setHoveredLabel = (frame: FlamechartFrame, depth = 0) => {
       const width = frame.end - frame.start
       const configSpaceBounds = new Rect(
-        new Vec2(frame.start, depth + 1),
+        new Vec2(frame.start, depth),
         new Vec2(width, 1)
       )
       if (configSpaceMouse.x < configSpaceBounds.left()) return null
@@ -585,11 +585,13 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
     )
   }
 
-  private minConfigSpaceViewportRectWidth() { return 3 * this.props.flamechart.getMinFrameWidth(); }
+  private minConfigSpaceViewportRectWidth() {
+    return Math.min(this.props.flamechart.getTotalWeight(), 3 * this.props.flamechart.getMinFrameWidth());
+  }
 
   private setConfigSpaceViewportRect = (viewportRect: Rect): void => {
     const configSpaceOriginBounds = new Rect(
-      new Vec2(0, 0),
+      new Vec2(0, -1),
       Vec2.max(new Vec2(0, 0), this.configSpaceSize().minus(viewportRect.size))
     )
 
