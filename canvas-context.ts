@@ -2,6 +2,7 @@ import * as regl from 'regl'
 import { RectangleBatchRenderer, RectangleBatch, RectangleBatchRendererProps } from './rectangle-batch-renderer';
 import { ViewportRectangleRenderer, ViewportRectangleRendererProps } from './overlay-rectangle-renderer';
 import { TextureCachedRenderer, TextureRenderer, TextureRendererProps } from './texture-catched-renderer'
+import { StatsPanel } from './stats'
 
 import { Vec2, Rect } from './math';
 
@@ -83,6 +84,8 @@ export class CanvasContext {
   }
 
   private perfDebug = window.location.href.indexOf('perf-debug=1') !== -1
+  private statsPanel: StatsPanel | null = this.perfDebug ? new StatsPanel() : null
+
   private onBeforeFrame = (context: regl.Context) => {
     this.gl({
       scissor: { enable: false }
@@ -92,11 +95,11 @@ export class CanvasContext {
 
     this.tickNeeded = false
 
-    let beforeHandlers = performance.now()
+    this.statsPanel && this.statsPanel.begin()
     for (const handler of this.beforeFrameHandlers) {
       handler()
     }
-    let cpuTimeElapsed = performance.now() - beforeHandlers;
+    this.statsPanel && this.statsPanel.end()
 
     if (this.tick && !this.tickNeeded) {
       if (!this.perfDebug) {
@@ -110,10 +113,6 @@ export class CanvasContext {
     // the gpuTime. I suspect this is caused by executing the same
     // program multiple times without flushing.
     // I'll investigate this at some point and report a bug to regl.
-
-    if (this.perfDebug) {
-      console.log('CPU Frame Generation Time (ms)', cpuTimeElapsed.toFixed(2))
-    }
   }
 
   drawRectangleBatch(props: RectangleBatchRendererProps) {
