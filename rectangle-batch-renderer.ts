@@ -68,9 +68,9 @@ export class RectangleBatch {
 }
 
 export interface RectangleBatchRendererProps {
-  configSpaceToNDC: AffineTransform
-  physicalSize: Vec2
   batch: RectangleBatch
+  configSpaceSrcRect: Rect
+  physicalSpaceDstRect: Rect
 }
 
 export class RectangleBatchRenderer {
@@ -150,7 +150,18 @@ export class RectangleBatchRenderer {
 
       uniforms: {
         configSpaceToNDC: (context, props) => {
-          return props.configSpaceToNDC.flatten()
+          const configToPhysical = AffineTransform.betweenRects(
+            props.configSpaceSrcRect,
+            props.physicalSpaceDstRect
+          )
+
+          const viewportSize = new Vec2(context.viewportWidth, context.viewportHeight)
+
+          const physicalToNDC = AffineTransform
+            .withTranslation(new Vec2(-1, 1))
+            .withScale(new Vec2(2, -2).dividedByPointwise(viewportSize))
+
+          return physicalToNDC.times(configToPhysical).flatten()
         }
       },
 

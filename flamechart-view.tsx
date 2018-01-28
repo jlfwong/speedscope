@@ -53,7 +53,7 @@ const DEVICE_PIXEL_RATIO = window.devicePixelRatio
  * Component to visualize a Flamechart and interact with it via hovering,
  * zooming, and panning.
  *
- * There are 4 vector spaces involved:
+ * There are 3 vector spaces involved:
  * - Configuration Space: In this space, the horizontal unit is ms, and the
  *   vertical unit is stack depth. Each stack frame is one unit high.
  * - Logical view space: Origin is top-left, with +y downwards. This represents
@@ -62,9 +62,6 @@ const DEVICE_PIXEL_RATIO = window.devicePixelRatio
  * - Physical view space: Origin is top-left, with +y downwards. This represents
  *   the coordinate space of the view as specified in hardware pixels: horizontal
  *   and vertical units are both "physical" pixels.
- * - Normalized device coordinates: Origin is center, +y upwards. This is the
- *   coordinate space used by GL, which we use to render the frame rectangles
- *   efficiently.
  *
  * We use two canvases to draw the flamechart itself: one for the rectangles,
  * which we render via WebGL, and one for the labels, which we render via 2D

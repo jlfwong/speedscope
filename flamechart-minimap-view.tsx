@@ -63,15 +63,6 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     )
   }
 
-  private physicalViewSpaceToNDC() {
-    return AffineTransform.withScale(new Vec2(1, -1)).times(
-      AffineTransform.betweenRects(
-        new Rect(new Vec2(0, 0), this.physicalViewSize()),
-        new Rect(new Vec2(-1, -1), new Vec2(2, 2))
-      )
-    )
-  }
-
   private logicalToPhysicalViewSpace() {
     return AffineTransform.withScale(new Vec2(DEVICE_PIXEL_RATIO, DEVICE_PIXEL_RATIO))
   }
@@ -83,8 +74,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   }
 
   private cachedRenderer: TextureCachedRenderer<{
-    physicalSize: Vec2,
-    configSpaceToNDC: AffineTransform
+    physicalSize: Vec2
   }> | null = null
   private renderRects() {
     if (!this.container) return
@@ -92,8 +82,6 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       this.cachedRenderer = this.props.canvasContext.createTextureCachedRenderer({
         shouldUpdate(oldProps, newProps) {
           if (!oldProps.physicalSize.equals(newProps.physicalSize)) {
-            return true
-          } else if (!oldProps.configSpaceToNDC.equals(newProps.configSpaceToNDC)) {
             return true
           }
           return false
@@ -110,11 +98,8 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       })
     }
 
-    const configSpaceToNDC = this.physicalViewSpaceToNDC().times(this.configSpaceToPhysicalViewSpace())
-
     this.props.canvasContext.renderInto(this.container, (context) => {
       this.cachedRenderer!.render(context, {
-        configSpaceToNDC,
         physicalSize: this.physicalViewSize()
       })
       this.props.canvasContext.drawViewportRectangle({
