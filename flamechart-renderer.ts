@@ -5,6 +5,7 @@ import { CanvasContext } from './canvas-context';
 import { Vec2, Rect, AffineTransform } from './math'
 import { LRUCache } from './lru-cache'
 import { Color } from './color'
+import { getOrInsert } from './utils';
 
 const MAX_BATCH_SIZE = 10000
 
@@ -18,7 +19,7 @@ class RowAtlas<K> {
   constructor(private canvasContext: CanvasContext) {
     this.texture = canvasContext.gl.texture({
       width: Math.min(canvasContext.getMaxTextureSize(), 4096),
-      height: Math.min(canvasContext.getMaxTextureSize(), 4096),
+      height: Math.min(canvasContext.getMaxTextureSize(), 1024),
       wrapS: 'clamp',
       wrapT: 'clamp',
     })
@@ -32,6 +33,7 @@ class RowAtlas<K> {
   }
 
   has(key: K) { return this.rowCache.has(key) }
+  getResolution() { return this.texture.width }
   getCapacity() { return this.texture.height }
 
   private allocateLine(key: K): number {
@@ -167,16 +169,19 @@ export interface FlamechartRendererProps {
   physicalSpaceDstRect: Rect
 }
 
+interface FlamechartRowAtlasKey {
+  stackDepth: number
+  zoomLevel: number
+  index: number
+}
 
 export class FlamechartRenderer {
-  private root: RangeTreeNode
-  private rowAtlas: RowAtlas<RangeTreeLeafNode>
+  private layers: RangeTreeNode[] = []
+  private rowAtlas: RowAtlas<FlamechartRowAtlasKey>
 
   constructor(private canvasContext: CanvasContext, private flamechart: Flamechart) {
     const nLayers = flamechart.getLayers().length
     this.rowAtlas = new RowAtlas(canvasContext)
-
-    const layers: RangeTreeNode[] = []
 
     for (let stackDepth = 0; stackDepth < nLayers; stackDepth++) {
       const leafNodes: RangeTreeLeafNode[] = []
@@ -214,65 +219,96 @@ export class FlamechartRenderer {
       }
 
       // TODO(jlfwong): Probably want this to be a binary tree
-      layers.push(new RangeTreeInteriorNode(leafNodes))
+      this.layers.push(new RangeTreeInteriorNode(leafNodes))
     }
-    this.root = new RangeTreeInteriorNode(layers)
+  }
+
+  private atlasKeys = new Map<string, FlamechartRowAtlasKey>()
+  getOrInsertKey(key: FlamechartRowAtlasKey): FlamechartRowAtlasKey {
+    const hash = `${key.stackDepth}_${key.index}_${key.zoomLevel}`
+    return getOrInsert(this.atlasKeys, hash, () => key)
+  }
+
+  configSpaceBoundsForKey(key: FlamechartRowAtlasKey): Rect {
+    const { stackDepth, zoomLevel, index } = key
+    const configSpaceContentWidth = this.flamechart.getTotalWeight()
+
+    const width = configSpaceContentWidth / Math.pow(2, zoomLevel)
+
+    return new Rect(
+      new Vec2(width * index, stackDepth),
+      new Vec2(width, 1)
+    )
   }
 
   render(props: FlamechartRendererProps) {
     const { configSpaceSrcRect, physicalSpaceDstRect } = props
 
-    let renderedBatchCount = 0
-    let cacheCapacity = this.rowAtlas.getCapacity()
+    const atlasKeysToRender: { stackDepth: number, zoomLevel: number, index: number }[] = []
 
-    const cachedLeaves: RangeTreeLeafNode[] = []
-    const uncachedLeaves: RangeTreeLeafNode[] = []
-
-    this.root.forEachLeafNodeWithinBounds(configSpaceSrcRect, leaf => {
-      // We want to avoid rendering more batches to the cache than
-      // the capacity fo the cache to prevent LRU cache thrash. Imagine
-      // the capacity is 2 and you render 4 items via the cache. Every time
-      // you do this, you end up evicting and populating the cache on all 4 items,
-      // which is even more expensive than not using a cache at all! Instead,
-      // we'll cache the first 2 entries in that case, and re-use that cache each time,
-      // while rendering the final 2 items without use of the cache.
-      let useCache = renderedBatchCount++ < cacheCapacity
-      if (useCache) {
-        cachedLeaves.push(leaf)
-      } else {
-        uncachedLeaves.push(leaf)
-      }
-    })
-
-    this.rowAtlas.writeToAtlasIfNeeded(cachedLeaves, (textureDstRect, leaf) => {
-      const configSpaceBounds = new Rect(
-        new Vec2(0, leaf.getBounds().top()),
-        new Vec2(this.flamechart.getTotalWeight(), 1)
-      )
-      this.canvasContext.drawRectangleBatch({
-        batch: leaf.getBatch(),
-        configSpaceSrcRect: configSpaceBounds,
-        physicalSpaceDstRect: textureDstRect
-      })
-    })
-
+    // We want to render the lowest resolution we can while still guaranteeing that the
+    // atlas line is higher resolution than its corresponding destination rectangle on
+    // the screen.
     const configToPhysical = AffineTransform.betweenRects(configSpaceSrcRect, physicalSpaceDstRect)
-    for (let leaf of cachedLeaves) {
-      const configSpaceBounds = new Rect(
-        new Vec2(0, leaf.getBounds().top()),
-        new Vec2(this.flamechart.getTotalWeight(), 1)
-      )
-      const physicalLeafBounds = configToPhysical.transformRect(configSpaceBounds)
-      if (!this.rowAtlas.renderViaAtlas(leaf, physicalLeafBounds)) {
-        console.error('Failed to render from cache')
+    let zoomLevel = 0
+    while (true) {
+      const configSpaceBounds = this.configSpaceBoundsForKey({ stackDepth: 0, zoomLevel, index: 0 })
+      const physicalBounds = configToPhysical.transformRect(configSpaceBounds)
+      if (physicalBounds.width() < this.rowAtlas.getResolution()) {
+        break
+      }
+      zoomLevel++
+    }
+
+    const top = Math.max(0, Math.floor(configSpaceSrcRect.top()))
+    const bottom = Math.min(this.layers.length - 1, Math.ceil(configSpaceSrcRect.bottom()))
+
+    const configSpaceContentWidth = this.flamechart.getTotalWeight()
+    const numAtlasEntriesPerLayer = Math.pow(2, zoomLevel)
+    const left = Math.floor(numAtlasEntriesPerLayer * configSpaceSrcRect.left() / configSpaceContentWidth)
+    const right = Math.ceil(numAtlasEntriesPerLayer * configSpaceSrcRect.right() / configSpaceContentWidth)
+
+    for (let stackDepth = top; stackDepth < bottom; stackDepth++) {
+      for (let index = left; index <= right; index++) {
+        const key = this.getOrInsertKey({ stackDepth, zoomLevel, index })
+        const configSpaceBounds = this.configSpaceBoundsForKey(key)
+        if (!configSpaceBounds.hasIntersectionWith(configSpaceSrcRect)) continue
+        atlasKeysToRender.push(key)
       }
     }
 
-    for (let leaf of uncachedLeaves) {
-      this.canvasContext.drawRectangleBatch({
-        batch: leaf.getBatch(),
-        configSpaceSrcRect,
-        physicalSpaceDstRect
+    const cacheCapacity = this.rowAtlas.getCapacity()
+    const keysToRenderCached = atlasKeysToRender.slice(0, cacheCapacity)
+    const keysToRenderUncached = atlasKeysToRender.slice(cacheCapacity)
+
+    // Fill the cache
+    this.rowAtlas.writeToAtlasIfNeeded(keysToRenderCached, (textureDstRect, key) => {
+      const configSpaceBounds = this.configSpaceBoundsForKey(key)
+      this.layers[key.stackDepth].forEachLeafNodeWithinBounds(configSpaceBounds, (leaf) => {
+        this.canvasContext.drawRectangleBatch({
+          batch: leaf.getBatch(),
+          configSpaceSrcRect: configSpaceBounds,
+          physicalSpaceDstRect: textureDstRect
+        })
+      })
+    })
+
+    // Render from the cache
+    for (let key of keysToRenderCached) {
+      const configSpaceSrcRect = this.configSpaceBoundsForKey(key)
+      this.rowAtlas.renderViaAtlas(key, configToPhysical.transformRect(configSpaceSrcRect))
+    }
+
+    // Render entries that didn't make it into the cache
+    for (let key of keysToRenderUncached) {
+      const configSpaceBounds = this.configSpaceBoundsForKey(key)
+      const physicalBounds = configToPhysical.transformRect(configSpaceBounds)
+      this.layers[key.stackDepth].forEachLeafNodeWithinBounds(configSpaceBounds, (leaf) => {
+        this.canvasContext.drawRectangleBatch({
+          batch: leaf.getBatch(),
+          configSpaceSrcRect,
+          physicalSpaceDstRect: physicalBounds
+        })
       })
     }
 
