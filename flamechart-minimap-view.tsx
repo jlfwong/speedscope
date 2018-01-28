@@ -99,7 +99,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     }
 
     this.props.canvasContext.renderInto(this.container, (context) => {
-      this.cachedRenderer!.render(context, {
+      this.cachedRenderer!.render({
         physicalSize: this.physicalViewSize()
       })
       this.props.canvasContext.drawViewportRectangle({

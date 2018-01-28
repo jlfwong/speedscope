@@ -3,15 +3,99 @@ import { Flamechart } from './flamechart'
 import { RectangleBatch } from './rectangle-batch-renderer'
 import { CanvasContext } from './canvas-context';
 import { Vec2, Rect, AffineTransform } from './math'
+import { LRUCache } from './lru-cache'
 
 const MAX_BATCH_SIZE = 10000
 
+class RowAtlas<K> {
+  private texture: regl.Texture
+  private framebuffer: regl.Framebuffer
+  private renderToFramebuffer: regl.Command<{}>
+  private rowCache: LRUCache<K, number>
+
+  constructor(private canvasContext: CanvasContext) {
+    this.texture = canvasContext.gl.texture({
+      width: Math.min(canvasContext.getMaxTextureSize(), 4096),
+      height: Math.min(canvasContext.getMaxTextureSize(), 4096),
+      wrapS: 'clamp',
+      wrapT: 'clamp',
+    })
+    this.framebuffer = canvasContext.gl.framebuffer({ color: [this.texture] })
+    this.rowCache = new LRUCache(this.texture.height)
+    this.renderToFramebuffer = canvasContext.gl({
+      framebuffer: this.framebuffer
+    })
+  }
+
+  has(key: K) { return this.rowCache.has(key) }
+  getCapacity() { return this.texture.height }
+
+  private allocateLine(key: K): number {
+    if (this.rowCache.getSize() < this.rowCache.getCapacity()) {
+      // Not in cache, but cache isn't full
+      const row = this.rowCache.getSize()
+      this.rowCache.insert(key, row)
+      return row
+    } else {
+      // Not in cache, and cache is full. Evict something.
+      const [, row] = this.rowCache.removeLRU()!
+      this.rowCache.insert(key, row)
+      return row
+    }
+  }
+
+  writeToAtlasIfNeeded(
+    keys: K[],
+    render: (textureDstRect: Rect, key: K) => void
+  ) {
+    this.renderToFramebuffer((context: regl.Context) => {
+      for (let key of keys) {
+        let row = this.rowCache.get(key)
+        if (row != null) {
+          // Already cached!
+          return
+        }
+
+        // Not cached -- we'll have to actually render
+        row = this.allocateLine(key)
+        const textureRect = new Rect(
+          new Vec2(0, row),
+          new Vec2(this.texture.width, 1)
+        )
+
+        render(textureRect, key)
+      }
+    })
+    return
+  }
+
+  renderViaAtlas(key: K, dstRect: Rect): boolean {
+    let row = this.rowCache.get(key)
+    if (row == null) {
+      return false
+    }
+
+    const textureRect = new Rect(
+      new Vec2(0, row),
+      new Vec2(this.texture.width, 1)
+    )
+
+    // At this point, we have the row in cache, and we can
+    // paint directly from it into the framebuffer.
+    this.canvasContext.drawTexture({
+      texture: this.texture,
+      srcRect: textureRect,
+      dstRect: dstRect
+    })
+    return true
+  }
+}
+
 interface RangeTreeNode {
-  getMinLeft(): number
-  getMaxRight(): number
+  getBounds(): Rect
   getRectCount(): number
   getChildren(): RangeTreeNode[]
-  forEachBatchWithinBounds(configSpaceViewport: Rect, cb: (batch: RectangleBatch) => void): void
+  forEachLeafNodeWithinBounds(configSpaceBounds: Rect, cb: (leaf: RangeTreeLeafNode) => void): void
 }
 
 class RangeTreeLeafNode implements RangeTreeNode {
@@ -19,46 +103,54 @@ class RangeTreeLeafNode implements RangeTreeNode {
 
   constructor(
     private batch: RectangleBatch,
-    private minLeft: number,
-    private maxRight: number
-  ) {}
+    private bounds: Rect
+  ) {
+    batch.uploadToGPU()
+  }
 
-  getMinLeft() { return this.minLeft }
-  getMaxRight() { return this.maxRight }
+  getBatch() { return this.batch }
+  getBounds() { return this.bounds }
   getRectCount() { return this.batch.getRectCount() }
   getChildren() { return this.children }
-  forEachBatchWithinBounds(configSpaceViewport: Rect, cb: (batch: RectangleBatch) => void) {
-    if (this.maxRight < configSpaceViewport.left()) return
-    if (this.minLeft > configSpaceViewport.right()) return
-    cb(this.batch)
-
-    // TODO(jlfwong): Remove this line. This is here for now to artificially
-    // decrease rendering performance to try various optimizations.
-    cb(this.batch)
+  forEachLeafNodeWithinBounds(configSpaceBounds: Rect, cb: (leaf: RangeTreeLeafNode) => void) {
+    if (!this.bounds.hasIntersectionWith(configSpaceBounds)) return
+    cb(this)
   }
 }
 
 class RangeTreeInteriorNode implements RangeTreeNode {
   private rectCount: number = 0
+  private bounds: Rect
   constructor(private children: RangeTreeNode[]) {
     if (children.length === 0) {
       throw new Error("Empty interior node")
     }
+    let minLeft = Infinity
+    let maxRight = -Infinity
+    let minTop = Infinity
+    let maxBottom = -Infinity
     for (let child of children) {
       this.rectCount += child.getRectCount()
+      const bounds = child.getBounds()
+      minLeft = Math.min(minLeft, bounds.left())
+      maxRight = Math.max(maxRight, bounds.right())
+      minTop = Math.min(minTop, bounds.top())
+      maxBottom = Math.max(maxBottom, bounds.bottom())
     }
+    this.bounds = new Rect(
+      new Vec2(minLeft, minTop),
+      new Vec2(maxRight - minLeft, maxBottom - minTop)
+    )
   }
 
-  getMinLeft() { return this.children[0].getMinLeft() }
-  getMaxRight() { return this.children[this.children.length - 1].getMaxRight() }
+  getBounds() { return this.bounds }
   getRectCount() { return this.rectCount }
   getChildren() { return this.children }
-  forEachBatchWithinBounds(configSpaceViewport: Rect, cb: (batch: RectangleBatch) => void) {
-    // if (this.getMaxRight() < configSpaceViewport.left()) return
-    // if (this.getMinLeft() > configSpaceViewport.right()) return
 
+  forEachLeafNodeWithinBounds(configSpaceBounds: Rect, cb: (leaf: RangeTreeLeafNode) => void) {
+    if (!this.bounds.hasIntersectionWith(configSpaceBounds)) return
     for (let child of this.children) {
-      child.forEachBatchWithinBounds(configSpaceViewport, cb)
+      child.forEachLeafNodeWithinBounds(configSpaceBounds, cb)
     }
   }
 }
@@ -68,149 +160,108 @@ export interface FlamechartRendererProps {
   physicalSpaceDstRect: Rect
 }
 
-class BoundedLayer {
-  private rootNode: RangeTreeNode
-  constructor(
-    private canvasContext: CanvasContext,
-    flamechart: Flamechart,
-    private stackDepth: number
-  ) {
-    const leafNodes: RangeTreeLeafNode[] = []
-
-    let minLeft = Infinity
-    let maxRight = -Infinity
-    let batch = canvasContext.createRectangleBatch()
-
-    for (let frame of flamechart.getLayers()[stackDepth]) {
-      if (batch.getRectCount() >= MAX_BATCH_SIZE) {
-        leafNodes.push(new RangeTreeLeafNode(batch, minLeft, maxRight))
-        minLeft = Infinity
-        maxRight = -Infinity
-        batch = canvasContext.createRectangleBatch()
-      }
-      const configSpaceBounds = new Rect(
-        new Vec2(frame.start, stackDepth + 1),
-        new Vec2(frame.end - frame.start, 1)
-      )
-      minLeft = Math.min(minLeft, configSpaceBounds.left())
-      maxRight = Math.max(maxRight, configSpaceBounds.right())
-      const color = flamechart.getColorForFrame(frame.node.frame)
-      batch.addRect(configSpaceBounds, color)
-    }
-
-    if (batch.getRectCount() > 0) {
-      leafNodes.push(new RangeTreeLeafNode(batch, minLeft, maxRight))
-    }
-
-    // TODO(jlfwong): Probably want this to be a binary tree
-    this.rootNode = new RangeTreeInteriorNode(leafNodes)
-  }
-
-  render(props: FlamechartRendererProps) {
-    const configSpaceTop = this.stackDepth + 1
-    const configSpaceBottom = configSpaceTop + 1
-
-    const { configSpaceSrcRect, physicalSpaceDstRect } = props
-    if (configSpaceTop > configSpaceSrcRect.bottom()) {
-      // Entire layer is below the config space bounds
-      return
-    }
-
-    if (configSpaceBottom < configSpaceSrcRect.top()) {
-      // Entire layer is above the config space bounds
-      return
-    }
-
-    this.rootNode.forEachBatchWithinBounds(configSpaceSrcRect, batch => {
-      this.canvasContext.drawRectangleBatch({
-        configSpaceSrcRect,
-        physicalSpaceDstRect,
-        batch
-      })
-    })
-  }
-}
 
 export class FlamechartRenderer {
-  private layers: BoundedLayer[] = []
-  private texture: regl.Texture | null = null
+  private root: RangeTreeNode
+  private rowAtlas: RowAtlas<RangeTreeLeafNode>
 
-  private getConfigSpaceSize() {
-    return new Vec2(this.flamechart.getTotalWeight(), this.flamechart.getLayers().length)
-  }
-
-  private getConfigSpaceContentRect() {
-    return new Rect(new Vec2(), this.getConfigSpaceSize())
-  }
-
-  constructor(private canvasContext: CanvasContext, private flamechart: Flamechart) {
+  constructor(private canvasContext: CanvasContext, flamechart: Flamechart) {
     const nLayers = flamechart.getLayers().length
-    const maxTextureSize = canvasContext.getMaxTextureSize()
+    this.rowAtlas = new RowAtlas(canvasContext)
 
-    if (nLayers > maxTextureSize) {
-      throw new Error(`This profile has more than ${maxTextureSize} layers!`)
-    }
+    const layers: RangeTreeNode[] = []
 
-    for (let i = 0; i < nLayers; i++) {
-      this.layers.push(new BoundedLayer(canvasContext, flamechart, i))
-    }
+    for (let stackDepth = 0; stackDepth < nLayers; stackDepth++) {
+      const leafNodes: RangeTreeLeafNode[] = []
+      const y = stackDepth + 1
 
-    this.texture = canvasContext.gl.texture({
-      width: canvasContext.getMaxTextureSize(),
-      height: nLayers,
-      wrapS: 'clamp',
-      wrapT: 'clamp',
-    })
-    const fbo = canvasContext.gl.framebuffer({ color: [this.texture] })
+      let minLeft = Infinity
+      let maxRight = -Infinity
+      let batch = canvasContext.createRectangleBatch()
 
-    const configSpaceSrcRect = this.getConfigSpaceContentRect()
-
-    canvasContext.gl({
-      viewport: (context, props) => {
-        return {
-          x: 0,
-          y: 0,
-          width: canvasContext.getMaxTextureSize(),
-          height: nLayers
+      for (let frame of flamechart.getLayers()[stackDepth]) {
+        if (batch.getRectCount() >= MAX_BATCH_SIZE) {
+          leafNodes.push(new RangeTreeLeafNode(batch, new Rect(
+            new Vec2(minLeft, stackDepth),
+            new Vec2(maxRight - minLeft, 1)
+          )))
+          minLeft = Infinity
+          maxRight = -Infinity
+          batch = canvasContext.createRectangleBatch()
         }
-      },
-      framebuffer: fbo
-    })((context: regl.Context) => {
-      const physicalSpaceDstRect = new Rect(
-        new Vec2(),
-        new Vec2(context.viewportWidth, context.viewportHeight)
-      )
-      for (let layer of this.layers) {
-        layer.render({ configSpaceSrcRect, physicalSpaceDstRect })
+        const configSpaceBounds = new Rect(
+          new Vec2(frame.start, y),
+          new Vec2(frame.end - frame.start, 1)
+        )
+        minLeft = Math.min(minLeft, configSpaceBounds.left())
+        maxRight = Math.max(maxRight, configSpaceBounds.right())
+        const color = flamechart.getColorForFrame(frame.node.frame)
+        batch.addRect(configSpaceBounds, color)
       }
-    })
 
-    fbo.destroy()
+      if (batch.getRectCount() > 0) {
+        leafNodes.push(new RangeTreeLeafNode(batch, new Rect(
+          new Vec2(minLeft, stackDepth),
+          new Vec2(maxRight - minLeft, 1)
+        )))
+      }
+
+      // TODO(jlfwong): Probably want this to be a binary tree
+      layers.push(new RangeTreeInteriorNode(leafNodes))
+    }
+    this.root = new RangeTreeInteriorNode(layers)
   }
 
   render(props: FlamechartRendererProps) {
-    if (!this.texture) return
-
     const { configSpaceSrcRect, physicalSpaceDstRect } = props
-    const content = this.getConfigSpaceContentRect()
 
-    const textureRect = new Rect(
-      new Vec2(), new Vec2(this.texture.width, this.texture.height)
-    )
+    let renderedBatchCount = 0
+    let cacheCapacity = this.rowAtlas.getCapacity()
 
-    const configToTexture = AffineTransform.betweenRects(content, textureRect)
-    const physicalSpaceSrcRect = configToTexture.transformRect(configSpaceSrcRect)
+    const cachedLeaves: RangeTreeLeafNode[] = []
+    const uncachedLeaves: RangeTreeLeafNode[] = []
 
-    this.canvasContext.drawTexture({
-      texture: this.texture,
-      srcRect: physicalSpaceSrcRect,
-      dstRect: physicalSpaceDstRect
+    this.root.forEachLeafNodeWithinBounds(configSpaceSrcRect, leaf => {
+      // We want to avoid rendering more batches to the cache than
+      // the capacity fo the cache to prevent LRU cache thrash. Imagine
+      // the capacity is 2 and you render 4 items via the cache. Every time
+      // you do this, you end up evicting and populating the cache on all 4 items,
+      // which is even more expensive than not using a cache at all! Instead,
+      // we'll cache the first 2 entries in that case, and re-use that cache each time,
+      // while rendering the final 2 items without use of the cache.
+      // An exception here is if the node is already in the cache!
+      let useCache = renderedBatchCount++ < cacheCapacity || this.rowAtlas.has(leaf)
+
+      if (useCache) {
+        cachedLeaves.push(leaf)
+      } else {
+        uncachedLeaves.push(leaf)
+      }
     })
 
-    /*
-    for (let layer of this.layers) {
-      layer.render(props)
+    this.rowAtlas.writeToAtlasIfNeeded(cachedLeaves, (textureDstRect, leaf) => {
+      this.canvasContext.drawRectangleBatch({
+        batch: leaf.getBatch(),
+        configSpaceSrcRect: leaf.getBounds(),
+        physicalSpaceDstRect: textureDstRect
+      })
+    })
+
+    const configToPhysical = AffineTransform.betweenRects(configSpaceSrcRect, physicalSpaceDstRect)
+    for (let leaf of cachedLeaves) {
+      const configSpaceLeafBounds = leaf.getBounds()
+      const physicalLeafBounds = configToPhysical.transformRect(configSpaceLeafBounds)
+      if (!this.rowAtlas.renderViaAtlas(leaf, physicalLeafBounds)) {
+        console.error('Failed to render from cache')
+      }
     }
-    */
+
+    for (let leaf of uncachedLeaves) {
+      this.canvasContext.drawRectangleBatch({
+        batch: leaf.getBatch(),
+        configSpaceSrcRect,
+        physicalSpaceDstRect
+      })
+    }
   }
 }

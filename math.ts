@@ -5,7 +5,7 @@ export function clamp(x: number, minVal: number, maxVal: number) {
 }
 
 export class Vec2 {
-  constructor(readonly x = 0, readonly y = 0) {}
+  constructor(readonly x: number, readonly y: number) {}
   withX(x: number) { return new Vec2(x, this.y) }
   withY(y: number) { return new Vec2(this.x, y) }
 
@@ -27,6 +27,9 @@ export class Vec2 {
   static max(a: Vec2, b: Vec2) {
     return new Vec2(Math.max(a.x, b.x), Math.max(a.y, b.y))
   }
+
+  static zero = new Vec2(0, 0)
+  static unit = new Vec2(1, 1)
 
   flatten(): [number, number] { return [this.x, this.y] }
 }
@@ -204,8 +207,8 @@ export class AffineTransform {
 
 export class Rect {
   constructor(
-    readonly origin = new Vec2(),
-    readonly size = new Vec2()
+    readonly origin: Vec2,
+    readonly size: Vec2
   ) {}
 
   isEmpty() { return this.width() == 0 || this.height() == 0 }
@@ -263,4 +266,8 @@ export class Rect {
   equals(other: Rect) {
     return this.origin.equals(other.origin) && this.size.equals(other.size)
   }
+
+  static empty = new Rect(Vec2.zero, Vec2.zero)
+  static unit = new Rect(Vec2.zero, Vec2.unit)
+  static NDC = new Rect(new Vec2(-1, -1), new Vec2(2, 2))
 }

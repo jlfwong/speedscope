@@ -18,6 +18,7 @@ export class CanvasContext {
   private viewportRectangleRenderer: ViewportRectangleRenderer
   private textureRenderer: TextureRenderer
   private setViewportScope: regl.Command<{ physicalBounds: Rect }>
+  private setScissor: regl.Command<{}>
 
   constructor(canvas: HTMLCanvasElement) {
     this.gl = regl({
@@ -33,7 +34,7 @@ export class CanvasContext {
     this.rectangleBatchRenderer = new RectangleBatchRenderer(this.gl)
     this.viewportRectangleRenderer = new ViewportRectangleRenderer(this.gl)
     this.textureRenderer = new TextureRenderer(this.gl)
-
+    this.setScissor = this.gl({ scissor: { enable: true } })
     this.setViewportScope = this.gl<SetViewportScopeProps>({
       context: {
         viewportX: (context: regl.Context, props: SetViewportScopeProps) => {
@@ -87,9 +88,7 @@ export class CanvasContext {
   private statsPanel: StatsPanel | null = this.perfDebug ? new StatsPanel() : null
 
   private onBeforeFrame = (context: regl.Context) => {
-    this.gl({
-      scissor: { enable: false }
-    })(() => {
+    this.setScissor(() => {
       this.gl.clear({ color: [0, 0, 0, 0] })
     })
 
@@ -120,9 +119,7 @@ export class CanvasContext {
   }
 
   drawTexture(props: TextureRendererProps) {
-    this.gl({})((context: regl.Context) => {
-      this.textureRenderer.render(context, props)
-    })
+    this.textureRenderer.render(props)
   }
 
   createRectangleBatch(): RectangleBatch {

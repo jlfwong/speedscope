@@ -310,7 +310,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
     this.props.canvasContext.renderInto(this.container, () => {
       this.props.flamechartRenderer.render({
-        physicalSpaceDstRect: new Rect(new Vec2(), this.physicalViewSize()),
+        physicalSpaceDstRect: new Rect(Vec2.zero, this.physicalViewSize()),
         configSpaceSrcRect: this.props.configSpaceViewportRect
       })
     })
@@ -463,7 +463,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
   private onMouseLeave = (ev: MouseEvent) => {
     this.hoveredLabel = null
-    this.props.setNodeHover(null, new Vec2())
+    this.props.setNodeHover(null, Vec2.zero)
     this.renderCanvas()
   }
 
@@ -573,8 +573,8 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
     super()
     this.state = {
       hoveredNode: null,
-      configSpaceViewportRect: new Rect(),
-      logicalSpaceMouse: new Vec2()
+      configSpaceViewportRect: Rect.empty,
+      logicalSpaceMouse: Vec2.zero
     }
   }
 

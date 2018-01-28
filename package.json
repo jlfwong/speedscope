@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "serve": "parcel -o dev.html",
+    "serve": "parcel --no-hmr -o dev.html",
     "release": "tsc --noEmit && parcel build speedscope.tsx"
   },
   "author": "",
