@@ -222,6 +222,7 @@ declare module "regl" {
       height: number
 
       (args: TextureArgs): void
+      resize(width: number, height: number): void
       destroy(): void
       stats: {
         size: number
@@ -259,6 +260,11 @@ declare module "regl" {
       colorType?: 'uint8' | 'half float' | 'float'
     }
     interface Framebuffer {
+      width: number
+      height: number
+      color?: RenderBuffer[]
+      depth?: RenderBuffer
+
       (options: FramebufferOptions): void
       resize(width: number, height: number): void
       destroy(): void
@@ -414,14 +420,9 @@ declare module "regl" {
       (p: P, cb: (context: Context) => void): void
 
       stats: {
-        /** Aggregate time spent on the GPU in ms */
         gpuTime: number
-
-        /** Aggregate time spent on the CPU in ms */
         cpuTime: number
-
-        /** Total number of calls of this command */
-        count: number
+        hitCount: number
       }
     }
   }

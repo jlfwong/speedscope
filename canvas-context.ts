@@ -5,6 +5,7 @@ import { TextureCachedRenderer, TextureRenderer, TextureRendererProps } from './
 import { StatsPanel } from './stats'
 
 import { Vec2, Rect } from './math';
+import { OutlineRenderer, OutlineRendererProps } from './outline-renderer';
 
 type FrameCallback = () => void
 
@@ -17,6 +18,7 @@ export class CanvasContext {
   private rectangleBatchRenderer: RectangleBatchRenderer
   private viewportRectangleRenderer: ViewportRectangleRenderer
   private textureRenderer: TextureRenderer
+  private outlineRenderer: OutlineRenderer
   private setViewportScope: regl.Command<{ physicalBounds: Rect }>
   private setScissor: regl.Command<{}>
 
@@ -26,7 +28,7 @@ export class CanvasContext {
       attributes: {
         antialias: false
       },
-      extensions: ['ANGLE_instanced_arrays'],
+      extensions: ['ANGLE_instanced_arrays', 'WEBGL_depth_texture'],
       optionalExtensions: ['EXT_disjoint_timer_query'],
       profile: true
     })
@@ -34,6 +36,7 @@ export class CanvasContext {
     this.rectangleBatchRenderer = new RectangleBatchRenderer(this.gl)
     this.viewportRectangleRenderer = new ViewportRectangleRenderer(this.gl)
     this.textureRenderer = new TextureRenderer(this.gl)
+    this.outlineRenderer = new OutlineRenderer(this.gl)
     this.setScissor = this.gl({ scissor: { enable: true } })
     this.setViewportScope = this.gl<SetViewportScopeProps>({
       context: {
@@ -120,6 +123,10 @@ export class CanvasContext {
 
   drawTexture(props: TextureRendererProps) {
     this.textureRenderer.render(props)
+  }
+
+  drawOutlines(props: OutlineRendererProps) {
+    this.outlineRenderer.render(props)
   }
 
   createRectangleBatch(): RectangleBatch {
