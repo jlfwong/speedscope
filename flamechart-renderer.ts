@@ -183,8 +183,6 @@ export class FlamechartRenderer {
   private rowAtlas: RowAtlas<FlamechartRowAtlasKey>
   private rectInfoTexture: regl.Texture
   private framebuffer: regl.Framebuffer
-  private renderToFramebuffer: regl.Command<{}>
-  private withContext: regl.Command<{}>
 
   constructor(private canvasContext: CanvasContext, private flamechart: Flamechart) {
     const nLayers = flamechart.getLayers().length
@@ -244,16 +242,9 @@ export class FlamechartRenderer {
       // range than a tree of always-height-two might make this run faster
       this.layers.push(new RangeTreeInteriorNode(leafNodes))
 
-      // TODO(jlfwong): Extract this to CanvasContext
-      this.withContext = canvasContext.gl({})
-
       this.rectInfoTexture = this.canvasContext.gl.texture({ width: 1, height: 1 })
       this.framebuffer = this.canvasContext.gl.framebuffer({
         color: [this.rectInfoTexture],
-      })
-
-      this.renderToFramebuffer = canvasContext.gl({
-        framebuffer: this.framebuffer
       })
     }
   }
@@ -330,12 +321,8 @@ export class FlamechartRenderer {
       })
     })
 
-    this.withContext((context: regl.Context) => {
-      this.framebuffer.resize(context.viewportWidth, context.viewportHeight)
-    })
-
-    this.renderToFramebuffer((context: regl.Context) => {
-    // this.withContext((context: regl.Context) => {
+    this.framebuffer.resize(physicalSpaceDstRect.width(), physicalSpaceDstRect.height())
+    this.framebuffer.use(context => {
       this.canvasContext.gl.clear({color: [0, 0, 0, 0]})
       const viewportRect = new Rect(Vec2.zero, new Vec2(context.viewportWidth, context.viewportHeight))
 

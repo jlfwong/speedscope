@@ -266,6 +266,7 @@ declare module "regl" {
       depth?: RenderBuffer
 
       (options: FramebufferOptions): void
+      use(cb: (context: Context) => void): void
       resize(width: number, height: number): void
       destroy(): void
     }
