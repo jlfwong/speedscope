@@ -78,6 +78,10 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   }> | null = null
   private renderRects() {
     if (!this.container) return
+
+    // Hasn't resized yet -- no point in rendering yet
+    if (this.physicalViewSize().x < 2) return
+
     if (!this.cachedRenderer) {
       this.cachedRenderer = this.props.canvasContext.createTextureCachedRenderer({
         shouldUpdate(oldProps, newProps) {
@@ -93,14 +97,28 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
               this.physicalViewSize().minus(this.minimapOrigin())
             ),
             configSpaceSrcRect: new Rect(new Vec2(0, 0), this.configSpaceSize()),
+            renderOutlines: false
           })
         }
       })
     }
 
     this.props.canvasContext.renderInto(this.container, (context) => {
+      // TODO(jlfwong): Switch back to the texture cached renderer once I figure out
+      // how to resize a framebuffer while another framebuffer is active. It seems
+      // to crash regl. I should submit a reduced repro case and hopefully get it fixed?
+      /*
       this.cachedRenderer!.render({
         physicalSize: this.physicalViewSize()
+      })
+      */
+      this.props.flamechartRenderer.render({
+        configSpaceSrcRect: new Rect(new Vec2(0, 0), this.configSpaceSize()),
+        physicalSpaceDstRect: new Rect(
+          this.minimapOrigin(),
+          this.physicalViewSize().minus(this.minimapOrigin())
+        ),
+        renderOutlines: false
       })
       this.props.canvasContext.drawViewportRectangle({
         configSpaceViewportRect: this.props.configSpaceViewportRect,

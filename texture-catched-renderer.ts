@@ -155,10 +155,6 @@ export class TextureCachedRenderer<T> {
       }
 
       if (needsRender) {
-        // Render to texture
-        // TODO(jlfwong): Re-enable this when I figure out how to
-        // resize a framebuffer while another framebuffer is active.
-        /*
         this.gl({
           viewport: (context, props) => {
             return {
@@ -173,7 +169,6 @@ export class TextureCachedRenderer<T> {
           this.gl.clear({color: [0, 0, 0, 0]})
           this.renderUncached(props)
         })
-        */
       }
 
       const glViewportRect = new Rect(Vec2.zero, new Vec2(context.viewportWidth, context.viewportHeight))

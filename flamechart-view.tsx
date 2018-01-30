@@ -311,7 +311,8 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     this.props.canvasContext.renderInto(this.container, (context) => {
       this.props.flamechartRenderer.render({
         physicalSpaceDstRect: new Rect(Vec2.zero, this.physicalViewSize()),
-        configSpaceSrcRect: this.props.configSpaceViewportRect
+        configSpaceSrcRect: this.props.configSpaceViewportRect,
+        renderOutlines: true
       })
     })
   }

@@ -27,6 +27,7 @@ function fract(x: number) {
   return x - Math.floor(x)
 }
 
+// TODO(jlfwong): Can probably delete this?
 export class FrameColorGenerator {
   private frameToColor = new Map<Frame, Color>()
 

@@ -12,7 +12,6 @@ import {Profile, Frame} from './profile'
 import {Flamechart} from './flamechart'
 import { FlamechartView } from './flamechart-view'
 import { FontFamily, FontSize, Colors } from './style'
-import { FrameColorGenerator } from './color'
 
 const enum SortOrder {
   CHRONO,
@@ -224,13 +223,26 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
 
     const frames: Frame[] = []
     profile.forEachFrame(f => frames.push(f))
-    const colorGenerator = new FrameColorGenerator(frames)
+    function key(f: Frame) {
+      return (f.file || '') + f.name
+    }
+    function compare(a: Frame, b: Frame) {
+      return key(a) > key(b) ? 1 : -1
+    }
+    frames.sort(compare)
+    const frameToColorBucket = new Map<Frame, number>()
+    for (let i = 0; i < frames.length; i++) {
+      frameToColorBucket.set(frames[i], Math.floor(255 * i / frames.length))
+    }
+    function getColorBucketForFrame(frame: Frame) {
+      return frameToColorBucket.get(frame) || 0
+    }
 
     const flamechart = new Flamechart({
       getTotalWeight: profile.getTotalWeight.bind(profile),
       forEachCall: profile.forEachCall.bind(profile),
       formatValue: profile.formatValue.bind(profile),
-      getColorForFrame: colorGenerator.getColorForFrame.bind(colorGenerator)
+      getColorBucketForFrame
     })
     const flamechartRenderer = new FlamechartRenderer(this.canvasContext, flamechart)
 
@@ -238,7 +250,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       getTotalWeight: profile.getTotalNonIdleWeight.bind(profile),
       forEachCall: profile.forEachCallGrouped.bind(profile),
       formatValue: profile.formatValue.bind(profile),
-      getColorForFrame: colorGenerator.getColorForFrame.bind(colorGenerator)
+      getColorBucketForFrame
     })
     const sortedFlamechartRenderer = new FlamechartRenderer(this.canvasContext, sortedFlamechart)
 

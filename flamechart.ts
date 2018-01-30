@@ -1,5 +1,4 @@
 import {Frame, CallTreeNode} from './profile'
-import { Color } from './color'
 
 import { lastOf } from './utils'
 
@@ -23,7 +22,7 @@ interface FlamechartDataSource {
     closeFrame: (value: number) => void
   ): void
 
-  getColorForFrame(f: Frame): Color
+  getColorBucketForFrame(f: Frame): number
 }
 
 export class Flamechart {
@@ -34,7 +33,7 @@ export class Flamechart {
 
   getTotalWeight() { return this.totalWeight }
   getLayers() { return this.layers }
-  getColorForFrame(f: Frame) { return this.source.getColorForFrame(f) }
+  getColorBucketForFrame(frame: Frame) { return this.source.getColorBucketForFrame(frame) }
   getMinFrameWidth() { return this.minFrameWidth }
   formatValue(v: number) { return this.source.formatValue(v) }
 

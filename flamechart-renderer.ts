@@ -29,7 +29,7 @@ class RowAtlas<K> {
       framebuffer: this.framebuffer
     })
     this.clearLineBatch = canvasContext.createRectangleBatch()
-    this.clearLineBatch.addRect(Rect.unit, new Color(1, 1, 1, 1))
+    this.clearLineBatch.addRect(Rect.unit, new Color(0, 0, 0, 0))
   }
 
   has(key: K) { return this.rowCache.has(key) }
@@ -169,6 +169,7 @@ class RangeTreeInteriorNode implements RangeTreeNode {
 export interface FlamechartRendererProps {
   configSpaceSrcRect: Rect
   physicalSpaceDstRect: Rect
+  renderOutlines: boolean
 }
 
 interface FlamechartRowAtlasKey {
@@ -180,8 +181,7 @@ interface FlamechartRowAtlasKey {
 export class FlamechartRenderer {
   private layers: RangeTreeNode[] = []
   private rowAtlas: RowAtlas<FlamechartRowAtlasKey>
-  private colorTexture: regl.Texture
-  private depthTexture: regl.Texture
+  private rectInfoTexture: regl.Texture
   private framebuffer: regl.Framebuffer
   private renderToFramebuffer: regl.Command<{}>
   private withContext: regl.Command<{}>
@@ -199,7 +199,10 @@ export class FlamechartRenderer {
 
       let rectCount = 0
 
-      for (let frame of flamechart.getLayers()[stackDepth]) {
+      const layer = flamechart.getLayers()[stackDepth]
+
+      for (let i = 0; i < layer.length; i++) {
+        const frame = layer[i]
         if (batch.getRectCount() >= MAX_BATCH_SIZE) {
           leafNodes.push(new RangeTreeLeafNode(batch, new Rect(
             new Vec2(minLeft, stackDepth),
@@ -215,7 +218,17 @@ export class FlamechartRenderer {
         )
         minLeft = Math.min(minLeft, configSpaceBounds.left())
         maxRight = Math.max(maxRight, configSpaceBounds.right())
-        const color = flamechart.getColorForFrame(frame.node.frame)
+
+        // We'll use the red channel to indicate the index to allow
+        // us to separate adjacent rectangles within a row from one another,
+        // the green channel to indicate the row,
+        // and the blue channel to indicate the color bucket to render.
+        // We add one to each so we have zero reserved for the background color.
+        const color = new Color(
+          (1 + i % 255) / 256,
+          (1 + stackDepth % 255) / 256,
+          (1 + this.flamechart.getColorBucketForFrame(frame.node.frame)) / 256
+        )
         batch.addRect(configSpaceBounds, color)
         rectCount++
       }
@@ -234,11 +247,9 @@ export class FlamechartRenderer {
       // TODO(jlfwong): Extract this to CanvasContext
       this.withContext = canvasContext.gl({})
 
-      this.colorTexture = this.canvasContext.gl.texture({ width: 1, height: 1 })
-      this.depthTexture = this.canvasContext.gl.texture({ width: 1, height: 1, format: 'depth', type: 'uint16' })
+      this.rectInfoTexture = this.canvasContext.gl.texture({ width: 1, height: 1 })
       this.framebuffer = this.canvasContext.gl.framebuffer({
-        color: [this.colorTexture],
-        depth: this.depthTexture
+        color: [this.rectInfoTexture],
       })
 
       this.renderToFramebuffer = canvasContext.gl({
@@ -352,21 +363,12 @@ export class FlamechartRenderer {
       }
     })
 
-    this.canvasContext.drawOutlines({
-      colorTexture: this.colorTexture,
-      depthTexture: this.depthTexture,
-      srcRect: new Rect(Vec2.zero, new Vec2(this.colorTexture.width, this.colorTexture.height)),
-      dstRect: physicalSpaceDstRect
+    this.canvasContext.drawFlamechartColorPass({
+      rectInfoTexture: this.rectInfoTexture,
+      srcRect: new Rect(Vec2.zero, new Vec2(this.rectInfoTexture.width, this.rectInfoTexture.height)),
+      dstRect: physicalSpaceDstRect,
+      renderOutlines: props.renderOutlines
     })
-
-    // Paint the color texture for debugging
-    /*
-    this.canvasContext.drawTexture({
-      texture: this.colorTexture,
-      srcRect: new Rect(Vec2.zero, new Vec2(this.colorTexture.width, this.colorTexture.height)),
-      dstRect: physicalSpaceDstRect
-    })
-    */
 
     // Overlay the atlas on top of the canvas for debugging
     /*

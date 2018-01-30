@@ -32,21 +32,10 @@ export class RectangleBatch {
     return this.colorBuffer
   }
 
-  private indexBuffer: regl.Buffer | null = null
-  getIndexBuffer() {
-    if (!this.indexBuffer) {
-      const indices = new Float32Array(this.rectCount)
-      for (let i = 0; i < this.rectCount; i++) indices[i] = i
-      this.indexBuffer = this.gl.buffer(indices)
-    }
-    return this.indexBuffer
-  }
-
   uploadToGPU() {
     this.getConfigSpaceOffsetBuffer()
     this.getConfigSpaceSizeBuffer()
     this.getColorBuffer()
-    this.getIndexBuffer()
   }
 
   addRect(rect: Rect, color: Color) {
@@ -89,16 +78,13 @@ export interface RectangleBatchRendererProps {
 export class RectangleBatchRenderer {
   private command: regl.Command<RectangleBatchRendererProps>
   constructor(gl: regl.Instance) {
-    // We draw the parity / 4 into the depth channel so it
-    // can be used in a post-processing step to draw boundaries
-    // between rectangles. We use 4 different values (2 per row)
-    // so we can distingish both between adjacent rectangles on a row
-    // and between rows!
+    // We draw the parity / 5 into the depth channel so it can be used in a
+    // post-processing step to draw boundaries between rectangles. We use 5
+    // different values (2 per row) + one for the background, so we can
+    // distingish both between adjacent rectangles on a row and between rows!
     this.command = gl({
       vert: `
       uniform mat3 configSpaceToNDC;
-      uniform float parityMin;
-      uniform float parityOffset;
 
       // Non-instanced
       attribute vec2 corner;
@@ -113,10 +99,9 @@ export class RectangleBatchRenderer {
 
       void main() {
         vColor = color;
-        float depth = parityMin + mod(parityOffset + index, 2.0);
         vec2 configSpacePos = configSpaceOffset + corner * configSpaceSize;
         vec2 position = (configSpaceToNDC * vec3(configSpacePos, 1)).xy;
-        gl_Position = vec4(position, depth / 4.0, 1);
+        gl_Position = vec4(position, 1, 1);
       }
     `,
 
@@ -128,8 +113,9 @@ export class RectangleBatchRenderer {
       precision mediump float;
       varying vec3 vColor;
       varying float vParity;
+
       void main() {
-        gl_FragColor = vec4(vColor, 1);
+        gl_FragColor = vec4(vColor.rgb, 1);
       }
     `,
 
@@ -169,15 +155,6 @@ export class RectangleBatchRenderer {
             size: 3,
             divisor: 1
           }
-        },
-        index: (context, props) => {
-          return {
-            buffer: props.batch.getIndexBuffer(),
-            offset: 0,
-            stride: 4,
-            size: 1,
-            divisor: 1
-          }
         }
       },
 
@@ -197,11 +174,11 @@ export class RectangleBatchRenderer {
         },
 
         parityOffset: (context, props) => {
-          return props.parityOffset || 0
+          return props.parityOffset == null ? 0 : props.parityOffset
         },
 
         parityMin: (context, props) => {
-          return props.parityMin || 0
+          return props.parityMin == null ? 0 : 1 + props.parityMin
         }
       },
 

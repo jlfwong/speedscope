@@ -5,7 +5,7 @@ import { TextureCachedRenderer, TextureRenderer, TextureRendererProps } from './
 import { StatsPanel } from './stats'
 
 import { Vec2, Rect } from './math';
-import { OutlineRenderer, OutlineRendererProps } from './outline-renderer';
+import { FlamechartColorPassRenderer, FlamechartColorPassRenderProps } from './flamechart-color-pass-renderer';
 
 type FrameCallback = () => void
 
@@ -18,7 +18,7 @@ export class CanvasContext {
   private rectangleBatchRenderer: RectangleBatchRenderer
   private viewportRectangleRenderer: ViewportRectangleRenderer
   private textureRenderer: TextureRenderer
-  private outlineRenderer: OutlineRenderer
+  private flamechartColorPassRenderer: FlamechartColorPassRenderer
   private setViewportScope: regl.Command<{ physicalBounds: Rect }>
   private setScissor: regl.Command<{}>
 
@@ -36,7 +36,7 @@ export class CanvasContext {
     this.rectangleBatchRenderer = new RectangleBatchRenderer(this.gl)
     this.viewportRectangleRenderer = new ViewportRectangleRenderer(this.gl)
     this.textureRenderer = new TextureRenderer(this.gl)
-    this.outlineRenderer = new OutlineRenderer(this.gl)
+    this.flamechartColorPassRenderer = new FlamechartColorPassRenderer(this.gl)
     this.setScissor = this.gl({ scissor: { enable: true } })
     this.setViewportScope = this.gl<SetViewportScopeProps>({
       context: {
@@ -125,8 +125,8 @@ export class CanvasContext {
     this.textureRenderer.render(props)
   }
 
-  drawOutlines(props: OutlineRendererProps) {
-    this.outlineRenderer.render(props)
+  drawFlamechartColorPass(props: FlamechartColorPassRenderProps) {
+    this.flamechartColorPassRenderer.render(props)
   }
 
   createRectangleBatch(): RectangleBatch {
