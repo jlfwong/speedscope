@@ -299,7 +299,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
   onWindowResize = () => {
     this.updateConfigSpaceViewport(true)
-    this.renderCanvas()
+    this.onBeforeFrame()
   }
 
   private renderRects() {
