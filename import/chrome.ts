@@ -45,11 +45,16 @@ interface CPUProfile {
 }
 
 export function importFromChromeTimeline(events: TimelineEvent[]) {
-  const profileEvent = events[events.length - 1]
-  const chromeProfile = profileEvent.args.data.cpuProfile as CPUProfile
-  return importFromChromeCPUProfile(chromeProfile)
+  // It seems like sometimes Chrome timeline files contain multiple CpuProfiles?
+  // For now, choose the first one in the list.
+  for (let event of events) {
+    if (event.name == "CpuProfile") {
+      const chromeProfile = event.args.data.cpuProfile as CPUProfile
+      return importFromChromeCPUProfile(chromeProfile)
+    }
+  }
+  throw new Error("Could not find CPU profile in Timeline")
 }
-
 
 const callFrameToFrameInfo = new Map<CPUProfileCallFrame, FrameInfo>()
 function frameInfoForCallFrame(callFrame: CPUProfileCallFrame) {
