@@ -399,6 +399,17 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     }
   }
 
+  private onDblClick = (ev: MouseEvent) => {
+    if (this.hoveredLabel) {
+      const hoveredBounds = this.hoveredLabel.configSpaceBounds
+      const viewportRect = new Rect(
+        hoveredBounds.origin.minus(new Vec2(0, 1)),
+        hoveredBounds.size.withY(this.props.configSpaceViewportRect.height())
+      )
+      this.props.setConfigSpaceViewportRect(viewportRect)
+    }
+  }
+
   private updateCursor() {
     if (this.lastDragPos) {
       document.body.style.cursor = 'grabbing'
@@ -544,6 +555,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
         onMouseDown={this.onMouseDown}
         onMouseMove={this.onMouseMove}
         onMouseLeave={this.onMouseLeave}
+        onDblClick={this.onDblClick}
         onWheel={this.onWheel}
         ref={this.containerRef}>
         <canvas
