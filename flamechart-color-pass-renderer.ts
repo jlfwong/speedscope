@@ -50,11 +50,15 @@ export class FlamechartColorPassRenderer {
           return RGB + vec3(m, m, m);
         }
 
+        float triangle(float x) {
+          return 2.0 * abs(fract(x) - 0.5) - 1.0;
+        }
+
         vec3 colorForBucket(float bucket) {
-          float x = 2.0 * fract(100.0 * bucket) - 1.0;
+          float x = triangle(50.0 * bucket);
           float H = 360.0 * bucket;
-          float C = 0.20 + 0.1 * x;
-          float L = 0.85 - 0.1 * x;
+          float C = 0.25 + 0.1 * x;
+          float L = 0.80 - 0.1 * x;
           return hcl2rgb(H, C, L);
         }
 
