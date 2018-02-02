@@ -35,7 +35,7 @@ export class FlamechartColorPassRenderer {
         uniform sampler2D colorTexture;
 
         // https://en.wikipedia.org/wiki/HSL_and_HSV#From_luma/chroma/hue
-        vec3 lch2rgb(float L, float C, float H) {
+        vec3 hcl2rgb(float H, float C, float L) {
           float hPrime = H / 60.0;
           float X = C * (1.0 - abs(mod(hPrime, 2.0) - 1.0));
           vec3 RGB =
@@ -52,10 +52,10 @@ export class FlamechartColorPassRenderer {
 
         vec3 colorForBucket(float bucket) {
           float x = 2.0 * fract(100.0 * bucket) - 1.0;
-          float L = 0.85 - 0.1 * x;
-          float C = 0.20 + 0.1 * x;
           float H = 360.0 * bucket;
-          return lch2rgb(L, C, H);
+          float C = 0.20 + 0.1 * x;
+          float L = 0.85 - 0.1 * x;
+          return hcl2rgb(H, C, L);
         }
 
         void main() {
