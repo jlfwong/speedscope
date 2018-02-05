@@ -55,7 +55,7 @@ export class FlamechartColorPassRenderer {
         }
 
         vec3 colorForBucket(float t) {
-          float x = triangle(100.0 * t);
+          float x = triangle(30.0 * t);
           float H = 360.0 * (0.9 * t);
           float C = 0.25 + 0.2 * x;
           float L = 0.80 - 0.15 * x;
