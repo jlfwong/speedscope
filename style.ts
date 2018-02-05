@@ -12,7 +12,7 @@ export enum Colors {
   LIGHT_GRAY = "#C4C4C4",
   MEDIUM_GRAY = "#BDBDBD",
   GRAY = '#666666',
-  DARK_GRAY = '#333333',
+  DARK_GRAY = '#222222',
   LIGHT_BLUE = '#56CCF2',
   DARK_BLUE = '#2F80ED'
 }

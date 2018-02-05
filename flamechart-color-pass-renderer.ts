@@ -54,11 +54,11 @@ export class FlamechartColorPassRenderer {
           return 2.0 * abs(fract(x) - 0.5) - 1.0;
         }
 
-        vec3 colorForBucket(float bucket) {
-          float x = triangle(50.0 * bucket);
-          float H = 360.0 * bucket;
-          float C = 0.25 + 0.1 * x;
-          float L = 0.80 - 0.1 * x;
+        vec3 colorForBucket(float t) {
+          float x = triangle(100.0 * t);
+          float H = 360.0 * (0.9 * t);
+          float C = 0.25 + 0.2 * x;
+          float L = 0.80 - 0.15 * x;
           return hcl2rgb(H, C, L);
         }
 
@@ -92,8 +92,8 @@ export class FlamechartColorPassRenderer {
               here.x == W.x && here.x != E.x
             )
           ) {
-            // We're on an edge! Draw white.
-            gl_FragColor = vec4(1, 1, 1, 1);
+            // We're on an edge! Draw transparent.
+            gl_FragColor = vec4(0, 0, 0, 0);
           } else {
             // Not on an edge. Draw the appropriate color;
             gl_FragColor = vec4(colorForBucket(here.z), here.a);
