@@ -1,4 +1,4 @@
-import * as regl from 'regl'
+import regl from 'regl'
 import { Flamechart } from './flamechart'
 import { RectangleBatch } from './rectangle-batch-renderer'
 import { CanvasContext } from './canvas-context';
@@ -241,12 +241,11 @@ export class FlamechartRenderer {
       // TODO(jlfwong): Making this into a binary tree
       // range than a tree of always-height-two might make this run faster
       this.layers.push(new RangeTreeInteriorNode(leafNodes))
-
-      this.rectInfoTexture = this.canvasContext.gl.texture({ width: 1, height: 1 })
-      this.framebuffer = this.canvasContext.gl.framebuffer({
-        color: [this.rectInfoTexture],
-      })
     }
+    this.rectInfoTexture = this.canvasContext.gl.texture({ width: 1, height: 1 })
+    this.framebuffer = this.canvasContext.gl.framebuffer({
+      color: [this.rectInfoTexture],
+    })
   }
 
   private atlasKeys = new Map<string, FlamechartRowAtlasKey>()

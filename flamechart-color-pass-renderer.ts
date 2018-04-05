@@ -1,7 +1,7 @@
-import * as regl from 'regl'
+import regl from 'regl'
 import { Vec2, Rect, AffineTransform } from './math'
 
-export class FlamechartColorPassRenderProps {
+export interface FlamechartColorPassRenderProps {
   rectInfoTexture: regl.Texture
   renderOutlines: boolean
   srcRect: Rect

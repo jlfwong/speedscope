@@ -289,7 +289,10 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   onDrop = (ev: DragEvent) => {
-    this.loadFromFile(ev.dataTransfer.files.item(0))
+    let file: File | null = ev.dataTransfer.files.item(0)
+    if (file) {
+      this.loadFromFile(file)
+    }
     ev.preventDefault()
   }
 
@@ -317,7 +320,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     window.removeEventListener('keypress', this.onWindowKeyPress)
   }
 
-  flamechartView: FlamechartView | null
+  flamechartView: FlamechartView | null = null
   flamechartRef = (view: FlamechartView | null) => this.flamechartView = view
   subcomponents() {
     return {
@@ -326,7 +329,10 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   onFileSelect = (ev: Event) => {
-    this.loadFromFile((ev.target as HTMLInputElement).files!.item(0))
+    const file = (ev.target as HTMLInputElement).files!.item(0)
+    if (file) {
+      this.loadFromFile(file)
+    }
   }
 
   renderLanding() {

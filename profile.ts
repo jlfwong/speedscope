@@ -97,7 +97,7 @@ export class TimeFormatter implements ValueFormatter {
 }
 
 export class Profile {
-  private name: string
+  private name: string = ''
 
   private totalWeight: number
 

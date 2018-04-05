@@ -1,4 +1,4 @@
-import * as regl from 'regl'
+import regl from 'regl'
 import { RectangleBatchRenderer, RectangleBatch, RectangleBatchRendererProps } from './rectangle-batch-renderer';
 import { ViewportRectangleRenderer, ViewportRectangleRendererProps } from './overlay-rectangle-renderer';
 import { TextureCachedRenderer, TextureRenderer, TextureRendererProps } from './texture-catched-renderer'
