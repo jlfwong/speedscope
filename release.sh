@@ -7,6 +7,7 @@
 # Fail on first error
 set -e
 
+COMMITHASH=`git rev-parse HEAD`
 OUTDIR=`pwd`/dist/release
 echo $OUTDIR
 
@@ -16,6 +17,9 @@ node_modules/.bin/tsc --noEmit
 # Clean out the release directory
 rm -rf "$OUTDIR"
 mkdir -p "$OUTDIR"
+
+# Place the current commit into the build dir to easiy identify releases
+git rev-parse HEAD > "$OUTDIR"/commit
 
 # Copy a couple of static files into the release directory
 cp sample/perf-vertx-stacks-01-collapsed-all.txt "$OUTDIR"
