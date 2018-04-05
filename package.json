@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "serve": "parcel index.html --open --no-autoinstall",
-    "release": "./release.sh"
+    "deploy": "./deploy.sh"
   },
   "browserslist": [
     "last 2 Chrome versions",
