@@ -283,8 +283,9 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
 
   loadExample = () => {
     this.setState({ loading: true })
-    fetch('dist/perf-vertx-stacks-01-collapsed-all.txt').then(resp => resp.text()).then(data => {
-      this.loadFromString('perf-vertx-stacks-01-collapsed-all.txt', data)
+    const filename = 'perf-vertx-stacks-01-collapsed-all.txt'
+    fetch(filename).then(resp => resp.text()).then(data => {
+      this.loadFromString(filename, data)
     })
   }
 
