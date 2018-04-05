@@ -15,7 +15,6 @@
   "license": "MIT",
   "devDependencies": {
     "aphrodite": "2.1.0",
-    "gh-pages": "1.1.0",
     "parcel-bundler": "1.7.0",
     "preact": "8.2.7",
     "regl": "1.3.1",
