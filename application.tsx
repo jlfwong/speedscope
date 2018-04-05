@@ -283,13 +283,17 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
 
   loadExample = () => {
     this.setState({ loading: true })
-    fetch('dist/perf-vertx-stacks-01-collapsed-all.txt').then(resp => resp.text()).then(data => {
-      this.loadFromString('perf-vertx-stacks-01-collapsed-all.txt', data)
+    const filename = 'perf-vertx-stacks-01-collapsed-all.txt'
+    fetch(filename).then(resp => resp.text()).then(data => {
+      this.loadFromString(filename, data)
     })
   }
 
   onDrop = (ev: DragEvent) => {
-    this.loadFromFile(ev.dataTransfer.files.item(0))
+    let file: File | null = ev.dataTransfer.files.item(0)
+    if (file) {
+      this.loadFromFile(file)
+    }
     ev.preventDefault()
   }
 
@@ -317,7 +321,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     window.removeEventListener('keypress', this.onWindowKeyPress)
   }
 
-  flamechartView: FlamechartView | null
+  flamechartView: FlamechartView | null = null
   flamechartRef = (view: FlamechartView | null) => this.flamechartView = view
   subcomponents() {
     return {
@@ -326,7 +330,10 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   onFileSelect = (ev: Event) => {
-    this.loadFromFile((ev.target as HTMLInputElement).files!.item(0))
+    const file = (ev.target as HTMLInputElement).files!.item(0)
+    if (file) {
+      this.loadFromFile(file)
+    }
   }
 
   renderLanding() {

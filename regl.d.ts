@@ -428,5 +428,5 @@ declare module "regl" {
     }
   }
 
-  export = regl
+  export default regl
 }

@@ -1,4 +1,4 @@
-import * as regl from 'regl'
+import regl from 'regl'
 import { Rect, Vec2, AffineTransform } from './math'
 import { Color } from './color'
 

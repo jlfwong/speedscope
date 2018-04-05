@@ -41,7 +41,7 @@ export class StatsPanel {
   }
 
 
-  private beginTime: number
+  private beginTime: number = 0
   begin() {
     this.beginTime = ( performance || Date ).now();
   }

@@ -1,7 +1,7 @@
-import * as regl from 'regl'
+import regl from 'regl'
 import { Vec2, Rect, AffineTransform } from './math'
 
-export class TextureRendererProps {
+export interface TextureRendererProps {
   texture: regl.Texture
   srcRect: Rect
   dstRect: Rect

@@ -686,7 +686,7 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
 
   containerRef = (container?: Element) => { this.container = container as HTMLDivElement || null }
 
-  panZoomView: FlamechartPanZoomView | null
+  panZoomView: FlamechartPanZoomView | null = null
   panZoomRef = (view: FlamechartPanZoomView | null) => {
     this.panZoomView = view
   }

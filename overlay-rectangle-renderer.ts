@@ -1,4 +1,4 @@
-import * as regl from 'regl'
+import regl from 'regl'
 import { AffineTransform, Rect } from './math'
 
 export interface ViewportRectangleRendererProps {
