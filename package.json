@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "serve": "parcel dev.html --open --no-autoinstall",
+    "serve": "parcel index.html --open --no-autoinstall",
     "release": "./release.sh"
   },
   "browserslist": [
