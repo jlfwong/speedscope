@@ -275,6 +275,11 @@ export class FlamechartRenderer {
     // atlas line is higher resolution than its corresponding destination rectangle on
     // the screen.
     const configToPhysical = AffineTransform.betweenRects(configSpaceSrcRect, physicalSpaceDstRect)
+    if (configSpaceSrcRect.isEmpty()) {
+      // Prevent an infinite loop
+      return
+    }
+
     let zoomLevel = 0
     while (true) {
       const configSpaceBounds = this.configSpaceBoundsForKey({ stackDepth: 0, zoomLevel, index: 0 })
