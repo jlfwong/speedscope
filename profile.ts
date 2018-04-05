@@ -1,4 +1,8 @@
 import { lastOf, getOrInsert } from './utils'
+const demangleCppModule = import('./demangle-cpp')
+
+// Force eager loading of the module
+demangleCppModule.then(() => console.log('CPP demangler loaded'))
 
 export interface FrameInfo {
   key: string | number
@@ -337,6 +341,7 @@ export class Profile {
       this.groupedOrderStack.pop()
     }
   }
+
   leaveFrame(frameInfo: FrameInfo, value: number) {
     const frame = getOrInsert(this.frames, frameInfo.key, () => new Frame(frameInfo))
     this.addWeightsToFrames(value)
@@ -353,5 +358,21 @@ export class Profile {
       this.framesInStack.set(frame, frameCount - 1)
     }
     this.lastValue = value
+  }
+
+  // Demangle symbols for readability
+  async demangle() {
+    let demangleCpp: ((name: string) => string) | null = null
+
+    for (let frame of this.frames.values()) {
+      // This function converts a mangled C++ name such as "__ZNK7Support6ColorFeqERKS0_"
+      // into a human-readable symbol (in this case "Support::ColorF::==(Support::ColorF&)")
+      if (frame.name.startsWith('__Z')) {
+        if (!demangleCpp) {
+          demangleCpp = (await demangleCppModule).demangleCpp
+        }
+        frame.name = demangleCpp(frame.name)
+      }
+    }
   }
 }

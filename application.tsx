@@ -206,7 +206,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     }
   }
 
-  loadFromString(fileName: string, contents: string) {
+  async loadFromString(fileName: string, contents: string) {
     if (!this.canvasContext) return
 
     console.time('import')
@@ -217,6 +217,8 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       alert('Unrecognized format! See documentation about supported formats.')
       return
     }
+
+    await profile.demangle()
 
     profile.setName(fileName)
     document.title = `${fileName} - speedscope`
