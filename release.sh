@@ -7,7 +7,6 @@
 # Fail on first error
 set -e
 
-COMMITHASH=`git rev-parse HEAD`
 OUTDIR=`pwd`/dist/release
 echo $OUTDIR
 
@@ -18,11 +17,9 @@ node_modules/.bin/tsc --noEmit
 rm -rf "$OUTDIR"
 mkdir -p "$OUTDIR"
 
-# Place the current commit into the build dir to easiy identify releases
-git rev-parse HEAD > "$OUTDIR"/commit
-
-# Copy a couple of static files into the release directory
-cp sample/perf-vertx-stacks-01-collapsed-all.txt "$OUTDIR"
+# Place info about the current commit into the build dir to easiy identify releases
+date > "$OUTDIR"/release.txt
+git rev-parse HEAD >> "$OUTDIR"/release.txt
 
 # Build the compiled assets
 node_modules/.bin/parcel build index.html --out-dir "$OUTDIR" --detailed-report

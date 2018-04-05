@@ -13,6 +13,10 @@ import {Flamechart} from './flamechart'
 import { FlamechartView } from './flamechart-view'
 import { FontFamily, FontSize, Colors } from './style'
 
+
+declare function require(x: string): any
+const exampleProfileURL = require('./sample/perf-vertx-stacks-01-collapsed-all.txt')
+
 const enum SortOrder {
   CHRONO,
   LEFT_HEAVY
@@ -286,7 +290,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   loadExample = () => {
     this.setState({ loading: true })
     const filename = 'perf-vertx-stacks-01-collapsed-all.txt'
-    fetch(filename).then(resp => resp.text()).then(data => {
+    fetch(exampleProfileURL).then(resp => resp.text()).then(data => {
       this.loadFromString(filename, data)
     })
   }

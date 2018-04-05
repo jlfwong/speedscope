@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "es2015",
+    "module": "commonjs",
     "strict": true,
     "jsx": "react",
     "noUnusedLocals": true,
