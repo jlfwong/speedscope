@@ -1,5 +1,3 @@
 node_modules
 .cache
-dist/*
-!dist/perf-vertx-stacks-01-collapsed-all.txt
-!dist/speedscope.js
+dist
