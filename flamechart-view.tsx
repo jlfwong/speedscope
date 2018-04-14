@@ -1,18 +1,18 @@
-import { h } from 'preact'
-import { css } from 'aphrodite'
-import { ReloadableComponent } from './reloadable'
+import {h} from 'preact'
+import {css} from 'aphrodite'
+import {ReloadableComponent} from './reloadable'
 
-import { CallTreeNode } from './profile'
-import { Flamechart, FlamechartFrame } from './flamechart'
+import {CallTreeNode} from './profile'
+import {Flamechart, FlamechartFrame} from './flamechart'
 
-import { Rect, Vec2, AffineTransform, clamp } from './math'
-import { cachedMeasureTextWidth } from './utils'
-import { FlamechartMinimapView } from './flamechart-minimap-view'
+import {Rect, Vec2, AffineTransform, clamp} from './math'
+import {cachedMeasureTextWidth} from './utils'
+import {FlamechartMinimapView} from './flamechart-minimap-view'
 
-import { style, Sizes } from './flamechart-style'
-import { FontSize, FontFamily, Colors } from './style'
-import { CanvasContext } from './canvas-context'
-import { FlamechartRenderer } from './flamechart-renderer'
+import {style, Sizes} from './flamechart-style'
+import {FontSize, FontFamily, Colors} from './style'
+import {CanvasContext} from './canvas-context'
+import {FlamechartRenderer} from './flamechart-renderer'
 
 interface FlamechartFrameLabel {
   configSpaceBounds: Rect
@@ -145,7 +145,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
   private resizeOverlayCanvasIfNeeded() {
     if (!this.overlayCanvas) return
-    let { width, height } = this.overlayCanvas.getBoundingClientRect()
+    let {width, height} = this.overlayCanvas.getBoundingClientRect()
     {
       /*
       We render text at a higher resolution then scale down to
@@ -297,7 +297,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   private updateConfigSpaceViewport(windowResized = false) {
     if (!this.container) return
     const bounds = this.container.getBoundingClientRect()
-    const { width, height } = bounds
+    const {width, height} = bounds
 
     // Still initializing: don't resize yet
     if (width < 2 || height < 2) return
@@ -537,7 +537,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
   onWindowKeyPress = (ev: KeyboardEvent) => {
     if (!this.container) return
-    const { width, height } = this.container.getBoundingClientRect()
+    const {width, height} = this.container.getBoundingClientRect()
 
     if (ev.key === '=' || ev.key === '+') {
       this.zoom(new Vec2(width / 2, height / 2), 0.5)
@@ -681,10 +681,10 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
   renderTooltip() {
     if (!this.container) return null
 
-    const { hoveredNode, logicalSpaceMouse } = this.state
+    const {hoveredNode, logicalSpaceMouse} = this.state
     if (!hoveredNode) return null
 
-    const { width, height } = this.container.getBoundingClientRect()
+    const {width, height} = this.container.getBoundingClientRect()
 
     const positionStyle: {
       left?: number

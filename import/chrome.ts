@@ -1,5 +1,5 @@
-import { Profile, TimeFormatter, FrameInfo } from '../profile'
-import { getOrInsert, lastOf } from '../utils'
+import {Profile, TimeFormatter, FrameInfo} from '../profile'
+import {getOrInsert, lastOf} from '../utils'
 
 interface TimelineEvent {
   pid: number
@@ -11,7 +11,7 @@ interface TimelineEvent {
   dur: number
   tdur: number
   tts: number
-  args: { [key: string]: any }
+  args: {[key: string]: any}
 }
 
 interface PositionTickInfo {

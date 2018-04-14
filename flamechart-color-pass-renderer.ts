@@ -1,5 +1,5 @@
 import regl from 'regl'
-import { Vec2, Rect, AffineTransform } from './math'
+import {Vec2, Rect, AffineTransform} from './math'
 
 export interface FlamechartColorPassRenderProps {
   rectInfoTexture: regl.Texture
@@ -125,7 +125,7 @@ export class FlamechartColorPassRenderer {
       uniforms: {
         colorTexture: (context, props) => props.rectInfoTexture,
         uvTransform: (context, props) => {
-          const { srcRect, rectInfoTexture } = props
+          const {srcRect, rectInfoTexture} = props
           const physicalToUV = AffineTransform.withTranslation(new Vec2(0, 1))
             .times(AffineTransform.withScale(new Vec2(1, -1)))
             .times(
@@ -146,7 +146,7 @@ export class FlamechartColorPassRenderer {
             .flatten()
         },
         positionTransform: (context, props) => {
-          const { dstRect } = props
+          const {dstRect} = props
           const viewportSize = new Vec2(context.viewportWidth, context.viewportHeight)
 
           const physicalToNDC = AffineTransform.withScale(new Vec2(1, -1)).times(

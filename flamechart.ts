@@ -1,6 +1,6 @@
-import { Frame, CallTreeNode } from './profile'
+import {Frame, CallTreeNode} from './profile'
 
-import { lastOf } from './utils'
+import {lastOf} from './utils'
 
 export interface FlamechartFrame {
   node: CallTreeNode

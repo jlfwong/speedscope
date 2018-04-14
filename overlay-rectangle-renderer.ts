@@ -1,5 +1,5 @@
 import regl from 'regl'
-import { AffineTransform, Rect } from './math'
+import {AffineTransform, Rect} from './math'
 
 export interface ViewportRectangleRendererProps {
   configSpaceToPhysicalViewSpace: AffineTransform
@@ -118,7 +118,7 @@ export class ViewportRectangleRenderer {
   }
 
   resetStats() {
-    return Object.assign(this.command.stats, { cpuTime: 0, gpuTime: 0, count: 0 })
+    return Object.assign(this.command.stats, {cpuTime: 0, gpuTime: 0, count: 0})
   }
   stats() {
     return this.command.stats

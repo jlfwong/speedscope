@@ -1,13 +1,13 @@
-import { Component } from 'preact'
+import {Component} from 'preact'
 
 export interface SerializedComponent<S> {
   state: S
-  serializedSubcomponents: { [key: string]: any }
+  serializedSubcomponents: {[key: string]: any}
 }
 
 export abstract class ReloadableComponent<P, S> extends Component<P, S> {
   serialize(): SerializedComponent<S> {
-    const serializedSubcomponents: { [key: string]: any } = Object.create(null)
+    const serializedSubcomponents: {[key: string]: any} = Object.create(null)
 
     const subcomponents = this.subcomponents()
     for (const key in subcomponents) {
@@ -34,7 +34,7 @@ export abstract class ReloadableComponent<P, S> extends Component<P, S> {
       }
     })
   }
-  subcomponents(): { [key: string]: any } {
+  subcomponents(): {[key: string]: any} {
     return Object.create(null)
   }
 }

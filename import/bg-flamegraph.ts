@@ -1,6 +1,6 @@
 // https://github.com/brendangregg/FlameGraph#2-fold-stacks
 
-import { Profile, FrameInfo } from '../profile'
+import {Profile, FrameInfo} from '../profile'
 
 interface BGSample {
   stack: FrameInfo[]
@@ -11,7 +11,7 @@ function parseBGFoldedStacks(contents: string): BGSample[] {
   const samples: BGSample[] = []
   contents.replace(/^(.*) (\d+)$/gm, (match: string, stack: string, n: string) => {
     samples.push({
-      stack: stack.split(';').map(name => ({ key: name, name: name })),
+      stack: stack.split(';').map(name => ({key: name, name: name})),
       duration: parseInt(n, 10),
     })
     return match

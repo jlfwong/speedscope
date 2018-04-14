@@ -370,7 +370,7 @@ declare module 'regl' {
       | AttributeOptions
       | Buffer
       | BufferArgs
-      | { constant: number | vec2 | vec3 | vec4 | mat3 | mat4 }
+      | {constant: number | vec2 | vec3 | vec4 | mat3 | mat4}
 
     interface Computed<P, T> {
       (context: Context, props: P, batchId: number): T
@@ -427,11 +427,11 @@ declare module 'regl' {
       /** Source code of fragment shader */
       frag?: string
 
-      context?: { [contextName: string]: MaybeComputed<P, any> }
+      context?: {[contextName: string]: MaybeComputed<P, any>}
 
-      uniforms?: { [uniformName: string]: MaybeComputed<P, Uniform> }
+      uniforms?: {[uniformName: string]: MaybeComputed<P, Uniform>}
 
-      attributes?: { [attributeName: string]: MaybeComputed<P, Attribute> }
+      attributes?: {[attributeName: string]: MaybeComputed<P, Attribute>}
 
       primitive?: DrawMode
 
@@ -492,8 +492,8 @@ declare module 'regl' {
           enable?: boolean
           mask?: number
           func?: StencilFunction
-          opFront?: { fail: StencilOp; zfail: StencilOp; pass: StencilOp }
-          opBack?: { fail: StencilOp; zfail: StencilOp; pass: StencilOp }
+          opFront?: {fail: StencilOp; zfail: StencilOp; pass: StencilOp}
+          opBack?: {fail: StencilOp; zfail: StencilOp; pass: StencilOp}
         }
       >
 

@@ -1,6 +1,6 @@
 import regl from 'regl'
-import { Rect, Vec2, AffineTransform } from './math'
-import { Color } from './color'
+import {Rect, Vec2, AffineTransform} from './math'
+import {Color} from './color'
 
 export class RectangleBatch {
   private rectCapacity = 1000
@@ -197,7 +197,7 @@ export class RectangleBatchRenderer {
   }
 
   resetStats() {
-    return Object.assign(this.command.stats, { cpuTime: 0, gpuTime: 0, count: 0 })
+    return Object.assign(this.command.stats, {cpuTime: 0, gpuTime: 0, count: 0})
   }
   stats() {
     return this.command.stats

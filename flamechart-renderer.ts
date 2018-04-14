@@ -1,11 +1,11 @@
 import regl from 'regl'
-import { Flamechart } from './flamechart'
-import { RectangleBatch } from './rectangle-batch-renderer'
-import { CanvasContext } from './canvas-context'
-import { Vec2, Rect, AffineTransform } from './math'
-import { LRUCache } from './lru-cache'
-import { Color } from './color'
-import { getOrInsert } from './utils'
+import {Flamechart} from './flamechart'
+import {RectangleBatch} from './rectangle-batch-renderer'
+import {CanvasContext} from './canvas-context'
+import {Vec2, Rect, AffineTransform} from './math'
+import {LRUCache} from './lru-cache'
+import {Color} from './color'
+import {getOrInsert} from './utils'
 
 const MAX_BATCH_SIZE = 10000
 
@@ -23,7 +23,7 @@ class RowAtlas<K> {
       wrapS: 'clamp',
       wrapT: 'clamp',
     })
-    this.framebuffer = canvasContext.gl.framebuffer({ color: [this.texture] })
+    this.framebuffer = canvasContext.gl.framebuffer({color: [this.texture]})
     this.rowCache = new LRUCache(this.texture.height)
     this.renderToFramebuffer = canvasContext.gl({
       framebuffer: this.framebuffer,
@@ -261,7 +261,7 @@ export class FlamechartRenderer {
       // range than a tree of always-height-two might make this run faster
       this.layers.push(new RangeTreeInteriorNode(leafNodes))
     }
-    this.rectInfoTexture = this.canvasContext.gl.texture({ width: 1, height: 1 })
+    this.rectInfoTexture = this.canvasContext.gl.texture({width: 1, height: 1})
     this.framebuffer = this.canvasContext.gl.framebuffer({
       color: [this.rectInfoTexture],
     })
@@ -274,7 +274,7 @@ export class FlamechartRenderer {
   }
 
   configSpaceBoundsForKey(key: FlamechartRowAtlasKey): Rect {
-    const { stackDepth, zoomLevel, index } = key
+    const {stackDepth, zoomLevel, index} = key
     const configSpaceContentWidth = this.flamechart.getTotalWeight()
 
     const width = configSpaceContentWidth / Math.pow(2, zoomLevel)
@@ -283,9 +283,9 @@ export class FlamechartRenderer {
   }
 
   render(props: FlamechartRendererProps) {
-    const { configSpaceSrcRect, physicalSpaceDstRect } = props
+    const {configSpaceSrcRect, physicalSpaceDstRect} = props
 
-    const atlasKeysToRender: { stackDepth: number; zoomLevel: number; index: number }[] = []
+    const atlasKeysToRender: {stackDepth: number; zoomLevel: number; index: number}[] = []
 
     // We want to render the lowest resolution we can while still guaranteeing that the
     // atlas line is higher resolution than its corresponding destination rectangle on
@@ -298,7 +298,7 @@ export class FlamechartRenderer {
 
     let zoomLevel = 0
     while (true) {
-      const configSpaceBounds = this.configSpaceBoundsForKey({ stackDepth: 0, zoomLevel, index: 0 })
+      const configSpaceBounds = this.configSpaceBoundsForKey({stackDepth: 0, zoomLevel, index: 0})
       const physicalBounds = configToPhysical.transformRect(configSpaceBounds)
       if (physicalBounds.width() < this.rowAtlas.getResolution()) {
         break
@@ -320,7 +320,7 @@ export class FlamechartRenderer {
 
     for (let stackDepth = top; stackDepth < bottom; stackDepth++) {
       for (let index = left; index <= right; index++) {
-        const key = this.getOrInsertKey({ stackDepth, zoomLevel, index })
+        const key = this.getOrInsertKey({stackDepth, zoomLevel, index})
         const configSpaceBounds = this.configSpaceBoundsForKey(key)
         if (!configSpaceBounds.hasIntersectionWith(configSpaceSrcRect)) continue
         atlasKeysToRender.push(key)
@@ -347,7 +347,7 @@ export class FlamechartRenderer {
 
     this.framebuffer.resize(physicalSpaceDstRect.width(), physicalSpaceDstRect.height())
     this.framebuffer.use(context => {
-      this.canvasContext.gl.clear({ color: [0, 0, 0, 0] })
+      this.canvasContext.gl.clear({color: [0, 0, 0, 0]})
       const viewportRect = new Rect(
         Vec2.zero,
         new Vec2(context.viewportWidth, context.viewportHeight),

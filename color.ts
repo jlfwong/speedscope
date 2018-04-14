@@ -1,4 +1,4 @@
-import { Frame } from './profile'
+import {Frame} from './profile'
 
 export class Color {
   constructor(

@@ -139,7 +139,7 @@ export class LRUCache<K, V> {
       this.map.delete(this.list.pop()!.data)
     }
     const listNode = this.list.prepend(new ListNode(key))
-    this.map.set(key, { value, listNode })
+    this.map.set(key, {value, listNode})
   }
 
   getOrInsert(key: K, f: (key: K) => V): V {

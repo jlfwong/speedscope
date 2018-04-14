@@ -71,7 +71,7 @@ export class AffineTransform {
   ) {}
 
   withScale(s: Vec2) {
-    let { m00, m01, m02, m10, m11, m12 } = this
+    let {m00, m01, m02, m10, m11, m12} = this
     m00 = s.x
     m11 = s.y
     return new AffineTransform(m00, m01, m02, m10, m11, m12)
@@ -87,7 +87,7 @@ export class AffineTransform {
   }
 
   withTranslation(t: Vec2) {
-    let { m00, m01, m02, m10, m11, m12 } = this
+    let {m00, m01, m02, m10, m11, m12} = this
     m02 = t.x
     m12 = t.y
     return new AffineTransform(m00, m01, m02, m10, m11, m12)
@@ -131,12 +131,12 @@ export class AffineTransform {
   }
 
   timesScalar(s: number) {
-    const { m00, m01, m02, m10, m11, m12 } = this
+    const {m00, m01, m02, m10, m11, m12} = this
     return new AffineTransform(s * m00, s * m01, s * m02, s * m10, s * m11, s * m12)
   }
 
   det() {
-    const { m00, m01, m02, m10, m11, m12 } = this
+    const {m00, m01, m02, m10, m11, m12} = this
     const m20 = 0
     const m21 = 0
     const m22 = 1
@@ -147,7 +147,7 @@ export class AffineTransform {
   }
 
   adj() {
-    const { m00, m01, m02, m10, m11, m12 } = this
+    const {m00, m01, m02, m10, m11, m12} = this
     const m20 = 0
     const m21 = 0
     const m22 = 1
@@ -222,7 +222,12 @@ export class AffineTransform {
 
   flatten(): [number, number, number, number, number, number, number, number, number] {
     // Flatten into GLSL format
-    return [this.m00, this.m10, 0, this.m01, this.m11, 0, this.m02, this.m12, 1]
+    // prettier-ignore
+    return [
+      this.m00, this.m10, 0,
+      this.m01, this.m11, 0,
+      this.m02, this.m12, 1,
+    ]
   }
 }
 

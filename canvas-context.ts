@@ -13,9 +13,9 @@ import {
   TextureRenderer,
   TextureRendererProps,
 } from './texture-catched-renderer'
-import { StatsPanel } from './stats'
+import {StatsPanel} from './stats'
 
-import { Vec2, Rect } from './math'
+import {Vec2, Rect} from './math'
 import {
   FlamechartColorPassRenderer,
   FlamechartColorPassRenderProps,
@@ -33,7 +33,7 @@ export class CanvasContext {
   private viewportRectangleRenderer: ViewportRectangleRenderer
   private textureRenderer: TextureRenderer
   private flamechartColorPassRenderer: FlamechartColorPassRenderer
-  private setViewportScope: regl.Command<{ physicalBounds: Rect }>
+  private setViewportScope: regl.Command<{physicalBounds: Rect}>
   private setScissor: regl.Command<{}>
 
   constructor(canvas: HTMLCanvasElement) {
@@ -51,7 +51,7 @@ export class CanvasContext {
     this.viewportRectangleRenderer = new ViewportRectangleRenderer(this.gl)
     this.textureRenderer = new TextureRenderer(this.gl)
     this.flamechartColorPassRenderer = new FlamechartColorPassRenderer(this.gl)
-    this.setScissor = this.gl({ scissor: { enable: true } })
+    this.setScissor = this.gl({scissor: {enable: true}})
     this.setViewportScope = this.gl<SetViewportScopeProps>({
       context: {
         viewportX: (context: regl.Context, props: SetViewportScopeProps) => {
@@ -62,7 +62,7 @@ export class CanvasContext {
         },
       },
       viewport: (context, props) => {
-        const { physicalBounds } = props
+        const {physicalBounds} = props
         return {
           x: physicalBounds.left(),
           y:
@@ -74,7 +74,7 @@ export class CanvasContext {
         }
       },
       scissor: (context, props) => {
-        const { physicalBounds } = props
+        const {physicalBounds} = props
         return {
           enable: true,
           box: {
@@ -112,7 +112,7 @@ export class CanvasContext {
 
   private onBeforeFrame = (context: regl.Context) => {
     this.setScissor(() => {
-      this.gl.clear({ color: [0, 0, 0, 0] })
+      this.gl.clear({color: [0, 0, 0, 0]})
     })
 
     this.tickNeeded = false
@@ -173,11 +173,11 @@ export class CanvasContext {
       new Vec2(bounds.left * window.devicePixelRatio, bounds.top * window.devicePixelRatio),
       new Vec2(bounds.width * window.devicePixelRatio, bounds.height * window.devicePixelRatio),
     )
-    this.setViewportScope({ physicalBounds }, cb)
+    this.setViewportScope({physicalBounds}, cb)
   }
 
   setViewport(physicalBounds: Rect, cb: (context: regl.Context) => void) {
-    this.setViewportScope({ physicalBounds }, cb)
+    this.setViewportScope({physicalBounds}, cb)
   }
 
   getMaxTextureSize() {

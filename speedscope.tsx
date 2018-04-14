@@ -1,5 +1,5 @@
-import { h, render } from 'preact'
-import { Application } from './application'
+import {h, render} from 'preact'
+import {Application} from './application'
 
 let app: Application | null = null
 const retained = (window as any)['__retained__'] as any

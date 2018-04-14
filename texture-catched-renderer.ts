@@ -1,5 +1,5 @@
 import regl from 'regl'
-import { Vec2, Rect, AffineTransform } from './math'
+import {Vec2, Rect, AffineTransform} from './math'
 
 export interface TextureRendererProps {
   texture: regl.Texture
@@ -55,7 +55,7 @@ export class TextureRenderer {
       uniforms: {
         texture: (context, props) => props.texture,
         uvTransform: (context, props) => {
-          const { srcRect, texture } = props
+          const {srcRect, texture} = props
           const physicalToUV = AffineTransform.withTranslation(new Vec2(0, 1))
             .times(AffineTransform.withScale(new Vec2(1, -1)))
             .times(
@@ -68,7 +68,7 @@ export class TextureRenderer {
           return AffineTransform.betweenRects(Rect.unit, uvRect).flatten()
         },
         positionTransform: (context, props) => {
-          const { dstRect } = props
+          const {dstRect} = props
 
           const viewportSize = new Vec2(context.viewportWidth, context.viewportHeight)
 
@@ -91,7 +91,7 @@ export class TextureRenderer {
   }
 
   resetStats() {
-    return Object.assign(this.command.stats, { cpuTime: 0, gpuTime: 0, count: 0 })
+    return Object.assign(this.command.stats, {cpuTime: 0, gpuTime: 0, count: 0})
   }
   stats() {
     return this.command.stats
@@ -118,7 +118,7 @@ export class TextureCachedRenderer<T> {
     this.textureRenderer = options.textureRenderer
 
     this.texture = gl.texture(1, 1)
-    this.framebuffer = gl.framebuffer({ color: [this.texture] })
+    this.framebuffer = gl.framebuffer({color: [this.texture]})
     this.withContext = gl({})
   }
 
@@ -137,8 +137,8 @@ export class TextureCachedRenderer<T> {
         this.texture.height !== context.viewportHeight
       ) {
         // TODO(jlfwong): Can probably just use this.framebuffer.resize
-        this.texture({ width: context.viewportWidth, height: context.viewportHeight })
-        this.framebuffer({ color: [this.texture] })
+        this.texture({width: context.viewportWidth, height: context.viewportHeight})
+        this.framebuffer({color: [this.texture]})
         needsRender = true
       } else if (this.lastRenderProps == null) {
         needsRender = true
@@ -160,7 +160,7 @@ export class TextureCachedRenderer<T> {
           },
           framebuffer: this.framebuffer,
         })(() => {
-          this.gl.clear({ color: [0, 0, 0, 0] })
+          this.gl.clear({color: [0, 0, 0, 0]})
           this.renderUncached(props)
         })
       }

@@ -1,5 +1,5 @@
-import { StyleSheet } from 'aphrodite'
-import { FontFamily, FontSize, Colors } from './style'
+import {StyleSheet} from 'aphrodite'
+import {FontFamily, FontSize, Colors} from './style'
 
 const HOVERTIP_PADDING = 2
 

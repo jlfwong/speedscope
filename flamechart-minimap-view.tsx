@@ -1,13 +1,13 @@
-import { h, Component } from 'preact'
-import { css } from 'aphrodite'
-import { Flamechart } from './flamechart'
-import { Rect, Vec2, AffineTransform, clamp } from './math'
-import { FlamechartRenderer } from './flamechart-renderer'
-import { cachedMeasureTextWidth } from './utils'
-import { style, Sizes } from './flamechart-style'
-import { FontFamily, FontSize, Colors } from './style'
-import { CanvasContext } from './canvas-context'
-import { TextureCachedRenderer } from './texture-catched-renderer'
+import {h, Component} from 'preact'
+import {css} from 'aphrodite'
+import {Flamechart} from './flamechart'
+import {Rect, Vec2, AffineTransform, clamp} from './math'
+import {FlamechartRenderer} from './flamechart-renderer'
+import {cachedMeasureTextWidth} from './utils'
+import {style, Sizes} from './flamechart-style'
+import {FontFamily, FontSize, Colors} from './style'
+import {CanvasContext} from './canvas-context'
+import {TextureCachedRenderer} from './texture-catched-renderer'
 
 const DEVICE_PIXEL_RATIO = window.devicePixelRatio
 
@@ -208,7 +208,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
 
   private resizeOverlayCanvasIfNeeded() {
     if (!this.overlayCanvas) return
-    let { width, height } = this.overlayCanvas.getBoundingClientRect()
+    let {width, height} = this.overlayCanvas.getBoundingClientRect()
     {
       /*
       We render text at a higher resolution then scale down to

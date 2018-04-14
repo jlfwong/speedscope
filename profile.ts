@@ -1,4 +1,4 @@
-import { lastOf, getOrInsert } from './utils'
+import {lastOf, getOrInsert} from './utils'
 const demangleCppModule = import('./demangle-cpp')
 
 // Force eager loading of the module

@@ -1,17 +1,17 @@
-import { h } from 'preact'
-import { StyleSheet, css } from 'aphrodite'
-import { ReloadableComponent, SerializedComponent } from './reloadable'
+import {h} from 'preact'
+import {StyleSheet, css} from 'aphrodite'
+import {ReloadableComponent, SerializedComponent} from './reloadable'
 
-import { importFromBGFlameGraph } from './import/bg-flamegraph'
-import { importFromStackprof } from './import/stackprof'
-import { importFromChromeTimeline, importFromChromeCPUProfile } from './import/chrome'
-import { FlamechartRenderer } from './flamechart-renderer'
-import { CanvasContext } from './canvas-context'
+import {importFromBGFlameGraph} from './import/bg-flamegraph'
+import {importFromStackprof} from './import/stackprof'
+import {importFromChromeTimeline, importFromChromeCPUProfile} from './import/chrome'
+import {FlamechartRenderer} from './flamechart-renderer'
+import {CanvasContext} from './canvas-context'
 
-import { Profile, Frame } from './profile'
-import { Flamechart } from './flamechart'
-import { FlamechartView } from './flamechart-view'
-import { FontFamily, FontSize, Colors } from './style'
+import {Profile, Frame} from './profile'
+import {Flamechart} from './flamechart'
+import {FlamechartView} from './flamechart-view'
+import {FontFamily, FontSize, Colors} from './style'
 
 declare function require(x: string): any
 const exampleProfileURL = require('./sample/perf-vertx-stacks-01-collapsed-all.txt')
@@ -164,7 +164,7 @@ export class GLCanvas extends ReloadableComponent<GLCanvasProps, void> {
 
   private maybeResize() {
     if (!this.canvas) return
-    let { width, height } = this.canvas.getBoundingClientRect()
+    let {width, height} = this.canvas.getBoundingClientRect()
     width = Math.floor(width) * window.devicePixelRatio
     height = Math.floor(height) * window.devicePixelRatio
 
@@ -220,7 +220,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
 
   rehydrate(serialized: SerializedComponent<ApplicationState>) {
     super.rehydrate(serialized)
-    const { flamechart, sortedFlamechart } = serialized.state
+    const {flamechart, sortedFlamechart} = serialized.state
     if (this.canvasContext && flamechart && sortedFlamechart) {
       this.setState({
         flamechartRenderer: new FlamechartRenderer(this.canvasContext, flamechart),
@@ -235,7 +235,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     console.time('import')
     const profile = importProfile(contents, fileName)
     if (profile == null) {
-      this.setState({ loading: false })
+      this.setState({loading: false})
       // TODO(jlfwong): Make this a nicer overlay
       alert('Unrecognized format! See documentation about supported formats.')
       return
@@ -298,7 +298,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   loadFromFile(file: File) {
-    this.setState({ loading: true }, () => {
+    this.setState({loading: true}, () => {
       requestAnimationFrame(() => {
         const reader = new FileReader()
         reader.addEventListener('loadend', () => {
@@ -310,7 +310,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   loadExample = () => {
-    this.setState({ loading: true })
+    this.setState({loading: true})
     const filename = 'perf-vertx-stacks-01-collapsed-all.txt'
     fetch(exampleProfileURL)
       .then(resp => resp.text())
@@ -435,7 +435,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   setSortOrder = (sortOrder: SortOrder) => {
-    this.setState({ sortOrder })
+    this.setState({sortOrder})
   }
 
   private canvasContext: CanvasContext | null = null
