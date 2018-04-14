@@ -35,33 +35,32 @@ export class StatsPanel {
 
   showPanel(id: number) {
     for (var i = 0; i < this.container.children.length; i++) {
-      (this.container.children[i] as HTMLElement).style.display = i === id ? 'block' : 'none';
+      ;(this.container.children[i] as HTMLElement).style.display = i === id ? 'block' : 'none'
     }
-    this.shown = id;
+    this.shown = id
   }
-
 
   private beginTime: number = 0
   begin() {
-    this.beginTime = ( performance || Date ).now();
+    this.beginTime = (performance || Date).now()
   }
 
   private frames = 0
   private prevTime = 0
   end() {
-    this.frames++;
-    var time = ( performance || Date ).now();
-    this.msPanel.update(time - this.beginTime, 200);
+    this.frames++
+    var time = (performance || Date).now()
+    this.msPanel.update(time - this.beginTime, 200)
 
-    if ( time >= this.prevTime + 1000 ) {
-      this.fpsPanel.update(( this.frames * 1000 ) / ( time - this.prevTime ), 100);
-      this.prevTime = time;
-      this.frames = 0;
+    if (time >= this.prevTime + 1000) {
+      this.fpsPanel.update(this.frames * 1000 / (time - this.prevTime), 100)
+      this.prevTime = time
+      this.frames = 0
     }
   }
 }
 
-const PR = Math.round( window.devicePixelRatio || 1 );
+const PR = Math.round(window.devicePixelRatio || 1)
 
 class Panel {
   private min: number = Infinity
@@ -75,23 +74,23 @@ class Panel {
   private GRAPH_X = 3 * PR
   private GRAPH_Y = 15 * PR
   private GRAPH_WIDTH = 74 * PR
-  private GRAPH_HEIGHT = 30 * PR;
+  private GRAPH_HEIGHT = 30 * PR
 
   constructor(private name: string, private fg: string, private bg: string) {
-    this.canvas.width = this.WIDTH;
-    this.canvas.height = this.HEIGHT;
-    this.canvas.style.cssText = 'width:80px;height:48px';
+    this.canvas.width = this.WIDTH
+    this.canvas.height = this.HEIGHT
+    this.canvas.style.cssText = 'width:80px;height:48px'
 
-    this.context.font = 'bold ' + ( 9 * PR ) + 'px Helvetica,Arial,sans-serif';
-    this.context.textBaseline = 'top';
-    this.context.fillStyle = bg;
-    this.context.fillRect( 0, 0, this.WIDTH, this.HEIGHT );
-    this.context.fillStyle = fg;
+    this.context.font = 'bold ' + 9 * PR + 'px Helvetica,Arial,sans-serif'
+    this.context.textBaseline = 'top'
+    this.context.fillStyle = bg
+    this.context.fillRect(0, 0, this.WIDTH, this.HEIGHT)
+    this.context.fillStyle = fg
     this.context.fillText(this.name, this.TEXT_X, this.TEXT_Y)
-    this.context.fillRect(this.GRAPH_X, this.GRAPH_Y, this.GRAPH_WIDTH, this.GRAPH_HEIGHT);
-    this.context.fillStyle = bg;
-    this.context.globalAlpha = 0.9;
-    this.context.fillRect(this.GRAPH_X, this.GRAPH_Y, this.GRAPH_WIDTH, this.GRAPH_HEIGHT);
+    this.context.fillRect(this.GRAPH_X, this.GRAPH_Y, this.GRAPH_WIDTH, this.GRAPH_HEIGHT)
+    this.context.fillStyle = bg
+    this.context.globalAlpha = 0.9
+    this.context.fillRect(this.GRAPH_X, this.GRAPH_Y, this.GRAPH_WIDTH, this.GRAPH_HEIGHT)
   }
 
   appendTo(el: HTMLElement) {
@@ -99,18 +98,44 @@ class Panel {
   }
 
   update(value: number, maxValue: number) {
-    this.min = Math.min(this.min, value );
-    this.max = Math.max(this.max, value );
+    this.min = Math.min(this.min, value)
+    this.max = Math.max(this.max, value)
 
-    this.context.fillStyle = this.bg;
-    this.context.globalAlpha = 1;
-    this.context.fillRect( 0, 0, this.WIDTH, this.GRAPH_Y );
-    this.context.fillStyle = this.fg;
-    this.context.fillText( Math.round( value ) + ' ' + name + ' (' + Math.round( this.min ) + '-' + Math.round( this.max ) + ')', this.TEXT_X, this.TEXT_Y );
-    this.context.drawImage( this.canvas, this.GRAPH_X + PR, this.GRAPH_Y, this.GRAPH_WIDTH - PR, this.GRAPH_HEIGHT, this.GRAPH_X, this.GRAPH_Y, this.GRAPH_WIDTH - PR, this.GRAPH_HEIGHT );
-    this.context.fillRect( this.GRAPH_X + this.GRAPH_WIDTH - PR, this.GRAPH_Y, PR, this.GRAPH_HEIGHT );
-    this.context.fillStyle = this.bg;
-    this.context.globalAlpha = 0.9;
-    this.context.fillRect( this.GRAPH_X + this.GRAPH_WIDTH - PR, this.GRAPH_Y, PR, Math.round( ( 1 - ( value / maxValue ) ) * this.GRAPH_HEIGHT ) );
+    this.context.fillStyle = this.bg
+    this.context.globalAlpha = 1
+    this.context.fillRect(0, 0, this.WIDTH, this.GRAPH_Y)
+    this.context.fillStyle = this.fg
+    this.context.fillText(
+      Math.round(value) +
+        ' ' +
+        name +
+        ' (' +
+        Math.round(this.min) +
+        '-' +
+        Math.round(this.max) +
+        ')',
+      this.TEXT_X,
+      this.TEXT_Y,
+    )
+    this.context.drawImage(
+      this.canvas,
+      this.GRAPH_X + PR,
+      this.GRAPH_Y,
+      this.GRAPH_WIDTH - PR,
+      this.GRAPH_HEIGHT,
+      this.GRAPH_X,
+      this.GRAPH_Y,
+      this.GRAPH_WIDTH - PR,
+      this.GRAPH_HEIGHT,
+    )
+    this.context.fillRect(this.GRAPH_X + this.GRAPH_WIDTH - PR, this.GRAPH_Y, PR, this.GRAPH_HEIGHT)
+    this.context.fillStyle = this.bg
+    this.context.globalAlpha = 0.9
+    this.context.fillRect(
+      this.GRAPH_X + this.GRAPH_WIDTH - PR,
+      this.GRAPH_Y,
+      PR,
+      Math.round((1 - value / maxValue) * this.GRAPH_HEIGHT),
+    )
   }
 }

@@ -1,6 +1,6 @@
 import regl from 'regl'
-import { Rect, Vec2, AffineTransform } from './math'
-import { Color } from './color'
+import {Rect, Vec2, AffineTransform} from './math'
+import {Color} from './color'
 
 export class RectangleBatch {
   private rectCapacity = 1000
@@ -10,19 +10,23 @@ export class RectangleBatch {
   private configSpaceSizes = new Float32Array(this.rectCapacity * 2)
   private colors = new Float32Array(this.rectCapacity * 3)
 
-  constructor(private gl: regl.Instance) { }
+  constructor(private gl: regl.Instance) {}
 
-  getRectCount() { return this.rectCount }
+  getRectCount() {
+    return this.rectCount
+  }
 
   private configSpaceOffsetBuffer: regl.Buffer | null = null
   getConfigSpaceOffsetBuffer() {
-    if (!this.configSpaceOffsetBuffer) this.configSpaceOffsetBuffer = this.gl.buffer(this.configSpaceOffsets)
+    if (!this.configSpaceOffsetBuffer)
+      this.configSpaceOffsetBuffer = this.gl.buffer(this.configSpaceOffsets)
     return this.configSpaceOffsetBuffer
   }
 
   private configSpaceSizeBuffer: regl.Buffer | null = null
   getConfigSpaceSizeBuffer() {
-    if (!this.configSpaceSizeBuffer) this.configSpaceSizeBuffer = this.gl.buffer(this.configSpaceSizes)
+    if (!this.configSpaceSizeBuffer)
+      this.configSpaceSizeBuffer = this.gl.buffer(this.configSpaceSizes)
     return this.configSpaceSizeBuffer
   }
 
@@ -105,11 +109,11 @@ export class RectangleBatchRenderer {
       }
     `,
 
-    depth: {
-      enable: false
-    },
+      depth: {
+        enable: false,
+      },
 
-    frag: `
+      frag: `
       precision mediump float;
       varying vec3 vColor;
       varying float vParity;
@@ -121,12 +125,7 @@ export class RectangleBatchRenderer {
 
       attributes: {
         // Non-instanced attributes
-        corner: gl.buffer([
-          [0, 0],
-          [1, 0],
-          [0, 1],
-          [1, 1],
-        ]),
+        corner: gl.buffer([[0, 0], [1, 0], [0, 1], [1, 1]]),
 
         // Instanced attributes
         configSpaceOffset: (context, props) => {
@@ -135,7 +134,7 @@ export class RectangleBatchRenderer {
             offset: 0,
             stride: 2 * 4,
             size: 2,
-            divisor: 1
+            divisor: 1,
           }
         },
         configSpaceSize: (context, props) => {
@@ -144,7 +143,7 @@ export class RectangleBatchRenderer {
             offset: 0,
             stride: 2 * 4,
             size: 2,
-            divisor: 1
+            divisor: 1,
           }
         },
         color: (context, props) => {
@@ -153,22 +152,23 @@ export class RectangleBatchRenderer {
             offset: 0,
             stride: 3 * 4,
             size: 3,
-            divisor: 1
+            divisor: 1,
           }
-        }
+        },
       },
 
       uniforms: {
         configSpaceToNDC: (context, props) => {
           const configToPhysical = AffineTransform.betweenRects(
             props.configSpaceSrcRect,
-            props.physicalSpaceDstRect
+            props.physicalSpaceDstRect,
           )
 
           const viewportSize = new Vec2(context.viewportWidth, context.viewportHeight)
 
-          const physicalToNDC = AffineTransform.withTranslation(new Vec2(-1, 1))
-            .times(AffineTransform.withScale(new Vec2(2, -2).dividedByPointwise(viewportSize)))
+          const physicalToNDC = AffineTransform.withTranslation(new Vec2(-1, 1)).times(
+            AffineTransform.withScale(new Vec2(2, -2).dividedByPointwise(viewportSize)),
+          )
 
           return physicalToNDC.times(configToPhysical).flatten()
         },
@@ -179,7 +179,7 @@ export class RectangleBatchRenderer {
 
         parityMin: (context, props) => {
           return props.parityMin == null ? 0 : 1 + props.parityMin
-        }
+        },
       },
 
       instances: (context, props) => {
@@ -196,6 +196,10 @@ export class RectangleBatchRenderer {
     this.command(props)
   }
 
-  resetStats() { return Object.assign(this.command.stats, { cpuTime: 0, gpuTime: 0, count: 0 }) }
-  stats() { return this.command.stats }
+  resetStats() {
+    return Object.assign(this.command.stats, {cpuTime: 0, gpuTime: 0, count: 0})
+  }
+  stats() {
+    return this.command.stats
+  }
 }

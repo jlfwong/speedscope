@@ -1,5 +1,5 @@
 export function lastOf<T>(ts: T[]): T | null {
-  return ts[ts.length-1] || null
+  return ts[ts.length - 1] || null
 }
 
 export function sortBy<T>(ts: T[], key: (t: T) => number | string): void {
@@ -26,7 +26,9 @@ export function* itMap<T, U>(it: Iterable<T>, f: (t: T) => U): Iterable<U> {
 }
 
 export function itForEach<T>(it: Iterable<T>, f: (t: T) => void): void {
-  for (let t of it) { f(t) }
+  for (let t of it) {
+    f(t)
+  }
 }
 
 export function itReduce<T, U>(it: Iterable<T>, f: (a: U, b: T) => U, init: U): U {

@@ -1,6 +1,6 @@
 import {Frame, CallTreeNode} from './profile'
 
-import { lastOf } from './utils'
+import {lastOf} from './utils'
 
 export interface FlamechartFrame {
   node: CallTreeNode
@@ -19,7 +19,7 @@ interface FlamechartDataSource {
 
   forEachCall(
     openFrame: (node: CallTreeNode, value: number) => void,
-    closeFrame: (value: number) => void
+    closeFrame: (value: number) => void,
   ): void
 
   getColorBucketForFrame(f: Frame): number
@@ -31,11 +31,21 @@ export class Flamechart {
   private totalWeight: number = 0
   private minFrameWidth: number = 1
 
-  getTotalWeight() { return this.totalWeight }
-  getLayers() { return this.layers }
-  getColorBucketForFrame(frame: Frame) { return this.source.getColorBucketForFrame(frame) }
-  getMinFrameWidth() { return this.minFrameWidth }
-  formatValue(v: number) { return this.source.formatValue(v) }
+  getTotalWeight() {
+    return this.totalWeight
+  }
+  getLayers() {
+    return this.layers
+  }
+  getColorBucketForFrame(frame: Frame) {
+    return this.source.getColorBucketForFrame(frame)
+  }
+  getMinFrameWidth() {
+    return this.minFrameWidth
+  }
+  formatValue(v: number) {
+    return this.source.formatValue(v)
+  }
 
   constructor(private source: FlamechartDataSource) {
     const stack: FlamechartFrame[] = []

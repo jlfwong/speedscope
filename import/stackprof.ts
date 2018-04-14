@@ -20,7 +20,7 @@ export function importFromStackprof(stackprofProfile: StackprofProfile): Profile
 
   const {frames, raw, raw_timestamp_deltas} = stackprofProfile
   let sampleIndex = 0
-  for (let i = 0; i < raw.length;) {
+  for (let i = 0; i < raw.length; ) {
     const stackHeight = raw[i++]
 
     const stack: FrameInfo[] = []
@@ -28,7 +28,7 @@ export function importFromStackprof(stackprofProfile: StackprofProfile): Profile
       const id = raw[i++]
       stack.push({
         key: id,
-         ...frames[id]
+        ...frames[id],
       })
     }
     const nSamples = raw[i++]

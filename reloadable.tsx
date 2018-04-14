@@ -38,5 +38,3 @@ export abstract class ReloadableComponent<P, S> extends Component<P, S> {
     return Object.create(null)
   }
 }
-
-

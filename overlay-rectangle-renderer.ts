@@ -1,5 +1,5 @@
 import regl from 'regl'
-import { AffineTransform, Rect } from './math'
+import {AffineTransform, Rect} from './math'
 
 export interface ViewportRectangleRendererProps {
   configSpaceToPhysicalViewSpace: AffineTransform
@@ -66,12 +66,12 @@ export class ViewportRectangleRenderer {
           srcRGB: 'src alpha',
           srcAlpha: 'one',
           dstRGB: 'one minus src alpha',
-          dstAlpha: 'one'
-        }
+          dstAlpha: 'one',
+        },
       },
 
       depth: {
-        enable: false
+        enable: false,
       },
 
       attributes: {
@@ -83,12 +83,7 @@ export class ViewportRectangleRenderer {
         //   | /|
         //   |/ |
         // 2 +--+ 3
-        position: [
-          [-1, 1],
-          [1, 1],
-          [-1, -1],
-          [1, -1]
-        ]
+        position: [[-1, 1], [1, 1], [-1, -1], [1, -1]],
       },
 
       uniforms: {
@@ -109,12 +104,12 @@ export class ViewportRectangleRenderer {
         },
         framebufferHeight: (context, props) => {
           return context.framebufferHeight
-        }
+        },
       },
 
       primitive: 'triangle strip',
 
-      count: 4
+      count: 4,
     })
   }
 
@@ -122,6 +117,10 @@ export class ViewportRectangleRenderer {
     this.command(props)
   }
 
-  resetStats() { return Object.assign(this.command.stats, { cpuTime: 0, gpuTime: 0, count: 0 }) }
-  stats() { return this.command.stats }
+  resetStats() {
+    return Object.assign(this.command.stats, {cpuTime: 0, gpuTime: 0, count: 0})
+  }
+  stats() {
+    return this.command.stats
+  }
 }

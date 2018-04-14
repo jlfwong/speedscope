@@ -2,28 +2,28 @@ import {Profile, TimeFormatter, FrameInfo} from '../profile'
 import {getOrInsert, lastOf} from '../utils'
 
 interface TimelineEvent {
-  pid: number,
-  tid: number,
-  ts: number,
-  ph: string,
-  cat: string,
-  name: string,
-  dur: number,
-  tdur: number,
-  tts: number,
-  args: { [key: string]: any }
+  pid: number
+  tid: number
+  ts: number
+  ph: string
+  cat: string
+  name: string
+  dur: number
+  tdur: number
+  tts: number
+  args: {[key: string]: any}
 }
 
 interface PositionTickInfo {
-  line: number,
+  line: number
   ticks: number
 }
 
 interface CPUProfileCallFrame {
-  columnNumber: number,
-  functionName: string,
-  lineNumber: number,
-  scriptId: string,
+  columnNumber: number
+  functionName: string
+  lineNumber: number
+  scriptId: string
   url: string
 }
 
@@ -37,10 +37,10 @@ interface CPUProfileNode {
 }
 
 interface CPUProfile {
-  startTime: number,
-  endTime: number,
-  nodes: CPUProfileNode[],
-  samples: number[],
+  startTime: number
+  endTime: number
+  nodes: CPUProfileNode[]
+  samples: number[]
   timeDeltas: number[]
 }
 
@@ -48,18 +48,18 @@ export function importFromChromeTimeline(events: TimelineEvent[]) {
   // It seems like sometimes Chrome timeline files contain multiple CpuProfiles?
   // For now, choose the first one in the list.
   for (let event of events) {
-    if (event.name == "CpuProfile") {
+    if (event.name == 'CpuProfile') {
       const chromeProfile = event.args.data.cpuProfile as CPUProfile
       return importFromChromeCPUProfile(chromeProfile)
     }
   }
-  throw new Error("Could not find CPU profile in Timeline")
+  throw new Error('Could not find CPU profile in Timeline')
 }
 
 const callFrameToFrameInfo = new Map<CPUProfileCallFrame, FrameInfo>()
 function frameInfoForCallFrame(callFrame: CPUProfileCallFrame) {
-  return getOrInsert(callFrameToFrameInfo, callFrame, (callFrame) => {
-    const name = callFrame.functionName || "(anonymous)"
+  return getOrInsert(callFrameToFrameInfo, callFrame, callFrame => {
+    const name = callFrame.functionName || '(anonymous)'
     const file = callFrame.url
     const line = callFrame.lineNumber
     const col = callFrame.columnNumber
@@ -68,7 +68,7 @@ function frameInfoForCallFrame(callFrame: CPUProfileCallFrame) {
       name,
       file,
       line,
-      col
+      col,
     }
   })
 }
@@ -117,7 +117,7 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile) {
 
   let value = 0
   for (let i = 0; i < samples.length; i++) {
-    const timeDelta = timeDeltas[i+1] || 0
+    const timeDelta = timeDeltas[i + 1] || 0
     const nodeId = samples[i]
     let stackTop = nodeById.get(nodeId)
     if (!stackTop) continue
@@ -130,7 +130,10 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile) {
     for (
       lca = stackTop;
       lca && prevStack.indexOf(lca) === -1;
-      lca = lca.callFrame.functionName === "(garbage collector)" ? lastOf(prevStack) : lca.parent || null
+      lca =
+        lca.callFrame.functionName === '(garbage collector)'
+          ? lastOf(prevStack)
+          : lca.parent || null
     ) {}
 
     // Close frames that are no longer open
@@ -146,7 +149,10 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile) {
       let node: CPUProfileNode | null = stackTop;
       node && node != lca;
       // Place GC calls on top of the previous call stack
-      node = node.callFrame.functionName === "(garbage collector)" ? lastOf(prevStack) : node.parent || null
+      node =
+        node.callFrame.functionName === '(garbage collector)'
+          ? lastOf(prevStack)
+          : node.parent || null
     ) {
       toOpen.push(node)
     }

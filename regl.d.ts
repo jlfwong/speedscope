@@ -1,4 +1,4 @@
-declare module "regl" {
+declare module 'regl' {
   interface InitializationOptions {
     /** A reference to a WebGL rendering context. (Default created from canvas) */
     gl?: WebGLRenderingContext
@@ -57,7 +57,24 @@ declare module "regl" {
     export type vec3 = [number, number, number]
     export type vec4 = [number, number, number, number]
     export type mat3 = [number, number, number, number, number, number, number, number, number]
-    export type mat4 = [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number]
+    export type mat4 = [
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number
+    ]
     type GlslPrimitive = number | vec2 | vec3 | vec4 | mat3 | mat4
 
     interface Tick {
@@ -68,9 +85,9 @@ declare module "regl" {
       <P>(params: CommandOptions<P>): Command<P>
 
       clear(args: {
-        color?: [number, number, number, number],
-        depth?: number,
-        stencil?: number,
+        color?: [number, number, number, number]
+        depth?: number
+        stencil?: number
       }): void
 
       // TODO(jlfwong): read()
@@ -127,10 +144,25 @@ declare module "regl" {
       frame(callback: (context: Context) => void): Tick
     }
 
-    type TypedArray = Int8Array | Uint8Array | Uint8ClampedArray | Int16Array |
-      Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array
+    type TypedArray =
+      | Int8Array
+      | Uint8Array
+      | Uint8ClampedArray
+      | Int16Array
+      | Uint16Array
+      | Int32Array
+      | Uint32Array
+      | Float32Array
+      | Float64Array
 
-    type DrawMode = 'points' | 'lines' | 'line strip' | 'line loop' | 'triangles' | 'triangle strip' | 'triangle fan'
+    type DrawMode =
+      | 'points'
+      | 'lines'
+      | 'line strip'
+      | 'line loop'
+      | 'triangles'
+      | 'triangle strip'
+      | 'triangle fan'
 
     interface Context {
       tick: number
@@ -177,14 +209,49 @@ declare module "regl" {
     }
 
     type MagFilter = 'nearest' | 'linear'
-    type MinFilter = 'nearest' | 'linear' | 'mipmap' | 'linear mipmap linear' | 'nearest mipmap linear' | 'nearest mipmap nearest'
+    type MinFilter =
+      | 'nearest'
+      | 'linear'
+      | 'mipmap'
+      | 'linear mipmap linear'
+      | 'nearest mipmap linear'
+      | 'nearest mipmap nearest'
     type WrapMode = 'repeat' | 'clamp' | 'mirror'
-    type TextureFormat = 'alpha' | 'luminance' | 'luminance alpha' | 'rgb' | 'rgba' | 'rgba4' | 'rgb5 a1' | 'rgb565' | 'srgb' | 'srgba' | 'depth' | 'depth stencil' | 'rgb s3tc dxt1' | 'rgb s3tc dxt5' | 'rgb atc' | 'rgba atc explicit alpha' | 'rgba atc interpolated alpha' | 'rgb pvrtc 4bppv1' | 'rgb pvrtc 2bppv1' | 'rgba pvrtc 4bppv1' | 'rgba pvrtc 2bppv1' | 'rgb etc1'
+    type TextureFormat =
+      | 'alpha'
+      | 'luminance'
+      | 'luminance alpha'
+      | 'rgb'
+      | 'rgba'
+      | 'rgba4'
+      | 'rgb5 a1'
+      | 'rgb565'
+      | 'srgb'
+      | 'srgba'
+      | 'depth'
+      | 'depth stencil'
+      | 'rgb s3tc dxt1'
+      | 'rgb s3tc dxt5'
+      | 'rgb atc'
+      | 'rgba atc explicit alpha'
+      | 'rgba atc interpolated alpha'
+      | 'rgb pvrtc 4bppv1'
+      | 'rgb pvrtc 2bppv1'
+      | 'rgba pvrtc 4bppv1'
+      | 'rgba pvrtc 2bppv1'
+      | 'rgb etc1'
     type TextureType = 'uint8' | 'uint16' | 'float' | 'float32' | 'half float' | 'float16'
     type ColorSpace = 'none' | 'browser'
     type MipmapHint = "don't care" | 'dont care' | 'nice' | 'fast'
 
-    type TextureData = number[] | number[][] | TypedArray | HTMLImageElement | HTMLVideoElement | HTMLCanvasElement | CanvasRenderingContext2D
+    type TextureData =
+      | number[]
+      | number[][]
+      | TypedArray
+      | HTMLImageElement
+      | HTMLVideoElement
+      | HTMLCanvasElement
+      | CanvasRenderingContext2D
     interface TextureOptions {
       width?: number
       height?: number
@@ -233,7 +300,17 @@ declare module "regl" {
     // TODO(jlfwong): Cubic frame buffers
 
     interface RenderBufferOptions {
-      format?: 'rgba4' | 'rgb565' | 'rgb5 a1' | 'depth' | 'stencil' | 'depth stencil' | 'srgba' | 'rgba16f' | 'rgb16f' | 'rgba32f'
+      format?:
+        | 'rgba4'
+        | 'rgb565'
+        | 'rgb5 a1'
+        | 'depth'
+        | 'stencil'
+        | 'depth stencil'
+        | 'srgba'
+        | 'rgba16f'
+        | 'rgb16f'
+        | 'rgba32f'
       width?: number
       height?: number
       shape?: [number, number]
@@ -256,7 +333,15 @@ declare module "regl" {
       depth?: boolean | RenderBuffer | Texture
       stencil?: boolean | RenderBuffer | Texture
       depthStencil?: boolean | RenderBuffer | Texture
-      colorFormat?: 'rgba' | 'rgba4' | 'rgb565' | 'rgb5 a1' | 'rgb16f' | 'rgba16f' | 'rgba32f' | 'srgba'
+      colorFormat?:
+        | 'rgba'
+        | 'rgba4'
+        | 'rgb565'
+        | 'rgb5 a1'
+        | 'rgb16f'
+        | 'rgba16f'
+        | 'rgba32f'
+        | 'srgba'
       colorType?: 'uint8' | 'half float' | 'float'
     }
     interface Framebuffer {
@@ -281,18 +366,60 @@ declare module "regl" {
       size?: number
       divisor?: number
     }
-    type Attribute = AttributeOptions | Buffer | BufferArgs | { constant: number | vec2 | vec3 | vec4 | mat3 | mat4 }
+    type Attribute =
+      | AttributeOptions
+      | Buffer
+      | BufferArgs
+      | {constant: number | vec2 | vec3 | vec4 | mat3 | mat4}
 
     interface Computed<P, T> {
       (context: Context, props: P, batchId: number): T
     }
     type MaybeComputed<P, T> = Computed<P, T> | T
 
-    type DepthFunction = 'never' | 'always' | '<' | 'less' | '<=' | 'lequal' | '>' | 'greater' | '>=' | 'gequal' | '=' | 'equal' | '!=' | 'notequal'
-    type BlendFunction = 0 | 'zero' | 1 | 'one' | 'src color' | 'one minus src color' | 'src alpha' | 'one minus src alpha' | 'dst color' | 'one minus dst color' | 'dst alpha' | 'one minus dst alpha' | 'constant color' | 'one minus constant color' | 'one minus constant alpha' | 'src alpha saturate'
+    type DepthFunction =
+      | 'never'
+      | 'always'
+      | '<'
+      | 'less'
+      | '<='
+      | 'lequal'
+      | '>'
+      | 'greater'
+      | '>='
+      | 'gequal'
+      | '='
+      | 'equal'
+      | '!='
+      | 'notequal'
+    type BlendFunction =
+      | 0
+      | 'zero'
+      | 1
+      | 'one'
+      | 'src color'
+      | 'one minus src color'
+      | 'src alpha'
+      | 'one minus src alpha'
+      | 'dst color'
+      | 'one minus dst color'
+      | 'dst alpha'
+      | 'one minus dst alpha'
+      | 'constant color'
+      | 'one minus constant color'
+      | 'one minus constant alpha'
+      | 'src alpha saturate'
     type BlendEquation = 'add' | 'subtract' | 'reverse subtract' | 'min' | 'max'
     type StencilFunction = DepthFunction
-    type StencilOp = 'zero' | 'keep' | 'replace' | 'invert' | 'increment' | 'decrement' | 'increment wrap' | 'decrement wrap'
+    type StencilOp =
+      | 'zero'
+      | 'keep'
+      | 'replace'
+      | 'invert'
+      | 'increment'
+      | 'decrement'
+      | 'increment wrap'
+      | 'decrement wrap'
     interface CommandOptions<P> {
       /** Source code of vertex shader */
       vert?: string
@@ -300,11 +427,11 @@ declare module "regl" {
       /** Source code of fragment shader */
       frag?: string
 
-      context?: { [contextName: string]: MaybeComputed<P, any> }
+      context?: {[contextName: string]: MaybeComputed<P, any>}
 
-      uniforms?: { [uniformName: string]: MaybeComputed<P, Uniform> }
+      uniforms?: {[uniformName: string]: MaybeComputed<P, Uniform>}
 
-      attributes?: { [attributeName: string]: MaybeComputed<P, Attribute> }
+      attributes?: {[attributeName: string]: MaybeComputed<P, Attribute>}
 
       primitive?: DrawMode
 
@@ -324,51 +451,70 @@ declare module "regl" {
 
       profile?: MaybeComputed<P, boolean>
 
-      depth?: MaybeComputed<P, {
-        enable?: boolean,
-        mask?: boolean,
-        func?: DepthFunction,
-        range?: [number, number]
-      }>
-
-      blend?: MaybeComputed<P, {
-        enable?: boolean,
-        func?: {
-          src: BlendFunction
-          dst: BlendFunction
-        } | {
-          srcRGB: BlendFunction
-          srcAlpha: BlendFunction
-          dstRGB: BlendFunction
-          dstAlpha: BlendFunction
-        },
-        equation?: BlendEquation | {
-          rgb: BlendEquation
-          alpha: BlendEquation
-        },
-        color?: vec4
-      }>
-
-      stencil?: MaybeComputed<P, {
-        enable?: boolean
-        mask?: number
-        func?: StencilFunction
-        opFront?: { fail: StencilOp, zfail: StencilOp, pass: StencilOp },
-        opBack?: { fail: StencilOp, zfail: StencilOp, pass: StencilOp },
-      }>
-
-      polygonOffset?: MaybeComputed<P, {
-        enable?: boolean
-        offset?: {
-          factor: number
-          units: number
+      depth?: MaybeComputed<
+        P,
+        {
+          enable?: boolean
+          mask?: boolean
+          func?: DepthFunction
+          range?: [number, number]
         }
-      }>
+      >
 
-      cull?: MaybeComputed<P, {
-        enable?: boolean
-        face?: 'front' | 'back'
-      }>
+      blend?: MaybeComputed<
+        P,
+        {
+          enable?: boolean
+          func?:
+            | {
+                src: BlendFunction
+                dst: BlendFunction
+              }
+            | {
+                srcRGB: BlendFunction
+                srcAlpha: BlendFunction
+                dstRGB: BlendFunction
+                dstAlpha: BlendFunction
+              }
+          equation?:
+            | BlendEquation
+            | {
+                rgb: BlendEquation
+                alpha: BlendEquation
+              }
+          color?: vec4
+        }
+      >
+
+      stencil?: MaybeComputed<
+        P,
+        {
+          enable?: boolean
+          mask?: number
+          func?: StencilFunction
+          opFront?: {fail: StencilOp; zfail: StencilOp; pass: StencilOp}
+          opBack?: {fail: StencilOp; zfail: StencilOp; pass: StencilOp}
+        }
+      >
+
+      polygonOffset?: MaybeComputed<
+        P,
+        {
+          enable?: boolean
+          offset?: {
+            factor: number
+            units: number
+          }
+        }
+      >
+
+      cull?: MaybeComputed<
+        P,
+        {
+          enable?: boolean
+          face?: 'front' | 'back'
+        }
+      >
 
       frontFace?: MaybeComputed<P, 'cw' | 'ccw'>
 
@@ -378,35 +524,46 @@ declare module "regl" {
 
       colorMask?: MaybeComputed<P, [boolean, boolean, boolean, boolean]>
 
-      sample?: MaybeComputed<P, {
-        enable?: boolean
-        alpha?: boolean
-        coverage?: {
-          value: number
-          invert: boolean
+      sample?: MaybeComputed<
+        P,
+        {
+          enable?: boolean
+          alpha?: boolean
+          coverage?: {
+            value: number
+            invert: boolean
+          }
         }
-      }>
+      >
 
-      scissor?: MaybeComputed<P, {
-        enable?: boolean
-        box?: {
+      scissor?: MaybeComputed<
+        P,
+        {
+          enable?: boolean
+          box?: {
+            x: number
+            y: number
+            width: number
+            height: number
+          }
+        }
+      >
+
+      viewport?: MaybeComputed<
+        P,
+        {
           x: number
           y: number
           width: number
           height: number
         }
-      }>
-
-      viewport?: MaybeComputed<P, {
-        x: number
-        y: number
-        width: number
-        height: number
-      }>
+      >
     }
 
     function prop<P>(name: keyof P): (context: Context, props: P, batchId: number) => P[keyof P]
-    function context<P>(name: keyof Context): (context: Context, props: P, batchId: number) => Context[keyof Context]
+    function context<P>(
+      name: keyof Context,
+    ): (context: Context, props: P, batchId: number) => Context[keyof Context]
 
     interface Command<P> {
       /** One shot rendering */

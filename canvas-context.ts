@@ -1,11 +1,25 @@
 import regl from 'regl'
-import { RectangleBatchRenderer, RectangleBatch, RectangleBatchRendererProps } from './rectangle-batch-renderer';
-import { ViewportRectangleRenderer, ViewportRectangleRendererProps } from './overlay-rectangle-renderer';
-import { TextureCachedRenderer, TextureRenderer, TextureRendererProps } from './texture-catched-renderer'
-import { StatsPanel } from './stats'
+import {
+  RectangleBatchRenderer,
+  RectangleBatch,
+  RectangleBatchRendererProps,
+} from './rectangle-batch-renderer'
+import {
+  ViewportRectangleRenderer,
+  ViewportRectangleRendererProps,
+} from './overlay-rectangle-renderer'
+import {
+  TextureCachedRenderer,
+  TextureRenderer,
+  TextureRendererProps,
+} from './texture-catched-renderer'
+import {StatsPanel} from './stats'
 
-import { Vec2, Rect } from './math';
-import { FlamechartColorPassRenderer, FlamechartColorPassRenderProps } from './flamechart-color-pass-renderer';
+import {Vec2, Rect} from './math'
+import {
+  FlamechartColorPassRenderer,
+  FlamechartColorPassRenderProps,
+} from './flamechart-color-pass-renderer'
 
 type FrameCallback = () => void
 
@@ -19,25 +33,25 @@ export class CanvasContext {
   private viewportRectangleRenderer: ViewportRectangleRenderer
   private textureRenderer: TextureRenderer
   private flamechartColorPassRenderer: FlamechartColorPassRenderer
-  private setViewportScope: regl.Command<{ physicalBounds: Rect }>
+  private setViewportScope: regl.Command<{physicalBounds: Rect}>
   private setScissor: regl.Command<{}>
 
   constructor(canvas: HTMLCanvasElement) {
     this.gl = regl({
       canvas: canvas,
       attributes: {
-        antialias: false
+        antialias: false,
       },
       extensions: ['ANGLE_instanced_arrays', 'WEBGL_depth_texture'],
       optionalExtensions: ['EXT_disjoint_timer_query'],
-      profile: true
+      profile: true,
     })
     ;(window as any)['CanvasContext'] = this
     this.rectangleBatchRenderer = new RectangleBatchRenderer(this.gl)
     this.viewportRectangleRenderer = new ViewportRectangleRenderer(this.gl)
     this.textureRenderer = new TextureRenderer(this.gl)
     this.flamechartColorPassRenderer = new FlamechartColorPassRenderer(this.gl)
-    this.setScissor = this.gl({ scissor: { enable: true } })
+    this.setScissor = this.gl({scissor: {enable: true}})
     this.setViewportScope = this.gl<SetViewportScopeProps>({
       context: {
         viewportX: (context: regl.Context, props: SetViewportScopeProps) => {
@@ -45,29 +59,35 @@ export class CanvasContext {
         },
         viewportY: (context: regl.Context, props: SetViewportScopeProps) => {
           return props.physicalBounds.top()
-        }
+        },
       },
       viewport: (context, props) => {
-        const { physicalBounds } = props
+        const {physicalBounds} = props
         return {
           x: physicalBounds.left(),
-          y: window.devicePixelRatio * window.innerHeight - physicalBounds.top() - physicalBounds.height(),
+          y:
+            window.devicePixelRatio * window.innerHeight -
+            physicalBounds.top() -
+            physicalBounds.height(),
           width: physicalBounds.width(),
-          height: physicalBounds.height()
+          height: physicalBounds.height(),
         }
       },
       scissor: (context, props) => {
-        const { physicalBounds } = props
+        const {physicalBounds} = props
         return {
           enable: true,
           box: {
             x: physicalBounds.left(),
-            y: window.devicePixelRatio * window.innerHeight - physicalBounds.top() - physicalBounds.height(),
+            y:
+              window.devicePixelRatio * window.innerHeight -
+              physicalBounds.top() -
+              physicalBounds.height(),
             width: physicalBounds.width(),
-            height: physicalBounds.height()
-          }
+            height: physicalBounds.height(),
+          },
         }
-      }
+      },
     })
   }
 
@@ -92,7 +112,7 @@ export class CanvasContext {
 
   private onBeforeFrame = (context: regl.Context) => {
     this.setScissor(() => {
-      this.gl.clear({ color: [0, 0, 0, 0] })
+      this.gl.clear({color: [0, 0, 0, 0]})
     })
 
     this.tickNeeded = false
@@ -139,11 +159,11 @@ export class CanvasContext {
   }): TextureCachedRenderer<T> {
     return new TextureCachedRenderer(this.gl, {
       ...options,
-      textureRenderer: this.textureRenderer
+      textureRenderer: this.textureRenderer,
     })
   }
 
-  drawViewportRectangle(props: ViewportRectangleRendererProps){
+  drawViewportRectangle(props: ViewportRectangleRendererProps) {
     this.viewportRectangleRenderer.render(props)
   }
 
@@ -151,13 +171,13 @@ export class CanvasContext {
     const bounds = el.getBoundingClientRect()
     const physicalBounds = new Rect(
       new Vec2(bounds.left * window.devicePixelRatio, bounds.top * window.devicePixelRatio),
-      new Vec2(bounds.width * window.devicePixelRatio, bounds.height * window.devicePixelRatio)
+      new Vec2(bounds.width * window.devicePixelRatio, bounds.height * window.devicePixelRatio),
     )
-    this.setViewportScope({ physicalBounds }, cb)
+    this.setViewportScope({physicalBounds}, cb)
   }
 
   setViewport(physicalBounds: Rect, cb: (context: regl.Context) => void) {
-    this.setViewportScope({ physicalBounds }, cb)
+    this.setViewportScope({physicalBounds}, cb)
   }
 
   getMaxTextureSize() {
