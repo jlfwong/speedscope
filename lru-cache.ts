@@ -1,18 +1,24 @@
 class ListNode<V> {
   prev: ListNode<V> | null = null
   next: ListNode<V> | null = null
-  constructor(readonly data: V) { }
+  constructor(readonly data: V) {}
 }
 
 export class List<V> {
   private head: ListNode<V> | null = null
   private tail: ListNode<V> | null = null
   private size: number = 0
-  constructor() { }
+  constructor() {}
 
-  getHead(): ListNode<V> | null { return this.head }
-  getTail(): ListNode<V> | null { return this.tail }
-  getSize(): number { return this.size }
+  getHead(): ListNode<V> | null {
+    return this.head
+  }
+  getTail(): ListNode<V> | null {
+    return this.tail
+  }
+  getSize(): number {
+    return this.size
+  }
 
   append(node: ListNode<V>): void {
     if (!this.tail) {
@@ -97,7 +103,7 @@ export class LRUCache<K, V> {
   private list = new List<K>()
   private map = new Map<K, LRUCacheNode<K, V>>()
 
-  constructor(private capacity: number) { }
+  constructor(private capacity: number) {}
 
   has(key: K): boolean {
     return this.map.has(key)
@@ -115,9 +121,13 @@ export class LRUCache<K, V> {
     return node ? node.value : null
   }
 
-  getSize() { return this.list.getSize() }
+  getSize() {
+    return this.list.getSize()
+  }
 
-  getCapacity() { return this.capacity }
+  getCapacity() {
+    return this.capacity
+  }
 
   insert(key: K, value: V) {
     const node = this.map.get(key)

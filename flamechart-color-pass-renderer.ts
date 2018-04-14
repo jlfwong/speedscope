@@ -102,7 +102,7 @@ export class FlamechartColorPassRenderer {
       `,
 
       depth: {
-        enable: false
+        enable: false,
       },
 
       attributes: {
@@ -114,18 +114,8 @@ export class FlamechartColorPassRenderer {
         //   | /|
         //   |/ |
         // 2 +--+ 3
-        position: gl.buffer([
-          [-1, 1],
-          [1, 1],
-          [-1, -1],
-          [1, -1]
-        ]),
-        uv: gl.buffer([
-          [0, 1],
-          [1, 1],
-          [0, 0],
-          [1, 0]
-        ])
+        position: gl.buffer([[-1, 1], [1, 1], [-1, -1], [1, -1]]),
+        uv: gl.buffer([[0, 1], [1, 1], [0, 0], [1, 0]]),
       },
 
       count: 4,
@@ -138,34 +128,33 @@ export class FlamechartColorPassRenderer {
           const { srcRect, rectInfoTexture } = props
           const physicalToUV = AffineTransform.withTranslation(new Vec2(0, 1))
             .times(AffineTransform.withScale(new Vec2(1, -1)))
-            .times(AffineTransform.betweenRects(
+            .times(
+              AffineTransform.betweenRects(
                 new Rect(Vec2.zero, new Vec2(rectInfoTexture.width, rectInfoTexture.height)),
-                Rect.unit
-            ))
+                Rect.unit,
+              ),
+            )
           const uvRect = physicalToUV.transformRect(srcRect)
-          return AffineTransform.betweenRects(
-            Rect.unit,
-            uvRect,
-          ).flatten()
+          return AffineTransform.betweenRects(Rect.unit, uvRect).flatten()
         },
         renderOutlines: (context, props) => {
           return props.renderOutlines ? 1.0 : 0.0
         },
         uvSpacePixelSize: (context, props) => {
-          return Vec2.unit.dividedByPointwise(new Vec2(props.rectInfoTexture.width, props.rectInfoTexture.height)).flatten()
+          return Vec2.unit
+            .dividedByPointwise(new Vec2(props.rectInfoTexture.width, props.rectInfoTexture.height))
+            .flatten()
         },
         positionTransform: (context, props) => {
           const { dstRect } = props
           const viewportSize = new Vec2(context.viewportWidth, context.viewportHeight)
 
-          const physicalToNDC = AffineTransform.withScale(new Vec2(1, -1))
-            .times(AffineTransform.betweenRects(
-              new Rect(Vec2.zero, viewportSize),
-              Rect.NDC)
-            )
+          const physicalToNDC = AffineTransform.withScale(new Vec2(1, -1)).times(
+            AffineTransform.betweenRects(new Rect(Vec2.zero, viewportSize), Rect.NDC),
+          )
           const ndcRect = physicalToNDC.transformRect(dstRect)
           return AffineTransform.betweenRects(Rect.NDC, ndcRect).flatten()
-        }
+        },
       },
     })
   }

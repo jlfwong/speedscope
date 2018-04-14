@@ -1,11 +1,11 @@
 import regl from 'regl'
 import { Flamechart } from './flamechart'
 import { RectangleBatch } from './rectangle-batch-renderer'
-import { CanvasContext } from './canvas-context';
+import { CanvasContext } from './canvas-context'
 import { Vec2, Rect, AffineTransform } from './math'
 import { LRUCache } from './lru-cache'
 import { Color } from './color'
-import { getOrInsert } from './utils';
+import { getOrInsert } from './utils'
 
 const MAX_BATCH_SIZE = 10000
 
@@ -26,15 +26,21 @@ class RowAtlas<K> {
     this.framebuffer = canvasContext.gl.framebuffer({ color: [this.texture] })
     this.rowCache = new LRUCache(this.texture.height)
     this.renderToFramebuffer = canvasContext.gl({
-      framebuffer: this.framebuffer
+      framebuffer: this.framebuffer,
     })
     this.clearLineBatch = canvasContext.createRectangleBatch()
     this.clearLineBatch.addRect(Rect.unit, new Color(0, 0, 0, 0))
   }
 
-  has(key: K) { return this.rowCache.has(key) }
-  getResolution() { return this.texture.width }
-  getCapacity() { return this.texture.height }
+  has(key: K) {
+    return this.rowCache.has(key)
+  }
+  getResolution() {
+    return this.texture.width
+  }
+  getCapacity() {
+    return this.texture.height
+  }
 
   private allocateLine(key: K): number {
     if (this.rowCache.getSize() < this.rowCache.getCapacity()) {
@@ -50,10 +56,7 @@ class RowAtlas<K> {
     }
   }
 
-  writeToAtlasIfNeeded(
-    keys: K[],
-    render: (textureDstRect: Rect, key: K) => void
-  ) {
+  writeToAtlasIfNeeded(keys: K[], render: (textureDstRect: Rect, key: K) => void) {
     this.renderToFramebuffer((context: regl.Context) => {
       for (let key of keys) {
         let row = this.rowCache.get(key)
@@ -64,14 +67,11 @@ class RowAtlas<K> {
         // Not cached -- we'll have to actually render
         row = this.allocateLine(key)
 
-        const textureRect = new Rect(
-          new Vec2(0, row),
-          new Vec2(this.texture.width, 1)
-        )
+        const textureRect = new Rect(new Vec2(0, row), new Vec2(this.texture.width, 1))
         this.canvasContext.drawRectangleBatch({
           batch: this.clearLineBatch,
           configSpaceSrcRect: Rect.unit,
-          physicalSpaceDstRect: textureRect
+          physicalSpaceDstRect: textureRect,
         })
         render(textureRect, key)
       }
@@ -84,17 +84,14 @@ class RowAtlas<K> {
       return false
     }
 
-    const textureRect = new Rect(
-      new Vec2(0, row),
-      new Vec2(this.texture.width, 1)
-    )
+    const textureRect = new Rect(new Vec2(0, row), new Vec2(this.texture.width, 1))
 
     // At this point, we have the row in cache, and we can
     // paint directly from it into the framebuffer.
     this.canvasContext.drawTexture({
       texture: this.texture,
       srcRect: textureRect,
-      dstRect: dstRect
+      dstRect: dstRect,
     })
     return true
   }
@@ -113,16 +110,26 @@ class RangeTreeLeafNode implements RangeTreeNode {
   constructor(
     private batch: RectangleBatch,
     private bounds: Rect,
-    private numPrecedingRectanglesInRow: number
+    private numPrecedingRectanglesInRow: number,
   ) {
     batch.uploadToGPU()
   }
 
-  getBatch() { return this.batch }
-  getBounds() { return this.bounds }
-  getRectCount() { return this.batch.getRectCount() }
-  getChildren() { return this.children }
-  getParity() { return this.numPrecedingRectanglesInRow % 2 }
+  getBatch() {
+    return this.batch
+  }
+  getBounds() {
+    return this.bounds
+  }
+  getRectCount() {
+    return this.batch.getRectCount()
+  }
+  getChildren() {
+    return this.children
+  }
+  getParity() {
+    return this.numPrecedingRectanglesInRow % 2
+  }
   forEachLeafNodeWithinBounds(configSpaceBounds: Rect, cb: (leaf: RangeTreeLeafNode) => void) {
     if (!this.bounds.hasIntersectionWith(configSpaceBounds)) return
     cb(this)
@@ -134,7 +141,7 @@ class RangeTreeInteriorNode implements RangeTreeNode {
   private bounds: Rect
   constructor(private children: RangeTreeNode[]) {
     if (children.length === 0) {
-      throw new Error("Empty interior node")
+      throw new Error('Empty interior node')
     }
     let minLeft = Infinity
     let maxRight = -Infinity
@@ -150,13 +157,19 @@ class RangeTreeInteriorNode implements RangeTreeNode {
     }
     this.bounds = new Rect(
       new Vec2(minLeft, minTop),
-      new Vec2(maxRight - minLeft, maxBottom - minTop)
+      new Vec2(maxRight - minLeft, maxBottom - minTop),
     )
   }
 
-  getBounds() { return this.bounds }
-  getRectCount() { return this.rectCount }
-  getChildren() { return this.children }
+  getBounds() {
+    return this.bounds
+  }
+  getRectCount() {
+    return this.rectCount
+  }
+  getChildren() {
+    return this.children
+  }
 
   forEachLeafNodeWithinBounds(configSpaceBounds: Rect, cb: (leaf: RangeTreeLeafNode) => void) {
     if (!this.bounds.hasIntersectionWith(configSpaceBounds)) return
@@ -202,17 +215,20 @@ export class FlamechartRenderer {
       for (let i = 0; i < layer.length; i++) {
         const frame = layer[i]
         if (batch.getRectCount() >= MAX_BATCH_SIZE) {
-          leafNodes.push(new RangeTreeLeafNode(batch, new Rect(
-            new Vec2(minLeft, stackDepth),
-            new Vec2(maxRight - minLeft, 1)
-          ), rectCount))
+          leafNodes.push(
+            new RangeTreeLeafNode(
+              batch,
+              new Rect(new Vec2(minLeft, stackDepth), new Vec2(maxRight - minLeft, 1)),
+              rectCount,
+            ),
+          )
           minLeft = Infinity
           maxRight = -Infinity
           batch = canvasContext.createRectangleBatch()
         }
         const configSpaceBounds = new Rect(
           new Vec2(frame.start, y),
-          new Vec2(frame.end - frame.start, 1)
+          new Vec2(frame.end - frame.start, 1),
         )
         minLeft = Math.min(minLeft, configSpaceBounds.left())
         maxRight = Math.max(maxRight, configSpaceBounds.right())
@@ -225,17 +241,20 @@ export class FlamechartRenderer {
         const color = new Color(
           (1 + i % 255) / 256,
           (1 + stackDepth % 255) / 256,
-          (1 + this.flamechart.getColorBucketForFrame(frame.node.frame)) / 256
+          (1 + this.flamechart.getColorBucketForFrame(frame.node.frame)) / 256,
         )
         batch.addRect(configSpaceBounds, color)
         rectCount++
       }
 
       if (batch.getRectCount() > 0) {
-        leafNodes.push(new RangeTreeLeafNode(batch, new Rect(
-          new Vec2(minLeft, stackDepth),
-          new Vec2(maxRight - minLeft, 1)
-        ), rectCount))
+        leafNodes.push(
+          new RangeTreeLeafNode(
+            batch,
+            new Rect(new Vec2(minLeft, stackDepth), new Vec2(maxRight - minLeft, 1)),
+            rectCount,
+          ),
+        )
       }
 
       // TODO(jlfwong): Making this into a binary tree
@@ -260,16 +279,13 @@ export class FlamechartRenderer {
 
     const width = configSpaceContentWidth / Math.pow(2, zoomLevel)
 
-    return new Rect(
-      new Vec2(width * index, stackDepth),
-      new Vec2(width, 1)
-    )
+    return new Rect(new Vec2(width * index, stackDepth), new Vec2(width, 1))
   }
 
   render(props: FlamechartRendererProps) {
     const { configSpaceSrcRect, physicalSpaceDstRect } = props
 
-    const atlasKeysToRender: { stackDepth: number, zoomLevel: number, index: number }[] = []
+    const atlasKeysToRender: { stackDepth: number; zoomLevel: number; index: number }[] = []
 
     // We want to render the lowest resolution we can while still guaranteeing that the
     // atlas line is higher resolution than its corresponding destination rectangle on
@@ -295,8 +311,12 @@ export class FlamechartRenderer {
 
     const configSpaceContentWidth = this.flamechart.getTotalWeight()
     const numAtlasEntriesPerLayer = Math.pow(2, zoomLevel)
-    const left = Math.floor(numAtlasEntriesPerLayer * configSpaceSrcRect.left() / configSpaceContentWidth)
-    const right = Math.ceil(numAtlasEntriesPerLayer * configSpaceSrcRect.right() / configSpaceContentWidth)
+    const left = Math.floor(
+      numAtlasEntriesPerLayer * configSpaceSrcRect.left() / configSpaceContentWidth,
+    )
+    const right = Math.ceil(
+      numAtlasEntriesPerLayer * configSpaceSrcRect.right() / configSpaceContentWidth,
+    )
 
     for (let stackDepth = top; stackDepth < bottom; stackDepth++) {
       for (let index = left; index <= right; index++) {
@@ -314,21 +334,24 @@ export class FlamechartRenderer {
     // Fill the cache
     this.rowAtlas.writeToAtlasIfNeeded(keysToRenderCached, (textureDstRect, key) => {
       const configSpaceBounds = this.configSpaceBoundsForKey(key)
-      this.layers[key.stackDepth].forEachLeafNodeWithinBounds(configSpaceBounds, (leaf) => {
+      this.layers[key.stackDepth].forEachLeafNodeWithinBounds(configSpaceBounds, leaf => {
         this.canvasContext.drawRectangleBatch({
           batch: leaf.getBatch(),
           configSpaceSrcRect: configSpaceBounds,
           physicalSpaceDstRect: textureDstRect,
           parityMin: key.stackDepth % 2 == 0 ? 2 : 0,
-          parityOffset: leaf.getParity()
+          parityOffset: leaf.getParity(),
         })
       })
     })
 
     this.framebuffer.resize(physicalSpaceDstRect.width(), physicalSpaceDstRect.height())
     this.framebuffer.use(context => {
-      this.canvasContext.gl.clear({color: [0, 0, 0, 0]})
-      const viewportRect = new Rect(Vec2.zero, new Vec2(context.viewportWidth, context.viewportHeight))
+      this.canvasContext.gl.clear({ color: [0, 0, 0, 0] })
+      const viewportRect = new Rect(
+        Vec2.zero,
+        new Vec2(context.viewportWidth, context.viewportHeight),
+      )
 
       const configToViewport = AffineTransform.betweenRects(configSpaceSrcRect, viewportRect)
 
@@ -342,13 +365,13 @@ export class FlamechartRenderer {
       for (let key of keysToRenderUncached) {
         const configSpaceBounds = this.configSpaceBoundsForKey(key)
         const physicalBounds = configToViewport.transformRect(configSpaceBounds)
-        this.layers[key.stackDepth].forEachLeafNodeWithinBounds(configSpaceBounds, (leaf) => {
+        this.layers[key.stackDepth].forEachLeafNodeWithinBounds(configSpaceBounds, leaf => {
           this.canvasContext.drawRectangleBatch({
             batch: leaf.getBatch(),
             configSpaceSrcRect,
             physicalSpaceDstRect: physicalBounds,
             parityMin: key.stackDepth % 2 == 0 ? 2 : 0,
-            parityOffset: leaf.getParity()
+            parityOffset: leaf.getParity(),
           })
         })
       }
@@ -356,9 +379,12 @@ export class FlamechartRenderer {
 
     this.canvasContext.drawFlamechartColorPass({
       rectInfoTexture: this.rectInfoTexture,
-      srcRect: new Rect(Vec2.zero, new Vec2(this.rectInfoTexture.width, this.rectInfoTexture.height)),
+      srcRect: new Rect(
+        Vec2.zero,
+        new Vec2(this.rectInfoTexture.width, this.rectInfoTexture.height),
+      ),
       dstRect: physicalSpaceDstRect,
-      renderOutlines: props.renderOutlines
+      renderOutlines: props.renderOutlines,
     })
 
     // Overlay the atlas on top of the canvas for debugging

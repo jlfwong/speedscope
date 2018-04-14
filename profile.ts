@@ -25,10 +25,18 @@ export interface FrameInfo {
 export class HasWeights {
   private selfWeight = 0
   private totalWeight = 0
-  getSelfWeight() { return this.selfWeight }
-  getTotalWeight() { return this.totalWeight }
-  addToTotalWeight(delta: number) { this.totalWeight += delta }
-  addToSelfWeight(delta: number) { this.selfWeight += delta }
+  getSelfWeight() {
+    return this.selfWeight
+  }
+  getTotalWeight() {
+    return this.totalWeight
+  }
+  addToTotalWeight(delta: number) {
+    this.totalWeight += delta
+  }
+  addToSelfWeight(delta: number) {
+    this.selfWeight += delta
+  }
 }
 
 export class Frame extends HasWeights {
@@ -81,7 +89,7 @@ export class RawValueFormatter implements ValueFormatter {
 }
 
 export class TimeFormatter implements ValueFormatter {
-  private multiplier : number
+  private multiplier: number
 
   constructor(unit: 'nanoseconds' | 'microseconds' | 'milliseconds' | 'seconds') {
     if (unit === 'nanoseconds') this.multiplier = 1e-9
@@ -93,7 +101,7 @@ export class TimeFormatter implements ValueFormatter {
   format(v: number) {
     const s = v * this.multiplier
 
-    if (s / 1e0 >= 1) return `${s.toFixed(2)}s`
+    if (s / 1 >= 1) return `${s.toFixed(2)}s`
     if (s / 1e-3 >= 1) return `${(s / 1e-3).toFixed(2)}ms`
     if (s / 1e-6 >= 1) return `${(s / 1e-6).toFixed(2)}µs`
     else return `${(s / 1e-9).toFixed(2)}ms`
@@ -120,20 +128,30 @@ export class Profile {
     this.totalWeight = totalWeight
   }
 
-  formatValue(v: number) { return this.valueFormatter.format(v) }
-  setValueFormatter(f: ValueFormatter) { this.valueFormatter = f }
+  formatValue(v: number) {
+    return this.valueFormatter.format(v)
+  }
+  setValueFormatter(f: ValueFormatter) {
+    this.valueFormatter = f
+  }
 
-  getName() { return this.name }
-  setName(name: string) { this.name = name }
+  getName() {
+    return this.name
+  }
+  setName(name: string) {
+    this.name = name
+  }
 
-  getTotalWeight() { return this.totalWeight }
+  getTotalWeight() {
+    return this.totalWeight
+  }
   getTotalNonIdleWeight() {
     return this.groupedCalltreeRoot.children.reduce((n, c) => n + c.getTotalWeight(), 0)
   }
 
   forEachCallGrouped(
     openFrame: (node: CallTreeNode, value: number) => void,
-    closeFrame: (value: number) => void
+    closeFrame: (value: number) => void,
   ) {
     function visit(node: CallTreeNode, start: number) {
       if (node.frame !== rootFrame) {
@@ -143,9 +161,9 @@ export class Profile {
       let childTime = 0
 
       const children = [...node.children]
-      children.sort((a, b) => a.getTotalWeight() > b.getTotalWeight() ? -1 : 1)
+      children.sort((a, b) => (a.getTotalWeight() > b.getTotalWeight() ? -1 : 1))
 
-      children.forEach(function (child) {
+      children.forEach(function(child) {
         visit(child, start + childTime)
         childTime += child.getTotalWeight()
       })
@@ -159,7 +177,7 @@ export class Profile {
 
   forEachCall(
     openFrame: (node: CallTreeNode, value: number) => void,
-    closeFrame: (value: number) => void
+    closeFrame: (value: number) => void,
   ) {
     let prevStack: CallTreeNode[] = []
     let value = 0
@@ -220,7 +238,9 @@ export class Profile {
 
     for (let frameInfo of stack) {
       const frame = getOrInsert(this.frames, frameInfo.key, () => new Frame(frameInfo))
-      const last = useAppendOrder ? lastOf(node.children) : node.children.find(c => c.frame === frame)
+      const last = useAppendOrder
+        ? lastOf(node.children)
+        : node.children.find(c => c.frame === frame)
       if (last && last.frame == frame) {
         node = last
       } else {
@@ -303,7 +323,9 @@ export class Profile {
         }
       }
 
-      const last = useAppendOrder ? lastOf(prevTop.children) : prevTop.children.find(c => c.frame === frame)
+      const last = useAppendOrder
+        ? lastOf(prevTop.children)
+        : prevTop.children.find(c => c.frame === frame)
       let node: CallTreeNode
       if (last && last.frame == frame) {
         node = last

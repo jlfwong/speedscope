@@ -1,25 +1,24 @@
-import {h} from 'preact'
-import {StyleSheet, css} from 'aphrodite'
-import {ReloadableComponent, SerializedComponent} from './reloadable'
+import { h } from 'preact'
+import { StyleSheet, css } from 'aphrodite'
+import { ReloadableComponent, SerializedComponent } from './reloadable'
 
-import {importFromBGFlameGraph} from './import/bg-flamegraph'
-import {importFromStackprof} from './import/stackprof'
-import {importFromChromeTimeline, importFromChromeCPUProfile} from './import/chrome'
+import { importFromBGFlameGraph } from './import/bg-flamegraph'
+import { importFromStackprof } from './import/stackprof'
+import { importFromChromeTimeline, importFromChromeCPUProfile } from './import/chrome'
 import { FlamechartRenderer } from './flamechart-renderer'
 import { CanvasContext } from './canvas-context'
 
-import {Profile, Frame} from './profile'
-import {Flamechart} from './flamechart'
+import { Profile, Frame } from './profile'
+import { Flamechart } from './flamechart'
 import { FlamechartView } from './flamechart-view'
 import { FontFamily, FontSize, Colors } from './style'
-
 
 declare function require(x: string): any
 const exampleProfileURL = require('./sample/perf-vertx-stacks-01-collapsed-all.txt')
 
 const enum SortOrder {
   CHRONO,
-  LEFT_HEAVY
+  LEFT_HEAVY,
 }
 
 interface ApplicationState {
@@ -56,7 +55,7 @@ function importProfile(contents: string, fileName: string): Profile | null {
     // Second pass: Try to guess what file format it is based on structure
     try {
       const parsed = JSON.parse(contents)
-      if (Array.isArray(parsed) && parsed[parsed.length - 1].name === "CpuProfile") {
+      if (Array.isArray(parsed) && parsed[parsed.length - 1].name === 'CpuProfile') {
         console.log('Importing as Chrome CPU Profile')
         return importFromChromeTimeline(parsed)
       } else if ('nodes' in parsed && 'samples' in parsed && 'timeDeltas' in parsed) {
@@ -97,31 +96,51 @@ export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
   render() {
     const help = (
       <div className={css(style.toolbarTab)}>
-        <a href="https://github.com/jlfwong/speedscope#usage" className={css(style.noLinkStyle)} target="_blank">
+        <a
+          href="https://github.com/jlfwong/speedscope#usage"
+          className={css(style.noLinkStyle)}
+          target="_blank"
+        >
           <span className={css(style.emoji)}>❓</span>Help
         </a>
       </div>
     )
 
     if (!this.props.profile) {
-      return <div className={css(style.toolbar)}>
-        <div className={css(style.toolbarLeft)}>{help}</div>
-        🔬speedscope
-      </div>
+      return (
+        <div className={css(style.toolbar)}>
+          <div className={css(style.toolbarLeft)}>{help}</div>
+          🔬speedscope
+        </div>
+      )
     }
-    return <div className={css(style.toolbar)}>
-      <div className={css(style.toolbarLeft)}>
-        <div className={css(style.toolbarTab, this.props.sortOrder === SortOrder.CHRONO && style.toolbarTabActive)} onClick={this.setTimeOrder}>
-          <span className={css(style.emoji)}>🕰</span>Time Order
+    return (
+      <div className={css(style.toolbar)}>
+        <div className={css(style.toolbarLeft)}>
+          <div
+            className={css(
+              style.toolbarTab,
+              this.props.sortOrder === SortOrder.CHRONO && style.toolbarTabActive,
+            )}
+            onClick={this.setTimeOrder}
+          >
+            <span className={css(style.emoji)}>🕰</span>Time Order
+          </div>
+          <div
+            className={css(
+              style.toolbarTab,
+              this.props.sortOrder === SortOrder.LEFT_HEAVY && style.toolbarTabActive,
+            )}
+            onClick={this.setLeftHeavyOrder}
+          >
+            <span className={css(style.emoji)}>⬅️</span>Left Heavy
+          </div>
+          {help}
         </div>
-        <div className={css(style.toolbarTab, this.props.sortOrder === SortOrder.LEFT_HEAVY && style.toolbarTabActive)} onClick={this.setLeftHeavyOrder}>
-          <span className={css(style.emoji)}>⬅️</span>Left Heavy
-        </div>
-        {help}
+        {this.props.profile.getName()}
+        <div className={css(style.toolbarRight)}>🔬speedscope</div>
       </div>
-      {this.props.profile.getName()}
-      <div className={css(style.toolbarRight)}>🔬speedscope</div>
-    </div>
+    )
   }
 }
 
@@ -188,7 +207,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       flamechartRenderer: null,
       sortedFlamechart: null,
       sortedFlamechartRenderer: null,
-      sortOrder: SortOrder.CHRONO
+      sortOrder: SortOrder.CHRONO,
     }
   }
 
@@ -205,7 +224,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     if (this.canvasContext && flamechart && sortedFlamechart) {
       this.setState({
         flamechartRenderer: new FlamechartRenderer(this.canvasContext, flamechart),
-        sortedFlamechartRenderer: new FlamechartRenderer(this.canvasContext, sortedFlamechart)
+        sortedFlamechartRenderer: new FlamechartRenderer(this.canvasContext, sortedFlamechart),
       })
     }
   }
@@ -248,7 +267,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       getTotalWeight: profile.getTotalWeight.bind(profile),
       forEachCall: profile.forEachCall.bind(profile),
       formatValue: profile.formatValue.bind(profile),
-      getColorBucketForFrame
+      getColorBucketForFrame,
     })
     const flamechartRenderer = new FlamechartRenderer(this.canvasContext, flamechart)
 
@@ -256,29 +275,32 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       getTotalWeight: profile.getTotalNonIdleWeight.bind(profile),
       forEachCall: profile.forEachCallGrouped.bind(profile),
       formatValue: profile.formatValue.bind(profile),
-      getColorBucketForFrame
+      getColorBucketForFrame,
     })
     const sortedFlamechartRenderer = new FlamechartRenderer(this.canvasContext, sortedFlamechart)
 
     console.timeEnd('import')
 
     console.time('first setState')
-    this.setState({
-      profile,
-      flamechart,
-      flamechartRenderer,
-      sortedFlamechart,
-      sortedFlamechartRenderer,
-      loading: false
-    }, () => {
-      console.timeEnd('first setState')
-    })
+    this.setState(
+      {
+        profile,
+        flamechart,
+        flamechartRenderer,
+        sortedFlamechart,
+        sortedFlamechartRenderer,
+        loading: false,
+      },
+      () => {
+        console.timeEnd('first setState')
+      },
+    )
   }
 
   loadFromFile(file: File) {
     this.setState({ loading: true }, () => {
       requestAnimationFrame(() => {
-        const reader = new FileReader
+        const reader = new FileReader()
         reader.addEventListener('loadend', () => {
           this.loadFromString(file.name, reader.result)
         })
@@ -290,9 +312,11 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   loadExample = () => {
     this.setState({ loading: true })
     const filename = 'perf-vertx-stacks-01-collapsed-all.txt'
-    fetch(exampleProfileURL).then(resp => resp.text()).then(data => {
-      this.loadFromString(filename, data)
-    })
+    fetch(exampleProfileURL)
+      .then(resp => resp.text())
+      .then(data => {
+        this.loadFromString(filename, data)
+      })
   }
 
   onDrop = (ev: DragEvent) => {
@@ -310,11 +334,11 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   onWindowKeyPress = (ev: KeyboardEvent) => {
     if (ev.key === '1') {
       this.setState({
-        sortOrder: SortOrder.CHRONO
+        sortOrder: SortOrder.CHRONO,
       })
     } else if (ev.key === '2') {
       this.setState({
-        sortOrder: SortOrder.LEFT_HEAVY
+        sortOrder: SortOrder.LEFT_HEAVY,
       })
     }
   }
@@ -328,10 +352,10 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   flamechartView: FlamechartView | null = null
-  flamechartRef = (view: FlamechartView | null) => this.flamechartView = view
+  flamechartRef = (view: FlamechartView | null) => (this.flamechartView = view)
   subcomponents() {
     return {
-      flamechart: this.flamechartView
+      flamechart: this.flamechartView,
     }
   }
 
@@ -343,34 +367,71 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   renderLanding() {
-    return <div className={css(style.landingContainer)}>
-      <div className={css(style.landingMessage)}>
-        <p className={css(style.landingP)}>👋 Hi there! Welcome to 🔬speedscope, an interactive{' '}
-        <a className={css(style.link)} href="http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html">flamegraph</a> visualizer.
-        Use it to help you make your software faster.</p>
-        <p className={css(style.landingP)}>Drag and drop a profile file onto this window to get started,
-        click the big blue button below to browse for a profile to explore, or{' '}
-          <a className={css(style.link)} onClick={this.loadExample}>click here</a>{' '}
-          to load an example profile.</p>
+    return (
+      <div className={css(style.landingContainer)}>
+        <div className={css(style.landingMessage)}>
+          <p className={css(style.landingP)}>
+            👋 Hi there! Welcome to 🔬speedscope, an interactive{' '}
+            <a
+              className={css(style.link)}
+              href="http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html"
+            >
+              flamegraph
+            </a>{' '}
+            visualizer. Use it to help you make your software faster.
+          </p>
+          <p className={css(style.landingP)}>
+            Drag and drop a profile file onto this window to get started, click the big blue button
+            below to browse for a profile to explore, or{' '}
+            <a className={css(style.link)} onClick={this.loadExample}>
+              click here
+            </a>{' '}
+            to load an example profile.
+          </p>
 
-        <div className={css(style.browseButtonContainer)}>
-          <input type="file" name="file" id="file" onChange={this.onFileSelect} className={css(style.hide)} />
-          <label for="file" className={css(style.browseButton)}>Browse</label>
+          <div className={css(style.browseButtonContainer)}>
+            <input
+              type="file"
+              name="file"
+              id="file"
+              onChange={this.onFileSelect}
+              className={css(style.hide)}
+            />
+            <label for="file" className={css(style.browseButton)}>
+              Browse
+            </label>
+          </div>
+
+          <p className={css(style.landingP)}>
+            See the{' '}
+            <a
+              className={css(style.link)}
+              href="https://github.com/jlfwong/speedscope#usage"
+              target="_blank"
+            >
+              documentation
+            </a>{' '}
+            for information about supported file formats, keyboard shortcuts, and how to navigate
+            around the profile.
+          </p>
+
+          <p className={css(style.landingP)}>
+            speedscope is open source. Please{' '}
+            <a
+              className={css(style.link)}
+              target="_blank"
+              href="https://github.com/jlfwong/speedscope/issues"
+            >
+              report any issues on GitHub
+            </a>.
+          </p>
         </div>
-
-        <p className={css(style.landingP)}>See the <a className={css(style.link)}
-          href="https://github.com/jlfwong/speedscope#usage" target="_blank">documentation</a> for
-        information about supported file formats, keyboard shortcuts, and how
-        to navigate around the profile.</p>
-
-        <p className={css(style.landingP)}>speedscope is open source.
-        Please <a className={css(style.link)} target="_blank" href="https://github.com/jlfwong/speedscope/issues">report any issues on GitHub</a>.</p>
       </div>
-    </div>
+    )
   }
 
   renderLoadingBar() {
-    return <div className={css(style.loading)}></div>
+    return <div className={css(style.loading)} />
   }
 
   setSortOrder = (sortOrder: SortOrder) => {
@@ -383,23 +444,36 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   render() {
-    const {flamechart, flamechartRenderer, sortedFlamechart, sortedFlamechartRenderer, sortOrder, loading} = this.state
+    const {
+      flamechart,
+      flamechartRenderer,
+      sortedFlamechart,
+      sortedFlamechartRenderer,
+      sortOrder,
+      loading,
+    } = this.state
     const flamechartToView = sortOrder == SortOrder.CHRONO ? flamechart : sortedFlamechart
-    const flamechartRendererToUse = sortOrder == SortOrder.CHRONO ? flamechartRenderer : sortedFlamechartRenderer
+    const flamechartRendererToUse =
+      sortOrder == SortOrder.CHRONO ? flamechartRenderer : sortedFlamechartRenderer
 
-    return <div onDrop={this.onDrop} onDragOver={this.onDragOver} className={css(style.root)}>
-      <GLCanvas setCanvasContext={this.setCanvasContext} />
-      <Toolbar setSortOrder={this.setSortOrder} {...this.state} />
-      {loading ?
-        this.renderLoadingBar() :
-        this.canvasContext && flamechartToView && flamechartRendererToUse ?
+    return (
+      <div onDrop={this.onDrop} onDragOver={this.onDragOver} className={css(style.root)}>
+        <GLCanvas setCanvasContext={this.setCanvasContext} />
+        <Toolbar setSortOrder={this.setSortOrder} {...this.state} />
+        {loading ? (
+          this.renderLoadingBar()
+        ) : this.canvasContext && flamechartToView && flamechartRendererToUse ? (
           <FlamechartView
             canvasContext={this.canvasContext}
             flamechartRenderer={flamechartRendererToUse}
             ref={this.flamechartRef}
-            flamechart={flamechartToView} /> :
-          this.renderLanding()}
-    </div>
+            flamechart={flamechartToView}
+          />
+        ) : (
+          this.renderLanding()
+        )}
+      </div>
+    )
   }
 }
 
@@ -409,23 +483,25 @@ const style = StyleSheet.create({
     width: '100vw',
     height: '100vh',
     zIndex: -1,
-    pointerEvents: 'none'
+    pointerEvents: 'none',
   },
   loading: {
     height: 3,
     marginBottom: -3,
     background: Colors.DARK_BLUE,
     transformOrigin: '0% 50%',
-    animationName: [{
-      from: {
-        transform: `scaleX(0)`
+    animationName: [
+      {
+        from: {
+          transform: `scaleX(0)`,
+        },
+        to: {
+          transform: `scaleX(1)`,
+        },
       },
-      to: {
-        transform: `scaleX(1)`
-      }
-    }],
-    animationTimingFunction: "cubic-bezier(0, 1, 0, 1)",
-    animationDuration: "30s"
+    ],
+    animationTimingFunction: 'cubic-bezier(0, 1, 0, 1)',
+    animationDuration: '30s',
   },
   root: {
     width: '100vw',
@@ -435,27 +511,27 @@ const style = StyleSheet.create({
     flexDirection: 'column',
     position: 'relative',
     fontFamily: FontFamily.MONOSPACE,
-    lineHeight: '20px'
+    lineHeight: '20px',
   },
   landingContainer: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 1
+    flex: 1,
   },
   landingMessage: {
-    maxWidth: 600
+    maxWidth: 600,
   },
   landingP: {
-    marginBottom: 16
+    marginBottom: 16,
   },
   hide: {
-    display: 'none'
+    display: 'none',
   },
   browseButtonContainer: {
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   browseButton: {
     marginBottom: 16,
@@ -467,12 +543,12 @@ const style = StyleSheet.create({
     lineHeight: '72px',
     background: Colors.DARK_BLUE,
     color: 'white',
-    cursor: 'pointer'
+    cursor: 'pointer',
   },
   link: {
     color: Colors.LIGHT_BLUE,
     cursor: 'pointer',
-    textDecoration: 'none'
+    textDecoration: 'none',
   },
   toolbar: {
     height: 18,
@@ -482,7 +558,7 @@ const style = StyleSheet.create({
     fontFamily: FontFamily.MONOSPACE,
     fontSize: FontSize.TITLE,
     lineHeight: '18px',
-    userSelect: 'none'
+    userSelect: 'none',
   },
   toolbarLeft: {
     position: 'absolute',
@@ -513,24 +589,23 @@ const style = StyleSheet.create({
     marginLeft: 2,
     ':hover': {
       background: Colors.GRAY,
-      cursor: 'pointer'
-    }
+      cursor: 'pointer',
+    },
   },
   toolbarTabActive: {
     background: Colors.LIGHT_BLUE,
     ':hover': {
-      background: Colors.LIGHT_BLUE
-    }
+      background: Colors.LIGHT_BLUE,
+    },
   },
   noLinkStyle: {
     textDecoration: 'none',
-    color: 'inherit'
+    color: 'inherit',
   },
   emoji: {
     display: 'inline-block',
     verticalAlign: 'middle',
     paddingTop: '0px',
-    marginRight: '0.3em'
-  }
+    marginRight: '0.3em',
+  },
 })
-

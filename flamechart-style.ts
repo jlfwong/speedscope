@@ -1,4 +1,4 @@
-import {StyleSheet} from 'aphrodite'
+import { StyleSheet } from 'aphrodite'
 import { FontFamily, FontSize, Colors } from './style'
 
 const HOVERTIP_PADDING = 2
@@ -22,7 +22,7 @@ export const style = StyleSheet.create({
     pointerEvents: 'none',
     userSelect: 'none',
     fontSize: FontSize.LABEL,
-    fontFamily: FontFamily.MONOSPACE
+    fontFamily: FontFamily.MONOSPACE,
   },
   hoverTipRow: {
     textOverflow: 'ellipsis',
@@ -33,10 +33,10 @@ export const style = StyleSheet.create({
     maxWidth: Sizes.TOOLTIP_WIDTH_MAX,
   },
   hoverCount: {
-    color: '#6FCF97'
+    color: '#6FCF97',
   },
   clip: {
-    overflow: 'hidden'
+    overflow: 'hidden',
   },
   vbox: {
     display: 'flex',
@@ -48,13 +48,13 @@ export const style = StyleSheet.create({
     height: '100%',
     position: 'absolute',
     left: 0,
-    top: 0
+    top: 0,
   },
   minimap: {
     height: Sizes.MINIMAP_HEIGHT,
-    borderBottom: `${Sizes.SEPARATOR_HEIGHT}px solid ${Colors.MEDIUM_GRAY}`
+    borderBottom: `${Sizes.SEPARATOR_HEIGHT}px solid ${Colors.MEDIUM_GRAY}`,
   },
   panZoomView: {
-    flex: 1
+    flex: 1,
   },
-});
+})

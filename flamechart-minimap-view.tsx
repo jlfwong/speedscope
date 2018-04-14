@@ -2,10 +2,10 @@ import { h, Component } from 'preact'
 import { css } from 'aphrodite'
 import { Flamechart } from './flamechart'
 import { Rect, Vec2, AffineTransform, clamp } from './math'
-import { FlamechartRenderer } from "./flamechart-renderer"
-import { cachedMeasureTextWidth } from "./utils";
-import { style, Sizes } from "./flamechart-style";
-import { FontFamily, FontSize, Colors } from "./style"
+import { FlamechartRenderer } from './flamechart-renderer'
+import { cachedMeasureTextWidth } from './utils'
+import { style, Sizes } from './flamechart-style'
+import { FontFamily, FontSize, Colors } from './style'
 import { CanvasContext } from './canvas-context'
 import { TextureCachedRenderer } from './texture-catched-renderer'
 
@@ -24,7 +24,7 @@ interface FlamechartMinimapViewProps {
 
 enum DraggingMode {
   DRAW_NEW_VIEWPORT,
-  TRANSLATE_VIEWPORT
+  TRANSLATE_VIEWPORT,
 }
 
 export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps, {}> {
@@ -39,7 +39,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   private physicalViewSize() {
     return new Vec2(
       this.overlayCanvas ? this.overlayCanvas.width : 0,
-      this.overlayCanvas ? this.overlayCanvas.height : 0
+      this.overlayCanvas ? this.overlayCanvas.height : 0,
     )
   }
 
@@ -50,7 +50,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   private configSpaceSize() {
     return new Vec2(
       this.props.flamechart.getTotalWeight(),
-      this.props.flamechart.getLayers().length
+      this.props.flamechart.getLayers().length,
     )
   }
 
@@ -59,7 +59,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
 
     return AffineTransform.betweenRects(
       new Rect(new Vec2(0, 0), this.configSpaceSize()),
-      new Rect(minimapOrigin, this.physicalViewSize().minus(minimapOrigin))
+      new Rect(minimapOrigin, this.physicalViewSize().minus(minimapOrigin)),
     )
   }
 
@@ -90,20 +90,20 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
           }
           return false
         },
-        render: (props) => {
+        render: props => {
           this.props.flamechartRenderer.render({
             physicalSpaceDstRect: new Rect(
               this.minimapOrigin(),
-              this.physicalViewSize().minus(this.minimapOrigin())
+              this.physicalViewSize().minus(this.minimapOrigin()),
             ),
             configSpaceSrcRect: new Rect(new Vec2(0, 0), this.configSpaceSize()),
-            renderOutlines: false
+            renderOutlines: false,
           })
-        }
+        },
       })
     }
 
-    this.props.canvasContext.renderInto(this.container, (context) => {
+    this.props.canvasContext.renderInto(this.container, context => {
       // TODO(jlfwong): Switch back to the texture cached renderer once I figure out
       // how to resize a framebuffer while another framebuffer is active. It seems
       // to crash regl. I should submit a reduced repro case and hopefully get it fixed?
@@ -116,9 +116,9 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
         configSpaceSrcRect: new Rect(new Vec2(0, 0), this.configSpaceSize()),
         physicalSpaceDstRect: new Rect(
           this.minimapOrigin(),
-          this.physicalViewSize().minus(this.minimapOrigin())
+          this.physicalViewSize().minus(this.minimapOrigin()),
         ),
-        renderOutlines: false
+        renderOutlines: false,
       })
       this.props.canvasContext.drawViewportRectangle({
         configSpaceViewportRect: this.props.configSpaceViewportRect,
@@ -147,14 +147,18 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     // 1eN, 2eN, or 5eN for some N
 
     // Ideally, we want an interval every 100 logical screen pixels
-    const logicalToConfig = (this.configSpaceToPhysicalViewSpace().inverted() || new AffineTransform()).times(this.logicalToPhysicalViewSpace())
+    const logicalToConfig = (
+      this.configSpaceToPhysicalViewSpace().inverted() || new AffineTransform()
+    ).times(this.logicalToPhysicalViewSpace())
     const targetInterval = logicalToConfig.transformVector(new Vec2(200, 1)).x
 
     const physicalViewSpaceFrameHeight = Sizes.FRAME_HEIGHT * DEVICE_PIXEL_RATIO
     const physicalViewSpaceFontSize = FontSize.LABEL * DEVICE_PIXEL_RATIO
     const LABEL_PADDING_PX = (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2
 
-    ctx.font = `${physicalViewSpaceFontSize}px/${physicalViewSpaceFrameHeight}px ${FontFamily.MONOSPACE}`
+    ctx.font = `${physicalViewSpaceFontSize}px/${physicalViewSpaceFrameHeight}px ${
+      FontFamily.MONOSPACE
+    }`
     ctx.textBaseline = 'top'
 
     const minInterval = Math.pow(10, Math.floor(Math.log10(targetInterval)))
@@ -204,12 +208,14 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
 
   private resizeOverlayCanvasIfNeeded() {
     if (!this.overlayCanvas) return
-    let {width, height} = this.overlayCanvas.getBoundingClientRect()
-    {/*
+    let { width, height } = this.overlayCanvas.getBoundingClientRect()
+    {
+      /*
       We render text at a higher resolution then scale down to
       ensure we're rendering at 1:1 device pixel ratio.
       This ensures our text is rendered crisply.
-    */}
+    */
+    }
     width = Math.floor(width)
     height = Math.floor(height)
 
@@ -219,8 +225,8 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     const scaledWidth = width * DEVICE_PIXEL_RATIO
     const scaledHeight = height * DEVICE_PIXEL_RATIO
 
-    if (scaledWidth === this.overlayCanvas.width &&
-        scaledHeight === this.overlayCanvas.height) return
+    if (scaledWidth === this.overlayCanvas.width && scaledHeight === this.overlayCanvas.height)
+      return
 
     this.overlayCanvas.width = scaledWidth
     this.overlayCanvas.height = scaledHeight
@@ -252,7 +258,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   private maybeClearInteractionLock = () => {
     if (this.interactionLock) {
       if (!this.frameHadWheelEvent) {
-        this.framesWithoutWheelEvents++;
+        this.framesWithoutWheelEvents++
         if (this.framesWithoutWheelEvents >= 2) {
           this.interactionLock = null
           this.framesWithoutWheelEvents = 0
@@ -275,11 +281,10 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   private zoom(multiplier: number) {
     this.interactionLock = 'zoom'
     const configSpaceViewport = this.props.configSpaceViewportRect
-    const configSpaceCenter = configSpaceViewport.origin.plus(configSpaceViewport.size.times(1/2))
+    const configSpaceCenter = configSpaceViewport.origin.plus(configSpaceViewport.size.times(1 / 2))
     if (!configSpaceCenter) return
 
-    const zoomTransform = AffineTransform
-      .withTranslation(configSpaceCenter.times(-1))
+    const zoomTransform = AffineTransform.withTranslation(configSpaceCenter.times(-1))
       .scaledBy(new Vec2(multiplier, 1))
       .translatedBy(configSpaceCenter)
 
@@ -294,13 +299,13 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     const isZoom = ev.metaKey || ev.ctrlKey
 
     if (isZoom && this.interactionLock !== 'pan') {
-      let multiplier = 1 + (ev.deltaY / 100)
+      let multiplier = 1 + ev.deltaY / 100
 
       // On Chrome & Firefox, pinch-to-zoom maps to
       // WheelEvent + Ctrl Key. We'll accelerate it in
       // this case, since it feels a bit sluggish otherwise.
       if (ev.ctrlKey) {
-        multiplier = 1 + (ev.deltaY / 40)
+        multiplier = 1 + ev.deltaY / 40
       }
 
       multiplier = clamp(multiplier, 0.1, 10.0)
@@ -310,13 +315,16 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       this.pan(new Vec2(ev.deltaX, ev.deltaY))
     }
 
-
     this.renderCanvas()
   }
 
   private configSpaceMouse(ev: MouseEvent): Vec2 | null {
-    const logicalSpaceMouse = this.windowToLogicalViewSpace().transformPosition(new Vec2(ev.clientX, ev.clientY))
-    const physicalSpaceMouse = this.logicalToPhysicalViewSpace().transformPosition(logicalSpaceMouse)
+    const logicalSpaceMouse = this.windowToLogicalViewSpace().transformPosition(
+      new Vec2(ev.clientX, ev.clientY),
+    )
+    const physicalSpaceMouse = this.logicalToPhysicalViewSpace().transformPosition(
+      logicalSpaceMouse,
+    )
     return this.configSpaceToPhysicalViewSpace().inverseTransformPosition(physicalSpaceMouse)
   }
 
@@ -331,7 +339,9 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
         // If dragging starting inside the viewport rectangle,
         // we'll move the existing viewport
         this.draggingMode = DraggingMode.TRANSLATE_VIEWPORT
-        this.dragConfigSpaceViewportOffset = configSpaceMouse.minus(this.props.configSpaceViewportRect.origin)
+        this.dragConfigSpaceViewportOffset = configSpaceMouse.minus(
+          this.props.configSpaceViewportRect.origin,
+        )
       } else {
         // If dragging starts outside the the viewport rectangle,
         // we'll start drawing a new viewport
@@ -353,7 +363,9 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     this.updateCursor(configSpaceMouse)
 
     // Clamp the mouse position to avoid weird behavior when outside the canvas bounds
-    configSpaceMouse = new Rect(new Vec2(0, 0), this.configSpaceSize()).closestPointTo(configSpaceMouse)
+    configSpaceMouse = new Rect(new Vec2(0, 0), this.configSpaceSize()).closestPointTo(
+      configSpaceMouse,
+    )
 
     if (this.draggingMode === DraggingMode.DRAW_NEW_VIEWPORT) {
       const configStart = this.dragStartConfigSpaceMouse
@@ -366,16 +378,15 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       const width = right - left
       const height = this.props.configSpaceViewportRect.height()
 
-      this.props.setConfigSpaceViewportRect(new Rect(
-        new Vec2(left, configEnd.y - height / 2),
-        new Vec2(width, height)
-      ))
+      this.props.setConfigSpaceViewportRect(
+        new Rect(new Vec2(left, configEnd.y - height / 2), new Vec2(width, height)),
+      )
     } else if (this.draggingMode === DraggingMode.TRANSLATE_VIEWPORT) {
       if (!this.dragConfigSpaceViewportOffset) return
 
       const newOrigin = configSpaceMouse.minus(this.dragConfigSpaceViewportOffset)
       this.props.setConfigSpaceViewportRect(
-        this.props.configSpaceViewportRect.withOrigin(newOrigin)
+        this.props.configSpaceViewportRect.withOrigin(newOrigin),
       )
     }
   }
@@ -428,11 +439,9 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
         onWheel={this.onWheel}
         onMouseDown={this.onMouseDown}
         onMouseMove={this.onMouseMove}
-        className={css(style.minimap, style.vbox)} >
-        <canvas
-          width={1} height={1}
-          ref={this.overlayCanvasRef}
-          className={css(style.fill)} />
+        className={css(style.minimap, style.vbox)}
+      >
+        <canvas width={1} height={1} ref={this.overlayCanvasRef} className={css(style.fill)} />
       </div>
     )
   }

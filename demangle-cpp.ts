@@ -1,24 +1,24 @@
-let cppfilt: (name: string) => string;
-const cache = new Map<string, string>();
+let cppfilt: (name: string) => string
+const cache = new Map<string, string>()
 
 // This function converts a mangled C++ name such as "__ZNK7Support6ColorFeqERKS0_"
 // into a human-readable symbol (in this case "Support::ColorF::==(Support::ColorF&)")
 export function demangleCpp(name: string): string {
   if (name.startsWith('__Z')) {
-    let result = cache.get(name);
+    let result = cache.get(name)
     if (result !== undefined) {
-      name = result;
+      name = result
     } else {
       if (!cppfilt) {
-        cppfilt = new Function('exports', code)();
+        cppfilt = new Function('exports', code)()
       }
-      result = cppfilt(name.slice(1));
+      result = cppfilt(name.slice(1))
       result = result === '(null)' ? name : result
-      cache.set(name, result);
-      name = result;
+      cache.set(name, result)
+      name = result
     }
   }
-  return name;
+  return name
 }
 
 // This was taken from https://d.fuqu.jp/c++filtjs/

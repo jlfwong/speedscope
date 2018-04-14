@@ -36,7 +36,7 @@ export class TextureRenderer {
       `,
 
       depth: {
-        enable: false
+        enable: false,
       },
 
       attributes: {
@@ -48,18 +48,8 @@ export class TextureRenderer {
         //   | /|
         //   |/ |
         // 2 +--+ 3
-        position: gl.buffer([
-          [-1, 1],
-          [1, 1],
-          [-1, -1],
-          [1, -1]
-        ]),
-        uv: gl.buffer([
-          [0, 1],
-          [1, 1],
-          [0, 0],
-          [1, 0]
-        ])
+        position: gl.buffer([[-1, 1], [1, 1], [-1, -1], [1, -1]]),
+        uv: gl.buffer([[0, 1], [1, 1], [0, 0], [1, 0]]),
       },
 
       uniforms: {
@@ -68,34 +58,31 @@ export class TextureRenderer {
           const { srcRect, texture } = props
           const physicalToUV = AffineTransform.withTranslation(new Vec2(0, 1))
             .times(AffineTransform.withScale(new Vec2(1, -1)))
-            .times(AffineTransform.betweenRects(
+            .times(
+              AffineTransform.betweenRects(
                 new Rect(Vec2.zero, new Vec2(texture.width, texture.height)),
-                Rect.unit
-            ))
+                Rect.unit,
+              ),
+            )
           const uvRect = physicalToUV.transformRect(srcRect)
-          return AffineTransform.betweenRects(
-            Rect.unit,
-            uvRect,
-          ).flatten()
+          return AffineTransform.betweenRects(Rect.unit, uvRect).flatten()
         },
         positionTransform: (context, props) => {
           const { dstRect } = props
 
           const viewportSize = new Vec2(context.viewportWidth, context.viewportHeight)
 
-          const physicalToNDC = AffineTransform.withScale(new Vec2(1, -1))
-            .times(AffineTransform.betweenRects(
-              new Rect(Vec2.zero, viewportSize),
-              Rect.NDC)
-            )
+          const physicalToNDC = AffineTransform.withScale(new Vec2(1, -1)).times(
+            AffineTransform.betweenRects(new Rect(Vec2.zero, viewportSize), Rect.NDC),
+          )
           const ndcRect = physicalToNDC.transformRect(dstRect)
           return AffineTransform.betweenRects(Rect.NDC, ndcRect).flatten()
-        }
+        },
       },
 
       primitive: 'triangle strip',
 
-      count: 4
+      count: 4,
     })
   }
 
@@ -103,8 +90,12 @@ export class TextureRenderer {
     this.command(props)
   }
 
-  resetStats() { return Object.assign(this.command.stats, { cpuTime: 0, gpuTime: 0, count: 0 }) }
-  stats() { return this.command.stats }
+  resetStats() {
+    return Object.assign(this.command.stats, { cpuTime: 0, gpuTime: 0, count: 0 })
+  }
+  stats() {
+    return this.command.stats
+  }
 }
 
 export interface TextureCachedRendererOptions<T> {
@@ -127,7 +118,7 @@ export class TextureCachedRenderer<T> {
     this.textureRenderer = options.textureRenderer
 
     this.texture = gl.texture(1, 1)
-    this.framebuffer = gl.framebuffer({color: [this.texture]})
+    this.framebuffer = gl.framebuffer({ color: [this.texture] })
     this.withContext = gl({})
   }
 
@@ -141,7 +132,10 @@ export class TextureCachedRenderer<T> {
   render(props: T) {
     this.withContext((context: regl.Context) => {
       let needsRender = false
-      if (this.texture.width !== context.viewportWidth || this.texture.height !== context.viewportHeight) {
+      if (
+        this.texture.width !== context.viewportWidth ||
+        this.texture.height !== context.viewportHeight
+      ) {
         // TODO(jlfwong): Can probably just use this.framebuffer.resize
         this.texture({ width: context.viewportWidth, height: context.viewportHeight })
         this.framebuffer({ color: [this.texture] })
@@ -161,23 +155,26 @@ export class TextureCachedRenderer<T> {
               x: 0,
               y: 0,
               width: context.viewportWidth,
-              height: context.viewportHeight
+              height: context.viewportHeight,
             }
           },
-          framebuffer: this.framebuffer
+          framebuffer: this.framebuffer,
         })(() => {
-          this.gl.clear({color: [0, 0, 0, 0]})
+          this.gl.clear({ color: [0, 0, 0, 0] })
           this.renderUncached(props)
         })
       }
 
-      const glViewportRect = new Rect(Vec2.zero, new Vec2(context.viewportWidth, context.viewportHeight))
+      const glViewportRect = new Rect(
+        Vec2.zero,
+        new Vec2(context.viewportWidth, context.viewportHeight),
+      )
 
       // Render from texture
       this.textureRenderer.render({
         texture: this.texture,
         srcRect: glViewportRect,
-        dstRect: glViewportRect
+        dstRect: glViewportRect,
       })
       this.lastRenderProps = props
       this.dirty = false
