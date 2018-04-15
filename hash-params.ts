@@ -3,7 +3,7 @@ export interface HashParams {
   title?: string
 }
 
-export default function getHashParams(): HashParams {
+export function getHashParams(): HashParams {
   try {
     const hashContents = window.location.hash
     if (!hashContents.startsWith('#')) {
@@ -12,7 +12,7 @@ export default function getHashParams(): HashParams {
     const components = hashContents.substr(1).split('&')
     const result: HashParams = {}
     for (const component of components) {
-      let [key, value] = component.split('=')
+      const [key, value] = component.split('=')
       if (key === 'profileURL') {
         result.profileURL = decodeURIComponent(value)
       } else if (key === 'title') {

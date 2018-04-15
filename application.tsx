@@ -12,7 +12,7 @@ import {Profile, Frame} from './profile'
 import {Flamechart} from './flamechart'
 import {FlamechartView} from './flamechart-view'
 import {FontFamily, FontSize, Colors} from './style'
-import getHashParams, {HashParams} from './hash-params'
+import {getHashParams, HashParams} from './hash-params'
 
 declare function require(x: string): any
 const exampleProfileURL = require('./sample/perf-vertx-stacks-01-collapsed-all.txt')
@@ -352,9 +352,12 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     }
   }
 
-  async componentDidMount() {
+  componentDidMount() {
     window.addEventListener('keypress', this.onWindowKeyPress)
+    this.maybeLoadHashParamProfile()
+  }
 
+  async maybeLoadHashParamProfile() {
     try {
       if (this.hashParams.profileURL) {
         const response = await fetch(this.hashParams.profileURL)
