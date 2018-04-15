@@ -46,28 +46,42 @@ export class Graph<V, E extends Edge<V>> {
 // Determine the "rank" of each vertex. The rank of a vertex will determine
 // which row in the laid out graph the vertex is placed in.
 export function rankVertices<V, E extends Edge<V>>(graph: Graph<V, E>, roots: V[]): Map<V, number> {
-  const ranks = new Map<V, number>()
+  const order: V[] = []
+  const indexOfV = new Map<V, number>()
+  function visit(v: V) {
+    if (indexOfV.has(v)) return
+    indexOfV.set(v, indexOfV.size)
+    for (let leavingEdge of graph.getEdgesEntering(v)) {
+      visit(leavingEdge.from)
+    }
+    order.push(v)
+  }
+  graph.getVertices().forEach(visit)
 
-  // TODO(jlfwong): Change this to rank by *longest* path from root
-  // rather than shortest
-  function setRank(v: V, rank: number) {
-    if (ranks.has(v)) {
-      return
+  const ranks = new Map<V, number>()
+  for (let i = 0; i < order.length; i++) {
+    ranks.set(order[i], i)
+  }
+
+  /*
+  for (let v of order) {
+    let rank = 0
+    for (let edge of graph.getEdgesEntering(v)) {
+      const parentRank = ranks.get(edge.from)
+      if (parentRank == null) {
+        // If the parent doesn't yet have a rank, it means that it comes after
+        // the current vertex in the topologically sorted list of vertices.
+        // This means the edge must be a back-edge in a cycle.
+        // Ignore this for the purposes of ranking.
+        console.log('Back edge', edge)
+        continue
+      }
+      rank = Math.max(rank, parentRank + 1)
     }
     ranks.set(v, rank)
-
-    for (let leavingEdge of graph.getEdgesLeaving(v)) {
-      setRank(leavingEdge.to, rank + 1)
-    }
   }
-
-  for (let root of roots) {
-    setRank(root, 0)
-  }
-
-  for (let node of graph.getVertices()) {
-    setRank(node, 0)
-  }
+  console.log(order, ranks)
+  */
 
   return ranks
 }

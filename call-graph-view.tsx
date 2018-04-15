@@ -15,6 +15,8 @@ export class CallGraphView extends Component<CallGraphViewProps, {}> {
     const height = levels.length * 100
     const width = levels.reduce((max: number, level: any[]) => Math.max(level.length, max), 0) * 230
 
+    console.log(callGraph.getTotalWeight())
+
     return (
       <div style={{overflow: 'scroll', height: '100vh', width: '100vw'}}>
         <svg style={{flex: 1}} height={height} width={width}>
@@ -46,11 +48,11 @@ export class CallGraphView extends Component<CallGraphViewProps, {}> {
                         fill="#000000"
                       >
                         {' '}
-                        {`${callGraph.formatValue(
-                          node.vertex.getSelfWeight(),
-                        )}/${callGraph.formatValue(node.vertex.getTotalWeight())}: ${lastOf(
-                          node.vertex.name.split('/'),
-                        )}`}
+                        {`${(
+                          100.0 *
+                          node.vertex.getTotalWeight() /
+                          callGraph.getTotalWeight()
+                        ).toFixed(1)} ${lastOf(node.vertex.name.split('/'))}`}
                       </text>
                     </g>
                   )

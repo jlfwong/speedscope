@@ -38,6 +38,10 @@ export class CallGraph extends Graph<Frame, CallEdge> {
     })
   }
 
+  getTotalWeight() {
+    return this.source.getTotalWeight()
+  }
+
   formatValue(v: number) {
     return this.source.formatValue(v)
   }
