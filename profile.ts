@@ -149,6 +149,10 @@ export class Profile {
   private appendOrderCalltreeRoot = new CallTreeNode(this.rootFrame, null)
   private groupedCalltreeRoot = new CallTreeNode(this.rootFrame, null)
 
+  getRootFrames(): Frame[] {
+    return this.groupedCalltreeRoot.children.map(c => c.frame)
+  }
+
   // List of references to CallTreeNodes at the top of the
   // stack at the time of the sample.
   private samples: CallTreeNode[] = []
@@ -298,7 +302,9 @@ export class Profile {
       // track all of the unique frames that participated in
       // this call stack, then add to their weight at the end.
       framesInStack.add(node.frame)
-      edgesInStack.add(this.getOrInsertCallEdge(parent.frame, node.frame))
+      if (parent.frame != this.rootFrame) {
+        edgesInStack.add(this.getOrInsertCallEdge(parent.frame, node.frame))
+      }
     }
     node.addToSelfWeight(weight)
 
@@ -405,7 +411,7 @@ export class Profile {
     this.framesInStack.set(frame, frameCount + 1)
     this.lastValue = value
 
-    if (prevStackTop) {
+    if (prevStackTop && prevStackTop !== this.rootFrame) {
       const edge = this.getOrInsertCallEdge(prevStackTop, frame)
       const edgeCount = this.edgesInStack.get(edge) || 0
       this.edgesInStack.set(edge, edgeCount + 1)
@@ -447,7 +453,7 @@ export class Profile {
       this.framesInStack.set(frame, frameCount - 1)
     }
 
-    if (caller && callee) {
+    if (caller && callee && caller !== this.rootFrame) {
       const edge = this.getOrInsertCallEdge(caller, callee)
       const edgeCount = this.edgesInStack.get(edge)
       if (edgeCount == null) throw new Error('Missing edge')

@@ -19,6 +19,28 @@ export function getOrElse<K, V>(map: Map<K, V>, k: K, fallback: (k?: K) => V): V
   return map.get(k)!
 }
 
+export interface HasKey {
+  readonly key: string | number
+}
+
+export class KeyedSet<T extends HasKey> {
+  private map = new Map<string | number, T>()
+
+  has(t: T): boolean {
+    return this.map.has(t.key)
+  }
+  getOrInsert(t: T): T {
+    const key = t.key
+    const existing = this.map.get(key)
+    if (existing) return existing
+    this.map.set(key, t)
+    return t
+  }
+  forEach(fn: (t: T) => void) {
+    this.map.forEach(fn)
+  }
+}
+
 export function* itMap<T, U>(it: Iterable<T>, f: (t: T) => U): Iterable<U> {
   for (let t of it) {
     yield f(t)

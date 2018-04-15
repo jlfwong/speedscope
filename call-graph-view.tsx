@@ -46,7 +46,11 @@ export class CallGraphView extends Component<CallGraphViewProps, {}> {
                         fill="#000000"
                       >
                         {' '}
-                        {`${ranks.get(node.vertex)}: ${lastOf(node.vertex.frame.name.split('/'))}`}
+                        {`${callGraph.formatValue(
+                          node.vertex.getSelfWeight(),
+                        )}/${callGraph.formatValue(node.vertex.getTotalWeight())}: ${lastOf(
+                          node.vertex.name.split('/'),
+                        )}`}
                       </text>
                     </g>
                   )

@@ -32,6 +32,9 @@ export class Graph<V, E extends Edge<V>> {
   getVertices(): Set<V> {
     return this.vertices
   }
+  hasVertex(v: V) {
+    return this.vertices.has(v)
+  }
   getEdgesLeaving(v: V): Set<E> {
     return this.edgesLeavingVertex.get(v) || new Set()
   }
@@ -45,8 +48,12 @@ export class Graph<V, E extends Edge<V>> {
 export function rankVertices<V, E extends Edge<V>>(graph: Graph<V, E>, roots: V[]): Map<V, number> {
   const ranks = new Map<V, number>()
 
+  // TODO(jlfwong): Change this to rank by *longest* path from root
+  // rather than shortest
   function setRank(v: V, rank: number) {
-    if (ranks.has(v)) return
+    if (ranks.has(v)) {
+      return
+    }
     ranks.set(v, rank)
 
     for (let leavingEdge of graph.getEdgesLeaving(v)) {
@@ -57,6 +64,11 @@ export function rankVertices<V, E extends Edge<V>>(graph: Graph<V, E>, roots: V[
   for (let root of roots) {
     setRank(root, 0)
   }
+
+  for (let node of graph.getVertices()) {
+    setRank(node, 0)
+  }
+
   return ranks
 }
 

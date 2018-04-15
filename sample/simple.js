@@ -1,24 +1,26 @@
 function a() {
-  b();
-  c();
+  b()
+  c()
 }
 
 function b() {
-  d();
+  d()
+  d()
+  d()
 }
 
 function c() {
-  d();
+  d()
 }
 
 function d() {
-  let prod = 1;
+  let prod = 1
   for (let i = 1; i < 10000000; i++) {
     prod *= i
   }
-  return prod;
+  return prod
 }
 
 console.profile('a')
-a();
+a()
 console.profileEnd('a')

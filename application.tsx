@@ -314,7 +314,8 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
 
     const callGraph = new CallGraph({
       getTotalWeight: profile.getTotalNonIdleWeight.bind(profile),
-      forEachCall: profile.forEachCallGrouped.bind(profile),
+      getRoots: profile.getRootFrames.bind(profile),
+      forEachCallEdge: profile.forEachCallEdge.bind(profile),
       formatValue: profile.formatValue.bind(profile),
       getColorBucketForFrame,
     })
