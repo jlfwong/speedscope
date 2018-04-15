@@ -148,7 +148,13 @@ export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
           >
             <span className={css(style.emoji)}>⬅️</span>Left Heavy
           </div>
-          <div className={css()} onClick={this.setCallGraphView}>
+          <div
+            className={css(
+              style.toolbarTab,
+              this.props.viewMode === ViewMode.CALL_GRAPH && style.toolbarTabActive,
+            )}
+            onClick={this.setCallGraphView}
+          >
             <span className={css(style.emoji)}>⤵️</span>Call Graph
           </div>
           {help}
