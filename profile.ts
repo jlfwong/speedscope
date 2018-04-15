@@ -1,8 +1,25 @@
-import {lastOf, getOrInsert} from './utils'
+import {lastOf, KeyedSet} from './utils'
 const demangleCppModule = import('./demangle-cpp')
 
 // Force eager loading of the module
 demangleCppModule.then(() => console.log('CPP demangler loaded'))
+
+export class HasWeights {
+  private selfWeight = 0
+  private totalWeight = 0
+  getSelfWeight() {
+    return this.selfWeight
+  }
+  getTotalWeight() {
+    return this.totalWeight
+  }
+  addToTotalWeight(delta: number) {
+    this.totalWeight += delta
+  }
+  addToSelfWeight(delta: number) {
+    this.selfWeight += delta
+  }
+}
 
 export interface FrameInfo {
   key: string | number
@@ -22,25 +39,8 @@ export interface FrameInfo {
   col?: number
 }
 
-export class HasWeights {
-  private selfWeight = 0
-  private totalWeight = 0
-  getSelfWeight() {
-    return this.selfWeight
-  }
-  getTotalWeight() {
-    return this.totalWeight
-  }
-  addToTotalWeight(delta: number) {
-    this.totalWeight += delta
-  }
-  addToSelfWeight(delta: number) {
-    this.selfWeight += delta
-  }
-}
-
 export class Frame extends HasWeights {
-  key: string | number
+  readonly key: string | number
 
   // Name of the frame. May be a method name, e.g.
   // "ActiveRecord##to_hash"
@@ -48,21 +48,44 @@ export class Frame extends HasWeights {
 
   // File path of the code corresponding to this
   // call stack frame.
-  file?: string
+  readonly file?: string
 
   // Line in the given file where this frame occurs
-  line?: number
+  readonly line?: number
 
   // Column in the file
-  col?: number
+  readonly col?: number
 
-  constructor(info: FrameInfo) {
+  private constructor(info: FrameInfo) {
     super()
     this.key = info.key
     this.name = info.name
     this.file = info.file
     this.line = info.line
     this.col = info.col
+  }
+
+  static getOrInsert(set: KeyedSet<Frame>, info: FrameInfo) {
+    return set.getOrInsert(new Frame(info))
+  }
+}
+
+export class CallEdge {
+  private weight: number = 0
+  getWeight() {
+    return this.weight
+  }
+  addToWeight(delta: number) {
+    this.weight += delta
+  }
+
+  readonly key: string
+  private constructor(readonly from: Frame, readonly to: Frame) {
+    this.key = `${this.from.key}->${this.to.key}`
+  }
+
+  static getOrInsert(set: KeyedSet<CallEdge>, from: Frame, to: Frame) {
+    return set.getOrInsert(new CallEdge(from, to))
   }
 }
 
@@ -72,11 +95,6 @@ export class CallTreeNode extends HasWeights {
     super()
   }
 }
-
-const rootFrame = new Frame({
-  key: '(speedscope root)',
-  name: '(speedscope root)',
-})
 
 export interface ValueFormatter {
   format(v: number): string
@@ -113,9 +131,23 @@ export class Profile {
 
   private totalWeight: number
 
-  private frames = new Map<string | number, Frame>()
-  private appendOrderCalltreeRoot = new CallTreeNode(rootFrame, null)
-  private groupedCalltreeRoot = new CallTreeNode(rootFrame, null)
+  private frames = new KeyedSet<Frame>()
+  private getOrInsertFrame(info: FrameInfo) {
+    return Frame.getOrInsert(this.frames, info)
+  }
+
+  private callEdges = new KeyedSet<CallEdge>()
+  private getOrInsertCallEdge(from: Frame, to: Frame) {
+    return CallEdge.getOrInsert(this.callEdges, from, to)
+  }
+
+  private rootFrame = this.getOrInsertFrame({
+    key: '(speedscope root)',
+    name: '(speedscope root)',
+  })
+
+  private appendOrderCalltreeRoot = new CallTreeNode(this.rootFrame, null)
+  private groupedCalltreeRoot = new CallTreeNode(this.rootFrame, null)
 
   // List of references to CallTreeNodes at the top of the
   // stack at the time of the sample.
@@ -153,6 +185,7 @@ export class Profile {
     openFrame: (node: CallTreeNode, value: number) => void,
     closeFrame: (value: number) => void,
   ) {
+    const rootFrame = this.rootFrame
     function visit(node: CallTreeNode, start: number) {
       if (node.frame !== rootFrame) {
         openFrame(node, start)
@@ -191,7 +224,7 @@ export class Profile {
       // so hopefully this isn't much of a problem
       for (
         lca = stackTop;
-        lca && lca.frame != rootFrame && prevStack.indexOf(lca) === -1;
+        lca && lca.frame != this.rootFrame && prevStack.indexOf(lca) === -1;
         lca = lca.parent
       ) {}
 
@@ -205,7 +238,7 @@ export class Profile {
       const toOpen: CallTreeNode[] = []
       for (
         let node: CallTreeNode | null = stackTop;
-        node && node.frame != rootFrame && node != lca;
+        node && node.frame != this.rootFrame && node != lca;
         node = node.parent
       ) {
         toOpen.push(node)
@@ -230,17 +263,25 @@ export class Profile {
     this.frames.forEach(fn)
   }
 
+  forEachCallEdge(fn: (callEdge: CallEdge) => void) {
+    this.callEdges.forEach(fn)
+  }
+
   _appendSample(stack: FrameInfo[], weight: number, useAppendOrder: boolean) {
     if (isNaN(weight)) throw new Error('invalid weight')
     let node = useAppendOrder ? this.appendOrderCalltreeRoot : this.groupedCalltreeRoot
 
     let framesInStack = new Set<Frame>()
+    let edgesInStack = new Set<CallEdge>()
 
     for (let frameInfo of stack) {
-      const frame = getOrInsert(this.frames, frameInfo.key, () => new Frame(frameInfo))
+      const frame = this.getOrInsertFrame(frameInfo)
+
       const last = useAppendOrder
         ? lastOf(node.children)
         : node.children.find(c => c.frame === frame)
+
+      let parent = node
       if (last && last.frame == frame) {
         node = last
       } else {
@@ -257,6 +298,7 @@ export class Profile {
       // track all of the unique frames that participated in
       // this call stack, then add to their weight at the end.
       framesInStack.add(node.frame)
+      edgesInStack.add(this.getOrInsertCallEdge(parent.frame, node.frame))
     }
     node.addToSelfWeight(weight)
 
@@ -265,6 +307,10 @@ export class Profile {
 
       for (let frame of framesInStack) {
         frame.addToTotalWeight(weight)
+      }
+
+      for (let edge of edgesInStack) {
+        edge.addToWeight(weight)
       }
 
       this.samples.push(node)
@@ -280,9 +326,14 @@ export class Profile {
   // As an alternative API for importing profiles more efficiently, provide a
   // way to open & close frames directly without needing to construct tons of
   // arrays as intermediaries.
+
+  // TODO(jlfwong): It would be nice to separate the profile construction APIs
+  // from the profile usage APIs. Something like ProfileBuilder vs Profile or
+  // Profile vs FrozenProfile.
   private appendOrderStack: CallTreeNode[] = [this.appendOrderCalltreeRoot]
   private groupedOrderStack: CallTreeNode[] = [this.groupedCalltreeRoot]
   private framesInStack = new Map<Frame, number>()
+  private edgesInStack = new Map<CallEdge, number>()
   private stack: Frame[] = []
 
   private lastValue: number | null = null
@@ -296,12 +347,17 @@ export class Profile {
     if (stackTop) {
       stackTop.addToSelfWeight(delta)
     }
+    for (let edge of this.edgesInStack.keys()) {
+      edge.addToWeight(delta)
+    }
   }
   private addWeightsToNodes(value: number, stack: CallTreeNode[]) {
     const delta = value - this.lastValue!
+
     for (let node of stack) {
       node.addToTotalWeight(delta)
     }
+
     const stackTop = lastOf(stack)
     if (stackTop) {
       stackTop.addToSelfWeight(delta)
@@ -337,8 +393,10 @@ export class Profile {
     }
   }
   enterFrame(frameInfo: FrameInfo, value: number) {
-    const frame = getOrInsert(this.frames, frameInfo.key, () => new Frame(frameInfo))
+    let prevStackTop = lastOf(this.stack)
+    const frame = this.getOrInsertFrame(frameInfo)
     this.addWeightsToFrames(value)
+
     this._enterFrame(frame, value, true)
     this._enterFrame(frame, value, false)
 
@@ -346,6 +404,12 @@ export class Profile {
     const frameCount = this.framesInStack.get(frame) || 0
     this.framesInStack.set(frame, frameCount + 1)
     this.lastValue = value
+
+    if (prevStackTop) {
+      const edge = this.getOrInsertCallEdge(prevStackTop, frame)
+      const edgeCount = this.edgesInStack.get(edge) || 0
+      this.edgesInStack.set(edge, edgeCount + 1)
+    }
   }
 
   private _leaveFrame(frame: Frame, value: number, useAppendOrder: boolean) {
@@ -365,19 +429,33 @@ export class Profile {
   }
 
   leaveFrame(frameInfo: FrameInfo, value: number) {
-    const frame = getOrInsert(this.frames, frameInfo.key, () => new Frame(frameInfo))
+    const frame = this.getOrInsertFrame(frameInfo)
     this.addWeightsToFrames(value)
 
     this._leaveFrame(frame, value, true)
     this._leaveFrame(frame, value, false)
 
+    let callee = lastOf(this.stack)
     this.stack.pop()
+    let caller = lastOf(this.stack)
+
     const frameCount = this.framesInStack.get(frame)
-    if (frameCount == null) return
+    if (frameCount == null) throw new Error('Missing frame')
     if (frameCount === 1) {
       this.framesInStack.delete(frame)
     } else {
       this.framesInStack.set(frame, frameCount - 1)
+    }
+
+    if (caller && callee) {
+      const edge = this.getOrInsertCallEdge(caller, callee)
+      const edgeCount = this.edgesInStack.get(edge)
+      if (edgeCount == null) throw new Error('Missing edge')
+      if (edgeCount === 1) {
+        this.edgesInStack.delete(edge)
+      } else {
+        this.edgesInStack.set(edge, edgeCount - 1)
+      }
     }
     this.lastValue = value
   }
@@ -386,7 +464,7 @@ export class Profile {
   async demangle() {
     let demangleCpp: ((name: string) => string) | null = null
 
-    for (let frame of this.frames.values()) {
+    this.frames.forEach(async frame => {
       // This function converts a mangled C++ name such as "__ZNK7Support6ColorFeqERKS0_"
       // into a human-readable symbol (in this case "Support::ColorF::==(Support::ColorF&)")
       if (frame.name.startsWith('__Z')) {
@@ -395,6 +473,6 @@ export class Profile {
         }
         frame.name = demangleCpp(frame.name)
       }
-    }
+    })
   }
 }
