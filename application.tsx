@@ -12,6 +12,7 @@ import {Profile, Frame} from './profile'
 import {Flamechart} from './flamechart'
 import {FlamechartView} from './flamechart-view'
 import {FontFamily, FontSize, Colors} from './style'
+import {getHashParams, HashParams} from './hash-params'
 
 declare function require(x: string): any
 const exampleProfileURL = require('./sample/perf-vertx-stacks-01-collapsed-all.txt')
@@ -29,6 +30,7 @@ interface ApplicationState {
   sortedFlamechartRenderer: FlamechartRenderer | null
   sortOrder: SortOrder
   loading: boolean
+  error: boolean
 }
 
 interface ToolbarProps extends ApplicationState {
@@ -198,10 +200,16 @@ export class GLCanvas extends ReloadableComponent<GLCanvasProps, void> {
 }
 
 export class Application extends ReloadableComponent<{}, ApplicationState> {
+  hashParams: HashParams
+
   constructor() {
     super()
+    this.hashParams = getHashParams()
     this.state = {
-      loading: false,
+      // Start out at a loading state if we know that we'll immediately be fetching a profile to
+      // view.
+      loading: this.hashParams.profileURL != null,
+      error: false,
       profile: null,
       flamechart: null,
       flamechartRenderer: null,
@@ -243,8 +251,9 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
 
     await profile.demangle()
 
-    profile.setName(fileName)
-    document.title = `${fileName} - speedscope`
+    const title = this.hashParams.title || fileName
+    profile.setName(title)
+    document.title = `${title} - speedscope`
 
     const frames: Frame[] = []
     profile.forEachFrame(f => frames.push(f))
@@ -345,6 +354,24 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
 
   componentDidMount() {
     window.addEventListener('keypress', this.onWindowKeyPress)
+    this.maybeLoadHashParamProfile()
+  }
+
+  async maybeLoadHashParamProfile() {
+    try {
+      if (this.hashParams.profileURL) {
+        const response = await fetch(this.hashParams.profileURL)
+        const profile = await response.text()
+        let filename = new URL(this.hashParams.profileURL).pathname
+        if (filename.includes('/')) {
+          filename = filename.slice(filename.lastIndexOf('/') + 1)
+        }
+        await this.loadFromString(filename, profile)
+      }
+    } catch (e) {
+      this.setState({error: true})
+      throw e
+    }
   }
 
   componentWillUnmount() {
@@ -430,6 +457,15 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     )
   }
 
+  renderError() {
+    return (
+      <div className={css(style.error)}>
+        <div>😿 Something went wrong.</div>
+        <div>Check the JS console for more details.</div>
+      </div>
+    )
+  }
+
   renderLoadingBar() {
     return <div className={css(style.loading)} />
   }
@@ -451,6 +487,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       sortedFlamechartRenderer,
       sortOrder,
       loading,
+      error,
     } = this.state
     const flamechartToView = sortOrder == SortOrder.CHRONO ? flamechart : sortedFlamechart
     const flamechartRendererToUse =
@@ -460,7 +497,9 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       <div onDrop={this.onDrop} onDragOver={this.onDragOver} className={css(style.root)}>
         <GLCanvas setCanvasContext={this.setCanvasContext} />
         <Toolbar setSortOrder={this.setSortOrder} {...this.state} />
-        {loading ? (
+        {error ? (
+          this.renderError()
+        ) : loading ? (
           this.renderLoadingBar()
         ) : this.canvasContext && flamechartToView && flamechartRendererToUse ? (
           <FlamechartView
@@ -484,6 +523,13 @@ const style = StyleSheet.create({
     height: '100vh',
     zIndex: -1,
     pointerEvents: 'none',
+  },
+  error: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
   },
   loading: {
     height: 3,

@@ -11,6 +11,8 @@ Given raw profiling data, speedscope allows you to interactively explore the dat
 # Usage
 Visit https://jlfwong.github.io/speedscope/, then either browse to find a profile file or drag-and-drop one onto the page. The profiles are not uploaded anywhere -- the application is totally in-browser.
 
+To load a specific profile by URL, you can append a hash fragment like `#profileURL=[URL-encoded profile URL]&title=[URL-encoded custom title]`. Note that the server hosting the profile must have CORS configured to allow AJAX requests from speedscope.
+
 ## Supported file formats:
 1. The folded stack format output by the FlameGraph scripts do: https://github.com/brendangregg/FlameGraph#2-fold-stacks. Example: https://github.com/jlfwong/speedscope/blob/master/sample/perf-vertx-stacks-01-collapsed-all.txt
 2. The timeline format output by Chrome developer tools: https://developers.google.com/web/tools/chrome-devtools/evaluate-performance/reference#save.
