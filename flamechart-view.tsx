@@ -1,5 +1,5 @@
 import {h} from 'preact'
-import {css} from 'aphrodite'
+import {css, StyleDeclarationValue} from 'aphrodite'
 import {ReloadableComponent} from './reloadable'
 
 import {CallTreeNode} from './profile'
@@ -596,6 +596,116 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   }
 }
 
+interface StatisticsTableProps {
+  title: string
+  grandTotal: number
+  selectedTotal: number
+  selectedSelf: number
+  cellStyle: StyleDeclarationValue
+  formatter: (v: number) => string
+}
+
+class StatisticsTable extends ReloadableComponent<StatisticsTableProps, {}> {
+  render() {
+    const total = this.props.formatter(this.props.selectedTotal)
+    const self = this.props.formatter(this.props.selectedSelf)
+    const totalPerc = 100.0 * this.props.selectedTotal / this.props.grandTotal
+    const selfPerc = 100.0 * this.props.selectedSelf / this.props.grandTotal
+
+    return (
+      <div className={css(style.statsTable)}>
+        <div className={css(this.props.cellStyle, style.statsTableCell, style.statsTableHeader)}>
+          {this.props.title}
+        </div>
+
+        <div className={css(this.props.cellStyle, style.statsTableCell)}>Total</div>
+        <div className={css(this.props.cellStyle, style.statsTableCell)}>Self</div>
+
+        <div className={css(this.props.cellStyle, style.statsTableCell)}>{total}</div>
+        <div className={css(this.props.cellStyle, style.statsTableCell)}>{self}</div>
+
+        <div className={css(this.props.cellStyle, style.statsTableCell)}>
+          {formatPercent(totalPerc)}
+          <div className={css(style.barDisplay)} style={{width: `${totalPerc}%`}} />
+        </div>
+        <div className={css(this.props.cellStyle, style.statsTableCell)}>
+          {formatPercent(selfPerc)}
+          <div className={css(style.barDisplay)} style={{width: `${selfPerc}%`}} />
+        </div>
+      </div>
+    )
+  }
+}
+
+interface StackTraceViewProps {
+  node: CallTreeNode
+}
+class StackTraceView extends ReloadableComponent<StackTraceViewProps, {}> {
+  render() {
+    const rows: JSX.Element[] = []
+    let node: CallTreeNode | null = this.props.node
+    for (; node; node = node.parent) {
+      const row: (JSX.Element | string)[] = []
+      if (rows.length) {
+        row.push('@ ')
+      }
+      const {frame} = node
+
+      row.push(frame.name)
+      if (frame.file) {
+        let pos = frame.file
+        if (frame.line) {
+          pos += `:${frame.line}`
+          if (frame.col) {
+            pos += `:${frame.col}`
+          }
+        }
+        row.push(<span className={css(style.stackLinePos)}> ({pos})</span>)
+      }
+      rows.push(<div className={css(style.stackLine)}>{row}</div>)
+    }
+    return <div className={css(style.stackTraceView)}>{rows}</div>
+  }
+}
+
+interface FlamechartDetailViewProps {
+  flamechart: Flamechart
+  selectedNode: CallTreeNode | null
+}
+
+class FlamechartDetailView extends ReloadableComponent<FlamechartDetailViewProps, {}> {
+  render() {
+    if (this.props.selectedNode == null) {
+      return <div className={css(style.detailView)} />
+    }
+
+    const {flamechart, selectedNode} = this.props
+    const {frame} = selectedNode
+
+    return (
+      <div className={css(style.detailView)}>
+        <StatisticsTable
+          title={'This Instance'}
+          cellStyle={style.thisInstanceCell}
+          grandTotal={flamechart.getTotalWeight()}
+          selectedTotal={selectedNode.getTotalWeight()}
+          selectedSelf={selectedNode.getSelfWeight()}
+          formatter={flamechart.formatValue.bind(flamechart)}
+        />
+        <StatisticsTable
+          title={'All Instances'}
+          cellStyle={style.allInstancesCell}
+          grandTotal={flamechart.getTotalWeight()}
+          selectedTotal={frame.getTotalWeight()}
+          selectedSelf={frame.getSelfWeight()}
+          formatter={flamechart.formatValue.bind(flamechart)}
+        />
+        <StackTraceView node={selectedNode} />
+      </div>
+    )
+  }
+}
+
 interface FlamechartViewProps {
   flamechart: Flamechart
   canvasContext: CanvasContext
@@ -668,13 +778,7 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
   formatValue(weight: number) {
     const totalWeight = this.props.flamechart.getTotalWeight()
     const percent = 100 * weight / totalWeight
-    let formattedPercent = `${percent.toFixed(0)}%`
-    if (percent === 100) formattedPercent = '100%'
-    else if (percent > 99) formattedPercent = '>99%'
-    else if (percent < 0.01) formattedPercent = '<0.01%'
-    else if (percent < 1) formattedPercent = `${percent.toFixed(2)}%`
-    else if (percent < 10) formattedPercent = `${percent.toFixed(1)}%`
-
+    const formattedPercent = formatPercent(percent)
     return `${this.props.flamechart.formatValue(weight)} (${formattedPercent})`
   }
 
@@ -753,8 +857,21 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
           configSpaceViewportRect={this.state.configSpaceViewportRect}
           setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
         />
+        <FlamechartDetailView
+          flamechart={this.props.flamechart}
+          selectedNode={this.state.hoveredNode}
+        />
         {this.renderTooltip()}
       </div>
     )
   }
+}
+function formatPercent(percent: number) {
+  let formattedPercent = `${percent.toFixed(0)}%`
+  if (percent === 100) formattedPercent = '100%'
+  else if (percent > 99) formattedPercent = '>99%'
+  else if (percent < 0.01) formattedPercent = '<0.01%'
+  else if (percent < 1) formattedPercent = `${percent.toFixed(2)}%`
+  else if (percent < 10) formattedPercent = `${percent.toFixed(1)}%`
+  return formattedPercent
 }
