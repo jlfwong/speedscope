@@ -67,6 +67,10 @@ export const style = StyleSheet.create({
     gridTemplateRows: 'repeat(4, 1fr)',
     borderTop: `${Sizes.SEPARATOR_HEIGHT}px solid ${Colors.MEDIUM_GRAY}`,
     fontSize: FontSize.LABEL,
+    position: 'absolute',
+    background: 'white',
+    width: '100vw',
+    bottom: 0,
   },
   stackTraceView: {
     height: Sizes.DETAIL_VIEW_HEIGHT,

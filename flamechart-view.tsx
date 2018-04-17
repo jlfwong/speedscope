@@ -365,7 +365,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   }
 
   private lastBounds: ClientRect | null = null
-  private updateConfigSpaceViewport(windowResized = false) {
+  private updateConfigSpaceViewport() {
     if (!this.container) return
     const bounds = this.container.getBoundingClientRect()
     const {width, height} = bounds
@@ -380,7 +380,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
           new Vec2(this.configSpaceSize().x, height / this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT),
         ),
       )
-    } else if (windowResized) {
+    } else if (this.lastBounds.width !== width || this.lastBounds.height !== height) {
       // Resize the viewport rectangle to match the window size aspect
       // ratio.
       this.setConfigSpaceViewportRect(
@@ -395,7 +395,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   }
 
   onWindowResize = () => {
-    this.updateConfigSpaceViewport(true)
+    this.updateConfigSpaceViewport()
     this.onBeforeFrame()
   }
 
@@ -942,14 +942,6 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
         </div>
       </div>
     )
-  }
-
-  componentDidUpdate(prevProps: FlamechartViewProps, prevState: FlamechartViewState) {
-    if ((this.state.selectedNode == null) !== (prevState.selectedNode == null)) {
-      if (this.panZoomView) {
-        this.panZoomView.onWindowResize()
-      }
-    }
   }
 
   containerRef = (container?: Element) => {
