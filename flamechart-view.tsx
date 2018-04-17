@@ -85,6 +85,7 @@ interface FlamechartPanZoomViewProps {
   flamechartRenderer: FlamechartRenderer
 
   setNodeHover: (node: CallTreeNode | null, logicalViewSpaceMouse: Vec2) => void
+  setSelectedNode: (node: CallTreeNode | null) => void
   configSpaceViewportRect: Rect
   transformViewport: (transform: AffineTransform) => void
   setConfigSpaceViewportRect: (rect: Rect) => void
@@ -100,6 +101,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   private overlayCtx: CanvasRenderingContext2D | null = null
 
   private hoveredLabel: FlamechartFrameLabel | null = null
+  private selectedLabel: FlamechartFrameLabel | null = null
 
   private setConfigSpaceViewportRect(r: Rect) {
     this.props.setConfigSpaceViewportRect(r)
@@ -184,11 +186,29 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
     ctx.clearRect(0, 0, physicalViewSize.x, physicalViewSize.y)
 
-    ctx.strokeStyle = 'rgba(15, 10, 5, 0.5)'
-    ctx.lineWidth = 2
-
     if (this.hoveredLabel) {
+      if (this.selectedLabel && this.selectedLabel.node === this.hoveredLabel.node) {
+        ctx.strokeStyle = Colors.BRIGHT_BLUE
+        ctx.lineWidth = 3
+      } else {
+        ctx.strokeStyle = Colors.DARK_GRAY
+        ctx.lineWidth = 2
+      }
+
       const physicalViewBounds = configToPhysical.transformRect(this.hoveredLabel.configSpaceBounds)
+      ctx.strokeRect(
+        Math.floor(physicalViewBounds.left()),
+        Math.floor(physicalViewBounds.top()),
+        Math.floor(physicalViewBounds.width()),
+        Math.floor(physicalViewBounds.height()),
+      )
+    }
+    if (this.selectedLabel) {
+      const physicalViewBounds = configToPhysical.transformRect(
+        this.selectedLabel.configSpaceBounds,
+      )
+      ctx.strokeStyle = Colors.BRIGHT_BLUE
+      ctx.lineWidth = 2
       ctx.strokeRect(
         Math.floor(physicalViewBounds.left()),
         Math.floor(physicalViewBounds.top()),
@@ -386,6 +406,10 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     const physicalDelta = this.logicalToPhysicalViewSpace().transformVector(logicalViewSpaceDelta)
     const configDelta = this.configSpaceToPhysicalViewSpace().inverseTransformVector(physicalDelta)
 
+    if (this.hoveredLabel) {
+      this.props.setNodeHover(null, Vec2.zero)
+    }
+
     if (!configDelta) return
     this.props.transformViewport(AffineTransform.withTranslation(configDelta))
   }
@@ -424,7 +448,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     // When panning by scrolling, the element under
     // the cursor will change, so clear the hovered label.
     if (this.hoveredLabel) {
-      this.props.setNodeHover(this.hoveredLabel.node, logicalMousePos)
+      this.props.setNodeHover(null, logicalMousePos)
     }
   }
 
@@ -436,6 +460,14 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
         hoveredBounds.size.withY(this.props.configSpaceViewportRect.height()),
       )
       this.props.setConfigSpaceViewportRect(viewportRect)
+    }
+  }
+
+  private onClick = (ev: MouseEvent) => {
+    if (this.hoveredLabel) {
+      this.selectedLabel = this.hoveredLabel
+      this.props.setSelectedNode(this.hoveredLabel.node)
+      this.renderCanvas()
     }
   }
 
@@ -586,6 +618,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
         onMouseDown={this.onMouseDown}
         onMouseMove={this.onMouseMove}
         onMouseLeave={this.onMouseLeave}
+        onClick={this.onClick}
         onDblClick={this.onDblClick}
         onWheel={this.onWheel}
         ref={this.containerRef}
@@ -714,6 +747,7 @@ interface FlamechartViewProps {
 
 interface FlamechartViewState {
   hoveredNode: CallTreeNode | null
+  selectedNode: CallTreeNode | null
   configSpaceViewportRect: Rect
   logicalSpaceMouse: Vec2
 }
@@ -725,6 +759,7 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
     super()
     this.state = {
       hoveredNode: null,
+      selectedNode: null,
       configSpaceViewportRect: Rect.empty,
       logicalSpaceMouse: Vec2.zero,
     }
@@ -768,10 +803,16 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
     this.setConfigSpaceViewportRect(viewportRect)
   }
 
-  onNodeHover = (hoveredNode: CallTreeNode | null, logicalSpaceMouse: Vec2) => {
+  onNodeHover = (node: CallTreeNode | null, logicalSpaceMouse: Vec2) => {
     this.setState({
-      hoveredNode,
+      hoveredNode: node,
       logicalSpaceMouse: logicalSpaceMouse.plus(new Vec2(0, Sizes.MINIMAP_HEIGHT)),
+    })
+  }
+
+  onNodeClick = (node: CallTreeNode | null) => {
+    this.setState({
+      selectedNode: node,
     })
   }
 
@@ -853,13 +894,14 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
           flamechart={this.props.flamechart}
           flamechartRenderer={this.props.flamechartRenderer}
           setNodeHover={this.onNodeHover}
+          setSelectedNode={this.onNodeClick}
           transformViewport={this.transformViewport}
           configSpaceViewportRect={this.state.configSpaceViewportRect}
           setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
         />
         <FlamechartDetailView
           flamechart={this.props.flamechart}
-          selectedNode={this.state.hoveredNode}
+          selectedNode={this.state.selectedNode}
         />
         {this.renderTooltip()}
       </div>
