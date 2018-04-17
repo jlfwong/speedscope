@@ -77,7 +77,7 @@ export const style = StyleSheet.create({
   stackLine: {
     whiteSpace: 'nowrap',
   },
-  stackLinePos: {
+  stackFileLine: {
     color: Colors.MEDIUM_GRAY,
   },
   statsTable: {
@@ -95,10 +95,12 @@ export const style = StyleSheet.create({
     alignItems: 'center',
   },
   thisInstanceCell: {
-    background: Colors.LIGHT_BLUE,
+    background: Colors.DARK_BLUE,
+    color: 'white',
   },
   allInstancesCell: {
-    background: Colors.LIGHTER_BLUE,
+    background: Colors.PALE_DARK_BLUE,
+    color: 'white',
   },
   barDisplay: {
     position: 'absolute',

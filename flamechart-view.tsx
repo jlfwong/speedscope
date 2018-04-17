@@ -83,6 +83,7 @@ interface FlamechartPanZoomViewProps {
 
   canvasContext: CanvasContext
   flamechartRenderer: FlamechartRenderer
+  selectedNode: CallTreeNode | null
 
   setNodeHover: (node: CallTreeNode | null, logicalViewSpaceMouse: Vec2) => void
   setSelectedNode: (node: CallTreeNode | null) => void
@@ -101,7 +102,6 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   private overlayCtx: CanvasRenderingContext2D | null = null
 
   private hoveredLabel: FlamechartFrameLabel | null = null
-  private selectedLabel: FlamechartFrameLabel | null = null
 
   private setConfigSpaceViewportRect(r: Rect) {
     this.props.setConfigSpaceViewportRect(r)
@@ -187,33 +187,22 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     ctx.clearRect(0, 0, physicalViewSize.x, physicalViewSize.y)
 
     if (this.hoveredLabel) {
-      if (this.selectedLabel && this.selectedLabel.node === this.hoveredLabel.node) {
-        ctx.strokeStyle = Colors.BRIGHT_BLUE
-        ctx.lineWidth = 3
-      } else {
-        ctx.strokeStyle = Colors.DARK_GRAY
-        ctx.lineWidth = 2
+      let lineWidth = 2
+      let color = Colors.DARK_GRAY
+
+      if (this.props.selectedNode === this.hoveredLabel.node) {
+        color = Colors.DARK_BLUE
+        lineWidth = 5
       }
+      ctx.lineWidth = lineWidth
+      ctx.strokeStyle = color
 
       const physicalViewBounds = configToPhysical.transformRect(this.hoveredLabel.configSpaceBounds)
       ctx.strokeRect(
-        Math.floor(physicalViewBounds.left()),
-        Math.floor(physicalViewBounds.top()),
-        Math.floor(physicalViewBounds.width()),
-        Math.floor(physicalViewBounds.height()),
-      )
-    }
-    if (this.selectedLabel) {
-      const physicalViewBounds = configToPhysical.transformRect(
-        this.selectedLabel.configSpaceBounds,
-      )
-      ctx.strokeStyle = Colors.BRIGHT_BLUE
-      ctx.lineWidth = 2
-      ctx.strokeRect(
-        Math.floor(physicalViewBounds.left()),
-        Math.floor(physicalViewBounds.top()),
-        Math.floor(physicalViewBounds.width()),
-        Math.floor(physicalViewBounds.height()),
+        Math.floor(physicalViewBounds.left() + 1 + lineWidth / 2),
+        Math.floor(physicalViewBounds.top() + 1 + lineWidth / 2),
+        Math.floor(Math.max(0, physicalViewBounds.width() - 2 - lineWidth)),
+        Math.floor(Math.max(0, physicalViewBounds.height() - 2 - lineWidth)),
       )
     }
 
@@ -275,21 +264,84 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       renderFrameLabelAndChildren(frame)
     }
 
+    const frameOutlineWidth = 4
+    ctx.strokeStyle = Colors.PALE_DARK_BLUE
+    ctx.lineWidth = frameOutlineWidth
+    const minConfigSpaceWidthToRenderOutline = (
+      configToPhysical.inverseTransformVector(new Vec2(1, 0)) || new Vec2(0, 0)
+    ).x
+    const renderIndirectlySelectedFrameOutlines = (frame: FlamechartFrame, depth = 0) => {
+      if (!this.props.selectedNode) return
+      const width = frame.end - frame.start
+      const configSpaceBounds = new Rect(new Vec2(frame.start, depth), new Vec2(width, 1))
+
+      if (width < minConfigSpaceWidthToRenderOutline) return
+      if (configSpaceBounds.left() > this.props.configSpaceViewportRect.right()) return
+      if (configSpaceBounds.right() < this.props.configSpaceViewportRect.left()) return
+      if (configSpaceBounds.top() > this.props.configSpaceViewportRect.bottom()) return
+
+      if (configSpaceBounds.hasIntersectionWith(this.props.configSpaceViewportRect)) {
+        const physicalRectBounds = configToPhysical.transformRect(configSpaceBounds)
+
+        if (frame.node.frame === this.props.selectedNode.frame) {
+          if (frame.node === this.props.selectedNode) {
+            if (ctx.strokeStyle !== Colors.DARK_BLUE) {
+              ctx.stroke()
+              ctx.beginPath()
+              ctx.strokeStyle = Colors.DARK_BLUE
+            }
+          } else {
+            if (ctx.strokeStyle !== Colors.PALE_DARK_BLUE) {
+              ctx.stroke()
+              ctx.beginPath()
+              ctx.strokeStyle = Colors.PALE_DARK_BLUE
+            }
+          }
+
+          // Identify the flamechart frames with a function that matches the
+          // selected flamechart frame.
+          ctx.rect(
+            Math.floor(physicalRectBounds.left() + 1 + frameOutlineWidth / 2),
+            Math.floor(physicalRectBounds.top() + 1 + frameOutlineWidth / 2),
+            Math.floor(Math.max(0, physicalRectBounds.width() - 2 - frameOutlineWidth)),
+            Math.floor(Math.max(0, physicalRectBounds.height() - 2 - frameOutlineWidth)),
+          )
+        }
+      }
+
+      for (let child of frame.children) {
+        renderIndirectlySelectedFrameOutlines(child, depth + 1)
+      }
+    }
+
+    ctx.beginPath()
+    for (let frame of this.props.flamechart.getLayers()[0] || []) {
+      renderIndirectlySelectedFrameOutlines(frame)
+    }
+    ctx.stroke()
+
+    this.renderTimeIndicators()
+  }
+
+  private renderTimeIndicators() {
+    const ctx = this.overlayCtx
+    if (!ctx) return
+
+    const physicalViewSpaceFrameHeight = this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT * DEVICE_PIXEL_RATIO
+    const physicalViewSize = this.physicalViewSize()
+    const configToPhysical = this.configSpaceToPhysicalViewSpace()
+
     const left = this.props.configSpaceViewportRect.left()
     const right = this.props.configSpaceViewportRect.right()
-
     // We want about 10 gridlines to be visible, and want the unit to be
     // 1eN, 2eN, or 5eN for some N
-
     // Ideally, we want an interval every 100 logical screen pixels
     const logicalToConfig = (
       this.configSpaceToPhysicalViewSpace().inverted() || new AffineTransform()
     ).times(this.logicalToPhysicalViewSpace())
     const targetInterval = logicalToConfig.transformVector(new Vec2(200, 1)).x
-
     const minInterval = Math.pow(10, Math.floor(Math.log10(targetInterval)))
     let interval = minInterval
-
     if (targetInterval / interval > 5) {
       interval *= 5
     } else if (targetInterval / interval > 2) {
@@ -299,14 +351,12 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     {
       ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
       ctx.fillRect(0, 0, physicalViewSize.x, physicalViewSpaceFrameHeight)
-
       ctx.fillStyle = Colors.GRAY
       for (let x = Math.ceil(left / interval) * interval; x < right; x += interval) {
         // TODO(jlfwong): Ensure that labels do not overlap
         const pos = Math.round(configToPhysical.transformPosition(new Vec2(x, 0)).x)
         const labelText = this.props.flamechart.formatValue(x)
         const textWidth = cachedMeasureTextWidth(ctx, labelText)
-
         ctx.fillText(labelText, pos - textWidth - 5, 2)
         ctx.fillRect(pos, 0, 1, physicalViewSize.y)
       }
@@ -465,9 +515,10 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
   private onClick = (ev: MouseEvent) => {
     if (this.hoveredLabel) {
-      this.selectedLabel = this.hoveredLabel
       this.props.setSelectedNode(this.hoveredLabel.node)
       this.renderCanvas()
+    } else {
+      this.props.setSelectedNode(null)
     }
   }
 
@@ -587,6 +638,9 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       this.pan(new Vec2(0, -100))
     } else if (ev.key === 'ArrowDown' || ev.key === 's') {
       this.pan(new Vec2(0, 100))
+    } else if (ev.key === 'Escape') {
+      this.props.setSelectedNode(null)
+      this.renderCanvas()
     }
   }
 
@@ -595,6 +649,9 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   }
   componentWillReceiveProps(nextProps: FlamechartPanZoomViewProps) {
     if (this.props.flamechart !== nextProps.flamechart) {
+      this.hoveredLabel = null
+      this.renderCanvas()
+    } else if (this.props.selectedNode !== nextProps.selectedNode) {
       this.renderCanvas()
     } else if (this.props.configSpaceViewportRect !== nextProps.configSpaceViewportRect) {
       this.renderCanvas()
@@ -693,7 +750,7 @@ class StackTraceView extends ReloadableComponent<StackTraceViewProps, {}> {
             pos += `:${frame.col}`
           }
         }
-        row.push(<span className={css(style.stackLinePos)}> ({pos})</span>)
+        row.push(<span className={css(style.stackFileLine)}> ({pos})</span>)
       }
       rows.push(<div className={css(style.stackLine)}>{row}</div>)
     }
@@ -895,6 +952,7 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
           flamechartRenderer={this.props.flamechartRenderer}
           setNodeHover={this.onNodeHover}
           setSelectedNode={this.onNodeClick}
+          selectedNode={this.state.selectedNode}
           transformViewport={this.transformViewport}
           configSpaceViewportRect={this.state.configSpaceViewportRect}
           setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
