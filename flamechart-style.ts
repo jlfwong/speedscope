@@ -74,6 +74,14 @@ export const style = StyleSheet.create({
     lineHeight: `${FontSize.LABEL + 2}px`,
     padding: 5,
   },
+  stackChit: {
+    display: 'inline-block',
+    verticalAlign: 'bottom',
+    marginRight: '0.5em',
+    border: `1px solid ${Colors.MEDIUM_GRAY}`,
+    width: FontSize.LABEL - 2,
+    height: FontSize.LABEL - 2,
+  },
   stackLine: {
     whiteSpace: 'nowrap',
   },
