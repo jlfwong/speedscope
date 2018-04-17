@@ -760,15 +760,11 @@ class StackTraceView extends ReloadableComponent<StackTraceViewProps, {}> {
 
 interface FlamechartDetailViewProps {
   flamechart: Flamechart
-  selectedNode: CallTreeNode | null
+  selectedNode: CallTreeNode
 }
 
 class FlamechartDetailView extends ReloadableComponent<FlamechartDetailViewProps, {}> {
   render() {
-    if (this.props.selectedNode == null) {
-      return <div className={css(style.detailView)} />
-    }
-
     const {flamechart, selectedNode} = this.props
     const {frame} = selectedNode
 
@@ -920,6 +916,14 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
     )
   }
 
+  componentDidUpdate(prevProps: FlamechartViewProps, prevState: FlamechartViewState) {
+    if ((this.state.selectedNode == null) !== (prevState.selectedNode == null)) {
+      if (this.panZoomView) {
+        this.panZoomView.onWindowResize()
+      }
+    }
+  }
+
   containerRef = (container?: Element) => {
     this.container = (container as HTMLDivElement) || null
   }
@@ -957,10 +961,12 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
           configSpaceViewportRect={this.state.configSpaceViewportRect}
           setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
         />
-        <FlamechartDetailView
-          flamechart={this.props.flamechart}
-          selectedNode={this.state.selectedNode}
-        />
+        {this.state.selectedNode && (
+          <FlamechartDetailView
+            flamechart={this.props.flamechart}
+            selectedNode={this.state.selectedNode}
+          />
+        )}
         {this.renderTooltip()}
       </div>
     )
