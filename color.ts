@@ -1,5 +1,3 @@
-import {Frame} from './profile'
-
 export class Color {
   constructor(
     readonly r: number = 0,
@@ -30,56 +28,10 @@ export class Color {
 
     return new Color(R1 + m, G1 + m, B1 + m, 1.0)
   }
-}
 
-function fract(x: number) {
-  return x - Math.floor(x)
-}
-
-// TODO(jlfwong): Can probably delete this?
-export class FrameColorGenerator {
-  private frameToColor = new Map<Frame, Color>()
-
-  constructor(frames: Frame[]) {
-    // Make a copy so we can mutate it
-    frames = [...frames]
-
-    function key(f: Frame) {
-      return (f.file || '') + f.name
-    }
-
-    function compare(a: Frame, b: Frame) {
-      return key(a) > key(b) ? 1 : -1
-    }
-
-    frames.sort(compare)
-
-    const cumulativeScores: number[] = []
-    let lastScore = 0
-    for (let i = 0; i < frames.length; i++) {
-      const score = lastScore + Math.abs(compare(frames[i], frames[(i + 1) % frames.length]))
-      cumulativeScores.push(score)
-      lastScore = score
-    }
-
-    // We now have a sorted list of frames s.t. frames with similar
-    // file paths and method names are clustered together.
-    //
-    // Now, to assign them colors, we map normalized cumulative
-    // score values onto the full range of hue values.
-    const totalScore = cumulativeScores[cumulativeScores.length - 1] || 1
-    for (let i = 0; i < cumulativeScores.length; i++) {
-      const ratio = cumulativeScores[i] / totalScore
-      const x = 2 * fract(100.0 * ratio) - 1
-
-      const L = 0.85 - 0.1 * x
-      const C = 0.2 + 0.1 * x
-      const H = 360 * ratio
-      this.frameToColor.set(frames[i], Color.fromLumaChromaHue(L, C, H))
-    }
-  }
-
-  getColorForFrame(f: Frame) {
-    return this.frameToColor.get(f) || new Color()
+  toCSS(): string {
+    return `rgba(${(255 * this.r).toFixed()}, ${(255 * this.g).toFixed()}, ${(
+      255 * this.b
+    ).toFixed()}, ${this.a.toFixed(2)})`
   }
 }

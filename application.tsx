@@ -592,7 +592,7 @@ const style = StyleSheet.create({
     cursor: 'pointer',
   },
   link: {
-    color: Colors.LIGHT_BLUE,
+    color: Colors.BRIGHT_BLUE,
     cursor: 'pointer',
     textDecoration: 'none',
   },
@@ -639,9 +639,9 @@ const style = StyleSheet.create({
     },
   },
   toolbarTabActive: {
-    background: Colors.LIGHT_BLUE,
+    background: Colors.BRIGHT_BLUE,
     ':hover': {
-      background: Colors.LIGHT_BLUE,
+      background: Colors.BRIGHT_BLUE,
     },
   },
   noLinkStyle: {
