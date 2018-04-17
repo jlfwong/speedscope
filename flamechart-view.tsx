@@ -716,11 +716,11 @@ class StatisticsTable extends ReloadableComponent<StatisticsTableProps, {}> {
 
         <div className={css(this.props.cellStyle, style.statsTableCell)}>
           {formatPercent(totalPerc)}
-          <div className={css(style.barDisplay)} style={{width: `${totalPerc}%`}} />
+          <div className={css(style.barDisplay)} style={{height: `${totalPerc}%`}} />
         </div>
         <div className={css(this.props.cellStyle, style.statsTableCell)}>
           {formatPercent(selfPerc)}
-          <div className={css(style.barDisplay)} style={{width: `${selfPerc}%`}} />
+          <div className={css(style.barDisplay)} style={{height: `${selfPerc}%`}} />
         </div>
       </div>
     )

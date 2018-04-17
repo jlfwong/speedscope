@@ -83,6 +83,7 @@ export const style = StyleSheet.create({
   statsTable: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
+    gridTemplateRows: `repeat(3, ${FontSize.LABEL + 10}px)`,
     gridGap: '1px 1px',
     textAlign: 'center',
     paddingRight: 1,
@@ -92,6 +93,8 @@ export const style = StyleSheet.create({
   },
   statsTableCell: {
     position: 'relative',
+    display: 'flex',
+    justifyContent: 'center',
     alignItems: 'center',
   },
   thisInstanceCell: {
@@ -107,6 +110,6 @@ export const style = StyleSheet.create({
     top: 0,
     left: 0,
     background: 'rgba(0, 0, 0, 0.2)',
-    height: '100%',
+    width: '100%',
   },
 })
