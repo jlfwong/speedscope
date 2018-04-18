@@ -184,8 +184,6 @@ export function importFromFirefox(firefoxProfile: FirefoxProfile): Profile {
           return null
         }
 
-        console.log(match)
-
         return getOrInsert(frameIdToFrameInfo, f, () => ({
           key: location,
           name: match[1]!,
