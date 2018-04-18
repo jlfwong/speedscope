@@ -13,6 +13,7 @@ import {Flamechart} from './flamechart'
 import {FlamechartView} from './flamechart-view'
 import {FontFamily, FontSize, Colors} from './style'
 import {getHashParams, HashParams} from './hash-params'
+import {importFromFirefox} from './import/firefox'
 
 declare function require(x: string): any
 const exampleProfileURL = require('./sample/perf-vertx-stacks-01-collapsed-all.txt')
@@ -57,7 +58,10 @@ function importProfile(contents: string, fileName: string): Profile | null {
     // Second pass: Try to guess what file format it is based on structure
     try {
       const parsed = JSON.parse(contents)
-      if (Array.isArray(parsed) && parsed[parsed.length - 1].name === 'CpuProfile') {
+      if (parsed['systemHost'] && parsed['systemHost']['name'] == 'Firefox') {
+        console.log('Importing as Firefox profile')
+        return importFromFirefox(parsed)
+      } else if (Array.isArray(parsed) && parsed[parsed.length - 1].name === 'CpuProfile') {
         console.log('Importing as Chrome CPU Profile')
         return importFromChromeTimeline(parsed)
       } else if ('nodes' in parsed && 'samples' in parsed && 'timeDeltas' in parsed) {
