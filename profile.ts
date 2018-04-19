@@ -101,10 +101,23 @@ export class TimeFormatter implements ValueFormatter {
   format(v: number) {
     const s = v * this.multiplier
 
+    if (s / 60 >= 1) return `${(s / 60).toFixed(2)}min`
     if (s / 1 >= 1) return `${s.toFixed(2)}s`
     if (s / 1e-3 >= 1) return `${(s / 1e-3).toFixed(2)}ms`
     if (s / 1e-6 >= 1) return `${(s / 1e-6).toFixed(2)}µs`
     else return `${(s / 1e-9).toFixed(2)}ms`
+  }
+}
+
+export class ByteFormatter implements ValueFormatter {
+  format(v: number) {
+    if (v < 1024) return `${v.toFixed(2)} B`
+    v /= 1024
+    if (v < 1024) return `${v.toFixed(2)} KB`
+    v /= 1024
+    if (v < 1024) return `${v.toFixed(2)} MB`
+    v /= 1024
+    return `${v.toFixed(2)} GB`
   }
 }
 
@@ -124,7 +137,7 @@ export class Profile {
 
   private valueFormatter: ValueFormatter = new RawValueFormatter()
 
-  constructor(totalWeight: number) {
+  constructor(totalWeight: number = 0) {
     this.totalWeight = totalWeight
   }
 
@@ -380,6 +393,8 @@ export class Profile {
       this.framesInStack.set(frame, frameCount - 1)
     }
     this.lastValue = value
+
+    this.totalWeight = Math.max(this.totalWeight, this.lastValue)
   }
 
   // Demangle symbols for readability

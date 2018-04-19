@@ -14,6 +14,7 @@ import {FlamechartView} from './flamechart-view'
 import {FontFamily, FontSize, Colors} from './style'
 import {getHashParams, HashParams} from './hash-params'
 import {importFromFirefox} from './import/firefox'
+import {importFromInstrumentsDeepCopy} from './import/instruments'
 
 declare function require(x: string): any
 const exampleProfileURL = require('./sample/perf-vertx-stacks-01-collapsed-all.txt')
@@ -50,7 +51,10 @@ function importProfile(contents: string, fileName: string): Profile | null {
     } else if (fileName.endsWith('.stackprof.json')) {
       console.log('Importing as stackprof profile')
       return importFromStackprof(JSON.parse(contents))
-    } else if (fileName.endsWith('.txt')) {
+    } else if (fileName.endsWith('.instruments.txt')) {
+      console.log('Importing as Instruments.app deep copy')
+      return importFromInstrumentsDeepCopy(contents)
+    } else if (fileName.endsWith('.collapsedstack.txt')) {
       console.log('Importing as collapsed stack format')
       return importFromBGFlameGraph(contents)
     }
@@ -73,6 +77,13 @@ function importProfile(contents: string, fileName: string): Profile | null {
       }
     } catch (e) {
       // Format is not JSON
+
+      // If the first line contains "Symbol Name", preceded by a tab, it's probably
+      // a deep copy from OS X Instruments.app
+      if (/^[\w \t]*\tSymbol Name/.exec(contents)) {
+        console.log('Importing as Instruments.app deep copy')
+        return importFromInstrumentsDeepCopy(contents)
+      }
 
       // If every line ends with a space followed by a number, it's probably
       // the collapsed stack format.
@@ -356,8 +367,22 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     }
   }
 
+  onDocumentPaste = (ev: Event) => {
+    ev.preventDefault()
+    ev.stopPropagation()
+
+    const pasted = (ev as ClipboardEvent).clipboardData.getData('text')
+    this.setState({loading: true}, () => {
+      // Delay to allow the loading bar to display
+      setTimeout(() => {
+        this.loadFromString('From Clipboard', pasted)
+      }, 0)
+    })
+  }
+
   componentDidMount() {
     window.addEventListener('keypress', this.onWindowKeyPress)
+    document.addEventListener('paste', this.onDocumentPaste)
     this.maybeLoadHashParamProfile()
   }
 
@@ -380,6 +405,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
 
   componentWillUnmount() {
     window.removeEventListener('keypress', this.onWindowKeyPress)
+    document.removeEventListener('paste', this.onDocumentPaste)
   }
 
   flamechartView: FlamechartView | null = null
