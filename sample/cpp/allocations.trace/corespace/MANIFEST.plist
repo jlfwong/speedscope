@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>paths</key>
+	<array>
+		<string>run3/core/uniquing</string>
+		<string>currentRun/core/uniquing</string>
+		<string>run3/core/core-config</string>
+		<string>run3/core/table-manager</string>
+	</array>
+</dict>
+</plist>
