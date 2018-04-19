@@ -7,7 +7,7 @@ import {cachedMeasureTextWidth} from './utils'
 import {style, Sizes} from './flamechart-style'
 import {FontFamily, FontSize, Colors} from './style'
 import {CanvasContext} from './canvas-context'
-import {TextureCachedRenderer} from './texture-catched-renderer'
+import {TextureCachedRenderer} from './texture-cached-renderer'
 
 const DEVICE_PIXEL_RATIO = window.devicePixelRatio
 

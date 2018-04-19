@@ -12,7 +12,7 @@ import {
   TextureCachedRenderer,
   TextureRenderer,
   TextureRendererProps,
-} from './texture-catched-renderer'
+} from './texture-cached-renderer'
 import {StatsPanel} from './stats'
 
 import {Vec2, Rect} from './math'
