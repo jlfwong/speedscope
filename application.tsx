@@ -38,7 +38,7 @@ interface ToolbarProps extends ApplicationState {
   setSortOrder(order: SortOrder): void
 }
 
-function importProfile(contents: string, fileName: string): Profile | null {
+function importProfileFromString(contents: string, fileName: string): Profile | null {
   try {
     // First pass: Check known file format names to infer the file type
     if (fileName.endsWith('.cpuprofile')) {
@@ -88,6 +88,14 @@ function importProfile(contents: string, fileName: string): Profile | null {
     console.error(e)
     return null
   }
+}
+
+function importProfileFromArrayBuffer(contents: ArrayBuffer, fileName: string): Profile | null {
+  if (fileName === 'form.template') {
+    // form.template from inside an Mac Instruments .trace file
+    console.log('Instruments content', contents)
+  }
+  return null
 }
 
 export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
@@ -241,11 +249,19 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     }
   }
 
-  async loadFromString(fileName: string, contents: string) {
+  async loadProfileFromArrayBuffer(fileName: string, contents: ArrayBuffer) {
+    await this.loadProfile(fileName, async () => importProfileFromArrayBuffer(contents, fileName))
+  }
+
+  async loadProfileFromString(fileName: string, contents: string) {
+    await this.loadProfile(fileName, async () => importProfileFromString(contents, fileName))
+  }
+
+  async loadProfile(fileName: string, loader: () => Promise<Profile | null>) {
     if (!this.canvasContext) return
 
     console.time('import')
-    const profile = importProfile(contents, fileName)
+    const profile = await loader()
     if (profile == null) {
       this.setState({loading: false})
       // TODO(jlfwong): Make this a nicer overlay
@@ -310,16 +326,51 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     )
   }
 
-  loadFromFile(file: File) {
+  loadFromFile(file: File, type: 'text' | 'binary' = 'text') {
     this.setState({loading: true}, () => {
       requestAnimationFrame(() => {
         const reader = new FileReader()
         reader.addEventListener('loadend', () => {
-          this.loadFromString(file.name, reader.result)
+          if (type === 'text') {
+            this.loadProfileFromString(file.name, reader.result)
+          } else {
+            this.loadProfileFromArrayBuffer(file.name, reader.result)
+          }
         })
-        reader.readAsText(file)
+        if (type === 'text') {
+          reader.readAsText(file)
+        } else {
+          reader.readAsArrayBuffer(file)
+        }
       })
     })
+  }
+
+  async loadFromWebkitEntry(entry: WebKitEntry, depth = 0) {
+    if (entry.isFile) {
+      const file = await new Promise<File>((resolve, reject) => {
+        ;(entry as any).file(resolve)
+      })
+      this.loadFromFile(file)
+    } else if (entry.isDirectory) {
+      // Instrument .trace "files" are actually directories
+      const entries = await new Promise<WebKitEntry[]>((resolve, reject) => {
+        ;(entry as any).createReader().readEntries((entries: any[]) => {
+          resolve(entries)
+        })
+      })
+      for (let entry of entries) {
+        // Instruments .trace file
+        if (entry.name === 'form.template') {
+          const file = await new Promise<File>((resolve, reject) => {
+            ;(entry as any).file(resolve)
+          })
+          this.loadFromFile(file, 'binary')
+          return
+        }
+      }
+      throw new Error('Unrecognized file format')
+    }
   }
 
   loadExample = () => {
@@ -328,14 +379,19 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     fetch(exampleProfileURL)
       .then(resp => resp.text())
       .then(data => {
-        this.loadFromString(filename, data)
+        this.loadProfileFromString(filename, data)
       })
   }
 
   onDrop = (ev: DragEvent) => {
-    let file: File | null = ev.dataTransfer.files.item(0)
-    if (file) {
-      this.loadFromFile(file)
+    const firstItem = ev.dataTransfer.items[0]
+    if ('webkitGetAsEntry' in firstItem) {
+      this.loadFromWebkitEntry(firstItem.webkitGetAsEntry())
+    } else {
+      let file: File | null = ev.dataTransfer.files.item(0)
+      if (file) {
+        this.loadFromFile(file)
+      }
     }
     ev.preventDefault()
   }
@@ -370,7 +426,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
         if (filename.includes('/')) {
           filename = filename.slice(filename.lastIndexOf('/') + 1)
         }
-        await this.loadFromString(filename, profile)
+        await this.loadProfileFromString(filename, profile)
       }
     } catch (e) {
       this.setState({error: true})
