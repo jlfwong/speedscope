@@ -59,8 +59,6 @@ function trimTextMid(ctx: CanvasRenderingContext2D, text: string, maxWidth: numb
   return buildTrimmedText(text, lo)
 }
 
-const DEVICE_PIXEL_RATIO = window.devicePixelRatio
-
 /**
  * Component to visualize a Flamechart and interact with it via hovering,
  * zooming, and panning.
@@ -143,7 +141,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   }
 
   private logicalToPhysicalViewSpace() {
-    return AffineTransform.withScale(new Vec2(DEVICE_PIXEL_RATIO, DEVICE_PIXEL_RATIO))
+    return AffineTransform.withScale(new Vec2(window.devicePixelRatio, window.devicePixelRatio))
   }
 
   private resizeOverlayCanvasIfNeeded() {
@@ -162,8 +160,8 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     // Still initializing: don't resize yet
     if (width === 0 || height === 0) return
 
-    const scaledWidth = width * DEVICE_PIXEL_RATIO
-    const scaledHeight = height * DEVICE_PIXEL_RATIO
+    const scaledWidth = width * window.devicePixelRatio
+    const scaledHeight = height * window.devicePixelRatio
 
     if (scaledWidth === this.overlayCanvas.width && scaledHeight === this.overlayCanvas.height)
       return
@@ -180,8 +178,9 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
     const configToPhysical = this.configSpaceToPhysicalViewSpace()
 
-    const physicalViewSpaceFontSize = FontSize.LABEL * DEVICE_PIXEL_RATIO
-    const physicalViewSpaceFrameHeight = this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT * DEVICE_PIXEL_RATIO
+    const physicalViewSpaceFontSize = FontSize.LABEL * window.devicePixelRatio
+    const physicalViewSpaceFrameHeight =
+      this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT * window.devicePixelRatio
 
     const physicalViewSize = this.physicalViewSize()
 
@@ -328,7 +327,8 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     const ctx = this.overlayCtx
     if (!ctx) return
 
-    const physicalViewSpaceFrameHeight = this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT * DEVICE_PIXEL_RATIO
+    const physicalViewSpaceFrameHeight =
+      this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT * window.devicePixelRatio
     const physicalViewSize = this.physicalViewSize()
     const configToPhysical = this.configSpaceToPhysicalViewSpace()
 
