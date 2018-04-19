@@ -5,43 +5,81 @@ export function importFromInstrumentsTrace(buffer: ArrayBuffer): Profile {
   const profile = new Profile(0)
   const byteArray = new Uint8Array(buffer)
   const parsedPlist = parseBinaryPlist(byteArray)
-  const data = expandKeyedArchive(parsedPlist)
+  const data = expandKeyedArchive(parsedPlist, ($classname, object) => {
+    switch ($classname) {
+      case 'NSTextStorage':
+      case 'NSParagraphStyle':
+      case 'NSFont':
+        // Stuff I don't care about
+        return null
+
+      case 'PFTSymbolData': {
+        const ret = Object.create(null)
+        ret.symbolName = object.$0
+        ret.sourcePath = object.$1
+        return ret
+      }
+
+      case 'PFTOwnerData': {
+        const ret = Object.create(null)
+        ret.ownerName = object.$0
+        ret.ownerPath = object.$1
+        return ret
+      }
+
+      case 'PFTPersistentSymbols': {
+        const ret = Object.create(null)
+        const symbolCount = object.$4
+
+        ret.symbols = []
+        for (let i = 0; i < symbolCount; i++) {
+          ret.symbols.push(object['$' + (4 + i)])
+        }
+        // TODO(jlfwong): There is useful data in other keys
+        // that I don't know how to interpret
+        console.log(ret, object)
+        return object
+      }
+
+      case 'XRRunListData': {
+        const ret = Object.create(null)
+        ret.runNumbers = object.$0
+        ret.runData = object.$1
+        return ret
+      }
+
+      case 'XRIntKeyedDictionary': {
+        const ret = new Map()
+        const size = object.$0
+        for (let i = 0; i < size; i++) {
+          const key = object['$' + (1 + 2 * i)]
+          const value = object['$' + (1 + (2 * i + 1))]
+          ret.set(key, value)
+        }
+        return ret
+      }
+
+      case 'XRCore': {
+        const ret = Object.create(null)
+        ret.number = object.$0
+        ret.name = object.$1
+        return ret
+      }
+    }
+    console.log($classname, object)
+    return object
+  })
   const version = data['com.apple.xray.owner.template.version']
   console.log(`com.apple.xray.owner.template.version=${version}`)
-  console.log(data['com.apple.xray.run.data'])
+
+  let allRunData = data['com.apple.xray.run.data']
+  console.log(allRunData.runData.get(allRunData.runNumbers[0]))
+  ;(window as any)['data'] = allRunData.runData.get(allRunData.runNumbers[0])
+
   return profile
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-export class Dictionary {
-  keys: any[] = []
-  values: any[] = []
-
-  get(key: any): any {
-    for (let i = 0; i < this.keys.length; i++) {
-      if (this.keys[i] === key) {
-        return this.values[i]
-      }
-    }
-    return null
-  }
-
-  set(key: any, value: any): Dictionary {
-    this.keys.push(key)
-    this.values.push(value)
-    return this
-  }
-
-  static from(object: Object): Dictionary {
-    const dictionary = new Dictionary()
-    for (const key in object) {
-      dictionary.keys.push(key)
-      dictionary.values.push((object as any)[key])
-    }
-    return dictionary
-  }
-}
 
 export function decodeUTF8(bytes: Uint8Array): string {
   let text = String.fromCharCode.apply(String, bytes)
@@ -61,7 +99,10 @@ function followUID(objects: any[], value: any): any {
   return value instanceof UID ? objects[value.index] : value
 }
 
-function expandKeyedArchive(root: any): any {
+function expandKeyedArchive(
+  root: any,
+  interpretClass: ($classname: string, obj: any) => any = x => x,
+): any {
   // Sanity checks
   if (
     root.$version !== 100000 ||
@@ -79,7 +120,7 @@ function expandKeyedArchive(root: any): any {
 
   // Pattern-match Objective-C constructs
   for (let i = 0; i < root.$objects.length; i++) {
-    root.$objects[i] = paternMatchObjectiveC(root.$objects, root.$objects[i])
+    root.$objects[i] = paternMatchObjectiveC(root.$objects, root.$objects[i], interpretClass)
   }
 
   // Reconstruct the DAG from the parse tree
@@ -94,12 +135,11 @@ function expandKeyedArchive(root: any): any {
       for (let key in object) {
         object[key] = visit(object[key])
       }
-    } else if (object instanceof Dictionary) {
-      for (let i = 0; i < object.keys.length; i++) {
-        object.keys[i] = visit(object.keys[i])
-      }
-      for (let i = 0; i < object.values.length; i++) {
-        object.values[i] = visit(object.values[i])
+    } else if (object instanceof Map) {
+      const clone = new Map(object)
+      object.clear()
+      for (let [k, v] of clone.entries()) {
+        object.set(visit(k), visit(v))
       }
     }
     return object
@@ -110,7 +150,11 @@ function expandKeyedArchive(root: any): any {
   return visit(root.$top)
 }
 
-function paternMatchObjectiveC(objects: any[], value: any): any {
+function paternMatchObjectiveC(
+  objects: any[],
+  value: any,
+  interpretClass: ($classname: string, obj: any) => any = x => x,
+): any {
   if (isDictionary(value) && value.$class) {
     let name = followUID(objects, value.$class).$classname
     switch (name) {
@@ -163,28 +207,44 @@ function paternMatchObjectiveC(objects: any[], value: any): any {
         }
         return array
 
-      // Replace NSDictionary with a Dictionary (not an Object because the keys aren't always strings)
+      case '_NSKeyedCoderOldStyleArray': {
+        const count = value['NS.count']
+
+        // const size = value['NS.size']
+        // Types are encoded as single printable characters.
+        // See: https://github.com/apple/swift-corelibs-foundation/blob/76995e8d3d8c10f3f3ec344dace43426ab941d0e/Foundation/NSObjCRuntime.swift#L19
+        // const type = String.fromCharCode(value['NS.type'])
+
+        let array: any[] = []
+        for (let i = 0; i < count; i++) {
+          const element = value['$' + i]
+          array.push(element)
+        }
+        return array
+      }
+
       case 'NSDictionary':
       case 'NSMutableDictionary':
-        let dictionary = new Dictionary()
+        let map = new Map()
         if ('NS.keys' in value && 'NS.objects' in value) {
-          dictionary.keys = value['NS.keys']
-          dictionary.values = value['NS.objects']
+          for (let i = 0; i < value['NS.keys'].length; i++) {
+            map.set(value['NS.keys'][i], value['NS.objects'][i])
+          }
         } else {
           while (true) {
-            let key = 'NS.key.' + dictionary.keys.length
-            let object = 'NS.object.' + dictionary.values.length
+            let key = 'NS.key.' + map.size
+            let object = 'NS.object.' + map.size
             if (!(key in value) || !(object in value)) {
               break
             }
-            dictionary.keys.push(value[key])
-            dictionary.values.push(value[object])
+            map.set(value[key], value[object])
           }
         }
-        return dictionary
+        return map
 
       default:
-        console.log('Unknown class', name, value)
+        const converted = interpretClass(name, value)
+        if (converted !== value) return converted
     }
   }
   return value
