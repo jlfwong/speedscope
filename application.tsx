@@ -14,6 +14,7 @@ import {FlamechartView} from './flamechart-view'
 import {FontFamily, FontSize, Colors} from './style'
 import {getHashParams, HashParams} from './hash-params'
 import {importFromFirefox} from './import/firefox'
+import {importFromInstrumentsTrace} from './import/instruments'
 
 declare function require(x: string): any
 const exampleProfileURL = require('./sample/perf-vertx-stacks-01-collapsed-all.txt')
@@ -93,7 +94,8 @@ function importProfileFromString(contents: string, fileName: string): Profile | 
 function importProfileFromArrayBuffer(contents: ArrayBuffer, fileName: string): Profile | null {
   if (fileName === 'form.template') {
     // form.template from inside an Mac Instruments .trace file
-    console.log('Instruments content', contents)
+    console.log('Importing as instruments .trace file')
+    return importFromInstrumentsTrace(contents)
   }
   return null
 }
