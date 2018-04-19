@@ -41,7 +41,14 @@ export function itReduce<T, U>(it: Iterable<T>, f: (a: U, b: T) => U, init: U): 
 
 // NOTE: This blindly assumes the same result across contexts.
 const measureTextCache = new Map<string, number>()
+
+let lastDevicePixelRatio = -1
 export function cachedMeasureTextWidth(ctx: CanvasRenderingContext2D, text: string): number {
+  if (window.devicePixelRatio !== lastDevicePixelRatio) {
+    // This cache is no longer valid!
+    measureTextCache.clear()
+    lastDevicePixelRatio = window.devicePixelRatio
+  }
   if (!measureTextCache.has(text)) {
     measureTextCache.set(text, ctx.measureText(text).width)
   }

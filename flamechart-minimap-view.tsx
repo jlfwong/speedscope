@@ -9,8 +9,6 @@ import {FontFamily, FontSize, Colors} from './style'
 import {CanvasContext} from './canvas-context'
 import {TextureCachedRenderer} from './texture-cached-renderer'
 
-const DEVICE_PIXEL_RATIO = window.devicePixelRatio
-
 interface FlamechartMinimapViewProps {
   flamechart: Flamechart
   configSpaceViewportRect: Rect
@@ -44,7 +42,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   }
 
   private minimapOrigin() {
-    return new Vec2(0, Sizes.FRAME_HEIGHT * DEVICE_PIXEL_RATIO)
+    return new Vec2(0, Sizes.FRAME_HEIGHT * window.devicePixelRatio)
   }
 
   private configSpaceSize() {
@@ -64,7 +62,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   }
 
   private logicalToPhysicalViewSpace() {
-    return AffineTransform.withScale(new Vec2(DEVICE_PIXEL_RATIO, DEVICE_PIXEL_RATIO))
+    return AffineTransform.withScale(new Vec2(window.devicePixelRatio, window.devicePixelRatio))
   }
 
   private windowToLogicalViewSpace() {
@@ -152,8 +150,8 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     ).times(this.logicalToPhysicalViewSpace())
     const targetInterval = logicalToConfig.transformVector(new Vec2(200, 1)).x
 
-    const physicalViewSpaceFrameHeight = Sizes.FRAME_HEIGHT * DEVICE_PIXEL_RATIO
-    const physicalViewSpaceFontSize = FontSize.LABEL * DEVICE_PIXEL_RATIO
+    const physicalViewSpaceFrameHeight = Sizes.FRAME_HEIGHT * window.devicePixelRatio
+    const physicalViewSpaceFontSize = FontSize.LABEL * window.devicePixelRatio
     const LABEL_PADDING_PX = (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2
 
     ctx.font = `${physicalViewSpaceFontSize}px/${physicalViewSpaceFrameHeight}px ${
@@ -187,6 +185,10 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     }
   }
 
+  onWindowResize = () => {
+    this.onBeforeFrame()
+  }
+
   componentWillReceiveProps(nextProps: FlamechartMinimapViewProps) {
     if (this.props.flamechart !== nextProps.flamechart) {
       if (this.cachedRenderer) {
@@ -199,10 +201,12 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   }
 
   componentDidMount() {
+    window.addEventListener('resize', this.onWindowResize)
     this.props.canvasContext.addBeforeFrameHandler(this.onBeforeFrame)
   }
 
   componentWillUnmount() {
+    window.removeEventListener('resize', this.onWindowResize)
     this.props.canvasContext.removeBeforeFrameHandler(this.onBeforeFrame)
   }
 
@@ -222,8 +226,8 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     // Still initializing: don't resize yet
     if (width === 0 || height === 0) return
 
-    const scaledWidth = width * DEVICE_PIXEL_RATIO
-    const scaledHeight = height * DEVICE_PIXEL_RATIO
+    const scaledWidth = width * window.devicePixelRatio
+    const scaledHeight = height * window.devicePixelRatio
 
     if (scaledWidth === this.overlayCanvas.width && scaledHeight === this.overlayCanvas.height)
       return
