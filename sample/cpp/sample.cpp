@@ -10,33 +10,28 @@ void leakMemory() {
   }
 }
 
-void sleep() {
-  this_thread::sleep_for(chrono::milliseconds(100));
+void sleep10ms() {
+  this_thread::sleep_for(chrono::milliseconds(10));
 }
 
-void zoot() {
-  sleep();
-  leakMemory();
+void noodles() {
+  int z = 3;
+  for (int i = 0; i < 100000; i++) {
+    z *= 3;
+  }
 }
 
-void baz() {
-  sleep();
-  zoot();
-}
-
-void bar() {
-  leakMemory();
-  zoot();
-}
-
-void foo() {
-  for (int i = 0; i < 25; i++) {
-    bar();
-    baz();
+void broth() {
+  int z = 3;
+  for (int i = 0; i < 100000; i++) {
+    z *= 3;
   }
 }
 
 int main() {
-  foo();
+  while (true) {
+    noodles();
+    broth();
+  }
   return 0;
 }
