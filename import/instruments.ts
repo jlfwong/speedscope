@@ -321,10 +321,22 @@ class BinaryPlistParser {
     if (size === 1) return this.view.getUint8(offset)
     if (size === 2) return this.view.getUint16(offset, false)
     if (size === 4) return this.view.getUint32(offset, false)
-    if (size === 8) return this.view.getInt32(offset + 4, false) // Ignore the upper 32 bits of this 64-bit signed big-endian value
 
-    // TODO(jlfwong): Not sure if this is right
-    if (size === 16) return this.view.getInt32(offset + 12, false) // Ignore the upper 32 bits of this 64-bit signed big-endian value
+    if (size === 8) {
+      return (
+        Math.pow(2, 32 * 1) * this.view.getUint32(offset + 0, false) +
+        Math.pow(2, 32 * 0) * this.view.getUint32(offset + 4, false)
+      )
+    }
+
+    if (size === 16) {
+      return (
+        Math.pow(2, 32 * 3) * this.view.getUint32(offset + 0, false) +
+        Math.pow(2, 32 * 2) * this.view.getUint32(offset + 4, false) +
+        Math.pow(2, 32 * 1) * this.view.getUint32(offset + 8, false) +
+        Math.pow(2, 32 * 0) * this.view.getUint32(offset + 12, false)
+      )
+    }
 
     throw new Error('Unexpected integer of size ' + size + ' at offset ' + offset)
   }
