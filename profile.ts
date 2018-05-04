@@ -380,6 +380,8 @@ export class Profile {
       this.framesInStack.set(frame, frameCount - 1)
     }
     this.lastValue = value
+
+    this.totalWeight = Math.max(this.totalWeight, this.lastValue)
   }
 
   // Demangle symbols for readability

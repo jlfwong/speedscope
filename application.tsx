@@ -14,7 +14,7 @@ import {FlamechartView} from './flamechart-view'
 import {FontFamily, FontSize, Colors} from './style'
 import {getHashParams, HashParams} from './hash-params'
 import {importFromFirefox} from './import/firefox'
-import {importFromInstrumentsTrace} from './import/instruments'
+import {importFromInstrumentsTrace, importFromInstrumentsDeepCopy} from './import/instruments'
 
 declare function require(x: string): any
 const exampleProfileURL = require('./sample/perf-vertx-stacks-01-collapsed-all.txt')
@@ -414,8 +414,17 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     }
   }
 
+  onDocumentPaste = (ev: Event) => {
+    ev.preventDefault()
+    ev.stopPropagation()
+
+    const pasted = (ev as ClipboardEvent).clipboardData.getData('text')
+    this.loadProfile('Pasted', async () => importFromInstrumentsDeepCopy(pasted))
+  }
+
   componentDidMount() {
     window.addEventListener('keypress', this.onWindowKeyPress)
+    document.addEventListener('paste', this.onDocumentPaste)
     this.maybeLoadHashParamProfile()
   }
 
@@ -438,6 +447,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
 
   componentWillUnmount() {
     window.removeEventListener('keypress', this.onWindowKeyPress)
+    document.removeEventListener('paste', this.onDocumentPaste)
   }
 
   flamechartView: FlamechartView | null = null

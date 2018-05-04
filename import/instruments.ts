@@ -1,4 +1,93 @@
-import {Profile} from '../profile'
+import {Profile, FrameInfo} from '../profile'
+
+function parseTSV<T>(contents: string): T[] {
+  const lines = contents.split('\n').map(l => l.split('\t'))
+
+  const headerLine = lines.shift()
+  if (!headerLine) return []
+
+  const indexToField = new Map<number, string>()
+  for (let i = 0; i < headerLine.length; i++) {
+    indexToField.set(i, headerLine[i])
+  }
+
+  const ret: T[] = []
+  for (let line of lines) {
+    const row = {} as T
+    for (let i = 0; i < line.length; i++) {
+      (row as any)[indexToField.get(i)!] = line[i]
+    }
+    ret.push(row)
+  }
+  return ret
+}
+
+interface PastedTimeProfileRow {
+  "Weight"?: string
+  "Source Path"?: string
+  "Symbol Name"?: string
+}
+
+interface PastedAllocationsProfileRow {
+  "Bytes Used"?: string
+  "Source Path"?: string
+  "Symbol Name"?: string
+}
+
+interface FrameInfoWithWeight extends FrameInfo {
+  weight: number
+}
+
+// Import from a deep copy made of a profile
+export function importFromInstrumentsDeepCopy(contents: string): Profile {
+  const profile = new Profile(0)
+  const rows = parseTSV<PastedTimeProfileRow | PastedAllocationsProfileRow>(contents)
+
+  let stack: FrameInfoWithWeight[] = []
+  let cumulativeValue: number = 0
+
+  for (let row of rows) {
+    const symbolName = row['Symbol Name']
+    if (!symbolName) continue
+    const trimmedSymbolName = symbolName.trim()
+    let stackDepth = symbolName.length - trimmedSymbolName.length
+
+    if (stack.length - stackDepth < 0) {
+      console.log(stack, symbolName)
+      throw new Error("Invalid format")
+    }
+
+    let framesToLeave: FrameInfoWithWeight[] = []
+
+    while (stackDepth < stack.length) {
+      const stackTop = stack.pop()!
+      cumulativeValue += stackTop.weight
+      framesToLeave.push(stackTop)
+    }
+
+    for (let frameToLeave of framesToLeave) {
+      profile.leaveFrame(frameToLeave, frameToLeave.weight)
+    }
+
+    const newFrameInfo: FrameInfoWithWeight = {
+      key: `${row['Source Path'] || ''}:${trimmedSymbolName}`,
+      name: trimmedSymbolName,
+      file: row['Source Path'],
+      weight: cumulativeValue + 100
+    }
+
+    profile.enterFrame(newFrameInfo, cumulativeValue)
+    stack.push(newFrameInfo)
+  }
+
+  for (let frame of stack) {
+    profile.leaveFrame(frame, frame.weight)
+  }
+
+  console.log(profile)
+
+  return profile
+}
 
 // Import from a .trace file saved from Mac Instruments.app
 export function importFromInstrumentsTrace(buffer: ArrayBuffer): Profile {
@@ -72,8 +161,10 @@ export function importFromInstrumentsTrace(buffer: ArrayBuffer): Profile {
   const version = data['com.apple.xray.owner.template.version']
   console.log(`com.apple.xray.owner.template.version=${version}`)
 
+  console.log(data)
+
   let allRunData = data['com.apple.xray.run.data']
-  console.log(allRunData.runData.get(allRunData.runNumbers[0]))
+  console.log(allRunData)
   ;(window as any)['data'] = allRunData.runData.get(allRunData.runNumbers[0])
 
   return profile
