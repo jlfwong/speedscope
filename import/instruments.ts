@@ -130,13 +130,10 @@ export function importFromInstrumentsTrace(buffer: ArrayBuffer): Profile {
         const symbolCount = object.$4
 
         ret.symbols = []
-        for (let i = 0; i < symbolCount; i++) {
+        for (let i = 1; i < symbolCount; i++) {
           ret.symbols.push(object['$' + (4 + i)])
         }
-        // TODO(jlfwong): There is useful data in other keys
-        // that I don't know how to interpret
-        console.log(ret, object)
-        return object
+        return ret
       }
 
       case 'XRRunListData': {
@@ -164,7 +161,7 @@ export function importFromInstrumentsTrace(buffer: ArrayBuffer): Profile {
         return ret
       }
     }
-    console.log($classname, object)
+    // console.log($classname, object)
     return object
   })
   const version = data['com.apple.xray.owner.template.version']
@@ -173,8 +170,8 @@ export function importFromInstrumentsTrace(buffer: ArrayBuffer): Profile {
   console.log(data)
 
   let allRunData = data['com.apple.xray.run.data']
-  console.log(allRunData)
-  ;(window as any)['data'] = allRunData.runData.get(allRunData.runNumbers[0])
+  const runData = allRunData.runData.get(allRunData.runNumbers[0])
+  console.log(runData.get('symbolsByPid'))
 
   return profile
 }
