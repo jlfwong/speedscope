@@ -106,6 +106,15 @@ export function importFromInstrumentsTrace(buffer: ArrayBuffer): Profile {
         const ret = Object.create(null)
         ret.symbolName = object.$0
         ret.sourcePath = object.$1
+        ret.addressToLine = new Map<any, any>()
+        for (let i = 3; ; i += 2) {
+          const address = object['$' + i]
+          const line = object['$' + (i + 1)]
+          if (address == null || line == null) {
+            break
+          }
+          ret.addressToLine.set(address, line)
+        }
         return ret
       }
 
