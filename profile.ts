@@ -108,6 +108,18 @@ export class TimeFormatter implements ValueFormatter {
   }
 }
 
+export class ByteFormatter implements ValueFormatter {
+  format(v: number) {
+    if (v < 1024) return `${v.toFixed(2)} B`
+    v /= 1024
+    if (v < 1024) return `${v.toFixed(2)} KB`
+    v /= 1024
+    if (v < 1024) return `${v.toFixed(2)} MB`
+    v /= 1024
+    return `${v.toFixed(2)} GB`
+  }
+}
+
 export class Profile {
   private name: string = ''
 

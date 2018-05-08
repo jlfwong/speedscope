@@ -1,4 +1,4 @@
-import {Profile, FrameInfo} from '../profile'
+import {Profile, FrameInfo, ByteFormatter} from '../profile'
 
 function parseTSV<T>(contents: string): T[] {
   const lines = contents.split('\n').map(l => l.split('\t'))
@@ -35,7 +35,27 @@ interface PastedAllocationsProfileRow {
 }
 
 interface FrameInfoWithWeight extends FrameInfo {
-  weight: number
+  endValue: number
+}
+
+function getWeight(deepCopyRow: any): number {
+  // TODO(jlfwong): Parse from time profiles as well
+
+  if ('Bytes Used' in deepCopyRow) {
+    const bytesUsedString = deepCopyRow['Bytes Used']
+    const parts = /\s*(\d+(?:[.]\d+)?) (\w+)\s+(?:\d+(?:[.]\d+))%/.exec(bytesUsedString)
+    if (!parts) return 0
+    const value = parseInt(parts[1], 10)
+    const units = parts[2]
+
+    switch (units) {
+      case 'Bytes': return value
+      case 'KB': return 1024 * value
+      case 'MB': return 1024 * 1024 * value
+      case 'GB': return 1024 * 1024 * 1024 * value
+    }
+    throw new Error(`Unrecognized units ${units}`)
+  }
 }
 
 // Import from a deep copy made of a profile
@@ -61,19 +81,20 @@ export function importFromInstrumentsDeepCopy(contents: string): Profile {
 
     while (stackDepth < stack.length) {
       const stackTop = stack.pop()!
-      cumulativeValue += stackTop.weight
+      cumulativeValue += stackTop.endValue
       framesToLeave.push(stackTop)
     }
 
     for (let frameToLeave of framesToLeave) {
-      profile.leaveFrame(frameToLeave, frameToLeave.weight)
+      profile.leaveFrame(frameToLeave, frameToLeave.endValue)
+      cumulativeValue = frameToLeave.endValue
     }
 
     const newFrameInfo: FrameInfoWithWeight = {
       key: `${row['Source Path'] || ''}:${trimmedSymbolName}`,
       name: trimmedSymbolName,
       file: row['Source Path'],
-      weight: cumulativeValue + 100
+      endValue: cumulativeValue + getWeight(row)
     }
 
     profile.enterFrame(newFrameInfo, cumulativeValue)
@@ -81,10 +102,12 @@ export function importFromInstrumentsDeepCopy(contents: string): Profile {
   }
 
   for (let frame of stack) {
-    profile.leaveFrame(frame, frame.weight)
+    profile.leaveFrame(frame, frame.endValue)
   }
 
-  console.log(profile)
+  if ('Bytes Used' in rows[0]) {
+    profile.setValueFormatter(new ByteFormatter())
+  }
 
   return profile
 }
