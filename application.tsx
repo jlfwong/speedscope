@@ -17,7 +17,7 @@ import {importFromFirefox} from './import/firefox'
 import {importFromInstrumentsDeepCopy} from './import/instruments'
 
 declare function require(x: string): any
-const exampleProfileURL = require('./sample/perf-vertx-stacks-01-collapsed-all.txt')
+const exampleProfileURL = require('./sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt')
 
 const enum SortOrder {
   CHRONO,
@@ -88,7 +88,7 @@ function importProfile(contents: string, fileName: string): Profile | null {
       // If every line ends with a space followed by a number, it's probably
       // the collapsed stack format.
       const lineCount = contents.split(/\n/).length
-      if (lineCount > 1 && lineCount === contents.split(/ \d+\n/).length) {
+      if (lineCount >= 1 && lineCount === contents.split(/ \d+\n/).length) {
         console.log('Importing as collapsed stack format')
         return importFromBGFlameGraph(contents)
       }
