@@ -19,6 +19,13 @@ export function getOrElse<K, V>(map: Map<K, V>, k: K, fallback: (k?: K) => V): V
   return map.get(k)!
 }
 
+export function getOrThrow<K, V>(map: Map<K, V>, k: K): V {
+  if (!map.has(k)) {
+    throw new Error(`Expected key ${k}`)
+  }
+  return map.get(k)!
+}
+
 export function* itMap<T, U>(it: Iterable<T>, f: (t: T) => U): Iterable<U> {
   for (let t of it) {
     yield f(t)

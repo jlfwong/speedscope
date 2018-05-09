@@ -14,7 +14,7 @@ import {FlamechartView} from './flamechart-view'
 import {FontFamily, FontSize, Colors} from './style'
 import {getHashParams, HashParams} from './hash-params'
 import {importFromFirefox} from './import/firefox'
-import {importFromInstrumentsDeepCopy} from './import/instruments'
+import {importFromInstrumentsDeepCopy, importFromInstrumentsTrace} from './import/instruments'
 
 declare function require(x: string): any
 const exampleProfileURL = require('./sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt')
@@ -360,11 +360,24 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   onDrop = (ev: DragEvent) => {
+    ev.preventDefault()
+
+    const firstItem = ev.dataTransfer.items[0]
+    if ('webkitGetAsEntry' in firstItem) {
+      const webkitEntry: WebKitEntry = firstItem.webkitGetAsEntry()
+
+      // Instrument.app file format is actually a directory.
+      if (webkitEntry.isDirectory && webkitEntry.name.endsWith('.trace')) {
+        console.log('Importing as Instruments.app .trace file')
+        this.loadProfile(async () => await importFromInstrumentsTrace(webkitEntry))
+        return
+      }
+    }
+
     let file: File | null = ev.dataTransfer.files.item(0)
     if (file) {
       this.loadFromFile(file)
     }
-    ev.preventDefault()
   }
 
   onDragOver = (ev: DragEvent) => {
