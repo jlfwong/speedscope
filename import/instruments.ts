@@ -1,4 +1,4 @@
-import {Profile, FrameInfo, ByteFormatter} from '../profile'
+import {Profile, FrameInfo, ByteFormatter, TimeFormatter} from '../profile'
 
 function parseTSV<T>(contents: string): T[] {
   const lines = contents.split('\n').map(l => l.split('\t'))
@@ -39,8 +39,6 @@ interface FrameInfoWithWeight extends FrameInfo {
 }
 
 function getWeight(deepCopyRow: any): number {
-  // TODO(jlfwong): Parse from time profiles as well
-
   if ('Bytes Used' in deepCopyRow) {
     const bytesUsedString = deepCopyRow['Bytes Used']
     const parts = /\s*(\d+(?:[.]\d+)?) (\w+)\s+(?:\d+(?:[.]\d+))%/.exec(bytesUsedString)
@@ -56,6 +54,22 @@ function getWeight(deepCopyRow: any): number {
     }
     throw new Error(`Unrecognized units ${units}`)
   }
+
+  if ('Weight' in deepCopyRow) {
+    const weightString = deepCopyRow['Weight']
+    const parts = /\s*(\d+(?:[.]\d+)?) (\w+)\s+(?:\d+(?:[.]\d+))%/.exec(weightString)
+    if (!parts) return 0
+    const value = parseInt(parts[1], 10)
+    const units = parts[2]
+
+    switch (units) {
+      case 'ms': return value
+      case 's': return 1000 * value
+    }
+    throw new Error(`Unrecognized units ${units}`)
+  }
+
+  return -1
 }
 
 // Import from a deep copy made of a profile
@@ -81,13 +95,12 @@ export function importFromInstrumentsDeepCopy(contents: string): Profile {
 
     while (stackDepth < stack.length) {
       const stackTop = stack.pop()!
-      cumulativeValue += stackTop.endValue
       framesToLeave.push(stackTop)
     }
 
     for (let frameToLeave of framesToLeave) {
-      profile.leaveFrame(frameToLeave, frameToLeave.endValue)
-      cumulativeValue = frameToLeave.endValue
+      cumulativeValue = Math.max(cumulativeValue, frameToLeave.endValue)
+      profile.leaveFrame(frameToLeave, cumulativeValue)
     }
 
     const newFrameInfo: FrameInfoWithWeight = {
@@ -101,12 +114,16 @@ export function importFromInstrumentsDeepCopy(contents: string): Profile {
     stack.push(newFrameInfo)
   }
 
-  for (let frame of stack) {
-    profile.leaveFrame(frame, frame.endValue)
+  while (stack.length > 0) {
+    const frameToLeave = stack.pop()!
+    cumulativeValue = Math.max(cumulativeValue, frameToLeave.endValue)
+    profile.leaveFrame(frameToLeave, cumulativeValue)
   }
 
   if ('Bytes Used' in rows[0]) {
     profile.setValueFormatter(new ByteFormatter())
+  } else if ('Weight' in rows[0]) {
+    profile.setValueFormatter(new TimeFormatter('milliseconds'))
   }
 
   return profile
