@@ -2,7 +2,7 @@
 // https://developer.apple.com/library/content/documentation/DeveloperTools/Conceptual/InstrumentsUserGuide/index.html
 
 import {Profile, FrameInfo, ByteFormatter, TimeFormatter} from '../profile'
-import {sortBy, getOrThrow, getOrInsert, lastOf} from '../utils'
+import {sortBy, getOrThrow, getOrInsert, lastOf, getOrElse} from '../utils'
 
 function parseTSV<T>(contents: string): T[] {
   const lines = contents.split('\n').map(l => l.split('\t'))
@@ -99,7 +99,6 @@ export function importFromInstrumentsDeepCopy(contents: string): Profile {
     let stackDepth = symbolName.length - trimmedSymbolName.length
 
     if (stack.length - stackDepth < 0) {
-      console.log(stack, symbolName)
       throw new Error('Invalid format')
     }
 
@@ -220,7 +219,11 @@ class BinReader {
     this.bytePos += byteCount
   }
   readUint8() {
+    if (this.bytePos >= this.view.byteLength) return 0
     return this.view.getUint8(this.bytePos++)
+  }
+  hasMore() {
+    return this.bytePos < this.view.byteLength
   }
   // Note: we intentionally use Math.pow here rather than bit shifts
   // because JavaScript doesn't have true 64 bit integers.
@@ -258,6 +261,7 @@ class BinReader {
 
 interface Sample {
   timestamp: number
+  threadID: number
   backtraceID: number
 }
 
@@ -289,9 +293,11 @@ async function getRawSampleList(core: TraceDirectoryTree): Promise<Sample[]> {
       const timestamp = bulkstore.readUint48()
       if (timestamp === 0) break
 
-      bulkstore.skip(bytesPerEntry - 6 - 4)
+      const threadID = bulkstore.readUint32()
+
+      bulkstore.skip(bytesPerEntry - 6 - 4 - 4)
       const backtraceID = bulkstore.readUint32()
-      samples.push({timestamp, backtraceID})
+      samples.push({timestamp, threadID, backtraceID})
     }
     return samples
   }
@@ -315,9 +321,8 @@ async function getIntegerArrays(samples: Sample[], core: TraceDirectoryTree): Pr
   // Header we don't care about
   reader.seek(32)
 
-  while (true) {
+  while (reader.hasMore()) {
     let length = reader.readUint32()
-    if (length === 0) break
     let array: number[] = []
     while (length--) {
       array.push(reader.readUint64())
@@ -356,7 +361,6 @@ async function getAddressToFrameMap(tree: TraceDirectoryTree): Promise<Map<numbe
 
   // TODO(jlfwong): Deal with profiles with conflicts addresses?
   for (let [_pid, symbols] of symbolsByPid.entries()) {
-    console.log('s', symbols)
     for (let symbol of symbols.symbols) {
       const {sourcePath, symbolName, addressToLine} = symbol
       for (let [address, _line] of addressToLine) {
@@ -364,6 +368,9 @@ async function getAddressToFrameMap(tree: TraceDirectoryTree): Promise<Map<numbe
           const frame: FrameInfo = {
             key: `${sourcePath}:${symbolName}`,
             name: symbolName || '(null)',
+          }
+          if (sourcePath) {
+            frame.file = sourcePath
           }
           return frame
         })
@@ -380,28 +387,59 @@ export async function importFromInstrumentsTrace(entry: WebKitEntry): Promise<Pr
   const core = getCoreDirForLastRun(tree)
 
   const addressToFrameMap = await getAddressToFrameMap(tree)
-  const samples = await getRawSampleList(core)
+  let samples = await getRawSampleList(core)
   const arrays = await getIntegerArrays(samples, core)
 
   const backtraceIDtoStack = new Map<number, FrameInfo[]>()
 
-  let lastTimestamp: number = 0
+  console.log('duration', lastOf(samples)!.timestamp)
+  // TODO(jlfwong): Wtf? It seems like the bulkstore doesn't actually contain
+  // all of the samples...?
 
   const profile = new Profile(lastOf(samples)!.timestamp)
+  profile.setName(entry.name)
 
+  // TODO(jlfwong): This is pretty hacky. There's probably some way of actually
+  // figuring out what the main thread ID is, or displaying flamecharts for each
+  // thread independently
+  const sampleCountByThreadID = new Map<number, number>()
+  for (let sample of samples) {
+    sampleCountByThreadID.set(
+      sample.threadID,
+      getOrElse(sampleCountByThreadID, sample.threadID, () => 0) + 1,
+    )
+  }
+  const counts = Array.from(sampleCountByThreadID.entries())
+  sortBy(counts, c => c[1])
+  const mainThreadID = lastOf(counts)![0]
+  samples = samples.filter(s => s.threadID === mainThreadID)
+
+  function appendRecursive(k: number, stack: FrameInfo[]) {
+    const frame = addressToFrameMap.get(k)
+    if (frame) {
+      stack.push(frame)
+    } else if (k in arrays) {
+      for (let addr of arrays[k]) {
+        appendRecursive(addr, stack)
+      }
+    } else {
+      console.log(`Could not find frame for stack key ${k}`)
+      // throw new Error(`Could not find frame for stack key ${k}`)
+    }
+  }
+
+  let lastTimestamp: number = 0
   for (let sample of samples) {
     const stackForSample = getOrInsert(backtraceIDtoStack, sample.backtraceID, id => {
       const stack: FrameInfo[] = []
-      for (let k of arrays[id]) {
-        for (let addr of arrays[k]) {
-          const frame = addressToFrameMap.get(addr)
-          if (!frame) continue
-          stack.push(frame)
-        }
-      }
+      appendRecursive(id, stack)
       stack.reverse()
       return stack
     })
+
+    if (sample.timestamp < lastTimestamp) {
+      throw new Error('Timestamps out of order!')
+    }
 
     profile.appendSample(stackForSample, sample.timestamp - lastTimestamp)
     lastTimestamp = sample.timestamp
@@ -449,10 +487,12 @@ export function readInstrumentsKeyedArchive(buffer: ArrayBuffer): any {
         const ret = Object.create(null)
         const symbolCount = object.$4
 
+        ret.threadNames = object.$3
         ret.symbols = []
         for (let i = 1; i < symbolCount; i++) {
           ret.symbols.push(object['$' + (4 + i)])
         }
+        console.log(ret)
         return ret
       }
 
@@ -481,7 +521,6 @@ export function readInstrumentsKeyedArchive(buffer: ArrayBuffer): any {
         return ret
       }
     }
-    // console.log($classname, object)
     return object
   })
   return data
