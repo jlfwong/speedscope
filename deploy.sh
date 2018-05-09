@@ -41,11 +41,9 @@ function ctrl_c() {
   read -p "Commit release? [yes/no]: "
   if [[ $REPLY =~ ^yes$ ]]
   then
-    pushd speedscope
     git add --all
     git commit -m 'Release'
     git push origin HEAD:gh-pages
-    popd
     popd
     rm -rf "$TMPDIR"
     exit 0
