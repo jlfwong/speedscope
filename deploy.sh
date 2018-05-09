@@ -22,7 +22,7 @@ date > "$OUTDIR"/release.txt
 git rev-parse HEAD >> "$OUTDIR"/release.txt
 
 # Build the compiled assets
-node_modules/.bin/parcel build index.html --out-dir "$OUTDIR" --public-url /speedscope/ --detailed-report
+node_modules/.bin/parcel build index.html --out-dir "$OUTDIR" --public-url / --detailed-report
 
 # Create a shallow clone of the repository
 TMPDIR=`mktemp -d -t speedscope-release`
@@ -34,7 +34,6 @@ git clone --depth 1 git@github.com:jlfwong/speedscope.git -b gh-pages
 pushd speedscope
 rm -rf *
 cp -R "$OUTDIR"/* .
-popd
 
 # Set up a handler to run on Ctrl+C
 trap ctrl_c INT
@@ -61,7 +60,7 @@ function ctrl_c() {
 # Start a local server for verification of the build
 echo
 echo
-echo "Build complete. Starting server on http://localhost:4444/speedscope/"
+echo "Build complete. Starting server on http://localhost:4444/"
 echo "Hit Ctrl+C to complete or cancel the release"
 echo
 echo
