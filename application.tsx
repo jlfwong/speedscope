@@ -17,7 +17,7 @@ import {importFromFirefox} from './import/firefox'
 import {importFromInstrumentsDeepCopy} from './import/instruments'
 
 declare function require(x: string): any
-const exampleProfileURL = require('./sample/perf-vertx-stacks-01-collapsed-all.txt')
+const exampleProfileURL = require('./sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt')
 
 const enum SortOrder {
   CHRONO,
