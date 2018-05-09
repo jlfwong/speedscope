@@ -39,7 +39,7 @@ interface ToolbarProps extends ApplicationState {
   setSortOrder(order: SortOrder): void
 }
 
-function importProfile(contents: string, fileName: string): Profile | null {
+function importProfile(fileName: string, contents: string): Profile | null {
   try {
     // First pass: Check known file format names to infer the file type
     if (fileName.endsWith('.cpuprofile')) {
@@ -252,21 +252,35 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     }
   }
 
-  async loadFromString(fileName: string, contents: string) {
+  async loadProfile(loader: () => Promise<Profile | null>) {
+    await new Promise(resolve => this.setState({loading: true}, resolve))
+    await new Promise(resolve => setTimeout(resolve, 0))
+
     if (!this.canvasContext) return
 
     console.time('import')
-    const profile = importProfile(contents, fileName)
+
+    let profile: Profile | null = null
+    try {
+      profile = await loader()
+    } catch (e) {
+      alert('Failed to load format. See console for details')
+      console.log(e)
+      this.setState({error: true})
+      return
+    }
+
     if (profile == null) {
-      this.setState({loading: false})
       // TODO(jlfwong): Make this a nicer overlay
       alert('Unrecognized format! See documentation about supported formats.')
       return
     }
 
+    console.log('PROFILE', profile)
+
     await profile.demangle()
 
-    const title = this.hashParams.title || fileName
+    const title = this.hashParams.title || profile.getName()
     profile.setName(title)
     document.title = `${title} - speedscope`
 
@@ -322,25 +336,27 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   loadFromFile(file: File) {
-    this.setState({loading: true}, () => {
-      requestAnimationFrame(() => {
-        const reader = new FileReader()
-        reader.addEventListener('loadend', () => {
-          this.loadFromString(file.name, reader.result)
-        })
-        reader.readAsText(file)
-      })
-    })
+    this.loadProfile(
+      () =>
+        new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.addEventListener('loadend', () => {
+            const profile = importProfile(file.name, reader.result)
+            if (profile) resolve(profile)
+            else reject()
+          })
+          reader.readAsText(file)
+        }),
+    )
   }
 
   loadExample = () => {
-    this.setState({loading: true})
-    const filename = 'perf-vertx-stacks-01-collapsed-all.txt'
-    fetch(exampleProfileURL)
-      .then(resp => resp.text())
-      .then(data => {
-        this.loadFromString(filename, data)
-      })
+    this.loadProfile(async () => {
+      const filename = 'perf-vertx-stacks-01-collapsed-all.txt'
+      return await fetch(exampleProfileURL)
+        .then(resp => resp.text())
+        .then(data => importProfile(filename, data))
+    })
   }
 
   onDrop = (ev: DragEvent) => {
@@ -372,12 +388,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     ev.stopPropagation()
 
     const pasted = (ev as ClipboardEvent).clipboardData.getData('text')
-    this.setState({loading: true}, () => {
-      // Delay to allow the loading bar to display
-      setTimeout(() => {
-        this.loadFromString('From Clipboard', pasted)
-      }, 0)
-    })
+    this.loadProfile(async () => importProfile('From Clipboard', pasted))
   }
 
   componentDidMount() {
@@ -387,19 +398,15 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   async maybeLoadHashParamProfile() {
-    try {
-      if (this.hashParams.profileURL) {
+    if (this.hashParams.profileURL) {
+      this.loadProfile(async () => {
         const response = await fetch(this.hashParams.profileURL)
-        const profile = await response.text()
-        let filename = new URL(this.hashParams.profileURL).pathname
+        let filename = new URL(this.hashParams.profileURL!).pathname
         if (filename.includes('/')) {
           filename = filename.slice(filename.lastIndexOf('/') + 1)
         }
-        await this.loadFromString(filename, profile)
-      }
-    } catch (e) {
-      this.setState({error: true})
-      throw e
+        return await importProfile(filename, await response.text())
+      })
     }
   }
 
