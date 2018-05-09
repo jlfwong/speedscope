@@ -35,6 +35,9 @@ pushd speedscope
 rm -rf *
 cp -R "$OUTDIR"/* .
 
+# Set the CNAME record
+echo www.speedscope.app > CNAME
+
 # Set up a handler to run on Ctrl+C
 trap ctrl_c INT
 function ctrl_c() {
