@@ -18,7 +18,7 @@ function parseTSV<T>(contents: string): T[] {
   for (let line of lines) {
     const row = {} as T
     for (let i = 0; i < line.length; i++) {
-      (row as any)[indexToField.get(i)!] = line[i]
+      ;(row as any)[indexToField.get(i)!] = line[i]
     }
     ret.push(row)
   }
@@ -26,15 +26,15 @@ function parseTSV<T>(contents: string): T[] {
 }
 
 interface PastedTimeProfileRow {
-  "Weight"?: string
-  "Source Path"?: string
-  "Symbol Name"?: string
+  Weight?: string
+  'Source Path'?: string
+  'Symbol Name'?: string
 }
 
 interface PastedAllocationsProfileRow {
-  "Bytes Used"?: string
-  "Source Path"?: string
-  "Symbol Name"?: string
+  'Bytes Used'?: string
+  'Source Path'?: string
+  'Symbol Name'?: string
 }
 
 interface FrameInfoWithWeight extends FrameInfo {
@@ -50,10 +50,14 @@ function getWeight(deepCopyRow: any): number {
     const units = parts[2]
 
     switch (units) {
-      case 'Bytes': return value
-      case 'KB': return 1024 * value
-      case 'MB': return 1024 * 1024 * value
-      case 'GB': return 1024 * 1024 * 1024 * value
+      case 'Bytes':
+        return value
+      case 'KB':
+        return 1024 * value
+      case 'MB':
+        return 1024 * 1024 * value
+      case 'GB':
+        return 1024 * 1024 * 1024 * value
     }
     throw new Error(`Unrecognized units ${units}`)
   }
@@ -66,9 +70,12 @@ function getWeight(deepCopyRow: any): number {
     const units = parts[2]
 
     switch (units) {
-      case 'ms': return value
-      case 's': return 1000 * value
-      case 'min': return 1000 * value
+      case 'ms':
+        return value
+      case 's':
+        return 1000 * value
+      case 'min':
+        return 1000 * value
     }
     throw new Error(`Unrecognized units ${units}`)
   }
@@ -92,7 +99,7 @@ export function importFromInstrumentsDeepCopy(contents: string): Profile {
 
     if (stack.length - stackDepth < 0) {
       console.log(stack, symbolName)
-      throw new Error("Invalid format")
+      throw new Error('Invalid format')
     }
 
     let framesToLeave: FrameInfoWithWeight[] = []
@@ -111,7 +118,7 @@ export function importFromInstrumentsDeepCopy(contents: string): Profile {
       key: `${row['Source Path'] || ''}:${trimmedSymbolName}`,
       name: trimmedSymbolName,
       file: row['Source Path'],
-      endValue: cumulativeValue + getWeight(row)
+      endValue: cumulativeValue + getWeight(row),
     }
 
     profile.enterFrame(newFrameInfo, cumulativeValue)
