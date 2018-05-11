@@ -359,11 +359,12 @@ async function getAddressToFrameMap(tree: TraceDirectoryTree): Promise<Map<numbe
       const {sourcePath, symbolName, addressToLine} = symbol
       for (let [address, _line] of addressToLine) {
         getOrInsert(addressToFrameMap, address, () => {
+          const name = symbolName || `0x${address.toString(16)}`
           const frame: FrameInfo = {
-            key: `${sourcePath}:${symbolName}`,
+            key: `${sourcePath}:${name}`,
 
             // TODO(jlfwong): Zero pad the addresses
-            name: symbolName || `0x${address.toString(16)}`,
+            name: name,
           }
           if (sourcePath) {
             frame.file = sourcePath
