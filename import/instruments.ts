@@ -218,43 +218,37 @@ class BinReader {
   skip(byteCount: number) {
     this.bytePos += byteCount
   }
-  readUint8() {
-    if (this.bytePos >= this.view.byteLength) return 0
-    return this.view.getUint8(this.bytePos++)
-  }
   hasMore() {
     return this.bytePos < this.view.byteLength
   }
+  readUint8() {
+    this.bytePos++
+    if (this.bytePos > this.view.byteLength) return 0
+    return this.view.getUint8(this.bytePos - 1)
+  }
+
   // Note: we intentionally use Math.pow here rather than bit shifts
   // because JavaScript doesn't have true 64 bit integers.
   readUint32() {
-    return (
-      this.readUint8() +
-      this.readUint8() * Math.pow(2, 8) +
-      this.readUint8() * Math.pow(2, 16) +
-      this.readUint8() * Math.pow(2, 32)
-    )
+    this.bytePos += 4
+    if (this.bytePos > this.view.byteLength) return 0
+    return this.view.getUint32(this.bytePos - 4, true)
   }
   readUint48() {
+    this.bytePos += 6
+    if (this.bytePos > this.view.byteLength) return 0
+
     return (
-      this.readUint8() +
-      this.readUint8() * Math.pow(2, 8) +
-      this.readUint8() * Math.pow(2, 16) +
-      this.readUint8() * Math.pow(2, 24) +
-      this.readUint8() * Math.pow(2, 32) +
-      this.readUint8() * Math.pow(2, 40)
+      this.view.getUint32(this.bytePos - 6, true) +
+      this.view.getUint16(this.bytePos - 2, true) * Math.pow(2, 32)
     )
   }
   readUint64() {
+    this.bytePos += 8
+    if (this.bytePos > this.view.byteLength) return 0
     return (
-      this.readUint8() +
-      this.readUint8() * Math.pow(2, 8) +
-      this.readUint8() * Math.pow(2, 16) +
-      this.readUint8() * Math.pow(2, 24) +
-      this.readUint8() * Math.pow(2, 32) +
-      this.readUint8() * Math.pow(2, 40) +
-      this.readUint8() * Math.pow(2, 48) +
-      this.readUint8() * Math.pow(2, 56)
+      this.view.getUint32(this.bytePos - 8, true) +
+      this.view.getUint32(this.bytePos - 4, true) * Math.pow(2, 32)
     )
   }
 }
@@ -367,7 +361,9 @@ async function getAddressToFrameMap(tree: TraceDirectoryTree): Promise<Map<numbe
         getOrInsert(addressToFrameMap, address, () => {
           const frame: FrameInfo = {
             key: `${sourcePath}:${symbolName}`,
-            name: symbolName || '(null)',
+
+            // TODO(jlfwong): Zero pad the addresses
+            name: symbolName || `0x${address.toString(16)}`,
           }
           if (sourcePath) {
             frame.file = sourcePath
@@ -423,8 +419,13 @@ export async function importFromInstrumentsTrace(entry: WebKitEntry): Promise<Pr
         appendRecursive(addr, stack)
       }
     } else {
-      console.log(`Could not find frame for stack key ${k}`)
-      // throw new Error(`Could not find frame for stack key ${k}`)
+      // TODO(jlfwong): Zero pad the addresses
+      const rawAddressFrame: FrameInfo = {
+        key: k,
+        name: `0x${k.toString(16)}`,
+      }
+      addressToFrameMap.set(k, rawAddressFrame)
+      stack.push(rawAddressFrame)
     }
   }
 
