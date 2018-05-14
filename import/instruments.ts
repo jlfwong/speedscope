@@ -356,6 +356,7 @@ async function getAddressToFrameMap(tree: TraceDirectoryTree): Promise<Map<numbe
   // TODO(jlfwong): Deal with profiles with conflicts addresses?
   for (let [_pid, symbols] of symbolsByPid.entries()) {
     for (let symbol of symbols.symbols) {
+      if (!symbol) continue
       const {sourcePath, symbolName, addressToLine} = symbol
       for (let [address, _line] of addressToLine) {
         getOrInsert(addressToFrameMap, address, () => {
@@ -430,7 +431,7 @@ export async function importFromInstrumentsTrace(entry: WebKitEntry): Promise<Pr
     }
   }
 
-  let lastTimestamp: number = 0
+  let lastTimestamp: null | number = null
   for (let sample of samples) {
     const stackForSample = getOrInsert(backtraceIDtoStack, sample.backtraceID, id => {
       const stack: FrameInfo[] = []
@@ -438,6 +439,10 @@ export async function importFromInstrumentsTrace(entry: WebKitEntry): Promise<Pr
       stack.reverse()
       return stack
     })
+
+    if (lastTimestamp === null) {
+      lastTimestamp = sample.timestamp
+    }
 
     if (sample.timestamp < lastTimestamp) {
       throw new Error('Timestamps out of order!')
