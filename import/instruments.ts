@@ -3,6 +3,7 @@
 
 import {Profile, FrameInfo, ByteFormatter, TimeFormatter} from '../profile'
 import {sortBy, getOrThrow, getOrInsert, lastOf, getOrElse} from '../utils'
+import * as pako from 'pako'
 
 function parseTSV<T>(contents: string): T[] {
   const lines = contents.split('\n').map(l => l.split('\t'))
@@ -172,24 +173,53 @@ async function extractDirectoryTree(entry: WebKitEntry): Promise<TraceDirectoryT
   return node
 }
 
-function readAsArrayBuffer(file: File): Promise<ArrayBuffer> {
-  return new Promise(resolve => {
-    const reader = new FileReader()
-    reader.addEventListener('loadend', () => {
-      resolve(reader.result)
+class MaybeCompressedFileReader {
+  private fileData: Promise<ArrayBuffer>
+
+  constructor(private file: File) {
+    this.fileData = new Promise(resolve => {
+      const reader = new FileReader()
+      reader.addEventListener('loadend', () => {
+        resolve(reader.result)
+      })
+      reader.readAsArrayBuffer(file)
     })
-    reader.readAsArrayBuffer(file)
-  })
+  }
+
+  private async getUncompressed(): Promise<ArrayBuffer> {
+    const fileData = await this.fileData
+    try {
+      const result = pako.inflate(new Uint8Array(fileData)).buffer
+      return result
+    } catch (e) {
+      return fileData
+    }
+  }
+
+  async readAsArrayBuffer(): Promise<ArrayBuffer> {
+    return await this.getUncompressed()
+  }
+
+  async readAsText(): Promise<string> {
+    const buffer = await this.getUncompressed()
+    let ret: string = ''
+
+    // JavaScript strings are UTF-16 encoded, but this data is coming
+    // from a UTF-8 encoded file.
+    const array = new Uint8Array(buffer)
+    for (let i = 0; i < array.length; i++) {
+      ret += String.fromCharCode(array[i])
+    }
+    return ret
+  }
+}
+
+function readAsArrayBuffer(file: File): Promise<ArrayBuffer> {
+  return new MaybeCompressedFileReader(file).readAsArrayBuffer()
 }
 
 function readAsText(file: File): Promise<string> {
-  return new Promise(resolve => {
-    const reader = new FileReader()
-    reader.addEventListener('loadend', () => {
-      resolve(reader.result)
-    })
-    reader.readAsText(file)
-  })
+  return new MaybeCompressedFileReader(file).readAsText()
 }
 
 function getCoreDirForLastRun(tree: TraceDirectoryTree): TraceDirectoryTree {

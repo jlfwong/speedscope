@@ -2,9 +2,13 @@ import {h} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 import {ReloadableComponent, SerializedComponent} from './reloadable'
 
+// TODO(jlfwong): Load these async, since none of them are required for initial render
 import {importFromBGFlameGraph} from './import/bg-flamegraph'
 import {importFromStackprof} from './import/stackprof'
 import {importFromChromeTimeline, importFromChromeCPUProfile} from './import/chrome'
+import {importFromFirefox} from './import/firefox'
+import {importFromInstrumentsDeepCopy, importFromInstrumentsTrace} from './import/instruments'
+
 import {FlamechartRenderer} from './flamechart-renderer'
 import {CanvasContext} from './canvas-context'
 
@@ -13,8 +17,6 @@ import {Flamechart} from './flamechart'
 import {FlamechartView} from './flamechart-view'
 import {FontFamily, FontSize, Colors} from './style'
 import {getHashParams, HashParams} from './hash-params'
-import {importFromFirefox} from './import/firefox'
-import {importFromInstrumentsDeepCopy, importFromInstrumentsTrace} from './import/instruments'
 
 declare function require(x: string): any
 const exampleProfileURL = require('./sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt')
