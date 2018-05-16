@@ -46,6 +46,10 @@ export function itReduce<T, U>(it: Iterable<T>, f: (a: U, b: T) => U, init: U): 
   return accum
 }
 
+export function zeroPad(s: string, width: number) {
+  return new Array(Math.max(width - s.length, 0) + 1).join('0') + s
+}
+
 // NOTE: This blindly assumes the same result across contexts.
 const measureTextCache = new Map<string, number>()
 

@@ -2,7 +2,7 @@
 // https://developer.apple.com/library/content/documentation/DeveloperTools/Conceptual/InstrumentsUserGuide/index.html
 
 import {Profile, FrameInfo, ByteFormatter, TimeFormatter} from '../profile'
-import {sortBy, getOrThrow, getOrInsert, lastOf, getOrElse} from '../utils'
+import {sortBy, getOrThrow, getOrInsert, lastOf, getOrElse, zeroPad} from '../utils'
 import * as pako from 'pako'
 
 function parseTSV<T>(contents: string): T[] {
@@ -176,7 +176,7 @@ async function extractDirectoryTree(entry: WebKitEntry): Promise<TraceDirectoryT
 class MaybeCompressedFileReader {
   private fileData: Promise<ArrayBuffer>
 
-  constructor(private file: File) {
+  constructor(file: File) {
     this.fileData = new Promise(resolve => {
       const reader = new FileReader()
       reader.addEventListener('loadend', () => {
@@ -222,17 +222,9 @@ function readAsText(file: File): Promise<string> {
   return new MaybeCompressedFileReader(file).readAsText()
 }
 
-function getCoreDirForLastRun(tree: TraceDirectoryTree): TraceDirectoryTree {
+function getCoreDirForRun(tree: TraceDirectoryTree, selectedRun: number): TraceDirectoryTree {
   const corespace = getOrThrow(tree.subdirectories, 'corespace')
-
-  const runNames = Array.from(corespace.subdirectories.keys())
-  sortBy(runNames, name => {
-    const match = /run(\d+)/.exec(name)
-    if (!match) return -1
-    return parseInt(match[1], 10)
-  })
-  const lastRunName = runNames.pop()!
-  const corespaceRunDir = getOrThrow(corespace.subdirectories, lastRunName)
+  const corespaceRunDir = getOrThrow(corespace.subdirectories, `run${selectedRun}`)
   return getOrThrow(corespaceRunDir.subdirectories, 'core')
 }
 
@@ -363,13 +355,23 @@ interface SymbolInfo {
   addressToLine: Map<number, number>
 }
 
-async function getAddressToFrameMap(tree: TraceDirectoryTree): Promise<Map<number, FrameInfo>> {
+interface FormTemplateData {
+  selectedRun: number
+  instrument: string
+  version: number
+  addressToFrameMap: Map<number, FrameInfo>
+}
+
+async function readFormTemplate(tree: TraceDirectoryTree): Promise<FormTemplateData> {
   const formTemplate = getOrThrow(tree.files, 'form.template')
   const archive = readInstrumentsKeyedArchive(await readAsArrayBuffer(formTemplate))
 
   const version = archive['com.apple.xray.owner.template.version']
-  console.log(`com.apple.xray.owner.template.version=${version}`)
-
+  const selectedRun = archive['com.apple.xray.owner.template'].get('_selectedRunNumber')
+  let instrument = archive['$1']
+  if ('stubInfoByUUID' in archive) {
+    instrument = Array.from(archive['stubInfoByUUID'].keys())[0]
+  }
   let allRunData = archive['com.apple.xray.run.data']
   const runData = getOrThrow<number, Map<any, any>>(
     allRunData.runData,
@@ -390,11 +392,9 @@ async function getAddressToFrameMap(tree: TraceDirectoryTree): Promise<Map<numbe
       const {sourcePath, symbolName, addressToLine} = symbol
       for (let [address, _line] of addressToLine) {
         getOrInsert(addressToFrameMap, address, () => {
-          const name = symbolName || `0x${address.toString(16)}`
+          const name = symbolName || `0x${zeroPad(address.toString(16), 16)}`
           const frame: FrameInfo = {
             key: `${sourcePath}:${name}`,
-
-            // TODO(jlfwong): Zero pad the addresses
             name: name,
           }
           if (sourcePath) {
@@ -406,30 +406,40 @@ async function getAddressToFrameMap(tree: TraceDirectoryTree): Promise<Map<numbe
     }
   }
 
-  return addressToFrameMap
+  return {
+    version,
+    instrument,
+    selectedRun,
+    addressToFrameMap,
+  }
 }
 
 // Import from a .trace file saved from Mac Instruments.app
 export async function importFromInstrumentsTrace(entry: WebKitEntry): Promise<Profile> {
   const tree = await extractDirectoryTree(entry)
-  const core = getCoreDirForLastRun(tree)
 
-  const addressToFrameMap = await getAddressToFrameMap(tree)
+  const {version, selectedRun, instrument, addressToFrameMap} = await readFormTemplate(tree)
+  if (instrument !== 'com.apple.xray.instrument-type.coresampler2') {
+    throw new Error(
+      `The only supported instrument from .trace import is "com.apple.xray.instrument-type.coresampler2". Got ${instrument}`,
+    )
+  }
+  console.log('version: ', version)
+  console.log(`Importing time profile from run ${selectedRun}`)
+
+  const core = getCoreDirForRun(tree, selectedRun)
   let samples = await getRawSampleList(core)
   const arrays = await getIntegerArrays(samples, core)
 
   const backtraceIDtoStack = new Map<number, FrameInfo[]>()
 
-  console.log('duration', lastOf(samples)!.timestamp)
-  // TODO(jlfwong): Wtf? It seems like the bulkstore doesn't actually contain
-  // all of the samples...?
-
   const profile = new Profile(lastOf(samples)!.timestamp)
   profile.setName(entry.name)
 
-  // TODO(jlfwong): This is pretty hacky. There's probably some way of actually
-  // figuring out what the main thread ID is, or displaying flamecharts for each
-  // thread independently
+  // For now, we can only display the flamechart for a single thread of execution,
+  // So let's choose whichever thread had the most sample hits.
+  //
+  // TODO(jlfwong): Support displaying flamecharts for multiple threads.
   const sampleCountByThreadID = new Map<number, number>()
   for (let sample of samples) {
     sampleCountByThreadID.set(
@@ -451,10 +461,9 @@ export async function importFromInstrumentsTrace(entry: WebKitEntry): Promise<Pr
         appendRecursive(addr, stack)
       }
     } else {
-      // TODO(jlfwong): Zero pad the addresses
       const rawAddressFrame: FrameInfo = {
         key: k,
-        name: `0x${k.toString(16)}`,
+        name: `0x${zeroPad(k.toString(16), 16)}`,
       }
       addressToFrameMap.set(k, rawAddressFrame)
       stack.push(rawAddressFrame)
@@ -471,6 +480,9 @@ export async function importFromInstrumentsTrace(entry: WebKitEntry): Promise<Pr
     })
 
     if (lastTimestamp === null) {
+      // The first sample is sometimes fairly late in the profile for some reason.
+      // We'll just say nothing was known to be on the stack in that time.
+      profile.appendSample([], sample.timestamp)
       lastTimestamp = sample.timestamp
     }
 
@@ -494,7 +506,7 @@ export function readInstrumentsKeyedArchive(buffer: ArrayBuffer): any {
       case 'NSTextStorage':
       case 'NSParagraphStyle':
       case 'NSFont':
-        // Stuff I don't care about
+        // Stuff that's irrelevant for constructing a flamegraph
         return null
 
       case 'PFTSymbolData': {
@@ -529,7 +541,6 @@ export function readInstrumentsKeyedArchive(buffer: ArrayBuffer): any {
         for (let i = 1; i < symbolCount; i++) {
           ret.symbols.push(object['$' + (4 + i)])
         }
-        console.log(ret)
         return ret
       }
 
