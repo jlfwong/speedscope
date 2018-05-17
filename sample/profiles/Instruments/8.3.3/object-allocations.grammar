@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ufwb version="1.17">
+    <grammar name="Instruments Object Allocations" start="id:1" author="Jamie Wong">
+        <description>Grammar for my file format</description>
+        <structure name="oa" id="1" encoding="ISO_8859-1:1987" endian="little" signed="no">
+            <structure name="Header" id="2" length="Size">
+                <number name="&lt;new number&gt;" id="3" type="integer" length="4"/>
+                <number name="&lt;new number&gt;-1" id="4" type="integer" length="4"/>
+                <number name="&lt;new number&gt;-1-1" id="5" type="integer" length="4"/>
+                <number name="Size" id="6" type="integer" length="4"/>
+                <number name="BytesPerEntry" id="7" type="integer" length="4"/>
+            </structure>
+            <structure name="Data" id="9" length="BytesPerEntry" repeatmax="-1">
+                <number name="Timestamp" id="10" fillcolor="6EFF71" type="integer" length="8"/>
+                <number name="Address" id="11" fillcolor="8AC4FF" type="integer" length="8" display="hex"/>
+                <binary name="&lt;Binary Fill Bytes&gt;" id="12" unused="yes" length="8"/>
+                <number name="Size" id="13" fillcolor="CF6EFF" type="integer" length="4" signed="yes"/>
+                <number name="AlsoSize?" id="14" fillcolor="FF7AD4" type="integer" length="4"/>
+                <binary name="&lt;Binary Fill Bytes&gt;-1" id="15" unused="yes" length="8"/>
+                <number name="Backtrace" id="16" type="integer" length="4"/>
+                <binary name="&lt;Binary Fill Bytes&gt;-1-1" id="17" unused="yes" length="2"/>
+                <number name="???" id="18" fillcolor="FF7A65" type="integer" length="4"/>
+            </structure>
+        </structure>
+    </grammar>
+</ufwb>

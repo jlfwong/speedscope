@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ufwb version="1.17">
+    <grammar name="time-sample bulkstore" start="id:1" author="Jamie Wong" fileextension="bin" uti="com.apple.macbinary-archive">
+        <description>Grammar for BIN files</description>
+        <structure name="time-sample bulkstore" id="1" length="0" encoding="ISO_8859-1:1987" endian="little" signed="no">
+            <structure name="Header" id="2" length="Size" endian="little">
+                <binary name="???0" id="3" length="4"/>
+                <number name="???1" id="4" type="integer" length="4"/>
+                <number name="???2" id="5" type="integer" length="4"/>
+                <number name="Size" id="6" type="integer" length="4"/>
+                <number name="BytesPerEntry" id="7" type="integer" length="2"/>
+                <number name="???4" id="8" type="integer" length="4"/>
+                <number name="???5" id="9" type="integer" length="4"/>
+            </structure>
+            <structure name="Data" id="11" length="BytesPerEntry" repeatmax="-1">
+                <number name="Timestamp" id="12" fillcolor="33FF70" type="integer" length="6" endian="little"/>
+                <binary name="&lt;Binary Fill Bytes&gt;" id="13" unused="yes" length="23"/>
+                <number name="Backtrace ID" id="14" fillcolor="FF8284" type="integer" length="4" endian="little"/>
+            </structure>
+        </structure>
+    </grammar>
+</ufwb>
