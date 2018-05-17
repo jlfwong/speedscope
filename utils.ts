@@ -19,6 +19,13 @@ export function getOrElse<K, V>(map: Map<K, V>, k: K, fallback: (k?: K) => V): V
   return map.get(k)!
 }
 
+export function getOrThrow<K, V>(map: Map<K, V>, k: K): V {
+  if (!map.has(k)) {
+    throw new Error(`Expected key ${k}`)
+  }
+  return map.get(k)!
+}
+
 export function* itMap<T, U>(it: Iterable<T>, f: (t: T) => U): Iterable<U> {
   for (let t of it) {
     yield f(t)
@@ -37,6 +44,10 @@ export function itReduce<T, U>(it: Iterable<T>, f: (a: U, b: T) => U, init: U): 
     accum = f(accum, t)
   }
   return accum
+}
+
+export function zeroPad(s: string, width: number) {
+  return new Array(Math.max(width - s.length, 0) + 1).join('0') + s
 }
 
 // NOTE: This blindly assumes the same result across contexts.
