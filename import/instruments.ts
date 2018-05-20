@@ -601,7 +601,7 @@ function expandKeyedArchive(
   // Sanity checks
   if (
     root.$version !== 100000 ||
-    (root.$archiver !== 'MSArchiver' && root.$archiver !== 'NSKeyedArchiver') ||
+    root.$archiver !== 'NSKeyedArchiver' ||
     !isDictionary(root.$top) ||
     !isArray(root.$objects)
   ) {
