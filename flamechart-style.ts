@@ -72,11 +72,13 @@ export const style = StyleSheet.create({
     width: '100vw',
     bottom: 0,
   },
+  stackTraceViewPadding: {
+    padding: 5,
+  },
   stackTraceView: {
     height: Sizes.DETAIL_VIEW_HEIGHT,
-    overflow: 'auto',
     lineHeight: `${FontSize.LABEL + 2}px`,
-    padding: 5,
+    overflow: 'auto',
   },
   stackChit: {
     display: 'inline-block',
