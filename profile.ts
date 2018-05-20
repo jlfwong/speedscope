@@ -68,6 +68,11 @@ export class Frame extends HasWeights {
 
 export class CallTreeNode extends HasWeights {
   children: CallTreeNode[] = []
+
+  isRoot() {
+    return this.frame === rootFrame
+  }
+
   constructor(readonly frame: Frame, readonly parent: CallTreeNode | null) {
     super()
   }

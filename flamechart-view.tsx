@@ -736,7 +736,7 @@ class StackTraceView extends ReloadableComponent<StackTraceViewProps, {}> {
   render() {
     const rows: JSX.Element[] = []
     let node: CallTreeNode | null = this.props.node
-    for (; node; node = node.parent) {
+    for (; node && !node.isRoot(); node = node.parent) {
       const row: (JSX.Element | string)[] = []
       const {frame} = node
 
@@ -764,7 +764,11 @@ class StackTraceView extends ReloadableComponent<StackTraceViewProps, {}> {
       }
       rows.push(<div className={css(style.stackLine)}>{row}</div>)
     }
-    return <div className={css(style.stackTraceView)}>{rows}</div>
+    return (
+      <div className={css(style.stackTraceView)}>
+        <div className={css(style.stackTraceViewPadding)}>{rows}</div>
+      </div>
+    )
   }
 }
 
