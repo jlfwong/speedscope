@@ -131,7 +131,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     )
   }
 
-  private LOGICAL_VIEW_SPACE_FRAME_HEIGHT = 16
+  private LOGICAL_VIEW_SPACE_FRAME_HEIGHT = 20
 
   private configSpaceToPhysicalViewSpace() {
     return AffineTransform.betweenRects(
@@ -187,22 +187,20 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     ctx.clearRect(0, 0, physicalViewSize.x, physicalViewSize.y)
 
     if (this.hoveredLabel) {
-      let lineWidth = 2
       let color = Colors.DARK_GRAY
-
       if (this.props.selectedNode === this.hoveredLabel.node) {
         color = Colors.DARK_BLUE
-        lineWidth = 5
       }
-      ctx.lineWidth = lineWidth
+
+      ctx.lineWidth = 2
       ctx.strokeStyle = color
 
       const physicalViewBounds = configToPhysical.transformRect(this.hoveredLabel.configSpaceBounds)
       ctx.strokeRect(
-        Math.floor(physicalViewBounds.left() + 1 + lineWidth / 2),
-        Math.floor(physicalViewBounds.top() + 1 + lineWidth / 2),
-        Math.floor(Math.max(0, physicalViewBounds.width() - 2 - lineWidth)),
-        Math.floor(Math.max(0, physicalViewBounds.height() - 2 - lineWidth)),
+        Math.round(physicalViewBounds.left()),
+        Math.round(physicalViewBounds.top()),
+        Math.round(Math.max(0, physicalViewBounds.width())),
+        Math.round(Math.max(0, physicalViewBounds.height())),
       )
     }
 
@@ -210,15 +208,14 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       FontFamily.MONOSPACE
     }`
     ctx.fillStyle = Colors.DARK_GRAY
-    ctx.textBaseline = 'top'
+    ctx.textBaseline = 'middle'
 
     const minWidthToRender = cachedMeasureTextWidth(ctx, 'M' + ELLIPSIS + 'M')
     const minConfigSpaceWidthToRender = (
       configToPhysical.inverseTransformVector(new Vec2(minWidthToRender, 0)) || new Vec2(0, 0)
     ).x
-    const LABEL_PADDING_PX = (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2
-    const PADDING_OFFSET = new Vec2(LABEL_PADDING_PX, LABEL_PADDING_PX)
-    const SIZE_OFFSET = new Vec2(2 * LABEL_PADDING_PX, 2 * LABEL_PADDING_PX)
+
+    const LABEL_PADDING_PX = 5 * window.devicePixelRatio
 
     const renderFrameLabelAndChildren = (frame: FlamechartFrame, depth = 0) => {
       const width = frame.end - frame.start
@@ -247,12 +244,19 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
           )
         }
 
-        physicalLabelBounds = physicalLabelBounds
-          .withOrigin(physicalLabelBounds.origin.plus(PADDING_OFFSET))
-          .withSize(physicalLabelBounds.size.minus(SIZE_OFFSET))
+        const trimmedText = trimTextMid(
+          ctx,
+          frame.node.frame.name,
+          physicalLabelBounds.width() - 2 * LABEL_PADDING_PX,
+        )
 
-        const trimmedText = trimTextMid(ctx, frame.node.frame.name, physicalLabelBounds.width())
-        ctx.fillText(trimmedText, physicalLabelBounds.left(), physicalLabelBounds.top())
+        // We specify the middle of the label bounds as the position because we use
+        // ctx.textBaseline = 'middle' above.
+        ctx.fillText(
+          trimmedText,
+          physicalLabelBounds.left() + LABEL_PADDING_PX,
+          Math.round(physicalLabelBounds.top() + physicalLabelBounds.height() / 2),
+        )
       }
 
       for (let child of frame.children) {
@@ -264,7 +268,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       renderFrameLabelAndChildren(frame)
     }
 
-    const frameOutlineWidth = 4
+    const frameOutlineWidth = 2
     ctx.strokeStyle = Colors.PALE_DARK_BLUE
     ctx.lineWidth = frameOutlineWidth
     const minConfigSpaceWidthToRenderOutline = (
@@ -301,10 +305,10 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
           // Identify the flamechart frames with a function that matches the
           // selected flamechart frame.
           ctx.rect(
-            Math.floor(physicalRectBounds.left() + 1 + frameOutlineWidth / 2),
-            Math.floor(physicalRectBounds.top() + 1 + frameOutlineWidth / 2),
-            Math.floor(Math.max(0, physicalRectBounds.width() - 2 - frameOutlineWidth)),
-            Math.floor(Math.max(0, physicalRectBounds.height() - 2 - frameOutlineWidth)),
+            Math.round(physicalRectBounds.left() + 1 + frameOutlineWidth / 2),
+            Math.round(physicalRectBounds.top() + 1 + frameOutlineWidth / 2),
+            Math.round(Math.max(0, physicalRectBounds.width() - 2 - frameOutlineWidth)),
+            Math.round(Math.max(0, physicalRectBounds.height() - 2 - frameOutlineWidth)),
           )
         }
       }
