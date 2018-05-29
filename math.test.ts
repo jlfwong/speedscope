@@ -1,80 +1,131 @@
 import {clamp, Vec2} from './math'
+import * as jsc from 'jsverify'
 
 test('clamp', () => {
-  expect(clamp(1.5, 1, 2)).toBe(1.5)
-  expect(clamp(2.5, 1, 2)).toBe(2)
-  expect(clamp(0.5, 1, 2)).toBe(1)
+  jsc.assertForall(jsc.number, jsc.number, jsc.number, (a, b, c) => {
+    const result = clamp(a, b, c)
+    if (a < b) return result == b
+    if (a > c) return result == c
+    return result == a
+  })
 })
+
+const arbitraryVec2 = jsc
+  .record({x: jsc.number, y: jsc.number})
+  .smap(v => new Vec2(v.x, v.y), v => ({x: v.x, y: v.y}))
 
 describe('Vec2', () => {
   test('constructor', () => {
-    expect(new Vec2(1, 2).x).toBe(1)
-    expect(new Vec2(1, 2).y).toBe(2)
+    jsc.assertForall(jsc.number, jsc.number, (a, b) => {
+      const v = new Vec2(a, b)
+      return v.x == a && v.y == b
+    })
   })
 
   test('withX', () => {
-    expect(new Vec2(1, 2).withX(3)).toEqual(new Vec2(3, 2))
+    jsc.assertForall(arbitraryVec2, jsc.number, (v, n) => {
+      return v.withX(n).x === n
+    })
   })
 
   test('withY', () => {
-    expect(new Vec2(1, 2).withY(3)).toEqual(new Vec2(1, 3))
+    jsc.assertForall(arbitraryVec2, jsc.number, (v, n) => {
+      return v.withY(n).y === n
+    })
   })
 
   test('plus', () => {
-    expect(new Vec2(1, 2).plus(new Vec2(3, 5))).toEqual(new Vec2(4, 7))
+    jsc.assertForall(arbitraryVec2, arbitraryVec2, (v1, v2) => {
+      const sum = v1.plus(v2)
+      return sum.x === v1.x + v2.x && sum.y === v1.y + v2.y
+    })
   })
 
   test('minus', () => {
-    expect(new Vec2(1, 2).minus(new Vec2(3, 5))).toEqual(new Vec2(-2, -3))
+    jsc.assertForall(arbitraryVec2, arbitraryVec2, (v1, v2) => {
+      const diff = v1.minus(v2)
+      return diff.x === v1.x - v2.x && diff.y === v1.y - v2.y
+    })
   })
 
   test('times', () => {
-    expect(new Vec2(1, 2).times(-4)).toEqual(new Vec2(-4, -8))
+    jsc.assertForall(arbitraryVec2, jsc.number, (v1, s) => {
+      const prod = v1.times(s)
+      return prod.x === v1.x * s && prod.y === v1.y * s
+    })
   })
 
   test('timesPointwise', () => {
-    expect(new Vec2(1, 2).timesPointwise(new Vec2(2, 6))).toEqual(new Vec2(2, 12))
+    jsc.assertForall(arbitraryVec2, arbitraryVec2, (v1, v2) => {
+      const prod = v1.timesPointwise(v2)
+      return prod.x === v1.x * v2.x && prod.y === v1.y * v2.y
+    })
   })
 
   test('dividedByPointwise', () => {
-    expect(new Vec2(1, 2).dividedByPointwise(new Vec2(2, 2))).toEqual(new Vec2(0.5, 1))
+    jsc.assertForall(
+      arbitraryVec2,
+      jsc.suchthat(arbitraryVec2, v => v.x !== 0 && v.y !== 0),
+      (v1, v2) => {
+        const div = v1.dividedByPointwise(v2)
+        return div.x === v1.x / v2.x && div.y === v1.y / v2.y
+      },
+    )
   })
 
   test('dot', () => {
-    expect(new Vec2(1, 2).dot(new Vec2(3, 4))).toBe(11)
+    jsc.assertForall(arbitraryVec2, arbitraryVec2, (v1, v2) => {
+      return v1.dot(v2) === v1.x * v2.x + v1.y * v2.y
+    })
   })
 
   test('equals', () => {
-    expect(new Vec2(1, 2).equals(new Vec2(1, 2))).toBe(true)
-    expect(new Vec2(1, 2).equals(new Vec2(1, 3))).toBe(false)
-    expect(new Vec2(1, 2).equals(new Vec2(3, 2))).toBe(false)
-    expect(new Vec2(1, 2).equals(new Vec2(2, 1))).toBe(false)
+    jsc.assertForall(jsc.number, jsc.number, (a, b) => {
+      return new Vec2(a, b).equals(new Vec2(a, b))
+    })
+
+    jsc.assertForall(arbitraryVec2, arbitraryVec2, (a, b) => {
+      return a.equals(b) === (a.x === b.x && a.y === b.y)
+    })
   })
 
   test('length2', () => {
-    expect(new Vec2(3, 4).length2()).toBe(25)
+    jsc.assertForall(arbitraryVec2, v => {
+      return v.length2() === v.x * v.x + v.y * v.y
+    })
   })
 
   test('length', () => {
-    expect(new Vec2(3, 4).length()).toBe(5)
+    jsc.assertForall(arbitraryVec2, v => {
+      return v.length() === Math.sqrt(v.x * v.x + v.y * v.y)
+    })
   })
 
   test('abs', () => {
-    expect(new Vec2(3, 4).abs()).toEqual(new Vec2(3, 4))
-    expect(new Vec2(-3, 4).abs()).toEqual(new Vec2(3, 4))
-    expect(new Vec2(3, -4).abs()).toEqual(new Vec2(3, 4))
-    expect(new Vec2(-3, -4).abs()).toEqual(new Vec2(3, 4))
+    jsc.assertForall(arbitraryVec2, v => {
+      const q = v.abs()
+      return q.x === Math.abs(v.x) && q.y === Math.abs(v.y)
+    })
   })
 
   test('min', () => {
-    expect(Vec2.min(new Vec2(1, 4), new Vec2(2, 3))).toEqual(new Vec2(1, 3))
+    jsc.assertForall(arbitraryVec2, arbitraryVec2, (v1, v2) => {
+      const min = Vec2.min(v1, v2)
+      return min.x === Math.min(v1.x, v2.x) && min.y === Math.min(v1.y, v2.y)
+    })
   })
 
   test('max', () => {
-    expect(Vec2.max(new Vec2(1, 4), new Vec2(2, 3))).toEqual(new Vec2(2, 4))
+    jsc.assertForall(arbitraryVec2, arbitraryVec2, (v1, v2) => {
+      const max = Vec2.max(v1, v2)
+      return max.x === Math.max(v1.x, v2.x) && max.y === Math.max(v1.y, v2.y)
+    })
   })
 
   test('flatten', () => {
-    expect(new Vec2(3, 4).flatten()).toEqual([3, 4])
+    jsc.assertForall(arbitraryVec2, v1 => {
+      const flat = v1.flatten()
+      return flat[0] == v1.x && flat[1] == v1.y
+    })
   })
 })
