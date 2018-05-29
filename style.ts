@@ -1,6 +1,5 @@
-// TODO(jlfwong): Choose a font that's optimized for sharp display at 10px and 20px
 export enum FontFamily {
-  MONOSPACE = 'Courier, monospace',
+  MONOSPACE = '"Source Code Pro", Courier, monospace',
 }
 
 export enum FontSize {
