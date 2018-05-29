@@ -149,6 +149,102 @@ describe('Vec2', () => {
   })
 })
 
+describe('Rect', () => {
+  test('isEmpty', () => {
+    jsc.assertForall(arbitraryVec2, jsc.number, (v, n) => {
+      return new Rect(v, new Vec2(0, n)).isEmpty()
+    })
+    jsc.assertForall(arbitraryVec2, jsc.number, (v, n) => {
+      return new Rect(v, new Vec2(n, 0)).isEmpty()
+    })
+    jsc.assertForall(arbitraryVec2, v => {
+      return !new Rect(v, Vec2.unit).isEmpty()
+    })
+  })
+
+  test('width', () => {
+    jsc.assertForall(arbitraryVec2, arbitraryVec2, (v1, v2) => {
+      return new Rect(v1, v2).width() == v2.x
+    })
+  })
+  test('height', () => {
+    jsc.assertForall(arbitraryVec2, arbitraryVec2, (v1, v2) => {
+      return new Rect(v1, v2).height() == v2.y
+    })
+  })
+  test('left', () => {
+    jsc.assertForall(arbitraryVec2, arbitraryVec2, (v1, v2) => {
+      return new Rect(v1, v2).left() == v1.x
+    })
+  })
+  test('top', () => {
+    jsc.assertForall(arbitraryVec2, arbitraryVec2, (v1, v2) => {
+      return new Rect(v1, v2).top() == v1.y
+    })
+  })
+  test('right', () => {
+    jsc.assertForall(arbitraryVec2, arbitraryVec2, (v1, v2) => {
+      return new Rect(v1, v2).right() == v1.x + v2.x
+    })
+  })
+  test('bottom', () => {
+    jsc.assertForall(arbitraryVec2, arbitraryVec2, (v1, v2) => {
+      return new Rect(v1, v2).bottom() == v1.y + v2.y
+    })
+  })
+  test('topLeft', () => {
+    jsc.assertForall(arbitraryVec2, arbitraryVec2, (v1, v2) => {
+      return new Rect(v1, v2).topLeft().equals(v1)
+    })
+  })
+  test('topRight', () => {
+    jsc.assertForall(arbitraryVec2, arbitraryVec2, (v1, v2) => {
+      return new Rect(v1, v2).topRight().equals(v1.plus(v2.withY(0)))
+    })
+  })
+  test('bottomLeft', () => {
+    jsc.assertForall(arbitraryVec2, arbitraryVec2, (v1, v2) => {
+      return new Rect(v1, v2).bottomLeft().equals(v1.plus(v2.withX(0)))
+    })
+  })
+  test('bottomRight', () => {
+    jsc.assertForall(arbitraryVec2, arbitraryVec2, (v1, v2) => {
+      return new Rect(v1, v2).bottomRight().equals(v1.plus(v2))
+    })
+  })
+
+  test('withOrigin', () => {
+    jsc.assertForall(arbitraryRect, arbitraryVec2, (r, v) => {
+      return r.withOrigin(v).origin.equals(v)
+    })
+  })
+  test('withSize', () => {
+    jsc.assertForall(arbitraryRect, arbitraryVec2, (r, v) => {
+      return r.withSize(v).size.equals(v)
+    })
+  })
+
+  test('closestPointTo', () => {
+    jsc.assertForall(arbitraryRect, arbitraryVec2, (r, v) => {
+      const p = r.closestPointTo(v)
+      return p.x >= r.left() && p.x <= r.right() && p.y >= r.top() && p.y <= r.bottom()
+    })
+  })
+
+  test('hasIntersectionWith', () => {
+    jsc.assertForall(arbitraryRect, arbitraryRect, (r1, r2) => {
+      return r1.hasIntersectionWith(r2) === !r1.intersectWith(r2).isEmpty()
+    })
+  })
+
+  test('intersectWith', () => {
+    jsc.assertForall(arbitraryRect, arbitraryRect, (r1, r2) => {
+      const inter = r1.intersectWith(r2)
+      return inter.isEmpty() || (r1.hasIntersectionWith(inter) && r2.hasIntersectionWith(inter))
+    })
+  })
+})
+
 describe('AffineTransform', () => {
   test('inverted', () => {
     expect(new AffineTransform(0, 0, 0, 0, 0, 0).inverted()).toBe(null)
