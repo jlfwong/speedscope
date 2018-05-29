@@ -207,6 +207,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     ctx.font = `${physicalViewSpaceFontSize}px/${physicalViewSpaceFrameHeight}px ${
       FontFamily.MONOSPACE
     }`
+    ctx.textBaseline = 'alphabetic'
     ctx.fillStyle = Colors.DARK_GRAY
 
     const minWidthToRender = cachedMeasureTextWidth(ctx, 'M' + ELLIPSIS + 'M')
@@ -358,6 +359,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
       ctx.fillRect(0, 0, physicalViewSize.x, physicalViewSpaceFrameHeight)
       ctx.fillStyle = Colors.GRAY
+      ctx.textBaseline = 'top'
       for (let x = Math.ceil(left / interval) * interval; x < right; x += interval) {
         // TODO(jlfwong): Ensure that labels do not overlap
         const pos = Math.round(configToPhysical.transformPosition(new Vec2(x, 0)).x)
