@@ -7,7 +7,8 @@
     "deploy": "./deploy.sh",
     "prettier": "prettier --write './**/*.ts' './**/*.tsx'",
     "lint": "eslint './**/*.ts' './**/*.tsx'",
-    "test": "npm run lint",
+    "jest": "jest",
+    "test": "tsc --noEmit && npm run lint && jest",
     "serve": "parcel index.html --open --no-autoinstall"
   },
   "browserslist": [
@@ -17,17 +18,33 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@types/jest": "^22.2.3",
+    "@types/pako": "1.0.0",
     "aphrodite": "2.1.0",
     "eslint": "^4.19.1",
     "eslint-plugin-prettier": "^2.6.0",
+    "jest": "^23.0.1",
+    "pako": "1.0.6",
     "parcel-bundler": "1.7.0",
     "preact": "8.2.7",
     "prettier": "^1.12.0",
     "regl": "1.3.1",
+    "ts-jest": "^22.4.6",
     "typescript": "2.8.1",
     "typescript-eslint-parser": "^14.0.0",
-    "uglify-es": "3.2.2",
-    "@types/pako": "1.0.0",
-    "pako": "1.0.6"
+    "uglify-es": "3.2.2"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "\\.test\\.tsx?$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json"
+    ]
   }
 }

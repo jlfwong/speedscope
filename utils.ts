@@ -14,7 +14,7 @@ export function getOrInsert<K, V>(map: Map<K, V>, k: K, fallback: (k: K) => V): 
   return map.get(k)!
 }
 
-export function getOrElse<K, V>(map: Map<K, V>, k: K, fallback: (k?: K) => V): V {
+export function getOrElse<K, V>(map: Map<K, V>, k: K, fallback: (k: K) => V): V {
   if (!map.has(k)) return fallback(k)
   return map.get(k)!
 }
