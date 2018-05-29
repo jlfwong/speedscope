@@ -192,7 +192,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
         color = Colors.DARK_BLUE
       }
 
-      ctx.lineWidth = 2
+      ctx.lineWidth = 2 * devicePixelRatio
       ctx.strokeStyle = color
 
       const physicalViewBounds = configToPhysical.transformRect(this.hoveredLabel.configSpaceBounds)
@@ -208,7 +208,6 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       FontFamily.MONOSPACE
     }`
     ctx.fillStyle = Colors.DARK_GRAY
-    ctx.textBaseline = 'middle'
 
     const minWidthToRender = cachedMeasureTextWidth(ctx, 'M' + ELLIPSIS + 'M')
     const minConfigSpaceWidthToRender = (
@@ -250,15 +249,17 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
           physicalLabelBounds.width() - 2 * LABEL_PADDING_PX,
         )
 
-        // We specify the middle of the label bounds as the position because we use
-        // ctx.textBaseline = 'middle' above.
+        // Note that this is specifying the position of the starting text
+        // baseline.
         ctx.fillText(
           trimmedText,
           physicalLabelBounds.left() + LABEL_PADDING_PX,
-          Math.round(physicalLabelBounds.top() + physicalLabelBounds.height() / 2),
+          Math.round(
+            physicalLabelBounds.bottom() -
+              (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2,
+          ),
         )
       }
-
       for (let child of frame.children) {
         renderFrameLabelAndChildren(child, depth + 1)
       }
@@ -268,7 +269,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       renderFrameLabelAndChildren(frame)
     }
 
-    const frameOutlineWidth = 2
+    const frameOutlineWidth = 2 * window.devicePixelRatio
     ctx.strokeStyle = Colors.PALE_DARK_BLUE
     ctx.lineWidth = frameOutlineWidth
     const minConfigSpaceWidthToRenderOutline = (
