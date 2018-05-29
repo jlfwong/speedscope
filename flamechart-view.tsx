@@ -604,21 +604,28 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
     const isZoom = ev.metaKey || ev.ctrlKey
 
+    let deltaY = ev.deltaY
+    let deltaX = ev.deltaX
+    if (ev.deltaMode === ev.DOM_DELTA_LINE) {
+      deltaY *= this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT
+      deltaX *= this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT
+    }
+
     if (isZoom && this.interactionLock !== 'pan') {
-      let multiplier = 1 + ev.deltaY / 100
+      let multiplier = 1 + deltaY / 100
 
       // On Chrome & Firefox, pinch-to-zoom maps to
       // WheelEvent + Ctrl Key. We'll accelerate it in
       // this case, since it feels a bit sluggish otherwise.
       if (ev.ctrlKey) {
-        multiplier = 1 + ev.deltaY / 40
+        multiplier = 1 + deltaY / 40
       }
 
       multiplier = clamp(multiplier, 0.1, 10.0)
 
       this.zoom(new Vec2(ev.offsetX, ev.offsetY), multiplier)
     } else if (this.interactionLock !== 'zoom') {
-      this.pan(new Vec2(ev.deltaX, ev.deltaY))
+      this.pan(new Vec2(deltaX, deltaY))
     }
 
     this.renderCanvas()
