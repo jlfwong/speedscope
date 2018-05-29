@@ -1,4 +1,4 @@
-import {clamp, Vec2} from './math'
+import {clamp, Vec2, AffineTransform, Rect} from './math'
 import * as jsc from 'jsverify'
 
 test('clamp', () => {
@@ -12,7 +12,26 @@ test('clamp', () => {
 
 const arbitraryVec2 = jsc
   .record({x: jsc.number, y: jsc.number})
-  .smap(v => new Vec2(v.x, v.y), v => ({x: v.x, y: v.y}))
+  .smap(v => new Vec2(v.x, v.y), v => v)
+
+const positiveVec2 = jsc.suchthat(arbitraryVec2, v => v.x > 0 && v.y > 0)
+
+const arbitraryTransform = jsc
+  .record({
+    m00: jsc.number,
+    m01: jsc.number,
+    m02: jsc.number,
+    m10: jsc.number,
+    m11: jsc.number,
+    m12: jsc.number,
+  })
+  .smap(t => new AffineTransform(t.m00, t.m01, t.m02, t.m10, t.m11, t.m12), t => t)
+
+const invertibleTransform = jsc.suchthat(arbitraryTransform, t => t.det() != 0)
+
+const arbitraryRect = jsc
+  .record({origin: arbitraryVec2, size: positiveVec2})
+  .smap(r => new Rect(r.origin, r.size), r => r)
 
 describe('Vec2', () => {
   test('constructor', () => {
@@ -126,6 +145,95 @@ describe('Vec2', () => {
     jsc.assertForall(arbitraryVec2, v1 => {
       const flat = v1.flatten()
       return flat[0] == v1.x && flat[1] == v1.y
+    })
+  })
+})
+
+describe('AffineTransform', () => {
+  test('inverted', () => {
+    expect(new AffineTransform(0, 0, 0, 0, 0, 0).inverted()).toBe(null)
+
+    jsc.assertForall(invertibleTransform, t => {
+      return t
+        .inverted()!
+        .inverted()!
+        .approxEquals(t)
+    })
+  })
+
+  test('translation', () => {
+    jsc.assertForall(arbitraryTransform, arbitraryVec2, (t, v1) => {
+      return t
+        .withTranslation(v1)
+        .getTranslation()
+        .equals(v1)
+    })
+
+    jsc.assertForall(arbitraryTransform, arbitraryVec2, (t, v1) => {
+      const initialTranslation = t.getTranslation()
+      return t
+        .translatedBy(v1)
+        .getTranslation()
+        .approxEquals(initialTranslation.plus(v1))
+    })
+  })
+
+  test('scale', () => {
+    jsc.assertForall(arbitraryTransform, arbitraryVec2, (t, v1) => {
+      return t
+        .withScale(v1)
+        .getScale()
+        .equals(v1)
+    })
+  })
+
+  test('transformVector', () => {
+    // Vector transformation are translation-invariant
+    jsc.assertForall(arbitraryVec2, arbitraryVec2, (v1, v2) => {
+      return AffineTransform.withTranslation(v1)
+        .transformVector(v2)
+        .approxEquals(v2)
+    })
+
+    jsc.assertForall(arbitraryVec2, arbitraryVec2, (v1, v2) => {
+      return AffineTransform.withScale(v1)
+        .transformVector(v2)
+        .approxEquals(v2.timesPointwise(v1))
+    })
+  })
+
+  test('inverseTransformVector', () => {
+    jsc.assertForall(invertibleTransform, arbitraryVec2, (t, v) => {
+      return t.inverseTransformVector(t.transformVector(v))!.approxEquals(v)
+    })
+  })
+
+  test('transformPosition', () => {
+    jsc.assertForall(arbitraryVec2, arbitraryVec2, (v1, v2) => {
+      return AffineTransform.withTranslation(v1)
+        .transformPosition(v2)
+        .approxEquals(v2.plus(v1))
+    })
+
+    jsc.assertForall(arbitraryVec2, arbitraryVec2, (v1, v2) => {
+      return AffineTransform.withScale(v1)
+        .transformPosition(v2)
+        .approxEquals(v2.timesPointwise(v1))
+    })
+  })
+
+  test('inverseTransformPosition', () => {
+    jsc.assertForall(invertibleTransform, arbitraryVec2, (t, v) => {
+      return t.inverseTransformPosition(t.transformPosition(v))!.approxEquals(v)
+    })
+  })
+
+  test('times', () => {
+    jsc.assertForall(invertibleTransform, invertibleTransform, (t1, t2) => {
+      return t1
+        .times(t2)
+        .times(t2.inverted()!)
+        .approxEquals(t1)
     })
   })
 })

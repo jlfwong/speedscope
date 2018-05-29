@@ -34,6 +34,10 @@ export class Vec2 {
   equals(other: Vec2) {
     return this.x === other.x && this.y === other.y
   }
+  approxEquals(other: Vec2, epsilon = 1e-9) {
+    return Math.abs(this.x - other.x) < epsilon && Math.abs(this.y - other.y) < epsilon
+  }
+
   length2() {
     return this.dot(this)
   }
@@ -127,6 +131,17 @@ export class AffineTransform {
       this.m10 == other.m10 &&
       this.m11 == other.m11 &&
       this.m12 == other.m12
+    )
+  }
+
+  approxEquals(other: AffineTransform, epsilon = 1e-9) {
+    return (
+      Math.abs(this.m00 - other.m00) < epsilon &&
+      Math.abs(this.m01 - other.m01) < epsilon &&
+      Math.abs(this.m02 - other.m02) < epsilon &&
+      Math.abs(this.m10 - other.m10) < epsilon &&
+      Math.abs(this.m11 - other.m11) < epsilon &&
+      Math.abs(this.m12 - other.m12) < epsilon
     )
   }
 
