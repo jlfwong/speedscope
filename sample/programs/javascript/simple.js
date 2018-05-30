@@ -30,3 +30,5 @@ a()
 setTimeout(() => {
   console.profileEnd('a')
 }, 0)
+
+window.addEventListener('click', a)

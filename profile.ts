@@ -3,7 +3,7 @@ import {ValueFormatter, RawValueFormatter} from './value-formatters'
 const demangleCppModule = import('./demangle-cpp')
 
 // Force eager loading of the module
-demangleCppModule.then(() => console.log('CPP demangler loaded'))
+demangleCppModule.then(() => {})
 
 export interface FrameInfo {
   key: string | number

@@ -12,11 +12,16 @@
     "test": "tsc --noEmit && npm run lint && npm run coverage",
     "serve": "parcel index.html --open --no-autoinstall"
   },
-  "browserslist": ["last 2 Chrome versions", "last 2 Firefox versions"],
+  "browserslist": [
+    "last 2 Chrome versions",
+    "last 2 Firefox versions"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^22.2.3",
+    "@types/jszip": "^3.1.4",
+    "@types/node": "^10.1.4",
     "@types/pako": "1.0.0",
     "aphrodite": "2.1.0",
     "coveralls": "^3.0.1",
@@ -24,6 +29,7 @@
     "eslint-plugin-prettier": "^2.6.0",
     "jest": "^23.0.1",
     "jsverify": "^0.8.3",
+    "jszip": "^3.1.5",
     "pako": "1.0.6",
     "parcel-bundler": "1.7.0",
     "preact": "8.2.7",
@@ -39,7 +45,16 @@
       "^.+\\.tsx?$": "ts-jest"
     },
     "testRegex": "\\.test\\.tsx?$",
-    "collectCoverageFrom": ["*.{ts,tsx}", "!*.d.{ts,tsx}"],
-    "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json"]
+    "collectCoverageFrom": [
+      "**/*.{ts,tsx}",
+      "!**/*.d.{ts,tsx}"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json"
+    ]
   }
 }

@@ -65,9 +65,9 @@ function getWeight(deepCopyRow: any): number {
     throw new Error(`Unrecognized units ${units}`)
   }
 
-  if ('Weight' in deepCopyRow) {
-    const weightString = deepCopyRow['Weight']
-    const parts = /\s*(\d+(?:[.]\d+)?) (\w+)\s+(?:\d+(?:[.]\d+))%/.exec(weightString)
+  if ('Weight' in deepCopyRow || 'Running Time' in deepCopyRow) {
+    const weightString = deepCopyRow['Weight'] || deepCopyRow['Running Time']
+    const parts = /\s*(\d+(?:[.]\d+)?) ?(\w+)\s+(?:\d+(?:[.]\d+))%/.exec(weightString)
     if (!parts) return 0
     const value = parseInt(parts[1], 10)
     const units = parts[2]
@@ -135,7 +135,7 @@ export function importFromInstrumentsDeepCopy(contents: string): Profile {
 
   if ('Bytes Used' in rows[0]) {
     profile.setValueFormatter(new ByteFormatter())
-  } else if ('Weight' in rows[0]) {
+  } else if ('Weight' in rows[0] || 'Running Time' in rows[0]) {
     profile.setValueFormatter(new TimeFormatter('milliseconds'))
   }
 
@@ -148,25 +148,45 @@ interface TraceDirectoryTree {
   subdirectories: Map<string, TraceDirectoryTree>
 }
 
-async function extractDirectoryTree(entry: WebKitEntry): Promise<TraceDirectoryTree> {
+// The bits of this API that we care about. This is implemented by WebKitEntry
+// https://wicg.github.io/entries-api/#api-entry
+export interface FileSystemDirectoryReader {
+  readEntries(cb: (entries: FileSystemEntry[]) => void, error: (err: Error) => void): void
+}
+export interface FileSystemEntry {
+  readonly isFile: boolean
+  readonly isDirectory: boolean
+  readonly name: string
+  readonly fullPath: string
+}
+export interface FileSystemDirectoryEntry extends FileSystemEntry {
+  createReader(): FileSystemDirectoryReader
+}
+export interface FileSystemFileEntry extends FileSystemEntry {
+  file(cb: (file: File) => void, errCb: (err: Error) => void): void
+}
+
+async function extractDirectoryTree(entry: FileSystemDirectoryEntry): Promise<TraceDirectoryTree> {
   const node: TraceDirectoryTree = {
     name: entry.name,
     files: new Map(),
     subdirectories: new Map(),
   }
 
-  const children = await new Promise<WebKitEntry[]>((resolve, reject) => {
-    ;(entry as any).createReader().readEntries((entries: any[]) => {
+  const children = await new Promise<FileSystemEntry[]>((resolve, reject) => {
+    entry.createReader().readEntries((entries: any[]) => {
       resolve(entries)
-    })
+    }, reject)
   })
 
   for (let child of children) {
     if (child.isDirectory) {
-      const subtree = await extractDirectoryTree(child)
+      const subtree = await extractDirectoryTree(child as FileSystemDirectoryEntry)
       node.subdirectories.set(subtree.name, subtree)
     } else {
-      const file = await new Promise<File>(resolve => (child as any).file(resolve))
+      const file = await new Promise<File>((resolve, reject) => {
+        ;(child as FileSystemFileEntry).file(resolve, reject)
+      })
       node.files.set(file.name, file)
     }
   }
@@ -416,7 +436,9 @@ async function readFormTemplate(tree: TraceDirectoryTree): Promise<FormTemplateD
 }
 
 // Import from a .trace file saved from Mac Instruments.app
-export async function importFromInstrumentsTrace(entry: WebKitEntry): Promise<Profile> {
+export async function importFromInstrumentsTrace(
+  entry: FileSystemDirectoryEntry,
+): Promise<Profile> {
   const tree = await extractDirectoryTree(entry)
 
   const {version, selectedRun, instrument, addressToFrameMap} = await readFormTemplate(tree)

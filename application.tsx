@@ -7,7 +7,11 @@ import {importFromBGFlameGraph} from './import/bg-flamegraph'
 import {importFromStackprof} from './import/stackprof'
 import {importFromChromeTimeline, importFromChromeCPUProfile} from './import/chrome'
 import {importFromFirefox} from './import/firefox'
-import {importFromInstrumentsDeepCopy, importFromInstrumentsTrace} from './import/instruments'
+import {
+  importFromInstrumentsDeepCopy,
+  importFromInstrumentsTrace,
+  FileSystemDirectoryEntry,
+} from './import/instruments'
 
 import {FlamechartRenderer} from './flamechart-renderer'
 import {CanvasContext} from './canvas-context'
@@ -82,7 +86,7 @@ function importProfile(fileName: string, contents: string): Profile | null {
 
       // If the first line contains "Symbol Name", preceded by a tab, it's probably
       // a deep copy from OS X Instruments.app
-      if (/^[\w \t]*\tSymbol Name/.exec(contents)) {
+      if (/^[\w \t\(\)]*\tSymbol Name/.exec(contents)) {
         console.log('Importing as Instruments.app deep copy')
         return importFromInstrumentsDeepCopy(contents)
       }
@@ -366,7 +370,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
 
     const firstItem = ev.dataTransfer.items[0]
     if ('webkitGetAsEntry' in firstItem) {
-      const webkitEntry: WebKitEntry = firstItem.webkitGetAsEntry()
+      const webkitEntry: FileSystemDirectoryEntry = firstItem.webkitGetAsEntry()
 
       // Instrument.app file format is actually a directory.
       if (webkitEntry.isDirectory && webkitEntry.name.endsWith('.trace')) {
@@ -415,7 +419,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   async maybeLoadHashParamProfile() {
     if (this.hashParams.profileURL) {
       this.loadProfile(async () => {
-        const response = await fetch(this.hashParams.profileURL)
+        const response = await fetch(this.hashParams.profileURL!)
         let filename = new URL(this.hashParams.profileURL!).pathname
         if (filename.includes('/')) {
           filename = filename.slice(filename.lastIndexOf('/') + 1)
