@@ -8,19 +8,18 @@
     "prettier": "prettier --write './**/*.ts' './**/*.tsx'",
     "lint": "eslint './**/*.ts' './**/*.tsx'",
     "jest": "jest",
-    "test": "tsc --noEmit && npm run lint && jest",
+    "coverage": "npm run jest -- --coverage && coveralls < coverage/lcov.info",
+    "test": "tsc --noEmit && npm run lint && npm run coverage",
     "serve": "parcel index.html --open --no-autoinstall"
   },
-  "browserslist": [
-    "last 2 Chrome versions",
-    "last 2 Firefox versions"
-  ],
+  "browserslist": ["last 2 Chrome versions", "last 2 Firefox versions"],
   "author": "",
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^22.2.3",
     "@types/pako": "1.0.0",
     "aphrodite": "2.1.0",
+    "coveralls": "^3.0.1",
     "eslint": "^4.19.1",
     "eslint-plugin-prettier": "^2.6.0",
     "jest": "^23.0.1",
@@ -40,12 +39,7 @@
       "^.+\\.tsx?$": "ts-jest"
     },
     "testRegex": "\\.test\\.tsx?$",
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "jsx",
-      "json"
-    ]
+    "collectCoverageFrom": ["*.{ts,tsx}", "!*.d.{ts,tsx}"],
+    "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json"]
   }
 }
