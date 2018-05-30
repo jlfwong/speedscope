@@ -1,16 +1,10 @@
 // This file contains methods to import data from OS X Instruments.app
 // https://developer.apple.com/library/content/documentation/DeveloperTools/Conceptual/InstrumentsUserGuide/index.html
 
-import {
-  Profile,
-  FrameInfo,
-  ByteFormatter,
-  TimeFormatter,
-  CallTreeProfileBuilder,
-  StackListProfileBuilder,
-} from '../profile'
+import {Profile, FrameInfo, CallTreeProfileBuilder, StackListProfileBuilder} from '../profile'
 import {sortBy, getOrThrow, getOrInsert, lastOf, getOrElse, zeroPad} from '../utils'
 import * as pako from 'pako'
+import {ByteFormatter, TimeFormatter} from '../value-formatters'
 
 function parseTSV<T>(contents: string): T[] {
   const lines = contents.split('\n').map(l => l.split('\t'))

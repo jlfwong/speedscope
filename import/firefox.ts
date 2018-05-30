@@ -1,5 +1,6 @@
-import {Profile, FrameInfo, TimeFormatter, CallTreeProfileBuilder} from '../profile'
+import {Profile, FrameInfo, CallTreeProfileBuilder} from '../profile'
 import {getOrInsert, lastOf} from '../utils'
+import {TimeFormatter} from '../value-formatters'
 
 interface Allocations {
   frames: any[]
