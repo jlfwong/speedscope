@@ -10,24 +10,37 @@ test('clamp', () => {
   })
 })
 
+// Change this to jsc.integer to debug failures more easily
+let numericType = jsc.number
+
 const arbitraryVec2 = jsc
-  .record({x: jsc.number, y: jsc.number})
+  .record({x: jsc.integer, y: numericType})
   .smap(v => new Vec2(v.x, v.y), v => v)
 
 const positiveVec2 = jsc.suchthat(arbitraryVec2, v => v.x > 0 && v.y > 0)
 
 const arbitraryTransform = jsc
   .record({
-    m00: jsc.number,
-    m01: jsc.number,
-    m02: jsc.number,
-    m10: jsc.number,
-    m11: jsc.number,
-    m12: jsc.number,
+    m00: numericType,
+    m01: numericType,
+    m02: numericType,
+    m10: numericType,
+    m11: numericType,
+    m12: numericType,
   })
   .smap(t => new AffineTransform(t.m00, t.m01, t.m02, t.m10, t.m11, t.m12), t => t)
 
 const invertibleTransform = jsc.suchthat(arbitraryTransform, t => t.det() != 0)
+
+const simpleTransform = jsc.suchthat(
+  jsc
+    .record({scale: arbitraryVec2, translation: arbitraryVec2})
+    .smap(
+      t => AffineTransform.withScale(t.scale).withTranslation(t.translation),
+      t => ({scale: t.getScale(), translation: t.getTranslation()}),
+    ),
+  t => t.det() != 0,
+)
 
 const arbitraryRect = jsc
   .record({origin: arbitraryVec2, size: positiveVec2})
@@ -321,6 +334,26 @@ describe('AffineTransform', () => {
   test('inverseTransformPosition', () => {
     jsc.assertForall(invertibleTransform, arbitraryVec2, (t, v) => {
       return t.inverseTransformPosition(t.transformPosition(v))!.approxEquals(v)
+    })
+  })
+
+  test('transformRect', () => {
+    jsc.assertForall(arbitraryVec2, arbitraryRect, (v, r) => {
+      return AffineTransform.withTranslation(v)
+        .transformRect(r)
+        .equals(r.withOrigin(r.origin.plus(v)))
+    })
+
+    jsc.assertForall(arbitraryVec2, arbitraryRect, (v, r) => {
+      const t = AffineTransform.withScale(v)
+      const rt = t.transformRect(r)
+      return Math.abs(rt.area() - r.area() * Math.abs(t.det())) < 1e-6
+    })
+  })
+
+  test('inverseTransformRect', () => {
+    jsc.assertForall(simpleTransform, arbitraryRect, (t, r) => {
+      return t.inverseTransformRect(t.transformRect(r))!.approxEquals(r)
     })
   })
 

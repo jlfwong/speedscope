@@ -328,6 +328,14 @@ export class Rect {
     return this.origin.equals(other.origin) && this.size.equals(other.size)
   }
 
+  approxEquals(other: Rect) {
+    return this.origin.approxEquals(other.origin) && this.size.approxEquals(other.size)
+  }
+
+  area() {
+    return this.size.x * this.size.y
+  }
+
   static empty = new Rect(Vec2.zero, Vec2.zero)
   static unit = new Rect(Vec2.zero, Vec2.unit)
   static NDC = new Rect(new Vec2(-1, -1), new Vec2(2, 2))
