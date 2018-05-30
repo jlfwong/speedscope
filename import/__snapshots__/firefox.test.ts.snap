@@ -1,0 +1,59 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`importFromFirefox 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": "file:///Users/jlfwong/code/speedscope/sample/simple.js",
+      "key": "a (file:///Users/jlfwong/code/speedscope/sample/simple.js:1)",
+      "line": 1,
+      "name": "a",
+      "selfWeight": 0,
+      "totalWeight": 31.992820999992546,
+    },
+    Frame {
+      "col": undefined,
+      "file": "file:///Users/jlfwong/code/speedscope/sample/simple.js",
+      "key": "b (file:///Users/jlfwong/code/speedscope/sample/simple.js:8)",
+      "line": 8,
+      "name": "b",
+      "selfWeight": 0,
+      "totalWeight": 20.971447000018088,
+    },
+    Frame {
+      "col": undefined,
+      "file": "file:///Users/jlfwong/code/speedscope/sample/simple.js",
+      "key": "d (file:///Users/jlfwong/code/speedscope/sample/simple.js:20)",
+      "line": 20,
+      "name": "d",
+      "selfWeight": 31.992820999992546,
+      "totalWeight": 31.992820999992546,
+    },
+    Frame {
+      "col": undefined,
+      "file": "file:///Users/jlfwong/code/speedscope/sample/simple.js",
+      "key": "c (file:///Users/jlfwong/code/speedscope/sample/simple.js:14)",
+      "line": 14,
+      "name": "c",
+      "selfWeight": 0,
+      "totalWeight": 11.021373999974458,
+    },
+  ],
+  "stacks": Array [
+    "a;b;d 0.9895330000144895",
+    "a;c;d 1.0207879999943543",
+    "a;b;d 0.9820370000088587",
+    "a;c;d 1.015954000002239",
+    "a;b;d 6.999819999997271",
+    "a;c;d 2.0036980000149924",
+    "a;b;d 0.9814359999727458",
+    "a;c;d 2.0017269999952987",
+    "a;b;d 1.9998080000223126",
+    "a;c;d 3.0192729999835137",
+    "a;b;d 4.031898000015644",
+    "a;c;d 1.9599339999840595",
+    "a;b;d 4.986914999986766",
+  ],
+}
+`;
