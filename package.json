@@ -8,7 +8,8 @@
     "prettier": "prettier --write './**/*.ts' './**/*.tsx'",
     "lint": "eslint './**/*.ts' './**/*.tsx'",
     "jest": "jest",
-    "test": "tsc --noEmit && npm run lint && jest",
+    "coverage": "npm run jest -- --coverage && coveralls < coverage/lcov.info",
+    "test": "tsc --noEmit && npm run lint && npm run coverage",
     "serve": "parcel index.html --open --no-autoinstall"
   },
   "browserslist": [
@@ -21,6 +22,7 @@
     "@types/jest": "^22.2.3",
     "@types/pako": "1.0.0",
     "aphrodite": "2.1.0",
+    "coveralls": "^3.0.1",
     "eslint": "^4.19.1",
     "eslint-plugin-prettier": "^2.6.0",
     "jest": "^23.0.1",
