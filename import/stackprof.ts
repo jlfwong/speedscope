@@ -1,6 +1,6 @@
 // https://github.com/tmm1/stackprof
 
-import {Profile, TimeFormatter, FrameInfo} from '../profile'
+import {Profile, TimeFormatter, FrameInfo, StackListProfileBuilder} from '../profile'
 
 interface StackprofFrame {
   name: string
@@ -16,7 +16,7 @@ export interface StackprofProfile {
 
 export function importFromStackprof(stackprofProfile: StackprofProfile): Profile {
   const duration = stackprofProfile.raw_timestamp_deltas.reduce((a, b) => a + b, 0)
-  const profile = new Profile(duration)
+  const profile = new StackListProfileBuilder(duration)
 
   const {frames, raw, raw_timestamp_deltas} = stackprofProfile
   let sampleIndex = 0
@@ -42,5 +42,5 @@ export function importFromStackprof(stackprofProfile: StackprofProfile): Profile
   }
 
   profile.setValueFormatter(new TimeFormatter('microseconds'))
-  return profile
+  return profile.build()
 }

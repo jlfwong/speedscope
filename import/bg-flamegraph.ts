@@ -1,6 +1,6 @@
 // https://github.com/brendangregg/FlameGraph#2-fold-stacks
 
-import {Profile, FrameInfo} from '../profile'
+import {Profile, FrameInfo, StackListProfileBuilder} from '../profile'
 
 interface BGSample {
   stack: FrameInfo[]
@@ -22,9 +22,9 @@ function parseBGFoldedStacks(contents: string): BGSample[] {
 export function importFromBGFlameGraph(contents: string): Profile {
   const parsed = parseBGFoldedStacks(contents)
   const duration = parsed.reduce((prev: number, cur: BGSample) => prev + cur.duration, 0)
-  const profile = new Profile(duration)
+  const profile = new StackListProfileBuilder(duration)
   for (let sample of parsed) {
     profile.appendSample(sample.stack, sample.duration)
   }
-  return profile
+  return profile.build()
 }
