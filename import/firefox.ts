@@ -1,5 +1,6 @@
-import {Profile, FrameInfo, TimeFormatter} from '../profile'
+import {Profile, FrameInfo, CallTreeProfileBuilder} from '../profile'
 import {getOrInsert, lastOf} from '../utils'
+import {TimeFormatter} from '../value-formatters'
 
 interface Allocations {
   frames: any[]
@@ -194,7 +195,7 @@ export function importFromFirefox(firefoxProfile: FirefoxProfile): Profile {
       .filter(f => f != null) as FrameInfo[]
   }
 
-  const profile = new Profile(firefoxProfile.duration)
+  const profile = new CallTreeProfileBuilder(firefoxProfile.duration)
 
   let prevStack: FrameInfo[] = []
   for (let sample of thread.samples.data) {
@@ -229,5 +230,5 @@ export function importFromFirefox(firefoxProfile: FirefoxProfile): Profile {
   }
 
   profile.setValueFormatter(new TimeFormatter('milliseconds'))
-  return profile
+  return profile.build()
 }

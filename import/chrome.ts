@@ -1,5 +1,6 @@
-import {Profile, TimeFormatter, FrameInfo} from '../profile'
+import {Profile, FrameInfo, CallTreeProfileBuilder} from '../profile'
 import {getOrInsert, lastOf} from '../utils'
+import {TimeFormatter} from '../value-formatters'
 
 interface TimelineEvent {
   pid: number
@@ -44,7 +45,7 @@ interface CPUProfile {
   timeDeltas: number[]
 }
 
-export function importFromChromeTimeline(events: TimelineEvent[]) {
+export function importFromChromeTimeline(events: TimelineEvent[]): Profile {
   // It seems like sometimes Chrome timeline files contain multiple CpuProfiles?
   // For now, choose the first one in the list.
   for (let event of events) {
@@ -73,8 +74,8 @@ function frameInfoForCallFrame(callFrame: CPUProfileCallFrame) {
   })
 }
 
-export function importFromChromeCPUProfile(chromeProfile: CPUProfile) {
-  const profile = new Profile(chromeProfile.endTime - chromeProfile.startTime)
+export function importFromChromeCPUProfile(chromeProfile: CPUProfile): Profile {
+  const profile = new CallTreeProfileBuilder(chromeProfile.endTime - chromeProfile.startTime)
 
   const nodeById = new Map<number, CPUProfileNode>()
   for (let node of chromeProfile.nodes) {
@@ -172,5 +173,5 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile) {
   }
 
   profile.setValueFormatter(new TimeFormatter('microseconds'))
-  return profile
+  return profile.build()
 }

@@ -1,4 +1,5 @@
 import {lastOf, getOrInsert} from './utils'
+import {ValueFormatter, RawValueFormatter} from './value-formatters'
 const demangleCppModule = import('./demangle-cpp')
 
 // Force eager loading of the module
@@ -83,64 +84,21 @@ const rootFrame = new Frame({
   name: '(speedscope root)',
 })
 
-export interface ValueFormatter {
-  format(v: number): string
-}
-
-export class RawValueFormatter implements ValueFormatter {
-  format(v: number) {
-    return v.toLocaleString()
-  }
-}
-
-export class TimeFormatter implements ValueFormatter {
-  private multiplier: number
-
-  constructor(unit: 'nanoseconds' | 'microseconds' | 'milliseconds' | 'seconds') {
-    if (unit === 'nanoseconds') this.multiplier = 1e-9
-    else if (unit === 'microseconds') this.multiplier = 1e-6
-    else if (unit === 'milliseconds') this.multiplier = 1e-3
-    else this.multiplier = 1
-  }
-
-  format(v: number) {
-    const s = v * this.multiplier
-
-    if (s / 60 >= 1) return `${(s / 60).toFixed(2)}min`
-    if (s / 1 >= 1) return `${s.toFixed(2)}s`
-    if (s / 1e-3 >= 1) return `${(s / 1e-3).toFixed(2)}ms`
-    if (s / 1e-6 >= 1) return `${(s / 1e-6).toFixed(2)}µs`
-    else return `${(s / 1e-9).toFixed(2)}ms`
-  }
-}
-
-export class ByteFormatter implements ValueFormatter {
-  format(v: number) {
-    if (v < 1024) return `${v.toFixed(2)} B`
-    v /= 1024
-    if (v < 1024) return `${v.toFixed(2)} KB`
-    v /= 1024
-    if (v < 1024) return `${v.toFixed(2)} MB`
-    v /= 1024
-    return `${v.toFixed(2)} GB`
-  }
-}
-
 export class Profile {
-  private name: string = ''
+  protected name: string = ''
 
-  private totalWeight: number
+  protected totalWeight: number
 
-  private frames = new Map<string | number, Frame>()
-  private appendOrderCalltreeRoot = new CallTreeNode(rootFrame, null)
-  private groupedCalltreeRoot = new CallTreeNode(rootFrame, null)
+  protected frames = new Map<string | number, Frame>()
+  protected appendOrderCalltreeRoot = new CallTreeNode(rootFrame, null)
+  protected groupedCalltreeRoot = new CallTreeNode(rootFrame, null)
 
   // List of references to CallTreeNodes at the top of the
   // stack at the time of the sample.
-  private samples: CallTreeNode[] = []
-  private weights: number[] = []
+  protected samples: CallTreeNode[] = []
+  protected weights: number[] = []
 
-  private valueFormatter: ValueFormatter = new RawValueFormatter()
+  protected valueFormatter: ValueFormatter = new RawValueFormatter()
 
   constructor(totalWeight: number = 0) {
     this.totalWeight = totalWeight
@@ -248,6 +206,24 @@ export class Profile {
     this.frames.forEach(fn)
   }
 
+  // Demangle symbols for readability
+  async demangle() {
+    let demangleCpp: ((name: string) => string) | null = null
+
+    for (let frame of this.frames.values()) {
+      // This function converts a mangled C++ name such as "__ZNK7Support6ColorFeqERKS0_"
+      // into a human-readable symbol (in this case "Support::ColorF::==(Support::ColorF&)")
+      if (frame.name.startsWith('__Z')) {
+        if (!demangleCpp) {
+          demangleCpp = (await demangleCppModule).demangleCpp
+        }
+        frame.name = demangleCpp(frame.name)
+      }
+    }
+  }
+}
+
+export class StackListProfileBuilder extends Profile {
   _appendSample(stack: FrameInfo[], weight: number, useAppendOrder: boolean) {
     if (isNaN(weight)) throw new Error('invalid weight')
     let node = useAppendOrder ? this.appendOrderCalltreeRoot : this.groupedCalltreeRoot
@@ -295,9 +271,16 @@ export class Profile {
     this._appendSample(stack, weight, false)
   }
 
-  // As an alternative API for importing profiles more efficiently, provide a
-  // way to open & close frames directly without needing to construct tons of
-  // arrays as intermediaries.
+  build(): Profile {
+    this.totalWeight = Math.max(this.totalWeight, this.weights.reduce((a, b) => a + b, 0))
+    return this
+  }
+}
+
+// As an alternative API for importing profiles more efficiently, provide a
+// way to open & close frames directly without needing to construct tons of
+// arrays as intermediaries.
+export class CallTreeProfileBuilder extends Profile {
   private appendOrderStack: CallTreeNode[] = [this.appendOrderCalltreeRoot]
   private groupedOrderStack: CallTreeNode[] = [this.groupedCalltreeRoot]
   private framesInStack = new Map<Frame, number>()
@@ -402,19 +385,7 @@ export class Profile {
     this.totalWeight = Math.max(this.totalWeight, this.lastValue)
   }
 
-  // Demangle symbols for readability
-  async demangle() {
-    let demangleCpp: ((name: string) => string) | null = null
-
-    for (let frame of this.frames.values()) {
-      // This function converts a mangled C++ name such as "__ZNK7Support6ColorFeqERKS0_"
-      // into a human-readable symbol (in this case "Support::ColorF::==(Support::ColorF&)")
-      if (frame.name.startsWith('__Z')) {
-        if (!demangleCpp) {
-          demangleCpp = (await demangleCppModule).demangleCpp
-        }
-        frame.name = demangleCpp(frame.name)
-      }
-    }
+  build(): Profile {
+    return this
   }
 }

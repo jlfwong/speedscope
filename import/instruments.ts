@@ -1,9 +1,10 @@
 // This file contains methods to import data from OS X Instruments.app
 // https://developer.apple.com/library/content/documentation/DeveloperTools/Conceptual/InstrumentsUserGuide/index.html
 
-import {Profile, FrameInfo, ByteFormatter, TimeFormatter} from '../profile'
+import {Profile, FrameInfo, CallTreeProfileBuilder, StackListProfileBuilder} from '../profile'
 import {sortBy, getOrThrow, getOrInsert, lastOf, getOrElse, zeroPad} from '../utils'
 import * as pako from 'pako'
+import {ByteFormatter, TimeFormatter} from '../value-formatters'
 
 function parseTSV<T>(contents: string): T[] {
   const lines = contents.split('\n').map(l => l.split('\t'))
@@ -87,7 +88,7 @@ function getWeight(deepCopyRow: any): number {
 
 // Import from a deep copy made of a profile
 export function importFromInstrumentsDeepCopy(contents: string): Profile {
-  const profile = new Profile()
+  const profile = new CallTreeProfileBuilder()
   const rows = parseTSV<PastedTimeProfileRow | PastedAllocationsProfileRow>(contents)
 
   const stack: FrameInfoWithWeight[] = []
@@ -138,7 +139,7 @@ export function importFromInstrumentsDeepCopy(contents: string): Profile {
     profile.setValueFormatter(new TimeFormatter('milliseconds'))
   }
 
-  return profile
+  return profile.build()
 }
 
 interface TraceDirectoryTree {
@@ -433,7 +434,7 @@ export async function importFromInstrumentsTrace(entry: WebKitEntry): Promise<Pr
 
   const backtraceIDtoStack = new Map<number, FrameInfo[]>()
 
-  const profile = new Profile(lastOf(samples)!.timestamp)
+  const profile = new StackListProfileBuilder(lastOf(samples)!.timestamp)
   profile.setName(entry.name)
 
   // For now, we can only display the flamechart for a single thread of execution,
@@ -495,7 +496,7 @@ export async function importFromInstrumentsTrace(entry: WebKitEntry): Promise<Pr
   }
 
   profile.setValueFormatter(new TimeFormatter('nanoseconds'))
-  return profile
+  return profile.build()
 }
 
 export function readInstrumentsKeyedArchive(buffer: ArrayBuffer): any {
