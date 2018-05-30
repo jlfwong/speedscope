@@ -24,6 +24,7 @@
     "eslint": "^4.19.1",
     "eslint-plugin-prettier": "^2.6.0",
     "jest": "^23.0.1",
+    "jsverify": "^0.8.3",
     "pako": "1.0.6",
     "parcel-bundler": "1.7.0",
     "preact": "8.2.7",
