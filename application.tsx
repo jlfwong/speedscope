@@ -82,7 +82,7 @@ function importProfile(fileName: string, contents: string): Profile | null {
 
       // If the first line contains "Symbol Name", preceded by a tab, it's probably
       // a deep copy from OS X Instruments.app
-      if (/^[\w \t]*\tSymbol Name/.exec(contents)) {
+      if (/^[\w \t\(\)]*\tSymbol Name/.exec(contents)) {
         console.log('Importing as Instruments.app deep copy')
         return importFromInstrumentsDeepCopy(contents)
       }

@@ -1,0 +1,29 @@
+Bytes Used	Count		Symbol Name
+ 429.93 MB     100.0%	84671	 	start
+ 429.93 MB     100.0%	84671	 	 main
+ 217.09 MB      50.4%	42749	 	  delta()
+  73.35 MB      17.0%	14337	 	   alpha()
+  73.35 MB      17.0%	14337	 	    leakMemory()
+  73.35 MB      17.0%	14337	 	     malloc
+  73.35 MB      17.0%	14337	 	      malloc_zone_malloc
+  72.36 MB      16.8%	14316	 	   beta()
+  72.36 MB      16.8%	14316	 	    leakMemory()
+  72.36 MB      16.8%	14316	 	     malloc
+  72.36 MB      16.8%	14316	 	      malloc_zone_malloc
+  71.38 MB      16.6%	14096	 	   leakMemory()
+  71.38 MB      16.6%	14096	 	    malloc
+  71.38 MB      16.6%	14096	 	     malloc_zone_malloc
+  71.79 MB      16.6%	14078	 	  alpha()
+  71.79 MB      16.6%	14078	 	   leakMemory()
+  71.79 MB      16.6%	14078	 	    malloc
+  71.79 MB      16.6%	14078	 	     malloc_zone_malloc
+  71.31 MB      16.5%	14078	 	  gamma()
+  71.31 MB      16.5%	14078	 	   leakMemory()
+  71.31 MB      16.5%	14078	 	    malloc
+  71.31 MB      16.5%	14078	 	     malloc_zone_malloc
+  69.74 MB      16.2%	13766	 	  beta()
+  69.74 MB      16.2%	13766	 	   leakMemory()
+  69.74 MB      16.2%	13766	 	    malloc
+  69.74 MB      16.2%	13766	 	     malloc_zone_malloc
+
+

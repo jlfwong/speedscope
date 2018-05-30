@@ -65,9 +65,9 @@ function getWeight(deepCopyRow: any): number {
     throw new Error(`Unrecognized units ${units}`)
   }
 
-  if ('Weight' in deepCopyRow) {
-    const weightString = deepCopyRow['Weight']
-    const parts = /\s*(\d+(?:[.]\d+)?) (\w+)\s+(?:\d+(?:[.]\d+))%/.exec(weightString)
+  if ('Weight' in deepCopyRow || 'Running Time' in deepCopyRow) {
+    const weightString = deepCopyRow['Weight'] || deepCopyRow['Running Time']
+    const parts = /\s*(\d+(?:[.]\d+)?) ?(\w+)\s+(?:\d+(?:[.]\d+))%/.exec(weightString)
     if (!parts) return 0
     const value = parseInt(parts[1], 10)
     const units = parts[2]
@@ -135,7 +135,7 @@ export function importFromInstrumentsDeepCopy(contents: string): Profile {
 
   if ('Bytes Used' in rows[0]) {
     profile.setValueFormatter(new ByteFormatter())
-  } else if ('Weight' in rows[0]) {
+  } else if ('Weight' in rows[0] || 'Running Time' in rows[0]) {
     profile.setValueFormatter(new TimeFormatter('milliseconds'))
   }
 
