@@ -112,16 +112,23 @@ class ZipBackedFileSystemEntry implements FileSystemEntry {
   }
 }
 
-test('importFromInstrumentsTrace', async () => {
-  const tracePath = './sample/profiles/Instruments/8.3.3/simple-time-profile.trace.zip'
-
-  const zip = await new Promise<JSZip>((resolve, reject) => {
-    fs.readFile(tracePath, (err, data) => {
-      if (err) return reject(err)
-      JSZip.loadAsync(data).then(resolve)
+describe('importFromInstrumentsTrace', () => {
+  async function importFromTrace(tracePath: string) {
+    const zip = await new Promise<JSZip>((resolve, reject) => {
+      fs.readFile(tracePath, (err, data) => {
+        if (err) return reject(err)
+        JSZip.loadAsync(data).then(resolve)
+      })
     })
+    const root = new ZipBackedFileSystemEntry(zip, 'simple-time-profile.trace')
+    const profile = await importFromInstrumentsTrace(root)
+    expect(dumpProfile(profile)).toMatchSnapshot()
+  }
+
+  test('Instruments 8.3.3', async () => {
+    await importFromTrace('./sample/profiles/Instruments/8.3.3/simple-time-profile.trace.zip')
   })
-  const root = new ZipBackedFileSystemEntry(zip, 'simple-time-profile.trace')
-  const profile = await importFromInstrumentsTrace(root)
-  expect(dumpProfile(profile)).toMatchSnapshot()
+  test('Instruments 9.3.1', async () => {
+    await importFromTrace('./sample/profiles/Instruments/9.3.1/simple-time-profile.trace.zip')
+  })
 })
