@@ -1,0 +1,50 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`importFromBGGlameGraph 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "a",
+      "line": undefined,
+      "name": "a",
+      "selfWeight": 0,
+      "totalWeight": 14,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "b",
+      "line": undefined,
+      "name": "b",
+      "selfWeight": 5,
+      "totalWeight": 14,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "c",
+      "line": undefined,
+      "name": "c",
+      "selfWeight": 5,
+      "totalWeight": 5,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "d",
+      "line": undefined,
+      "name": "d",
+      "selfWeight": 4,
+      "totalWeight": 4,
+    },
+  ],
+  "stacks": Array [
+    "a;b;c 2",
+    "a;b;d 4",
+    "a;b;c 3",
+    "a;b 5",
+  ],
+}
+`;
