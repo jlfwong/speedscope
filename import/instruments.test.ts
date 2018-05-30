@@ -29,31 +29,6 @@ describe('importFromInstrumentsDeepCopy', () => {
   })
 })
 
-class MockFile implements File {
-  constructor(readonly name: string, readonly webkitRelativePath: string, private blob: Blob) {}
-  get lastModifiedDate() {
-    return new Date()
-  }
-  get lastModified() {
-    return +new Date()
-  }
-  get size() {
-    return this.blob.size
-  }
-  get type() {
-    return this.blob.type
-  }
-  msClose(): void {
-    return this.blob.msClose()
-  }
-  msDetachStream(): any {
-    return this.blob.msDetachStream()
-  }
-  slice(start?: number, end?: number, contentType?: string): Blob {
-    return this.blob.slice(start, end, contentType)
-  }
-}
-
 class ZipBackedFileSystemEntry implements FileSystemEntry {
   readonly isFile: boolean
   readonly isDirectory: boolean
