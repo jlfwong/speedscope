@@ -272,6 +272,7 @@ export class StackListProfileBuilder extends Profile {
   }
 
   build(): Profile {
+    this.totalWeight = Math.max(this.totalWeight, this.weights.reduce((a, b) => a + b, 0))
     return this
   }
 }
