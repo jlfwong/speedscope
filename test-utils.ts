@@ -25,7 +25,7 @@ export function dumpProfile(profile: Profile): any {
 
   function openFrame(node: CallTreeNode, value: number) {
     maybeEmit(value)
-    curStack.push(node.frame.key)
+    curStack.push(node.frame.name)
   }
 
   function closeFrame(value: number) {

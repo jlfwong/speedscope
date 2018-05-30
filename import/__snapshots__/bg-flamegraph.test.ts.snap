@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`importFromBGGlameGraph 1`] = `
+exports[`importFromBGFlameGraph 1`] = `
 Object {
   "frames": Array [
     Frame {
