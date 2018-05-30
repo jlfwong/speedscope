@@ -18,7 +18,9 @@ export function dumpProfile(profile: Profile): any {
 
   function maybeEmit(value: number) {
     if (lastValue != value) {
-      dump.stacks.push(curStack.map(k => `${k}`).join(';') + ` ${value - lastValue}`)
+      dump.stacks.push(
+        curStack.map(k => `${k}`).join(';') + ` ${profile.formatValue(value - lastValue)}`,
+      )
       lastValue = value
     }
   }
