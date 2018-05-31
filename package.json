@@ -1,8 +1,9 @@
 {
   "name": "speedscope",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
   "main": "index.js",
+  "bin": {"speedscope": "./cli.js"},
   "scripts": {
     "deploy": "./deploy.sh",
     "prettier": "prettier --write './**/*.ts' './**/*.tsx'",
@@ -12,10 +13,7 @@
     "test": "tsc --noEmit && npm run lint && npm run coverage",
     "serve": "parcel index.html --open --no-autoinstall"
   },
-  "browserslist": [
-    "last 2 Chrome versions",
-    "last 2 Firefox versions"
-  ],
+  "browserslist": ["last 2 Chrome versions", "last 2 Firefox versions"],
   "author": "",
   "license": "MIT",
   "devDependencies": {
@@ -45,16 +43,7 @@
       "^.+\\.tsx?$": "ts-jest"
     },
     "testRegex": "\\.test\\.tsx?$",
-    "collectCoverageFrom": [
-      "**/*.{ts,tsx}",
-      "!**/*.d.{ts,tsx}"
-    ],
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "jsx",
-      "json"
-    ]
+    "collectCoverageFrom": ["**/*.{ts,tsx}", "!**/*.d.{ts,tsx}"],
+    "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json"]
   }
 }
