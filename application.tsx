@@ -37,6 +37,7 @@ interface ApplicationState {
   sortedFlamechart: Flamechart | null
   sortedFlamechartRenderer: FlamechartRenderer | null
   sortOrder: SortOrder
+  dragActive: boolean
   loading: boolean
   error: boolean
 }
@@ -230,6 +231,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       // Start out at a loading state if we know that we'll immediately be fetching a profile to
       // view.
       loading: this.hashParams.profileURL != null,
+      dragActive: false,
       error: false,
       profile: null,
       flamechart: null,
@@ -366,6 +368,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   onDrop = (ev: DragEvent) => {
+    this.setState({dragActive: false})
     ev.preventDefault()
 
     const firstItem = ev.dataTransfer.items[0]
@@ -387,6 +390,12 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   onDragOver = (ev: DragEvent) => {
+    this.setState({dragActive: true})
+    ev.preventDefault()
+  }
+
+  onDragLeave = (ev: DragEvent) => {
+    this.setState({dragActive: false})
     ev.preventDefault()
   }
 
@@ -544,29 +553,38 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       sortOrder,
       loading,
       error,
+      dragActive,
     } = this.state
     const flamechartToView = sortOrder == SortOrder.CHRONO ? flamechart : sortedFlamechart
     const flamechartRendererToUse =
       sortOrder == SortOrder.CHRONO ? flamechartRenderer : sortedFlamechartRenderer
 
     return (
-      <div onDrop={this.onDrop} onDragOver={this.onDragOver} className={css(style.root)}>
+      <div
+        onDrop={this.onDrop}
+        onDragOver={this.onDragOver}
+        onDragLeave={this.onDragLeave}
+        className={css(style.root)}
+      >
         <GLCanvas setCanvasContext={this.setCanvasContext} />
         <Toolbar setSortOrder={this.setSortOrder} {...this.state} />
-        {error ? (
-          this.renderError()
-        ) : loading ? (
-          this.renderLoadingBar()
-        ) : this.canvasContext && flamechartToView && flamechartRendererToUse ? (
-          <FlamechartView
-            canvasContext={this.canvasContext}
-            flamechartRenderer={flamechartRendererToUse}
-            ref={this.flamechartRef}
-            flamechart={flamechartToView}
-          />
-        ) : (
-          this.renderLanding()
-        )}
+        <div className={css(style.contentContainer)}>
+          {error ? (
+            this.renderError()
+          ) : loading ? (
+            this.renderLoadingBar()
+          ) : this.canvasContext && flamechartToView && flamechartRendererToUse ? (
+            <FlamechartView
+              canvasContext={this.canvasContext}
+              flamechartRenderer={flamechartRendererToUse}
+              ref={this.flamechartRef}
+              flamechart={flamechartToView}
+            />
+          ) : (
+            this.renderLanding()
+          )}
+          {dragActive && <div className={css(style.dragTarget)} />}
+        </div>
       </div>
     )
   }
@@ -614,6 +632,21 @@ const style = StyleSheet.create({
     position: 'relative',
     fontFamily: FontFamily.MONOSPACE,
     lineHeight: '20px',
+  },
+  dragTarget: {
+    boxSizing: 'border-box',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    border: `5px dashed ${Colors.DARK_BLUE}`,
+  },
+  contentContainer: {
+    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1,
   },
   landingContainer: {
     display: 'flex',
