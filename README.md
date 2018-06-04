@@ -4,7 +4,7 @@ A fast, interactive web-based viewer for [sampling profiles][0]. An alternative 
 
 Given raw profiling data, speedscope allows you to interactively explore the data to get insight into what's slow in your application, or allocating all the memory, or whatever data is represented in the profiling data.
 
-![Example Profile](https://i.imgur.com/bPPI0mz.png)
+![Example Profile](https://user-images.githubusercontent.com/150329/40900669-86eced80-6781-11e8-92c1-dc667b651e72.gif)
 
 [0]: https://en.wikipedia.org/wiki/Profiling_(computer_programming)#Statistical_profilers
 [1]: https://github.com/brendangregg/FlameGraph
@@ -31,6 +31,9 @@ selecting a row in the "Profile" view and select "Edit -> Deep Copy" from the
 menu then pasting directly into speedscope. This data contains only aggregate
 statistics, so the "Time Order" view and the "Left Heavy" view will look very
 similar.
+
+You can also import `.trace` files for time profiles by dragging them directly
+into the browser from Chrome.
 
 ### `stackprof` Ruby profiler
 
