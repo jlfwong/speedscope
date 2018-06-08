@@ -564,7 +564,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
         onDrop={this.onDrop}
         onDragOver={this.onDragOver}
         onDragLeave={this.onDragLeave}
-        className={css(style.root)}
+        className={css(style.root, dragActive && style.dragTargetRoot)}
       >
         <GLCanvas setCanvasContext={this.setCanvasContext} />
         <Toolbar setSortOrder={this.setSortOrder} {...this.state} />
@@ -633,6 +633,9 @@ const style = StyleSheet.create({
     fontFamily: FontFamily.MONOSPACE,
     lineHeight: '20px',
   },
+  dragTargetRoot: {
+    cursor: 'copy',
+  },
   dragTarget: {
     boxSizing: 'border-box',
     position: 'absolute',
@@ -641,6 +644,7 @@ const style = StyleSheet.create({
     width: '100%',
     height: '100%',
     border: `5px dashed ${Colors.DARK_BLUE}`,
+    pointerEvents: 'none',
   },
   contentContainer: {
     position: 'relative',
