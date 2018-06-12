@@ -21,6 +21,7 @@ import {Flamechart} from './flamechart'
 import {FlamechartView} from './flamechart-view'
 import {FontFamily, FontSize, Colors} from './style'
 import {getHashParams, HashParams} from './hash-params'
+import {ProfileTableView} from './profile-table-view'
 
 declare function require(x: string): any
 const exampleProfileURL = require('./sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt')
@@ -579,6 +580,10 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   renderContent() {
     const {viewMode} = this.state
 
+    if (this.state.error) {
+      return this.renderError()
+    }
+
     if (this.state.loading) {
       return this.renderLoadingBar()
     }
@@ -619,7 +624,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
         )
       }
       case ViewMode.TABLE_VIEW: {
-        return <div>Table view goes here</div>
+        return <ProfileTableView profile={this.state.profile} />
       }
     }
   }
@@ -634,7 +639,8 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       >
         <GLCanvas setCanvasContext={this.setCanvasContext} />
         <Toolbar setViewMode={this.setViewMode} {...this.state} />
-        {this.renderContent()}
+        <div className={css(style.contentContainer)}>{this.renderContent()}</div>
+        {this.state.dragActive && <div className={css(style.dragTarget)} />}
       </div>
     )
   }

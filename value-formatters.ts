@@ -25,7 +25,7 @@ export class TimeFormatter implements ValueFormatter {
     if (s / 1 >= 1) return `${s.toFixed(2)}s`
     if (s / 1e-3 >= 1) return `${(s / 1e-3).toFixed(2)}ms`
     if (s / 1e-6 >= 1) return `${(s / 1e-6).toFixed(2)}µs`
-    else return `${(s / 1e-9).toFixed(2)}ms`
+    else return `${(s / 1e-9).toFixed(2)}ns`
   }
 }
 

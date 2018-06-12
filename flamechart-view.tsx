@@ -6,7 +6,7 @@ import {CallTreeNode, Frame} from './profile'
 import {Flamechart, FlamechartFrame} from './flamechart'
 
 import {Rect, Vec2, AffineTransform, clamp} from './math'
-import {cachedMeasureTextWidth} from './utils'
+import {cachedMeasureTextWidth, formatPercent} from './utils'
 import {FlamechartMinimapView} from './flamechart-minimap-view'
 
 import {style, Sizes} from './flamechart-style'
@@ -1009,13 +1009,4 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
       </div>
     )
   }
-}
-function formatPercent(percent: number) {
-  let formattedPercent = `${percent.toFixed(0)}%`
-  if (percent === 100) formattedPercent = '100%'
-  else if (percent > 99) formattedPercent = '>99%'
-  else if (percent < 0.01) formattedPercent = '<0.01%'
-  else if (percent < 1) formattedPercent = `${percent.toFixed(2)}%`
-  else if (percent < 10) formattedPercent = `${percent.toFixed(1)}%`
-  return formattedPercent
 }

@@ -3,6 +3,7 @@ import {TimeFormatter, ByteFormatter} from './value-formatters'
 describe('TimeFormatter', () => {
   test('input units milliseconds', () => {
     const f = new TimeFormatter('milliseconds')
+    expect(f.format(0.00004)).toEqual('40.00ns')
     expect(f.format(0.04)).toEqual('40.00µs')
     expect(f.format(3)).toEqual('3.00ms')
     expect(f.format(2070)).toEqual('2.07s')
