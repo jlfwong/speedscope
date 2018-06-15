@@ -224,7 +224,7 @@ const style = StyleSheet.create({
     width: '100%',
     fontSize: FontSize.LABEL,
     background: Colors.WHITE,
-    cursor: 'arrow',
+    cursor: 'default',
   },
   tableHeader: {
     borderBottom: `2px solid ${Colors.GRAY}`,
