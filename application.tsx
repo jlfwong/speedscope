@@ -22,6 +22,8 @@ import {FlamechartView} from './flamechart-view'
 import {FontFamily, FontSize, Colors, Sizes} from './style'
 import {getHashParams, HashParams} from './hash-params'
 import {ProfileTableView} from './profile-table-view'
+import {triangle} from './utils'
+import {Color} from './color'
 
 declare function require(x: string): any
 const exampleProfileURL = require('./sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt')
@@ -577,6 +579,19 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     this.canvasContext = canvasContext
   }
 
+  getCSSColorForFrame = (frame: Frame): string => {
+    const {chronoFlamechart} = this.state
+    if (!chronoFlamechart) return '#FFFFFF'
+
+    const t = chronoFlamechart.getColorBucketForFrame(frame) / 255
+
+    const x = triangle(30.0 * t)
+    const H = 360.0 * (0.9 * t)
+    const C = 0.25 + 0.2 * x
+    const L = 0.8 - 0.15 * x
+    return Color.fromLumaChromaHue(L, C, H).toCSS()
+  }
+
   renderContent() {
     const {viewMode} = this.state
 
@@ -607,6 +622,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
             flamechartRenderer={chronoFlamechartRenderer}
             ref={this.flamechartRef}
             flamechart={chronoFlamechart}
+            getCSSColorForFrame={this.getCSSColorForFrame}
           />
         )
       }
@@ -620,11 +636,17 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
             flamechartRenderer={leftHeavyFlamegraphRenderer}
             ref={this.flamechartRef}
             flamechart={leftHeavyFlamegraph}
+            getCSSColorForFrame={this.getCSSColorForFrame}
           />
         )
       }
       case ViewMode.TABLE_VIEW: {
-        return <ProfileTableView profile={this.state.profile} />
+        return (
+          <ProfileTableView
+            profile={this.state.profile}
+            getCSSColorForFrame={this.getCSSColorForFrame}
+          />
+        )
       }
     }
   }

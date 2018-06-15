@@ -19,6 +19,7 @@ export enum Colors {
   DARK_BLUE = '#2F80ED',
   PALE_DARK_BLUE = '#8EB7ED',
   GREEN = '#6FCF97',
+  TRANSPARENT_GREEN = 'rgba(111, 207, 151, 0.2)',
 }
 
 export enum Sizes {

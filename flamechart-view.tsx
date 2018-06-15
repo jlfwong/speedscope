@@ -14,6 +14,7 @@ import {FontSize, FontFamily, Colors, Sizes} from './style'
 import {CanvasContext} from './canvas-context'
 import {FlamechartRenderer} from './flamechart-renderer'
 import {Color} from './color'
+import {ColorChit} from './color-chit'
 
 interface FlamechartFrameLabel {
   configSpaceBounds: Rect
@@ -756,12 +757,7 @@ class StackTraceView extends ReloadableComponent<StackTraceViewProps, {}> {
       const row: (JSX.Element | string)[] = []
       const {frame} = node
 
-      row.push(
-        <span
-          className={css(style.stackChit)}
-          style={{backgroundColor: this.props.getFrameColor(frame)}}
-        />,
-      )
+      row.push(<ColorChit color={this.props.getFrameColor(frame)} />)
 
       if (rows.length) {
         row.push(<span className={css(style.stackFileLine)}>> </span>)
@@ -790,28 +786,11 @@ class StackTraceView extends ReloadableComponent<StackTraceViewProps, {}> {
 
 interface FlamechartDetailViewProps {
   flamechart: Flamechart
+  getCSSColorForFrame: (frame: Frame) => string
   selectedNode: CallTreeNode
 }
 
-function fract(x: number) {
-  return x - Math.floor(x)
-}
-
-function triangle(x: number) {
-  return 2.0 * Math.abs(fract(x) - 0.5) - 1.0
-}
-
 class FlamechartDetailView extends ReloadableComponent<FlamechartDetailViewProps, {}> {
-  getFrameColor = (frame: Frame): string => {
-    const t = this.props.flamechart.getColorBucketForFrame(frame) / 255
-
-    const x = triangle(30.0 * t)
-    const H = 360.0 * (0.9 * t)
-    const C = 0.25 + 0.2 * x
-    const L = 0.8 - 0.15 * x
-    return Color.fromLumaChromaHue(L, C, H).toCSS()
-  }
-
   render() {
     const {flamechart, selectedNode} = this.props
     const {frame} = selectedNode
@@ -834,7 +813,7 @@ class FlamechartDetailView extends ReloadableComponent<FlamechartDetailViewProps
           selectedSelf={frame.getSelfWeight()}
           formatter={flamechart.formatValue.bind(flamechart)}
         />
-        <StackTraceView node={selectedNode} getFrameColor={this.getFrameColor} />
+        <StackTraceView node={selectedNode} getFrameColor={this.props.getCSSColorForFrame} />
       </div>
     )
   }
@@ -844,6 +823,7 @@ interface FlamechartViewProps {
   flamechart: Flamechart
   canvasContext: CanvasContext
   flamechartRenderer: FlamechartRenderer
+  getCSSColorForFrame: (frame: Frame) => string
 }
 
 interface FlamechartViewState {
@@ -1004,6 +984,7 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
         {this.state.selectedNode && (
           <FlamechartDetailView
             flamechart={this.props.flamechart}
+            getCSSColorForFrame={this.props.getCSSColorForFrame}
             selectedNode={this.state.selectedNode}
           />
         )}

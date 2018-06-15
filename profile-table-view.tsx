@@ -1,16 +1,32 @@
-import {h} from 'preact'
+import {h, Component} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 import {ReloadableComponent} from './reloadable'
 import {Profile, Frame} from './profile'
 import {sortBy, formatPercent} from './utils'
-import {FontSize, Colors} from './style'
+import {FontSize, Colors, Sizes} from './style'
+import {ColorChit} from './color-chit'
 
 interface ProfileTableViewProps {
   profile: Profile
+  getCSSColorForFrame: (frame: Frame) => string
+}
+
+interface HBarProps {
+  perc: number
+}
+
+class HBarDisplay extends Component<HBarProps, {}> {
+  render() {
+    return (
+      <div className={css(style.hBarDisplay)}>
+        <div className={css(style.hBarDisplayFilled)} style={{width: `${this.props.perc}%`}} />
+      </div>
+    )
+  }
 }
 
 export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps, void> {
-  renderRow(frame: Frame) {
+  renderRow(frame: Frame, index: number) {
     const {profile} = this.props
 
     const totalWeight = frame.getTotalWeight()
@@ -19,16 +35,22 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
     const selfPerc = 100.0 * selfWeight / profile.getTotalNonIdleWeight()
 
     return (
-      <tr key={`${frame.key}`}>
+      <tr
+        key={`${frame.key}`}
+        className={css(style.tableRow, index % 2 == 0 && style.tableRowEven)}
+      >
         <td className={css(style.numericCell)}>
           {profile.formatValue(totalWeight)} ({formatPercent(totalPerc)})
-          <div className={css(style.hBarDisplay)} style={{width: `calc(${totalPerc}% - 10px)`}} />
+          <HBarDisplay perc={totalPerc} />
         </td>
         <td className={css(style.numericCell)}>
           {profile.formatValue(selfWeight)} ({formatPercent(selfPerc)})
-          <div className={css(style.hBarDisplay)} style={{width: `calc(${selfPerc}% - 10px)`}} />
+          <HBarDisplay perc={selfPerc} />
         </td>
-        <td title={frame.file}>{frame.name}</td>
+        <td title={frame.file}>
+          <ColorChit color={this.props.getCSSColorForFrame(frame)} />
+          {frame.name}
+        </td>
       </tr>
     )
   }
@@ -41,16 +63,16 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
     profile.forEachFrame(f => frameList.push(f))
     sortBy(frameList, f => -f.getSelfWeight())
 
-    const rows: JSX.Element[] = frameList.map(f => this.renderRow(f))
+    const rows: JSX.Element[] = frameList.map((f, i) => this.renderRow(f, i))
 
     return (
       <div className={css(style.scrollView)}>
         <table className={css(style.tableView)}>
-          <thead>
+          <thead className={css(style.tableHeader)}>
             <tr>
-              <th className={css(style.header, style.numericCell)}>Total</th>
-              <th className={css(style.header, style.numericCell)}>Self</th>
-              <th className={css(style.header)}>Symbol Name</th>
+              <th className={css(style.numericCell)}>Total</th>
+              <th className={css(style.numericCell)}>Self</th>
+              <th className={css()}>Symbol Name</th>
             </tr>
           </thead>
           <tbody>{rows}</tbody>
@@ -67,25 +89,39 @@ const style = StyleSheet.create({
     overflow: 'auto',
     cursor: 'auto',
   },
-  header: {
-    textAlign: 'left',
-    fontWeight: 'bold',
-  },
   tableView: {
     width: '100%',
     fontSize: FontSize.LABEL,
   },
+  tableHeader: {
+    borderBottom: `2px solid ${Colors.MEDIUM_GRAY}`,
+    textAlign: 'left',
+    color: Colors.GRAY,
+  },
+  tableRow: {
+    height: Sizes.FRAME_HEIGHT,
+  },
+  tableRowEven: {
+    background: Colors.OFF_WHITE,
+  },
   numericCell: {
     position: 'relative',
     textAlign: 'right',
-    paddingRight: '10px',
-    width: '15em',
+    paddingRight: Sizes.FRAME_HEIGHT,
+    width: 4 * Sizes.FRAME_HEIGHT,
   },
   hBarDisplay: {
     position: 'absolute',
-    top: 0,
-    right: 10,
-    background: 'rgba(0, 0, 0, 0.2)',
+    background: Colors.TRANSPARENT_GREEN,
+    bottom: 2,
+    height: 2,
+    width: `calc(100% - ${Sizes.FRAME_HEIGHT}px)`,
+    right: Sizes.FRAME_HEIGHT,
+  },
+  hBarDisplayFilled: {
     height: '100%',
+    position: 'absolute',
+    background: Colors.GREEN,
+    right: 0,
   },
 })

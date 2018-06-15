@@ -75,3 +75,11 @@ export function formatPercent(percent: number) {
   else if (percent < 10) formattedPercent = `${percent.toFixed(1)}%`
   return formattedPercent
 }
+
+export function fract(x: number) {
+  return x - Math.floor(x)
+}
+
+export function triangle(x: number) {
+  return 2.0 * Math.abs(fract(x) - 0.5) - 1.0
+}
