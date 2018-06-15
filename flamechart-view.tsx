@@ -13,7 +13,6 @@ import {style} from './flamechart-style'
 import {FontSize, FontFamily, Colors, Sizes} from './style'
 import {CanvasContext} from './canvas-context'
 import {FlamechartRenderer} from './flamechart-renderer'
-import {Color} from './color'
 import {ColorChit} from './color-chit'
 
 interface FlamechartFrameLabel {
@@ -188,7 +187,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     ctx.clearRect(0, 0, physicalViewSize.x, physicalViewSize.y)
 
     if (this.hoveredLabel) {
-      let color = Colors.OFF_BLACK
+      let color = Colors.DARK_GRAY
       if (this.props.selectedNode === this.hoveredLabel.node) {
         color = Colors.DARK_BLUE
       }
@@ -209,7 +208,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       FontFamily.MONOSPACE
     }`
     ctx.textBaseline = 'alphabetic'
-    ctx.fillStyle = Colors.OFF_BLACK
+    ctx.fillStyle = Colors.DARK_GRAY
 
     const minWidthToRender = cachedMeasureTextWidth(ctx, 'M' + ELLIPSIS + 'M')
     const minConfigSpaceWidthToRender = (

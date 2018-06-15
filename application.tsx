@@ -809,7 +809,7 @@ const style = StyleSheet.create({
     textAlign: 'right',
   },
   toolbarTab: {
-    background: Colors.OFF_BLACK,
+    background: Colors.DARK_GRAY,
     marginTop: Sizes.SEPARATOR_HEIGHT,
     height: Sizes.TOOLBAR_TAB_HEIGHT,
     lineHeight: `${Sizes.TOOLBAR_TAB_HEIGHT}px`,
