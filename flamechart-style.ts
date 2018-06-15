@@ -6,7 +6,7 @@ const HOVERTIP_PADDING = 2
 export const style = StyleSheet.create({
   hoverTip: {
     position: 'absolute',
-    background: 'white',
+    background: Colors.WHITE,
     border: '1px solid black',
     maxWidth: Sizes.TOOLTIP_WIDTH_MAX,
     paddingTop: HOVERTIP_PADDING,
@@ -25,7 +25,7 @@ export const style = StyleSheet.create({
     maxWidth: Sizes.TOOLTIP_WIDTH_MAX,
   },
   hoverCount: {
-    color: '#6FCF97',
+    color: Colors.GREEN,
   },
   clip: {
     overflow: 'hidden',
@@ -59,7 +59,7 @@ export const style = StyleSheet.create({
     borderTop: `${Sizes.SEPARATOR_HEIGHT}px solid ${Colors.MEDIUM_GRAY}`,
     fontSize: FontSize.LABEL,
     position: 'absolute',
-    background: 'white',
+    background: Colors.WHITE,
     width: '100vw',
     bottom: 0,
   },
@@ -104,11 +104,11 @@ export const style = StyleSheet.create({
   },
   thisInstanceCell: {
     background: Colors.DARK_BLUE,
-    color: 'white',
+    color: Colors.WHITE,
   },
   allInstancesCell: {
     background: Colors.PALE_DARK_BLUE,
-    color: 'white',
+    color: Colors.WHITE,
   },
   barDisplay: {
     position: 'absolute',

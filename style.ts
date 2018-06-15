@@ -9,13 +9,16 @@ export enum FontSize {
 }
 
 export enum Colors {
-  LIGHT_GRAY = '#C4C4C4',
+  WHITE = '#FFFFFF',
+  OFF_WHITE = '#F6F6F6',
   MEDIUM_GRAY = '#BDBDBD',
   GRAY = '#666666',
   DARK_GRAY = '#222222',
+  BLACK = '#000000',
   BRIGHT_BLUE = '#56CCF2',
   DARK_BLUE = '#2F80ED',
   PALE_DARK_BLUE = '#8EB7ED',
+  GREEN = '#6FCF97',
 }
 
 export enum Sizes {

@@ -737,7 +737,7 @@ const style = StyleSheet.create({
     fontSize: FontSize.BIG_BUTTON,
     lineHeight: '72px',
     background: Colors.DARK_BLUE,
-    color: 'white',
+    color: Colors.WHITE,
     cursor: 'pointer',
   },
   link: {
@@ -747,8 +747,8 @@ const style = StyleSheet.create({
   },
   toolbar: {
     height: Sizes.TOOLBAR_HEIGHT,
-    background: 'black',
-    color: 'white',
+    background: Colors.BLACK,
+    color: Colors.WHITE,
     textAlign: 'center',
     fontFamily: FontFamily.MONOSPACE,
     fontSize: FontSize.TITLE,

@@ -3,7 +3,7 @@ import {StyleSheet, css} from 'aphrodite'
 import {ReloadableComponent} from './reloadable'
 import {Profile, Frame} from './profile'
 import {sortBy, formatPercent} from './utils'
-import {FontSize} from './style'
+import {FontSize, Colors} from './style'
 
 interface ProfileTableViewProps {
   profile: Profile
@@ -63,7 +63,7 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
 const style = StyleSheet.create({
   scrollView: {
     height: '100%',
-    background: 'white',
+    background: Colors.WHITE,
     overflow: 'auto',
     cursor: 'auto',
   },
