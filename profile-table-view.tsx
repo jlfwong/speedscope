@@ -79,10 +79,7 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
     const selfPerc = 100.0 * selfWeight / profile.getTotalNonIdleWeight()
 
     return (
-      <tr
-        key={`${frame.key}`}
-        className={css(style.tableRow, index % 2 == 0 && style.tableRowEven)}
-      >
+      <tr key={`${index}`} className={css(style.tableRow, index % 2 == 0 && style.tableRowEven)}>
         <td className={css(style.numericCell)}>
           {profile.formatValue(totalWeight)} ({formatPercent(totalPerc)})
           <HBarDisplay perc={totalPerc} />
@@ -99,7 +96,9 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
     )
   }
 
-  onSortClick = (field: SortField) => {
+  onSortClick = (field: SortField, ev: MouseEvent) => {
+    ev.preventDefault()
+
     const {sortMethod} = this.props
 
     if (sortMethod.field == field) {
@@ -160,13 +159,13 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
     const rows: JSX.Element[] = frameList.map((f, i) => this.renderRow(f, i))
 
     return (
-      <div className={css(style.vbox)}>
+      <div className={css(style.vbox, style.profileTableView)}>
         <table className={css(style.tableView)}>
           <thead className={css(style.tableHeader)}>
             <tr>
               <th
                 className={css(style.numericCell)}
-                onClick={() => this.onSortClick(SortField.TOTAL)}
+                onClick={ev => this.onSortClick(SortField.TOTAL, ev)}
               >
                 <SortIcon
                   activeDirection={
@@ -177,7 +176,7 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
               </th>
               <th
                 className={css(style.numericCell)}
-                onClick={() => this.onSortClick(SortField.SELF)}
+                onClick={ev => this.onSortClick(SortField.SELF, ev)}
               >
                 <SortIcon
                   activeDirection={
@@ -188,7 +187,7 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
               </th>
               <th
                 className={css(style.textCell)}
-                onClick={() => this.onSortClick(SortField.SYMBOL_NAME)}
+                onClick={ev => this.onSortClick(SortField.SYMBOL_NAME, ev)}
               >
                 <SortIcon
                   activeDirection={
@@ -209,6 +208,10 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
 }
 
 const style = StyleSheet.create({
+  profileTableView: {
+    background: Colors.WHITE,
+    height: '100%',
+  },
   vbox: {
     display: 'flex',
     flexDirection: 'column',
@@ -216,7 +219,6 @@ const style = StyleSheet.create({
   },
   scrollView: {
     height: '100%',
-    background: Colors.WHITE,
     overflowY: 'auto',
     overflowX: 'hidden',
   },
@@ -227,9 +229,10 @@ const style = StyleSheet.create({
     cursor: 'default',
   },
   tableHeader: {
-    borderBottom: `2px solid ${Colors.GRAY}`,
+    borderBottom: `2px solid ${Colors.LIGHT_GRAY}`,
     textAlign: 'left',
     color: Colors.GRAY,
+    userSelect: 'none',
   },
   sortIcon: {
     position: 'relative',
