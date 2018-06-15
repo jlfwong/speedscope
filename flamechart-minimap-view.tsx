@@ -4,8 +4,8 @@ import {Flamechart} from './flamechart'
 import {Rect, Vec2, AffineTransform, clamp} from './math'
 import {FlamechartRenderer} from './flamechart-renderer'
 import {cachedMeasureTextWidth} from './utils'
-import {style, Sizes} from './flamechart-style'
-import {FontFamily, FontSize, Colors} from './style'
+import {style} from './flamechart-style'
+import {FontFamily, FontSize, Colors, Sizes} from './style'
 import {CanvasContext} from './canvas-context'
 import {TextureCachedRenderer} from './texture-cached-renderer'
 
@@ -152,7 +152,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
 
     const physicalViewSpaceFrameHeight = Sizes.FRAME_HEIGHT * window.devicePixelRatio
     const physicalViewSpaceFontSize = FontSize.LABEL * window.devicePixelRatio
-    const LABEL_PADDING_PX = (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2
+    const labelPaddingPx = (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2
 
     ctx.font = `${physicalViewSpaceFontSize}px/${physicalViewSpaceFrameHeight}px ${
       FontFamily.MONOSPACE
@@ -171,6 +171,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     {
       ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
       ctx.fillRect(0, 0, physicalViewSize.x, physicalViewSpaceFrameHeight)
+      ctx.textBaseline = 'top'
 
       ctx.fillStyle = Colors.GRAY
       for (let x = Math.ceil(left / interval) * interval; x < right; x += interval) {
@@ -179,7 +180,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
         const labelText = this.props.flamechart.formatValue(x)
         const textWidth = Math.ceil(cachedMeasureTextWidth(ctx, labelText))
 
-        ctx.fillText(labelText, pos - textWidth - LABEL_PADDING_PX, LABEL_PADDING_PX)
+        ctx.fillText(labelText, pos - textWidth - labelPaddingPx, labelPaddingPx)
         ctx.fillRect(pos, 0, 1, physicalViewSize.y)
       }
     }

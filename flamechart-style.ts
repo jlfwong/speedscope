@@ -1,16 +1,7 @@
 import {StyleSheet} from 'aphrodite'
-import {FontFamily, FontSize, Colors} from './style'
+import {FontFamily, FontSize, Colors, Sizes} from './style'
 
 const HOVERTIP_PADDING = 2
-
-export namespace Sizes {
-  export const MINIMAP_HEIGHT = 100
-  export const DETAIL_VIEW_HEIGHT = 150
-  export const TOOLTIP_WIDTH_MAX = 300
-  export const TOOLTIP_HEIGHT_MAX = 75
-  export const SEPARATOR_HEIGHT = 2
-  export const FRAME_HEIGHT = 16
-}
 
 export const style = StyleSheet.create({
   hoverTip: {

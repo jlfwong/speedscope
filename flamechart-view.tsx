@@ -9,8 +9,8 @@ import {Rect, Vec2, AffineTransform, clamp} from './math'
 import {cachedMeasureTextWidth, formatPercent} from './utils'
 import {FlamechartMinimapView} from './flamechart-minimap-view'
 
-import {style, Sizes} from './flamechart-style'
-import {FontSize, FontFamily, Colors} from './style'
+import {style} from './flamechart-style'
+import {FontSize, FontFamily, Colors, Sizes} from './style'
 import {CanvasContext} from './canvas-context'
 import {FlamechartRenderer} from './flamechart-renderer'
 import {Color} from './color'
@@ -131,7 +131,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     )
   }
 
-  private LOGICAL_VIEW_SPACE_FRAME_HEIGHT = 20
+  private LOGICAL_VIEW_SPACE_FRAME_HEIGHT = Sizes.FRAME_HEIGHT
 
   private configSpaceToPhysicalViewSpace() {
     return AffineTransform.betweenRects(
@@ -337,6 +337,8 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT * window.devicePixelRatio
     const physicalViewSize = this.physicalViewSize()
     const configToPhysical = this.configSpaceToPhysicalViewSpace()
+    const physicalViewSpaceFontSize = FontSize.LABEL * window.devicePixelRatio
+    const labelPaddingPx = (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2
 
     const left = this.props.configSpaceViewportRect.left()
     const right = this.props.configSpaceViewportRect.right()
@@ -365,7 +367,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
         const pos = Math.round(configToPhysical.transformPosition(new Vec2(x, 0)).x)
         const labelText = this.props.flamechart.formatValue(x)
         const textWidth = cachedMeasureTextWidth(ctx, labelText)
-        ctx.fillText(labelText, pos - textWidth - 5, 2)
+        ctx.fillText(labelText, pos - textWidth - labelPaddingPx, labelPaddingPx)
         ctx.fillRect(pos, 0, 1, physicalViewSize.y)
       }
     }

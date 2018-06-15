@@ -19,7 +19,7 @@ import {CanvasContext} from './canvas-context'
 import {Profile, Frame} from './profile'
 import {Flamechart} from './flamechart'
 import {FlamechartView} from './flamechart-view'
-import {FontFamily, FontSize, Colors} from './style'
+import {FontFamily, FontSize, Colors, Sizes} from './style'
 import {getHashParams, HashParams} from './hash-params'
 import {ProfileTableView} from './profile-table-view'
 
@@ -746,18 +746,18 @@ const style = StyleSheet.create({
     textDecoration: 'none',
   },
   toolbar: {
-    height: 18,
+    height: Sizes.TOOLBAR_HEIGHT,
     background: 'black',
     color: 'white',
     textAlign: 'center',
     fontFamily: FontFamily.MONOSPACE,
     fontSize: FontSize.TITLE,
-    lineHeight: '18px',
+    lineHeight: `${Sizes.TOOLBAR_TAB_HEIGHT}px`,
     userSelect: 'none',
   },
   toolbarLeft: {
     position: 'absolute',
-    height: 18,
+    height: Sizes.TOOLBAR_HEIGHT,
     overflow: 'hidden',
     top: 0,
     left: 0,
@@ -765,7 +765,7 @@ const style = StyleSheet.create({
     textAlign: 'left',
   },
   toolbarRight: {
-    height: 18,
+    height: Sizes.TOOLBAR_HEIGHT,
     overflow: 'hidden',
     position: 'absolute',
     top: 0,
@@ -775,9 +775,9 @@ const style = StyleSheet.create({
   },
   toolbarTab: {
     background: Colors.DARK_GRAY,
-    marginTop: 2,
-    height: 16,
-    lineHeight: '16px',
+    marginTop: Sizes.SEPARATOR_HEIGHT,
+    height: Sizes.TOOLBAR_TAB_HEIGHT,
+    lineHeight: `${Sizes.TOOLBAR_TAB_HEIGHT}px`,
     paddingLeft: 2,
     paddingRight: 8,
     display: 'inline-block',
