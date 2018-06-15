@@ -47,7 +47,7 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
           {profile.formatValue(selfWeight)} ({formatPercent(selfPerc)})
           <HBarDisplay perc={selfPerc} />
         </td>
-        <td title={frame.file}>
+        <td title={frame.file} className={css(style.textCell)}>
           <ColorChit color={this.props.getCSSColorForFrame(frame)} />
           {frame.name}
         </td>
@@ -66,32 +66,41 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
     const rows: JSX.Element[] = frameList.map((f, i) => this.renderRow(f, i))
 
     return (
-      <div className={css(style.scrollView)}>
+      <div className={css(style.vbox)}>
         <table className={css(style.tableView)}>
           <thead className={css(style.tableHeader)}>
             <tr>
               <th className={css(style.numericCell)}>Total</th>
               <th className={css(style.numericCell)}>Self</th>
-              <th className={css()}>Symbol Name</th>
+              <th className={css(style.textCell)}>Symbol Name</th>
             </tr>
           </thead>
-          <tbody>{rows}</tbody>
         </table>
+        <div className={css(style.scrollView)}>
+          <table className={css(style.tableView)}>{rows}</table>
+        </div>
       </div>
     )
   }
 }
 
 const style = StyleSheet.create({
+  vbox: {
+    display: 'flex',
+    flexDirection: 'column',
+    position: 'relative',
+  },
   scrollView: {
     height: '100%',
     background: Colors.WHITE,
-    overflow: 'auto',
+    overflowY: 'auto',
+    overflowX: 'hidden',
     cursor: 'auto',
   },
   tableView: {
     width: '100%',
     fontSize: FontSize.LABEL,
+    background: Colors.WHITE,
   },
   tableHeader: {
     borderBottom: `2px solid ${Colors.MEDIUM_GRAY}`,
@@ -105,17 +114,28 @@ const style = StyleSheet.create({
     background: Colors.OFF_WHITE,
   },
   numericCell: {
+    textOverflow: 'ellipsis',
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
     position: 'relative',
     textAlign: 'right',
     paddingRight: Sizes.FRAME_HEIGHT,
-    width: 4 * Sizes.FRAME_HEIGHT,
+    width: 6 * Sizes.FRAME_HEIGHT,
+    minWidth: 6 * Sizes.FRAME_HEIGHT,
+  },
+  textCell: {
+    textOverflow: 'ellipsis',
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
+    width: '100%',
+    maxWidth: 0,
   },
   hBarDisplay: {
     position: 'absolute',
     background: Colors.TRANSPARENT_GREEN,
     bottom: 2,
     height: 2,
-    width: `calc(100% - ${Sizes.FRAME_HEIGHT}px)`,
+    width: `calc(100% - ${2 * Sizes.FRAME_HEIGHT}px)`,
     right: Sizes.FRAME_HEIGHT,
   },
   hBarDisplayFilled: {
