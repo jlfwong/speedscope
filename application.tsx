@@ -21,7 +21,7 @@ import {Flamechart} from './flamechart'
 import {FlamechartView} from './flamechart-view'
 import {FontFamily, FontSize, Colors, Sizes} from './style'
 import {getHashParams, HashParams} from './hash-params'
-import {ProfileTableView} from './profile-table-view'
+import {ProfileTableView, SortMethod, SortField, SortDirection} from './profile-table-view'
 import {triangle} from './utils'
 import {Color} from './color'
 
@@ -42,6 +42,8 @@ interface ApplicationState {
 
   leftHeavyFlamegraph: Flamechart | null
   leftHeavyFlamegraphRenderer: FlamechartRenderer | null
+
+  tableSortMethod: SortMethod
 
   viewMode: ViewMode
   dragActive: boolean
@@ -259,6 +261,11 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
 
       leftHeavyFlamegraph: null,
       leftHeavyFlamegraphRenderer: null,
+
+      tableSortMethod: {
+        field: SortField.SELF,
+        direction: SortDirection.DESCENDING,
+      },
 
       viewMode: ViewMode.CHRONO_FLAME_CHART,
     }
@@ -574,6 +581,10 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     this.setState({viewMode})
   }
 
+  setTableSortMethod = (tableSortMethod: SortMethod) => {
+    this.setState({tableSortMethod})
+  }
+
   private canvasContext: CanvasContext | null = null
   private setCanvasContext = (canvasContext: CanvasContext | null) => {
     this.canvasContext = canvasContext
@@ -645,6 +656,8 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
           <ProfileTableView
             profile={this.state.profile}
             getCSSColorForFrame={this.getCSSColorForFrame}
+            sortMethod={this.state.tableSortMethod}
+            setSortMethod={this.setTableSortMethod}
           />
         )
       }
@@ -796,7 +809,7 @@ const style = StyleSheet.create({
     textAlign: 'right',
   },
   toolbarTab: {
-    background: Colors.DARK_GRAY,
+    background: Colors.OFF_BLACK,
     marginTop: Sizes.SEPARATOR_HEIGHT,
     height: Sizes.TOOLBAR_TAB_HEIGHT,
     lineHeight: `${Sizes.TOOLBAR_TAB_HEIGHT}px`,
@@ -805,7 +818,7 @@ const style = StyleSheet.create({
     display: 'inline-block',
     marginLeft: 2,
     ':hover': {
-      background: Colors.GRAY,
+      background: Colors.DARK_GRAY,
       cursor: 'pointer',
     },
   },

@@ -44,7 +44,7 @@ export const style = StyleSheet.create({
   },
   minimap: {
     height: Sizes.MINIMAP_HEIGHT,
-    borderBottom: `${Sizes.SEPARATOR_HEIGHT}px solid ${Colors.MEDIUM_GRAY}`,
+    borderBottom: `${Sizes.SEPARATOR_HEIGHT}px solid ${Colors.LIGHT_GRAY}`,
   },
   panZoomView: {
     flex: 1,
@@ -56,7 +56,7 @@ export const style = StyleSheet.create({
     overflow: 'hidden',
     gridTemplateColumns: '120px 120px 1fr',
     gridTemplateRows: 'repeat(4, 1fr)',
-    borderTop: `${Sizes.SEPARATOR_HEIGHT}px solid ${Colors.MEDIUM_GRAY}`,
+    borderTop: `${Sizes.SEPARATOR_HEIGHT}px solid ${Colors.LIGHT_GRAY}`,
     fontSize: FontSize.LABEL,
     position: 'absolute',
     background: Colors.WHITE,
@@ -75,7 +75,7 @@ export const style = StyleSheet.create({
     whiteSpace: 'nowrap',
   },
   stackFileLine: {
-    color: Colors.MEDIUM_GRAY,
+    color: Colors.LIGHT_GRAY,
   },
   statsTable: {
     display: 'grid',

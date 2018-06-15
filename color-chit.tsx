@@ -19,7 +19,7 @@ const style = StyleSheet.create({
     display: 'inline-block',
     verticalAlign: 'middle',
     marginRight: '0.5em',
-    border: `1px solid ${Colors.MEDIUM_GRAY}`,
+    border: `1px solid ${Colors.LIGHT_GRAY}`,
     width: FontSize.LABEL - 2,
     height: FontSize.LABEL - 2,
   },

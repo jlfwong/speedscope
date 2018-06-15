@@ -173,7 +173,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       ctx.fillRect(0, 0, physicalViewSize.x, physicalViewSpaceFrameHeight)
       ctx.textBaseline = 'top'
 
-      ctx.fillStyle = Colors.GRAY
+      ctx.fillStyle = Colors.DARK_GRAY
       for (let x = Math.ceil(left / interval) * interval; x < right; x += interval) {
         // TODO(jlfwong): Ensure that labels do not overlap
         const pos = Math.round(configToPhysical.transformPosition(new Vec2(x, 0)).x)

@@ -6,9 +6,27 @@ import {sortBy, formatPercent} from './utils'
 import {FontSize, Colors, Sizes} from './style'
 import {ColorChit} from './color-chit'
 
+export enum SortField {
+  SYMBOL_NAME,
+  SELF,
+  TOTAL,
+}
+
+export enum SortDirection {
+  ASCENDING,
+  DESCENDING,
+}
+
+export interface SortMethod {
+  field: SortField
+  direction: SortDirection
+}
+
 interface ProfileTableViewProps {
   profile: Profile
   getCSSColorForFrame: (frame: Frame) => string
+  sortMethod: SortMethod
+  setSortMethod: (sortMethod: SortMethod) => void
 }
 
 interface HBarProps {
@@ -21,6 +39,32 @@ class HBarDisplay extends Component<HBarProps, {}> {
       <div className={css(style.hBarDisplay)}>
         <div className={css(style.hBarDisplayFilled)} style={{width: `${this.props.perc}%`}} />
       </div>
+    )
+  }
+}
+
+interface SortIconProps {
+  activeDirection: SortDirection | null
+}
+
+class SortIcon extends Component<SortIconProps, {}> {
+  render() {
+    const {activeDirection} = this.props
+    const upFill = activeDirection === SortDirection.ASCENDING ? Colors.GRAY : Colors.LIGHT_GRAY
+    const downFill = activeDirection === SortDirection.DESCENDING ? Colors.GRAY : Colors.LIGHT_GRAY
+
+    return (
+      <svg
+        width="8"
+        height="10"
+        viewBox="0 0 8 10"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={css(style.sortIcon)}
+      >
+        <path d="M0 4L4 0L8 4H0Z" fill={upFill} />
+        <path d="M0 4L4 0L8 4H0Z" transform="translate(0 10) scale(1 -1)" fill={downFill} />
+      </svg>
     )
   }
 }
@@ -55,13 +99,63 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
     )
   }
 
+  onSortClick = (field: SortField) => {
+    const {sortMethod} = this.props
+
+    if (sortMethod.field == field) {
+      // Toggle
+      this.props.setSortMethod({
+        field,
+        direction:
+          sortMethod.direction === SortDirection.ASCENDING
+            ? SortDirection.DESCENDING
+            : SortDirection.ASCENDING,
+      })
+    } else {
+      // Set a sane default
+      switch (field) {
+        case SortField.SYMBOL_NAME: {
+          this.props.setSortMethod({field, direction: SortDirection.ASCENDING})
+          break
+        }
+        case SortField.SELF: {
+          this.props.setSortMethod({field, direction: SortDirection.DESCENDING})
+          break
+        }
+        case SortField.TOTAL: {
+          this.props.setSortMethod({field, direction: SortDirection.DESCENDING})
+          break
+        }
+      }
+    }
+  }
+
   render() {
-    const {profile} = this.props
+    const {profile, sortMethod} = this.props
 
     const frameList: Frame[] = []
 
     profile.forEachFrame(f => frameList.push(f))
-    sortBy(frameList, f => -f.getSelfWeight())
+
+    // TODO(jlfwong): This is pretty inefficient to do this on every render, but I haven't
+    // run into perf issues yet, so we'll cross that bridge when we reach it.
+    switch (sortMethod.field) {
+      case SortField.SYMBOL_NAME: {
+        sortBy(frameList, f => f.name.toLowerCase())
+        break
+      }
+      case SortField.SELF: {
+        sortBy(frameList, f => f.getSelfWeight())
+        break
+      }
+      case SortField.TOTAL: {
+        sortBy(frameList, f => f.getTotalWeight())
+        break
+      }
+    }
+    if (sortMethod.direction === SortDirection.DESCENDING) {
+      frameList.reverse()
+    }
 
     const rows: JSX.Element[] = frameList.map((f, i) => this.renderRow(f, i))
 
@@ -70,9 +164,39 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
         <table className={css(style.tableView)}>
           <thead className={css(style.tableHeader)}>
             <tr>
-              <th className={css(style.numericCell)}>Total</th>
-              <th className={css(style.numericCell)}>Self</th>
-              <th className={css(style.textCell)}>Symbol Name</th>
+              <th
+                className={css(style.numericCell)}
+                onClick={() => this.onSortClick(SortField.TOTAL)}
+              >
+                <SortIcon
+                  activeDirection={
+                    sortMethod.field === SortField.TOTAL ? sortMethod.direction : null
+                  }
+                />
+                Total
+              </th>
+              <th
+                className={css(style.numericCell)}
+                onClick={() => this.onSortClick(SortField.SELF)}
+              >
+                <SortIcon
+                  activeDirection={
+                    sortMethod.field === SortField.SELF ? sortMethod.direction : null
+                  }
+                />
+                Self
+              </th>
+              <th
+                className={css(style.textCell)}
+                onClick={() => this.onSortClick(SortField.SYMBOL_NAME)}
+              >
+                <SortIcon
+                  activeDirection={
+                    sortMethod.field === SortField.SYMBOL_NAME ? sortMethod.direction : null
+                  }
+                />
+                Symbol Name
+              </th>
             </tr>
           </thead>
         </table>
@@ -95,17 +219,22 @@ const style = StyleSheet.create({
     background: Colors.WHITE,
     overflowY: 'auto',
     overflowX: 'hidden',
-    cursor: 'auto',
   },
   tableView: {
     width: '100%',
     fontSize: FontSize.LABEL,
     background: Colors.WHITE,
+    cursor: 'arrow',
   },
   tableHeader: {
-    borderBottom: `2px solid ${Colors.MEDIUM_GRAY}`,
+    borderBottom: `2px solid ${Colors.GRAY}`,
     textAlign: 'left',
     color: Colors.GRAY,
+  },
+  sortIcon: {
+    position: 'relative',
+    top: 1,
+    marginRight: Sizes.FRAME_HEIGHT / 4,
   },
   tableRow: {
     height: Sizes.FRAME_HEIGHT,

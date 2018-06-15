@@ -188,7 +188,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     ctx.clearRect(0, 0, physicalViewSize.x, physicalViewSize.y)
 
     if (this.hoveredLabel) {
-      let color = Colors.DARK_GRAY
+      let color = Colors.OFF_BLACK
       if (this.props.selectedNode === this.hoveredLabel.node) {
         color = Colors.DARK_BLUE
       }
@@ -209,7 +209,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       FontFamily.MONOSPACE
     }`
     ctx.textBaseline = 'alphabetic'
-    ctx.fillStyle = Colors.DARK_GRAY
+    ctx.fillStyle = Colors.OFF_BLACK
 
     const minWidthToRender = cachedMeasureTextWidth(ctx, 'M' + ELLIPSIS + 'M')
     const minConfigSpaceWidthToRender = (
@@ -361,7 +361,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     {
       ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
       ctx.fillRect(0, 0, physicalViewSize.x, physicalViewSpaceFrameHeight)
-      ctx.fillStyle = Colors.GRAY
+      ctx.fillStyle = Colors.DARK_GRAY
       ctx.textBaseline = 'top'
       for (let x = Math.ceil(left / interval) * interval; x < right; x += interval) {
         // TODO(jlfwong): Ensure that labels do not overlap
