@@ -166,11 +166,7 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
         rows.push(this.renderRow(frameList[i], i))
       }
 
-      return (
-        <div className={css(style.scrollView)}>
-          <table className={css(style.tableView)}>{rows}</table>
-        </div>
-      )
+      return <table className={css(style.tableView)}>{rows}</table>
     }
 
     const listItems: ListItem[] = frameList.map(f => ({size: Sizes.FRAME_HEIGHT}))
