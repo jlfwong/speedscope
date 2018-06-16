@@ -5,6 +5,7 @@ import {Profile, Frame} from './profile'
 import {sortBy, formatPercent} from './utils'
 import {FontSize, Colors, Sizes} from './style'
 import {ColorChit} from './color-chit'
+import {ScrollableListView, ListItem} from './scrollable-list-view'
 
 export enum SortField {
   SYMBOL_NAME,
@@ -78,6 +79,8 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
     const totalPerc = 100.0 * totalWeight / profile.getTotalNonIdleWeight()
     const selfPerc = 100.0 * selfWeight / profile.getTotalNonIdleWeight()
 
+    // We intentionally use index rather than frame.key here as the tr key
+    // in order to re-use rows when sorting rather than creating all new elements.
     return (
       <tr key={`${index}`} className={css(style.tableRow, index % 2 == 0 && style.tableRowEven)}>
         <td className={css(style.numericCell)}>
@@ -136,8 +139,8 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
 
     profile.forEachFrame(f => frameList.push(f))
 
-    // TODO(jlfwong): This is pretty inefficient to do this on every render, but I haven't
-    // run into perf issues yet, so we'll cross that bridge when we reach it.
+    // TODO(jlfwong): This is pretty inefficient to do this on every render, but doesn't
+    // seem to be a bottleneck, so we'll leave it alone.
     switch (sortMethod.field) {
       case SortField.SYMBOL_NAME: {
         sortBy(frameList, f => f.name.toLowerCase())
@@ -156,7 +159,21 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
       frameList.reverse()
     }
 
-    const rows: JSX.Element[] = frameList.map((f, i) => this.renderRow(f, i))
+    const renderItems = (firstIndex: number, lastIndex: number) => {
+      const rows: JSX.Element[] = []
+
+      for (let i = firstIndex; i <= lastIndex; i++) {
+        rows.push(this.renderRow(frameList[i], i))
+      }
+
+      return (
+        <div className={css(style.scrollView)}>
+          <table className={css(style.tableView)}>{rows}</table>
+        </div>
+      )
+    }
+
+    const listItems: ListItem[] = frameList.map(f => ({size: Sizes.FRAME_HEIGHT}))
 
     return (
       <div className={css(style.vbox, style.profileTableView)}>
@@ -199,9 +216,11 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
             </tr>
           </thead>
         </table>
-        <div className={css(style.scrollView)}>
-          <table className={css(style.tableView)}>{rows}</table>
-        </div>
+        <ScrollableListView
+          items={listItems}
+          className={css(style.scrollView)}
+          renderItems={renderItems}
+        />
       </div>
     )
   }
