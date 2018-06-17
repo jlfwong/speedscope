@@ -233,7 +233,6 @@ const style = StyleSheet.create({
     position: 'relative',
   },
   scrollView: {
-    height: '100%',
     overflowY: 'auto',
     overflowX: 'hidden',
   },

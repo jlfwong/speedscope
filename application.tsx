@@ -740,6 +740,7 @@ const style = StyleSheet.create({
   contentContainer: {
     position: 'relative',
     display: 'flex',
+    overflow: 'hidden',
     flexDirection: 'column',
     flex: 1,
   },
@@ -782,6 +783,7 @@ const style = StyleSheet.create({
   },
   toolbar: {
     height: Sizes.TOOLBAR_HEIGHT,
+    flexShrink: 0,
     background: Colors.BLACK,
     color: Colors.WHITE,
     textAlign: 'center',
