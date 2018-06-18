@@ -1,21 +1,12 @@
 import {StyleSheet} from 'aphrodite'
-import {FontFamily, FontSize, Colors} from './style'
+import {FontFamily, FontSize, Colors, Sizes} from './style'
 
 const HOVERTIP_PADDING = 2
-
-export namespace Sizes {
-  export const MINIMAP_HEIGHT = 100
-  export const DETAIL_VIEW_HEIGHT = 150
-  export const TOOLTIP_WIDTH_MAX = 300
-  export const TOOLTIP_HEIGHT_MAX = 75
-  export const SEPARATOR_HEIGHT = 2
-  export const FRAME_HEIGHT = 16
-}
 
 export const style = StyleSheet.create({
   hoverTip: {
     position: 'absolute',
-    background: 'white',
+    background: Colors.WHITE,
     border: '1px solid black',
     maxWidth: Sizes.TOOLTIP_WIDTH_MAX,
     paddingTop: HOVERTIP_PADDING,
@@ -34,7 +25,7 @@ export const style = StyleSheet.create({
     maxWidth: Sizes.TOOLTIP_WIDTH_MAX,
   },
   hoverCount: {
-    color: '#6FCF97',
+    color: Colors.GREEN,
   },
   clip: {
     overflow: 'hidden',
@@ -53,7 +44,7 @@ export const style = StyleSheet.create({
   },
   minimap: {
     height: Sizes.MINIMAP_HEIGHT,
-    borderBottom: `${Sizes.SEPARATOR_HEIGHT}px solid ${Colors.MEDIUM_GRAY}`,
+    borderBottom: `${Sizes.SEPARATOR_HEIGHT}px solid ${Colors.LIGHT_GRAY}`,
   },
   panZoomView: {
     flex: 1,
@@ -65,10 +56,10 @@ export const style = StyleSheet.create({
     overflow: 'hidden',
     gridTemplateColumns: '120px 120px 1fr',
     gridTemplateRows: 'repeat(4, 1fr)',
-    borderTop: `${Sizes.SEPARATOR_HEIGHT}px solid ${Colors.MEDIUM_GRAY}`,
+    borderTop: `${Sizes.SEPARATOR_HEIGHT}px solid ${Colors.LIGHT_GRAY}`,
     fontSize: FontSize.LABEL,
     position: 'absolute',
-    background: 'white',
+    background: Colors.WHITE,
     width: '100vw',
     bottom: 0,
   },
@@ -80,19 +71,11 @@ export const style = StyleSheet.create({
     lineHeight: `${FontSize.LABEL + 2}px`,
     overflow: 'auto',
   },
-  stackChit: {
-    display: 'inline-block',
-    verticalAlign: 'bottom',
-    marginRight: '0.5em',
-    border: `1px solid ${Colors.MEDIUM_GRAY}`,
-    width: FontSize.LABEL - 2,
-    height: FontSize.LABEL - 2,
-  },
   stackLine: {
     whiteSpace: 'nowrap',
   },
   stackFileLine: {
-    color: Colors.MEDIUM_GRAY,
+    color: Colors.LIGHT_GRAY,
   },
   statsTable: {
     display: 'grid',
@@ -113,11 +96,11 @@ export const style = StyleSheet.create({
   },
   thisInstanceCell: {
     background: Colors.DARK_BLUE,
-    color: 'white',
+    color: Colors.WHITE,
   },
   allInstancesCell: {
     background: Colors.PALE_DARK_BLUE,
-    color: 'white',
+    color: Colors.WHITE,
   },
   barDisplay: {
     position: 'absolute',

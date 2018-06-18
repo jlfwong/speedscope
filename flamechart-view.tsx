@@ -6,14 +6,14 @@ import {CallTreeNode, Frame} from './profile'
 import {Flamechart, FlamechartFrame} from './flamechart'
 
 import {Rect, Vec2, AffineTransform, clamp} from './math'
-import {cachedMeasureTextWidth} from './utils'
+import {cachedMeasureTextWidth, formatPercent} from './utils'
 import {FlamechartMinimapView} from './flamechart-minimap-view'
 
-import {style, Sizes} from './flamechart-style'
-import {FontSize, FontFamily, Colors} from './style'
+import {style} from './flamechart-style'
+import {FontSize, FontFamily, Colors, Sizes} from './style'
 import {CanvasContext} from './canvas-context'
 import {FlamechartRenderer} from './flamechart-renderer'
-import {Color} from './color'
+import {ColorChit} from './color-chit'
 
 interface FlamechartFrameLabel {
   configSpaceBounds: Rect
@@ -131,7 +131,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     )
   }
 
-  private LOGICAL_VIEW_SPACE_FRAME_HEIGHT = 20
+  private LOGICAL_VIEW_SPACE_FRAME_HEIGHT = Sizes.FRAME_HEIGHT
 
   private configSpaceToPhysicalViewSpace() {
     return AffineTransform.betweenRects(
@@ -337,6 +337,8 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
       this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT * window.devicePixelRatio
     const physicalViewSize = this.physicalViewSize()
     const configToPhysical = this.configSpaceToPhysicalViewSpace()
+    const physicalViewSpaceFontSize = FontSize.LABEL * window.devicePixelRatio
+    const labelPaddingPx = (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2
 
     const left = this.props.configSpaceViewportRect.left()
     const right = this.props.configSpaceViewportRect.right()
@@ -358,14 +360,14 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     {
       ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
       ctx.fillRect(0, 0, physicalViewSize.x, physicalViewSpaceFrameHeight)
-      ctx.fillStyle = Colors.GRAY
+      ctx.fillStyle = Colors.DARK_GRAY
       ctx.textBaseline = 'top'
       for (let x = Math.ceil(left / interval) * interval; x < right; x += interval) {
         // TODO(jlfwong): Ensure that labels do not overlap
         const pos = Math.round(configToPhysical.transformPosition(new Vec2(x, 0)).x)
         const labelText = this.props.flamechart.formatValue(x)
         const textWidth = cachedMeasureTextWidth(ctx, labelText)
-        ctx.fillText(labelText, pos - textWidth - 5, 2)
+        ctx.fillText(labelText, pos - textWidth - labelPaddingPx, labelPaddingPx)
         ctx.fillRect(pos, 0, 1, physicalViewSize.y)
       }
     }
@@ -754,12 +756,7 @@ class StackTraceView extends ReloadableComponent<StackTraceViewProps, {}> {
       const row: (JSX.Element | string)[] = []
       const {frame} = node
 
-      row.push(
-        <span
-          className={css(style.stackChit)}
-          style={{backgroundColor: this.props.getFrameColor(frame)}}
-        />,
-      )
+      row.push(<ColorChit color={this.props.getFrameColor(frame)} />)
 
       if (rows.length) {
         row.push(<span className={css(style.stackFileLine)}>> </span>)
@@ -788,28 +785,11 @@ class StackTraceView extends ReloadableComponent<StackTraceViewProps, {}> {
 
 interface FlamechartDetailViewProps {
   flamechart: Flamechart
+  getCSSColorForFrame: (frame: Frame) => string
   selectedNode: CallTreeNode
 }
 
-function fract(x: number) {
-  return x - Math.floor(x)
-}
-
-function triangle(x: number) {
-  return 2.0 * Math.abs(fract(x) - 0.5) - 1.0
-}
-
 class FlamechartDetailView extends ReloadableComponent<FlamechartDetailViewProps, {}> {
-  getFrameColor = (frame: Frame): string => {
-    const t = this.props.flamechart.getColorBucketForFrame(frame) / 255
-
-    const x = triangle(30.0 * t)
-    const H = 360.0 * (0.9 * t)
-    const C = 0.25 + 0.2 * x
-    const L = 0.8 - 0.15 * x
-    return Color.fromLumaChromaHue(L, C, H).toCSS()
-  }
-
   render() {
     const {flamechart, selectedNode} = this.props
     const {frame} = selectedNode
@@ -832,7 +812,7 @@ class FlamechartDetailView extends ReloadableComponent<FlamechartDetailViewProps
           selectedSelf={frame.getSelfWeight()}
           formatter={flamechart.formatValue.bind(flamechart)}
         />
-        <StackTraceView node={selectedNode} getFrameColor={this.getFrameColor} />
+        <StackTraceView node={selectedNode} getFrameColor={this.props.getCSSColorForFrame} />
       </div>
     )
   }
@@ -842,6 +822,7 @@ interface FlamechartViewProps {
   flamechart: Flamechart
   canvasContext: CanvasContext
   flamechartRenderer: FlamechartRenderer
+  getCSSColorForFrame: (frame: Frame) => string
 }
 
 interface FlamechartViewState {
@@ -1002,6 +983,7 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
         {this.state.selectedNode && (
           <FlamechartDetailView
             flamechart={this.props.flamechart}
+            getCSSColorForFrame={this.props.getCSSColorForFrame}
             selectedNode={this.state.selectedNode}
           />
         )}
@@ -1009,13 +991,4 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
       </div>
     )
   }
-}
-function formatPercent(percent: number) {
-  let formattedPercent = `${percent.toFixed(0)}%`
-  if (percent === 100) formattedPercent = '100%'
-  else if (percent > 99) formattedPercent = '>99%'
-  else if (percent < 0.01) formattedPercent = '<0.01%'
-  else if (percent < 1) formattedPercent = `${percent.toFixed(2)}%`
-  else if (percent < 10) formattedPercent = `${percent.toFixed(1)}%`
-  return formattedPercent
 }

@@ -121,8 +121,16 @@ export class Profile {
   getTotalWeight() {
     return this.totalWeight
   }
+
+  private totalNonIdleWeight: number | null = null
   getTotalNonIdleWeight() {
-    return this.groupedCalltreeRoot.children.reduce((n, c) => n + c.getTotalWeight(), 0)
+    if (this.totalNonIdleWeight === null) {
+      this.totalNonIdleWeight = this.groupedCalltreeRoot.children.reduce(
+        (n, c) => n + c.getTotalWeight(),
+        0,
+      )
+    }
+    return this.totalNonIdleWeight
   }
 
   forEachCallGrouped(

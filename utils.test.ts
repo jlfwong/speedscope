@@ -7,6 +7,7 @@ import {
   itForEach,
   itReduce,
   zeroPad,
+  formatPercent,
 } from './utils'
 
 test('sortBy', () => {
@@ -63,4 +64,14 @@ test('zeroPad', () => {
   expect(zeroPad('1', 3)).toBe('001')
   expect(zeroPad('1000', 3)).toBe('1000')
   expect(zeroPad('FF', 4)).toBe('00FF')
+})
+
+test('formatPercent', () => {
+  expect(formatPercent(0.42)).toBe('0.42%')
+  expect(formatPercent(0.4)).toBe('0.40%')
+  expect(formatPercent(1)).toBe('1.0%')
+  expect(formatPercent(1.6)).toBe('1.6%')
+  expect(formatPercent(99)).toBe('99%')
+  expect(formatPercent(99.9)).toBe('>99%')
+  expect(formatPercent(100)).toBe('100%')
 })

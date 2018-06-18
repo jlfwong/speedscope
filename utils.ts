@@ -65,3 +65,21 @@ export function cachedMeasureTextWidth(ctx: CanvasRenderingContext2D, text: stri
   }
   return measureTextCache.get(text)!
 }
+
+export function formatPercent(percent: number) {
+  let formattedPercent = `${percent.toFixed(0)}%`
+  if (percent === 100) formattedPercent = '100%'
+  else if (percent > 99) formattedPercent = '>99%'
+  else if (percent < 0.01) formattedPercent = '<0.01%'
+  else if (percent < 1) formattedPercent = `${percent.toFixed(2)}%`
+  else if (percent < 10) formattedPercent = `${percent.toFixed(1)}%`
+  return formattedPercent
+}
+
+export function fract(x: number) {
+  return x - Math.floor(x)
+}
+
+export function triangle(x: number) {
+  return 2.0 * Math.abs(fract(x) - 0.5) - 1.0
+}

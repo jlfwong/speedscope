@@ -19,31 +19,40 @@ import {CanvasContext} from './canvas-context'
 import {Profile, Frame} from './profile'
 import {Flamechart} from './flamechart'
 import {FlamechartView} from './flamechart-view'
-import {FontFamily, FontSize, Colors} from './style'
+import {FontFamily, FontSize, Colors, Sizes} from './style'
 import {getHashParams, HashParams} from './hash-params'
+import {ProfileTableView, SortMethod, SortField, SortDirection} from './profile-table-view'
+import {triangle} from './utils'
+import {Color} from './color'
 
 declare function require(x: string): any
 const exampleProfileURL = require('./sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt')
 
-const enum SortOrder {
-  CHRONO,
-  LEFT_HEAVY,
+const enum ViewMode {
+  CHRONO_FLAME_CHART,
+  LEFT_HEAVY_FLAME_GRAPH,
+  TABLE_VIEW,
 }
 
 interface ApplicationState {
   profile: Profile | null
-  flamechart: Flamechart | null
-  flamechartRenderer: FlamechartRenderer | null
-  sortedFlamechart: Flamechart | null
-  sortedFlamechartRenderer: FlamechartRenderer | null
-  sortOrder: SortOrder
+
+  chronoFlamechart: Flamechart | null
+  chronoFlamechartRenderer: FlamechartRenderer | null
+
+  leftHeavyFlamegraph: Flamechart | null
+  leftHeavyFlamegraphRenderer: FlamechartRenderer | null
+
+  tableSortMethod: SortMethod
+
+  viewMode: ViewMode
   dragActive: boolean
   loading: boolean
   error: boolean
 }
 
 interface ToolbarProps extends ApplicationState {
-  setSortOrder(order: SortOrder): void
+  setViewMode(order: ViewMode): void
 }
 
 function importProfile(fileName: string, contents: string): Profile | null {
@@ -110,11 +119,15 @@ function importProfile(fileName: string, contents: string): Profile | null {
 
 export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
   setTimeOrder = () => {
-    this.props.setSortOrder(SortOrder.CHRONO)
+    this.props.setViewMode(ViewMode.CHRONO_FLAME_CHART)
   }
 
   setLeftHeavyOrder = () => {
-    this.props.setSortOrder(SortOrder.LEFT_HEAVY)
+    this.props.setViewMode(ViewMode.LEFT_HEAVY_FLAME_GRAPH)
+  }
+
+  setTableView = () => {
+    this.props.setViewMode(ViewMode.TABLE_VIEW)
   }
 
   render() {
@@ -144,7 +157,7 @@ export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
           <div
             className={css(
               style.toolbarTab,
-              this.props.sortOrder === SortOrder.CHRONO && style.toolbarTabActive,
+              this.props.viewMode === ViewMode.CHRONO_FLAME_CHART && style.toolbarTabActive,
             )}
             onClick={this.setTimeOrder}
           >
@@ -153,16 +166,24 @@ export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
           <div
             className={css(
               style.toolbarTab,
-              this.props.sortOrder === SortOrder.LEFT_HEAVY && style.toolbarTabActive,
+              this.props.viewMode === ViewMode.LEFT_HEAVY_FLAME_GRAPH && style.toolbarTabActive,
             )}
             onClick={this.setLeftHeavyOrder}
           >
             <span className={css(style.emoji)}>⬅️</span>Left Heavy
           </div>
+          <div
+            className={css(
+              style.toolbarTab,
+              this.props.viewMode === ViewMode.TABLE_VIEW && style.toolbarTabActive,
+            )}
+            onClick={this.setTableView}
+          >
+            <span className={css(style.emoji)}>📒</span>Table View
+          </div>
           {help}
         </div>
         {this.props.profile.getName()}
-        <div className={css(style.toolbarRight)}>🔬speedscope</div>
       </div>
     )
   }
@@ -234,28 +255,39 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       dragActive: false,
       error: false,
       profile: null,
-      flamechart: null,
-      flamechartRenderer: null,
-      sortedFlamechart: null,
-      sortedFlamechartRenderer: null,
-      sortOrder: SortOrder.CHRONO,
+
+      chronoFlamechart: null,
+      chronoFlamechartRenderer: null,
+
+      leftHeavyFlamegraph: null,
+      leftHeavyFlamegraphRenderer: null,
+
+      tableSortMethod: {
+        field: SortField.SELF,
+        direction: SortDirection.DESCENDING,
+      },
+
+      viewMode: ViewMode.CHRONO_FLAME_CHART,
     }
   }
 
   serialize() {
     const result = super.serialize()
-    delete result.state.flamechartRenderer
-    delete result.state.sortedFlamechartRenderer
+    delete result.state.chronoFlamechartRenderer
+    delete result.state.leftHeavyFlamegraphRenderer
     return result
   }
 
   rehydrate(serialized: SerializedComponent<ApplicationState>) {
     super.rehydrate(serialized)
-    const {flamechart, sortedFlamechart} = serialized.state
-    if (this.canvasContext && flamechart && sortedFlamechart) {
+    const {chronoFlamechart, leftHeavyFlamegraph} = serialized.state
+    if (this.canvasContext && chronoFlamechart && leftHeavyFlamegraph) {
       this.setState({
-        flamechartRenderer: new FlamechartRenderer(this.canvasContext, flamechart),
-        sortedFlamechartRenderer: new FlamechartRenderer(this.canvasContext, sortedFlamechart),
+        chronoFlamechartRenderer: new FlamechartRenderer(this.canvasContext, chronoFlamechart),
+        leftHeavyFlamegraphRenderer: new FlamechartRenderer(
+          this.canvasContext,
+          leftHeavyFlamegraph,
+        ),
       })
     }
   }
@@ -309,21 +341,24 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       return frameToColorBucket.get(frame) || 0
     }
 
-    const flamechart = new Flamechart({
+    const chronoFlamechart = new Flamechart({
       getTotalWeight: profile.getTotalWeight.bind(profile),
       forEachCall: profile.forEachCall.bind(profile),
       formatValue: profile.formatValue.bind(profile),
       getColorBucketForFrame,
     })
-    const flamechartRenderer = new FlamechartRenderer(this.canvasContext, flamechart)
+    const chronoFlamechartRenderer = new FlamechartRenderer(this.canvasContext, chronoFlamechart)
 
-    const sortedFlamechart = new Flamechart({
+    const leftHeavyFlamegraph = new Flamechart({
       getTotalWeight: profile.getTotalNonIdleWeight.bind(profile),
       forEachCall: profile.forEachCallGrouped.bind(profile),
       formatValue: profile.formatValue.bind(profile),
       getColorBucketForFrame,
     })
-    const sortedFlamechartRenderer = new FlamechartRenderer(this.canvasContext, sortedFlamechart)
+    const leftHeavyFlamegraphRenderer = new FlamechartRenderer(
+      this.canvasContext,
+      leftHeavyFlamegraph,
+    )
 
     console.timeEnd('import')
 
@@ -331,10 +366,13 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     this.setState(
       {
         profile,
-        flamechart,
-        flamechartRenderer,
-        sortedFlamechart,
-        sortedFlamechartRenderer,
+
+        chronoFlamechart,
+        chronoFlamechartRenderer,
+
+        leftHeavyFlamegraph,
+        leftHeavyFlamegraphRenderer,
+
         loading: false,
       },
       () => {
@@ -402,11 +440,15 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   onWindowKeyPress = (ev: KeyboardEvent) => {
     if (ev.key === '1') {
       this.setState({
-        sortOrder: SortOrder.CHRONO,
+        viewMode: ViewMode.CHRONO_FLAME_CHART,
       })
     } else if (ev.key === '2') {
       this.setState({
-        sortOrder: SortOrder.LEFT_HEAVY,
+        viewMode: ViewMode.LEFT_HEAVY_FLAME_GRAPH,
+      })
+    } else if (ev.key === '3') {
+      this.setState({
+        viewMode: ViewMode.TABLE_VIEW,
       })
     }
   }
@@ -535,8 +577,12 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     return <div className={css(style.loading)} />
   }
 
-  setSortOrder = (sortOrder: SortOrder) => {
-    this.setState({sortOrder})
+  setViewMode = (viewMode: ViewMode) => {
+    this.setState({viewMode})
+  }
+
+  setTableSortMethod = (tableSortMethod: SortMethod) => {
+    this.setState({tableSortMethod})
   }
 
   private canvasContext: CanvasContext | null = null
@@ -544,47 +590,92 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     this.canvasContext = canvasContext
   }
 
-  render() {
-    const {
-      flamechart,
-      flamechartRenderer,
-      sortedFlamechart,
-      sortedFlamechartRenderer,
-      sortOrder,
-      loading,
-      error,
-      dragActive,
-    } = this.state
-    const flamechartToView = sortOrder == SortOrder.CHRONO ? flamechart : sortedFlamechart
-    const flamechartRendererToUse =
-      sortOrder == SortOrder.CHRONO ? flamechartRenderer : sortedFlamechartRenderer
+  getCSSColorForFrame = (frame: Frame): string => {
+    const {chronoFlamechart} = this.state
+    if (!chronoFlamechart) return '#FFFFFF'
 
+    const t = chronoFlamechart.getColorBucketForFrame(frame) / 255
+
+    const x = triangle(30.0 * t)
+    const H = 360.0 * (0.9 * t)
+    const C = 0.25 + 0.2 * x
+    const L = 0.8 - 0.15 * x
+    return Color.fromLumaChromaHue(L, C, H).toCSS()
+  }
+
+  renderContent() {
+    const {viewMode} = this.state
+
+    if (this.state.error) {
+      return this.renderError()
+    }
+
+    if (this.state.loading) {
+      return this.renderLoadingBar()
+    }
+
+    if (!this.state.profile) {
+      return this.renderLanding()
+    }
+
+    if (!this.canvasContext) {
+      throw new Error('Missing canvas context')
+    }
+
+    switch (viewMode) {
+      case ViewMode.CHRONO_FLAME_CHART: {
+        const {chronoFlamechart, chronoFlamechartRenderer} = this.state
+        if (!chronoFlamechart || !chronoFlamechartRenderer)
+          throw new Error('Missing dependencies for chrono flame chart')
+        return (
+          <FlamechartView
+            canvasContext={this.canvasContext}
+            flamechartRenderer={chronoFlamechartRenderer}
+            ref={this.flamechartRef}
+            flamechart={chronoFlamechart}
+            getCSSColorForFrame={this.getCSSColorForFrame}
+          />
+        )
+      }
+      case ViewMode.LEFT_HEAVY_FLAME_GRAPH: {
+        const {leftHeavyFlamegraph, leftHeavyFlamegraphRenderer} = this.state
+        if (!leftHeavyFlamegraph || !leftHeavyFlamegraphRenderer)
+          throw new Error('Missing dependencies for left heavy flame graph')
+        return (
+          <FlamechartView
+            canvasContext={this.canvasContext}
+            flamechartRenderer={leftHeavyFlamegraphRenderer}
+            ref={this.flamechartRef}
+            flamechart={leftHeavyFlamegraph}
+            getCSSColorForFrame={this.getCSSColorForFrame}
+          />
+        )
+      }
+      case ViewMode.TABLE_VIEW: {
+        return (
+          <ProfileTableView
+            profile={this.state.profile}
+            getCSSColorForFrame={this.getCSSColorForFrame}
+            sortMethod={this.state.tableSortMethod}
+            setSortMethod={this.setTableSortMethod}
+          />
+        )
+      }
+    }
+  }
+
+  render() {
     return (
       <div
         onDrop={this.onDrop}
         onDragOver={this.onDragOver}
         onDragLeave={this.onDragLeave}
-        className={css(style.root, dragActive && style.dragTargetRoot)}
+        className={css(style.root, this.state.dragActive && style.dragTargetRoot)}
       >
         <GLCanvas setCanvasContext={this.setCanvasContext} />
-        <Toolbar setSortOrder={this.setSortOrder} {...this.state} />
-        <div className={css(style.contentContainer)}>
-          {error ? (
-            this.renderError()
-          ) : loading ? (
-            this.renderLoadingBar()
-          ) : this.canvasContext && flamechartToView && flamechartRendererToUse ? (
-            <FlamechartView
-              canvasContext={this.canvasContext}
-              flamechartRenderer={flamechartRendererToUse}
-              ref={this.flamechartRef}
-              flamechart={flamechartToView}
-            />
-          ) : (
-            this.renderLanding()
-          )}
-          {dragActive && <div className={css(style.dragTarget)} />}
-        </div>
+        <Toolbar setViewMode={this.setViewMode} {...this.state} />
+        <div className={css(style.contentContainer)}>{this.renderContent()}</div>
+        {this.state.dragActive && <div className={css(style.dragTarget)} />}
       </div>
     )
   }
@@ -649,6 +740,7 @@ const style = StyleSheet.create({
   contentContainer: {
     position: 'relative',
     display: 'flex',
+    overflow: 'hidden',
     flexDirection: 'column',
     flex: 1,
   },
@@ -681,7 +773,7 @@ const style = StyleSheet.create({
     fontSize: FontSize.BIG_BUTTON,
     lineHeight: '72px',
     background: Colors.DARK_BLUE,
-    color: 'white',
+    color: Colors.WHITE,
     cursor: 'pointer',
   },
   link: {
@@ -690,18 +782,19 @@ const style = StyleSheet.create({
     textDecoration: 'none',
   },
   toolbar: {
-    height: 18,
-    background: 'black',
-    color: 'white',
+    height: Sizes.TOOLBAR_HEIGHT,
+    flexShrink: 0,
+    background: Colors.BLACK,
+    color: Colors.WHITE,
     textAlign: 'center',
     fontFamily: FontFamily.MONOSPACE,
     fontSize: FontSize.TITLE,
-    lineHeight: '18px',
+    lineHeight: `${Sizes.TOOLBAR_TAB_HEIGHT}px`,
     userSelect: 'none',
   },
   toolbarLeft: {
     position: 'absolute',
-    height: 18,
+    height: Sizes.TOOLBAR_HEIGHT,
     overflow: 'hidden',
     top: 0,
     left: 0,
@@ -709,7 +802,7 @@ const style = StyleSheet.create({
     textAlign: 'left',
   },
   toolbarRight: {
-    height: 18,
+    height: Sizes.TOOLBAR_HEIGHT,
     overflow: 'hidden',
     position: 'absolute',
     top: 0,
@@ -719,15 +812,15 @@ const style = StyleSheet.create({
   },
   toolbarTab: {
     background: Colors.DARK_GRAY,
-    marginTop: 2,
-    height: 16,
-    lineHeight: '16px',
+    marginTop: Sizes.SEPARATOR_HEIGHT,
+    height: Sizes.TOOLBAR_TAB_HEIGHT,
+    lineHeight: `${Sizes.TOOLBAR_TAB_HEIGHT}px`,
     paddingLeft: 2,
     paddingRight: 8,
     display: 'inline-block',
     marginLeft: 2,
     ':hover': {
-      background: Colors.GRAY,
+      background: Colors.DARK_GRAY,
       cursor: 'pointer',
     },
   },
