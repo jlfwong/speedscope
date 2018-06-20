@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ufwb version="1.17">
+    <grammar name="INDEX grammar" start="id:10" author="Jamie Wong" fileextension="index">
+        <description>Grammar for INDEX files</description>
+        <structure name="integeruniquer.index file" id="10" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <binary name="Header" id="12" length="32"/>
+            <structure name="Entry" id="16" length="8" repeatmax="-1">
+                <number name="ByteOffset" id="15" type="integer" length="4" endian="little"/>
+                <number name="MegabyteOffset" id="18" type="integer" length="4" endian="little"/>
+            </structure>
+        </structure>
+    </grammar>
+</ufwb>

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ufwb version="1.17">
-    <grammar name="Integer Uniquer Data" start="id:165" author="Jamie Wong">
+    <grammar name="Integer Uniquer Data" start="id:1" author="Jamie Wong">
         <description>Grammar for my file format</description>
-        <structure name="Root" id="165" encoding="ISO_8859-1:1987" endian="little" signed="no">
-            <binary name="Header" id="166" length="32"/>
-            <structure name="Array" id="167" repeatmax="-1">
-                <number name="Size" id="168" fillcolor="CEFFD2" type="integer" length="4"/>
-                <structure name="Data" id="169" repeatmin="Size" repeatmax="Size">
-                    <number name="Value" id="170" type="integer" length="8"/>
+        <structure name="Root" id="1" encoding="ISO_8859-1:1987" endian="little" signed="no">
+            <binary name="integeruniquer.data file" id="2" length="32"/>
+            <structure name="Array" id="3" repeatmax="-1">
+                <number name="Size" id="4" fillcolor="CEFFD2" type="integer" length="4"/>
+                <structure name="Data" id="5" repeatmin="Size" repeatmax="Size">
+                    <number name="Value" id="6" type="integer" length="8"/>
                 </structure>
             </structure>
         </structure>

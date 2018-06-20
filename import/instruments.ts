@@ -264,6 +264,9 @@ class BinReader {
   hasMore() {
     return this.bytePos < this.view.byteLength
   }
+  bytesLeft() {
+    return this.view.byteLength - this.bytePos
+  }
   readUint8() {
     this.bytePos++
     if (this.bytePos > this.view.byteLength) return 0
@@ -344,10 +347,11 @@ async function getRawSampleList(core: TraceDirectoryTree): Promise<Sample[]> {
 async function getIntegerArrays(samples: Sample[], core: TraceDirectoryTree): Promise<number[][]> {
   const uniquing = getOrThrow(core.subdirectories, 'uniquing')
   const arrayUniquer = getOrThrow(uniquing.subdirectories, 'arrayUniquer')
-  const integeruniquer = getOrThrow(arrayUniquer.files, 'integeruniquer.data')
-  const reader = new BinReader(await readAsArrayBuffer(integeruniquer))
+  const integeruniquerindex = getOrThrow(arrayUniquer.files, 'integeruniquer.index')
+  const integeruniquerdata = getOrThrow(arrayUniquer.files, 'integeruniquer.data')
 
-  let arrays: number[][] = []
+  // integeruniquer.index is a binary file containing an array of [byte offset, MB offset] pairs
+  // that indicate where array data starts in the .data file
 
   // integeruniquer.data is a binary file containing an array of arrays of 64 bit integer.
   // The schema is a 32 byte header followed by a stream of arrays.
@@ -355,14 +359,30 @@ async function getIntegerArrays(samples: Sample[], core: TraceDirectoryTree): Pr
 
   // This table contains the memory addresses of stack frames
 
-  // Header we don't care about
-  reader.seek(32)
+  const indexreader = new BinReader(await readAsArrayBuffer(integeruniquerindex))
+  const datareader = new BinReader(await readAsArrayBuffer(integeruniquerdata))
 
-  while (reader.hasMore()) {
-    let length = reader.readUint32()
+  // Header we don't care about
+  indexreader.seek(32)
+
+  let arrays: number[][] = []
+
+  while (indexreader.hasMore()) {
+    const byteOffset = indexreader.readUint32() + indexreader.readUint32() * (1024 * 1024)
+
+    if (byteOffset === 0) {
+      // The first entry in the index table seems to just indicate the offset of
+      // the header into the data file
+      continue
+    }
+
+    datareader.seek(byteOffset)
+
+    let length = datareader.readUint32()
     let array: number[] = []
+
     while (length--) {
-      array.push(reader.readUint64())
+      array.push(datareader.readUint64())
     }
     arrays.push(array)
   }
@@ -453,7 +473,6 @@ export async function importFromInstrumentsTrace(
   const core = getCoreDirForRun(tree, selectedRun)
   let samples = await getRawSampleList(core)
   const arrays = await getIntegerArrays(samples, core)
-
   const backtraceIDtoStack = new Map<number, FrameInfo[]>()
 
   const profile = new StackListProfileBuilder(lastOf(samples)!.timestamp)
