@@ -15,7 +15,7 @@ export class RowAtlas<K> {
   constructor(private canvasContext: CanvasContext) {
     this.texture = canvasContext.gl.texture({
       width: Math.min(canvasContext.getMaxTextureSize(), 4096),
-      height: Math.min(canvasContext.getMaxTextureSize(), 1024),
+      height: Math.min(canvasContext.getMaxTextureSize(), 4096),
       wrapS: 'clamp',
       wrapT: 'clamp',
     })
