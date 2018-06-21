@@ -39,7 +39,7 @@ function verifyProfile(profile: Profile) {
     curStack.push(node.frame.key)
   }
 
-  function closeFrame(value: number) {
+  function closeFrame(node: CallTreeNode, value: number) {
     if (lastValue != value) {
       stackList.push(curStack.map(k => `${k}`).join(';'))
       lastValue = value
