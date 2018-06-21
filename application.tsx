@@ -13,7 +13,7 @@ import {
   FileSystemDirectoryEntry,
 } from './import/instruments'
 
-import {FlamechartRenderer} from './flamechart-renderer'
+import {FlamechartRenderer, FlamechartRowAtlasKey} from './flamechart-renderer'
 import {CanvasContext} from './canvas-context'
 
 import {Profile, Frame} from './profile'
@@ -24,6 +24,7 @@ import {getHashParams, HashParams} from './hash-params'
 import {ProfileTableView, SortMethod, SortField, SortDirection} from './profile-table-view'
 import {triangle} from './utils'
 import {Color} from './color'
+import {RowAtlas} from './row-atlas'
 
 declare function require(x: string): any
 const exampleProfileURL = require('./sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt')
@@ -281,11 +282,16 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   rehydrate(serialized: SerializedComponent<ApplicationState>) {
     super.rehydrate(serialized)
     const {chronoFlamechart, leftHeavyFlamegraph} = serialized.state
-    if (this.canvasContext && chronoFlamechart && leftHeavyFlamegraph) {
+    if (this.canvasContext && this.rowAtlas && chronoFlamechart && leftHeavyFlamegraph) {
       this.setState({
-        chronoFlamechartRenderer: new FlamechartRenderer(this.canvasContext, chronoFlamechart),
+        chronoFlamechartRenderer: new FlamechartRenderer(
+          this.canvasContext,
+          this.rowAtlas,
+          chronoFlamechart,
+        ),
         leftHeavyFlamegraphRenderer: new FlamechartRenderer(
           this.canvasContext,
+          this.rowAtlas,
           leftHeavyFlamegraph,
         ),
       })
@@ -296,7 +302,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     await new Promise(resolve => this.setState({loading: true}, resolve))
     await new Promise(resolve => setTimeout(resolve, 0))
 
-    if (!this.canvasContext) return
+    if (!this.canvasContext || !this.rowAtlas) return
 
     console.time('import')
 
@@ -347,7 +353,11 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       formatValue: profile.formatValue.bind(profile),
       getColorBucketForFrame,
     })
-    const chronoFlamechartRenderer = new FlamechartRenderer(this.canvasContext, chronoFlamechart)
+    const chronoFlamechartRenderer = new FlamechartRenderer(
+      this.canvasContext,
+      this.rowAtlas,
+      chronoFlamechart,
+    )
 
     const leftHeavyFlamegraph = new Flamechart({
       getTotalWeight: profile.getTotalNonIdleWeight.bind(profile),
@@ -357,6 +367,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     })
     const leftHeavyFlamegraphRenderer = new FlamechartRenderer(
       this.canvasContext,
+      this.rowAtlas,
       leftHeavyFlamegraph,
     )
 
@@ -586,8 +597,14 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   private canvasContext: CanvasContext | null = null
+  private rowAtlas: RowAtlas<FlamechartRowAtlasKey> | null = null
   private setCanvasContext = (canvasContext: CanvasContext | null) => {
     this.canvasContext = canvasContext
+    if (canvasContext) {
+      this.rowAtlas = new RowAtlas(canvasContext)
+    } else {
+      this.rowAtlas = null
+    }
   }
 
   getCSSColorForFrame = (frame: Frame): string => {

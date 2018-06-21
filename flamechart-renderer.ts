@@ -103,7 +103,7 @@ interface FlamechartRowAtlasKeyInfo {
   index: number
 }
 
-class FlamechartRowAtlasKey {
+export class FlamechartRowAtlasKey {
   readonly stackDepth: number
   readonly zoomLevel: number
   readonly index: number
@@ -123,13 +123,15 @@ class FlamechartRowAtlasKey {
 
 export class FlamechartRenderer {
   private layers: RangeTreeNode[] = []
-  private rowAtlas: RowAtlas<FlamechartRowAtlasKey>
   private rectInfoTexture: regl.Texture
   private framebuffer: regl.Framebuffer
 
-  constructor(private canvasContext: CanvasContext, private flamechart: Flamechart) {
+  constructor(
+    private canvasContext: CanvasContext,
+    private rowAtlas: RowAtlas<FlamechartRowAtlasKey>,
+    private flamechart: Flamechart,
+  ) {
     const nLayers = flamechart.getLayers().length
-    this.rowAtlas = new RowAtlas(canvasContext)
     for (let stackDepth = 0; stackDepth < nLayers; stackDepth++) {
       const leafNodes: RangeTreeLeafNode[] = []
       const y = stackDepth
