@@ -37,6 +37,8 @@ const enum ViewMode {
 
 interface ApplicationState {
   profile: Profile | null
+  activeProfile: Profile | null
+  flattenRecursion: boolean
 
   chronoFlamechart: Flamechart | null
   chronoFlamechartRenderer: FlamechartRenderer | null
@@ -256,6 +258,8 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       dragActive: false,
       error: false,
       profile: null,
+      activeProfile: null,
+      flattenRecursion: false,
 
       chronoFlamechart: null,
       chronoFlamechartRenderer: null,
@@ -322,13 +326,21 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       return
     }
 
-    console.log('PROFILE', profile)
-
     await profile.demangle()
 
     const title = this.hashParams.title || profile.getName()
     profile.setName(title)
-    document.title = `${title} - speedscope`
+
+    await this.setActiveProfile(profile)
+
+    console.timeEnd('import')
+    this.setState({profile})
+  }
+
+  async setActiveProfile(profile: Profile) {
+    if (!this.canvasContext || !this.rowAtlas) return
+
+    document.title = `${profile.getName()} - speedscope`
 
     const frames: Frame[] = []
     profile.forEachFrame(f => frames.push(f))
@@ -339,12 +351,12 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       return key(a) > key(b) ? 1 : -1
     }
     frames.sort(compare)
-    const frameToColorBucket = new Map<Frame, number>()
+    const frameToColorBucket = new Map<string | number, number>()
     for (let i = 0; i < frames.length; i++) {
-      frameToColorBucket.set(frames[i], Math.floor(255 * i / frames.length))
+      frameToColorBucket.set(frames[i].key, Math.floor(255 * i / frames.length))
     }
     function getColorBucketForFrame(frame: Frame) {
-      return frameToColorBucket.get(frame) || 0
+      return frameToColorBucket.get(frame.key) || 0
     }
 
     const chronoFlamechart = new Flamechart({
@@ -371,25 +383,22 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       leftHeavyFlamegraph,
     )
 
-    console.timeEnd('import')
+    await new Promise(resolve => {
+      this.setState(
+        {
+          activeProfile: profile,
 
-    console.time('first setState')
-    this.setState(
-      {
-        profile,
+          chronoFlamechart,
+          chronoFlamechartRenderer,
 
-        chronoFlamechart,
-        chronoFlamechartRenderer,
+          leftHeavyFlamegraph,
+          leftHeavyFlamegraphRenderer,
 
-        leftHeavyFlamegraph,
-        leftHeavyFlamegraphRenderer,
-
-        loading: false,
-      },
-      () => {
-        console.timeEnd('first setState')
-      },
-    )
+          loading: false,
+        },
+        resolve,
+      )
+    })
   }
 
   loadFromFile(file: File) {
@@ -399,8 +408,12 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
           const reader = new FileReader()
           reader.addEventListener('loadend', () => {
             const profile = importProfile(file.name, reader.result)
-            if (profile) resolve(profile)
-            else reject()
+            if (profile) {
+              if (!profile.getName()) {
+                profile.setName(file.name)
+              }
+              resolve(profile)
+            } else reject()
           })
           reader.readAsText(file)
         }),
@@ -461,6 +474,16 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       this.setState({
         viewMode: ViewMode.TABLE_VIEW,
       })
+    } else if (ev.key === 'r') {
+      const {flattenRecursion, profile} = this.state
+      if (!profile) return
+      if (flattenRecursion) {
+        this.setActiveProfile(profile)
+        this.setState({flattenRecursion: false})
+      } else {
+        this.setActiveProfile(profile.flattenRecursion())
+        this.setState({flattenRecursion: true})
+      }
     }
   }
 
@@ -631,7 +654,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       return this.renderLoadingBar()
     }
 
-    if (!this.state.profile) {
+    if (!this.state.activeProfile) {
       return this.renderLanding()
     }
 
@@ -671,7 +694,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       case ViewMode.TABLE_VIEW: {
         return (
           <ProfileTableView
-            profile={this.state.profile}
+            profile={this.state.activeProfile}
             getCSSColorForFrame={this.getCSSColorForFrame}
             sortMethod={this.state.tableSortMethod}
             setSortMethod={this.setTableSortMethod}
