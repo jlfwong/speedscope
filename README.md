@@ -61,6 +61,10 @@ In the "Time Order" view (the default), the stacks are ordered left-to-right in 
 
 In the "Left Heavy" view, identical stacks are grouped together, regardless of whether they were recorded sequentially. Then, the stacks are sorted so that the heaviest stack for each parent is on the left -- hence "left heavy". This view is useful for understanding where all the time is going in situations where there are hundreds or thousands of function calls interleaved between other call stacks.
 
+### 📒Table View
+
+In this "Table View", you can find a list of all functions an their associated times. You can sort by self time or total time.
+
 ## Navigation
 
 Once a profile has loaded, the main view is split into two: the top area is the "minimap", and the bottom area is the "stack view".
@@ -85,3 +89,5 @@ Once a profile has loaded, the main view is split into two: the top area is the 
 * `w`/`a`/`s`/`d` or arrow keys: pan around the profile
 * `1`: Switch to the "Time Order" view
 * `2`: Switch to the "Left Heavy" view
+* `3`: Switch to the table view
+* `r`: Collapse recursion in the flamegraphs
