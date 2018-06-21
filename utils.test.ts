@@ -8,6 +8,7 @@ import {
   itReduce,
   zeroPad,
   formatPercent,
+  KeyedSet,
 } from './utils'
 
 test('sortBy', () => {
@@ -23,6 +24,31 @@ test('getOrInsert', () => {
   expect(getOrInsert(m, 'x', k => k.length)).toBe(1)
   expect(m.get('hello')).toBe(5)
   expect(m.get('x')).toBe(1)
+})
+
+class ValueType {
+  private constructor(readonly a: string, readonly num: number) {}
+  get key() {
+    return `${this.a}_${this.num}`
+  }
+  static getOrInsert(set: KeyedSet<ValueType>, a: string, num: number) {
+    return set.getOrInsert(new ValueType(a, num))
+  }
+}
+
+test('KeyedSet', () => {
+  const set = new KeyedSet<ValueType>()
+
+  const x1 = ValueType.getOrInsert(set, 'x', 1)
+  const x2 = ValueType.getOrInsert(set, 'x', 1)
+  const y = ValueType.getOrInsert(set, 'y', 1)
+
+  expect(x1).toBe(x2)
+  expect(y).not.toBe(x1)
+
+  const set2 = new KeyedSet<ValueType>()
+  const x3 = ValueType.getOrInsert(set2, 'x', 1)
+  expect(x1).not.toBe(x3)
 })
 
 test('getOrElse', () => {

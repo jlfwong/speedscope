@@ -26,6 +26,41 @@ export function getOrThrow<K, V>(map: Map<K, V>, k: K): V {
   return map.get(k)!
 }
 
+// Intended to be used to de-duplicate objects based on a key property. This
+// allows value comparisons to be done efficiently and for the returned objects
+// to be used intuitively in Map objects.
+//
+// Example usage:
+//
+// export class Frame {
+//   private constructor(readonly file: string, readonly name: string) {}
+//   get key() { return `${this.file}:${this.name}` }
+//   static getOrInsert(set: KeyedSet<Frame>, file: string, name: string) {
+//     return set.getOrInsert(set, new Frame(file, name))
+//   }
+// }
+//
+export interface HasKey {
+  readonly key: string | number
+}
+export class KeyedSet<T extends HasKey> implements Iterable<T> {
+  private map = new Map<string | number, T>()
+
+  getOrInsert(t: T): T {
+    const key = t.key
+    const existing = this.map.get(key)
+    if (existing) return existing
+    this.map.set(key, t)
+    return t
+  }
+  forEach(fn: (t: T) => void) {
+    this.map.forEach(fn)
+  }
+  [Symbol.iterator]() {
+    return this.map.values()
+  }
+}
+
 export function* itMap<T, U>(it: Iterable<T>, f: (t: T) => U): Iterable<U> {
   for (let t of it) {
     yield f(t)

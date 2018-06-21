@@ -3,99 +3,11 @@ import {Flamechart} from './flamechart'
 import {RectangleBatch} from './rectangle-batch-renderer'
 import {CanvasContext} from './canvas-context'
 import {Vec2, Rect, AffineTransform} from './math'
-import {LRUCache} from './lru-cache'
 import {Color} from './color'
-import {getOrInsert} from './utils'
+import {KeyedSet} from './utils'
+import {RowAtlas} from './row-atlas'
 
 const MAX_BATCH_SIZE = 10000
-
-class RowAtlas<K> {
-  texture: regl.Texture
-  private framebuffer: regl.Framebuffer
-  private renderToFramebuffer: regl.Command<{}>
-  private rowCache: LRUCache<K, number>
-  private clearLineBatch: RectangleBatch
-
-  constructor(private canvasContext: CanvasContext) {
-    this.texture = canvasContext.gl.texture({
-      width: Math.min(canvasContext.getMaxTextureSize(), 4096),
-      height: Math.min(canvasContext.getMaxTextureSize(), 1024),
-      wrapS: 'clamp',
-      wrapT: 'clamp',
-    })
-    this.framebuffer = canvasContext.gl.framebuffer({color: [this.texture]})
-    this.rowCache = new LRUCache(this.texture.height)
-    this.renderToFramebuffer = canvasContext.gl({
-      framebuffer: this.framebuffer,
-    })
-    this.clearLineBatch = canvasContext.createRectangleBatch()
-    this.clearLineBatch.addRect(Rect.unit, new Color(0, 0, 0, 0))
-  }
-
-  has(key: K) {
-    return this.rowCache.has(key)
-  }
-  getResolution() {
-    return this.texture.width
-  }
-  getCapacity() {
-    return this.texture.height
-  }
-
-  private allocateLine(key: K): number {
-    if (this.rowCache.getSize() < this.rowCache.getCapacity()) {
-      // Not in cache, but cache isn't full
-      const row = this.rowCache.getSize()
-      this.rowCache.insert(key, row)
-      return row
-    } else {
-      // Not in cache, and cache is full. Evict something.
-      const [, row] = this.rowCache.removeLRU()!
-      this.rowCache.insert(key, row)
-      return row
-    }
-  }
-
-  writeToAtlasIfNeeded(keys: K[], render: (textureDstRect: Rect, key: K) => void) {
-    this.renderToFramebuffer((context: regl.Context) => {
-      for (let key of keys) {
-        let row = this.rowCache.get(key)
-        if (row != null) {
-          // Already cached!
-          continue
-        }
-        // Not cached -- we'll have to actually render
-        row = this.allocateLine(key)
-
-        const textureRect = new Rect(new Vec2(0, row), new Vec2(this.texture.width, 1))
-        this.canvasContext.drawRectangleBatch({
-          batch: this.clearLineBatch,
-          configSpaceSrcRect: Rect.unit,
-          physicalSpaceDstRect: textureRect,
-        })
-        render(textureRect, key)
-      }
-    })
-  }
-
-  renderViaAtlas(key: K, dstRect: Rect): boolean {
-    let row = this.rowCache.get(key)
-    if (row == null) {
-      return false
-    }
-
-    const textureRect = new Rect(new Vec2(0, row), new Vec2(this.texture.width, 1))
-
-    // At this point, we have the row in cache, and we can
-    // paint directly from it into the framebuffer.
-    this.canvasContext.drawTexture({
-      texture: this.texture,
-      srcRect: textureRect,
-      dstRect: dstRect,
-    })
-    return true
-  }
-}
 
 interface RangeTreeNode {
   getBounds(): Rect
@@ -185,21 +97,41 @@ export interface FlamechartRendererProps {
   renderOutlines: boolean
 }
 
-interface FlamechartRowAtlasKey {
+interface FlamechartRowAtlasKeyInfo {
   stackDepth: number
   zoomLevel: number
   index: number
 }
 
+export class FlamechartRowAtlasKey {
+  readonly stackDepth: number
+  readonly zoomLevel: number
+  readonly index: number
+
+  get key() {
+    return `${this.stackDepth}_${this.index}_${this.zoomLevel}`
+  }
+  private constructor(options: FlamechartRowAtlasKeyInfo) {
+    this.stackDepth = options.stackDepth
+    this.zoomLevel = options.zoomLevel
+    this.index = options.index
+  }
+  static getOrInsert(set: KeyedSet<FlamechartRowAtlasKey>, info: FlamechartRowAtlasKeyInfo) {
+    return set.getOrInsert(new FlamechartRowAtlasKey(info))
+  }
+}
+
 export class FlamechartRenderer {
   private layers: RangeTreeNode[] = []
-  private rowAtlas: RowAtlas<FlamechartRowAtlasKey>
   private rectInfoTexture: regl.Texture
   private framebuffer: regl.Framebuffer
 
-  constructor(private canvasContext: CanvasContext, private flamechart: Flamechart) {
+  constructor(
+    private canvasContext: CanvasContext,
+    private rowAtlas: RowAtlas<FlamechartRowAtlasKey>,
+    private flamechart: Flamechart,
+  ) {
     const nLayers = flamechart.getLayers().length
-    this.rowAtlas = new RowAtlas(canvasContext)
     for (let stackDepth = 0; stackDepth < nLayers; stackDepth++) {
       const leafNodes: RangeTreeLeafNode[] = []
       const y = stackDepth
@@ -267,11 +199,7 @@ export class FlamechartRenderer {
     })
   }
 
-  private atlasKeys = new Map<string, FlamechartRowAtlasKey>()
-  getOrInsertKey(key: FlamechartRowAtlasKey): FlamechartRowAtlasKey {
-    const hash = `${key.stackDepth}_${key.index}_${key.zoomLevel}`
-    return getOrInsert(this.atlasKeys, hash, () => key)
-  }
+  private atlasKeys = new KeyedSet<FlamechartRowAtlasKey>()
 
   configSpaceBoundsForKey(key: FlamechartRowAtlasKey): Rect {
     const {stackDepth, zoomLevel, index} = key
@@ -285,7 +213,7 @@ export class FlamechartRenderer {
   render(props: FlamechartRendererProps) {
     const {configSpaceSrcRect, physicalSpaceDstRect} = props
 
-    const atlasKeysToRender: {stackDepth: number; zoomLevel: number; index: number}[] = []
+    const atlasKeysToRender: FlamechartRowAtlasKey[] = []
 
     // We want to render the lowest resolution we can while still guaranteeing that the
     // atlas line is higher resolution than its corresponding destination rectangle on
@@ -298,7 +226,12 @@ export class FlamechartRenderer {
 
     let zoomLevel = 0
     while (true) {
-      const configSpaceBounds = this.configSpaceBoundsForKey({stackDepth: 0, zoomLevel, index: 0})
+      const key = FlamechartRowAtlasKey.getOrInsert(this.atlasKeys, {
+        stackDepth: 0,
+        zoomLevel,
+        index: 0,
+      })
+      const configSpaceBounds = this.configSpaceBoundsForKey(key)
       const physicalBounds = configToPhysical.transformRect(configSpaceBounds)
       if (physicalBounds.width() < this.rowAtlas.getResolution()) {
         break
@@ -320,7 +253,11 @@ export class FlamechartRenderer {
 
     for (let stackDepth = top; stackDepth < bottom; stackDepth++) {
       for (let index = left; index <= right; index++) {
-        const key = this.getOrInsertKey({stackDepth, zoomLevel, index})
+        const key = FlamechartRowAtlasKey.getOrInsert(this.atlasKeys, {
+          stackDepth,
+          zoomLevel,
+          index,
+        })
         const configSpaceBounds = this.configSpaceBoundsForKey(key)
         if (!configSpaceBounds.hasIntersectionWith(configSpaceSrcRect)) continue
         atlasKeysToRender.push(key)

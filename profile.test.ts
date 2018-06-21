@@ -29,8 +29,8 @@ function verifyProfile(profile: Profile) {
 
   let stackList: string[] = []
   const curStack: (number | string)[] = []
-
   let lastValue = 0
+
   function openFrame(node: CallTreeNode, value: number) {
     if (lastValue != value) {
       stackList.push(curStack.map(k => `${k}`).join(';'))
@@ -39,7 +39,7 @@ function verifyProfile(profile: Profile) {
     curStack.push(node.frame.key)
   }
 
-  function closeFrame(value: number) {
+  function closeFrame(node: CallTreeNode, value: number) {
     if (lastValue != value) {
       stackList.push(curStack.map(k => `${k}`).join(';'))
       lastValue = value
@@ -62,13 +62,43 @@ function verifyProfile(profile: Profile) {
     'a',
   ])
 
+  lastValue = 0
   stackList = []
   profile.forEachCallGrouped(openFrame, closeFrame)
   expect(stackList).toEqual([
     // prettier-ignore
-    '',
     'a;b;e',
     'a;b;b',
+    'a;b;c',
+    'a;b;d',
+    'a;b',
+    'a',
+  ])
+
+  const flattened = profile.flattenRecursion()
+
+  lastValue = 0
+  stackList = []
+  flattened.forEachCall(openFrame, closeFrame)
+  expect(stackList).toEqual([
+    // prettier-ignore
+    'a',
+    'a;b',
+    'a;b;d',
+    'a;b;c',
+    '',
+    'a',
+    'a;b',
+    'a;b;e',
+    'a',
+  ])
+
+  lastValue = 0
+  stackList = []
+  flattened.forEachCallGrouped(openFrame, closeFrame)
+  expect(stackList).toEqual([
+    // prettier-ignore
+    'a;b;e',
     'a;b;c',
     'a;b;d',
     'a;b',

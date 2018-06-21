@@ -1,4 +1,4 @@
-import {lastOf, getOrInsert} from './utils'
+import {lastOf, KeyedSet} from './utils'
 import {ValueFormatter, RawValueFormatter} from './value-formatters'
 const demangleCppModule = import('./demangle-cpp')
 
@@ -57,7 +57,7 @@ export class Frame extends HasWeights {
   // Column in the file
   col?: number
 
-  constructor(info: FrameInfo) {
+  private constructor(info: FrameInfo) {
     super()
     this.key = info.key
     this.name = info.name
@@ -65,13 +65,22 @@ export class Frame extends HasWeights {
     this.line = info.line
     this.col = info.col
   }
+
+  static root = new Frame({
+    key: '(speedscope root)',
+    name: '(speedscope root)',
+  })
+
+  static getOrInsert(set: KeyedSet<Frame>, info: FrameInfo) {
+    return set.getOrInsert(new Frame(info))
+  }
 }
 
 export class CallTreeNode extends HasWeights {
   children: CallTreeNode[] = []
 
   isRoot() {
-    return this.frame === rootFrame
+    return this.frame === Frame.root
   }
 
   constructor(readonly frame: Frame, readonly parent: CallTreeNode | null) {
@@ -79,19 +88,14 @@ export class CallTreeNode extends HasWeights {
   }
 }
 
-const rootFrame = new Frame({
-  key: '(speedscope root)',
-  name: '(speedscope root)',
-})
-
 export class Profile {
   protected name: string = ''
 
   protected totalWeight: number
 
-  protected frames = new Map<string | number, Frame>()
-  protected appendOrderCalltreeRoot = new CallTreeNode(rootFrame, null)
-  protected groupedCalltreeRoot = new CallTreeNode(rootFrame, null)
+  protected frames = new KeyedSet<Frame>()
+  protected appendOrderCalltreeRoot = new CallTreeNode(Frame.root, null)
+  protected groupedCalltreeRoot = new CallTreeNode(Frame.root, null)
 
   // List of references to CallTreeNodes at the top of the
   // stack at the time of the sample.
@@ -135,10 +139,10 @@ export class Profile {
 
   forEachCallGrouped(
     openFrame: (node: CallTreeNode, value: number) => void,
-    closeFrame: (value: number) => void,
+    closeFrame: (node: CallTreeNode, value: number) => void,
   ) {
     function visit(node: CallTreeNode, start: number) {
-      if (node.frame !== rootFrame) {
+      if (node.frame !== Frame.root) {
         openFrame(node, start)
       }
 
@@ -152,8 +156,8 @@ export class Profile {
         childTime += child.getTotalWeight()
       })
 
-      if (node.frame !== rootFrame) {
-        closeFrame(start + node.getTotalWeight())
+      if (node.frame !== Frame.root) {
+        closeFrame(node, start + node.getTotalWeight())
       }
     }
     visit(this.groupedCalltreeRoot, 0)
@@ -161,7 +165,7 @@ export class Profile {
 
   forEachCall(
     openFrame: (node: CallTreeNode, value: number) => void,
-    closeFrame: (value: number) => void,
+    closeFrame: (node: CallTreeNode, value: number) => void,
   ) {
     let prevStack: CallTreeNode[] = []
     let value = 0
@@ -175,21 +179,21 @@ export class Profile {
       // so hopefully this isn't much of a problem
       for (
         lca = stackTop;
-        lca && lca.frame != rootFrame && prevStack.indexOf(lca) === -1;
+        lca && lca.frame != Frame.root && prevStack.indexOf(lca) === -1;
         lca = lca.parent
       ) {}
 
       // Close frames that are no longer open
       while (prevStack.length > 0 && lastOf(prevStack) != lca) {
-        prevStack.pop()
-        closeFrame(value)
+        const node = prevStack.pop()!
+        closeFrame(node, value)
       }
 
       // Open frames that are now becoming open
       const toOpen: CallTreeNode[] = []
       for (
         let node: CallTreeNode | null = stackTop;
-        node && node.frame != rootFrame && node != lca;
+        node && node.frame != Frame.root && node != lca;
         node = node.parent
       ) {
         toOpen.push(node)
@@ -206,7 +210,7 @@ export class Profile {
 
     // Close frames that are open at the end of the trace
     for (let i = prevStack.length - 1; i >= 0; i--) {
-      closeFrame(value)
+      closeFrame(prevStack[i], value)
     }
   }
 
@@ -214,11 +218,42 @@ export class Profile {
     this.frames.forEach(fn)
   }
 
+  flattenRecursion(): Profile {
+    const builder = new CallTreeProfileBuilder()
+
+    const stack: (CallTreeNode | null)[] = []
+    const framesInStack = new Set<Frame>()
+
+    function openFrame(node: CallTreeNode, value: number) {
+      if (framesInStack.has(node.frame)) {
+        stack.push(null)
+      } else {
+        framesInStack.add(node.frame)
+        stack.push(node)
+        builder.enterFrame(node.frame, value)
+      }
+    }
+    function closeFrame(node: CallTreeNode, value: number) {
+      const stackTop = stack.pop()
+      if (stackTop) {
+        framesInStack.delete(stackTop.frame)
+        builder.leaveFrame(stackTop.frame, value)
+      }
+    }
+
+    this.forEachCall(openFrame, closeFrame)
+
+    const flattenedProfile = builder.build()
+    flattenedProfile.name = this.name
+    flattenedProfile.valueFormatter = this.valueFormatter
+    return flattenedProfile
+  }
+
   // Demangle symbols for readability
   async demangle() {
     let demangleCpp: ((name: string) => string) | null = null
 
-    for (let frame of this.frames.values()) {
+    for (let frame of this.frames) {
       // This function converts a mangled C++ name such as "__ZNK7Support6ColorFeqERKS0_"
       // into a human-readable symbol (in this case "Support::ColorF::==(Support::ColorF&)")
       if (frame.name.startsWith('__Z')) {
@@ -239,7 +274,7 @@ export class StackListProfileBuilder extends Profile {
     let framesInStack = new Set<Frame>()
 
     for (let frameInfo of stack) {
-      const frame = getOrInsert(this.frames, frameInfo.key, () => new Frame(frameInfo))
+      const frame = Frame.getOrInsert(this.frames, frameInfo)
       const last = useAppendOrder
         ? lastOf(node.children)
         : node.children.find(c => c.frame === frame)
@@ -346,7 +381,7 @@ export class CallTreeProfileBuilder extends Profile {
     }
   }
   enterFrame(frameInfo: FrameInfo, value: number) {
-    const frame = getOrInsert(this.frames, frameInfo.key, () => new Frame(frameInfo))
+    const frame = Frame.getOrInsert(this.frames, frameInfo)
     this.addWeightsToFrames(value)
     this._enterFrame(frame, value, true)
     this._enterFrame(frame, value, false)
@@ -374,7 +409,7 @@ export class CallTreeProfileBuilder extends Profile {
   }
 
   leaveFrame(frameInfo: FrameInfo, value: number) {
-    const frame = getOrInsert(this.frames, frameInfo.key, () => new Frame(frameInfo))
+    const frame = Frame.getOrInsert(this.frames, frameInfo)
     this.addWeightsToFrames(value)
 
     this._leaveFrame(frame, value, true)

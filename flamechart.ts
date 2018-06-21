@@ -19,7 +19,7 @@ interface FlamechartDataSource {
 
   forEachCall(
     openFrame: (node: CallTreeNode, value: number) => void,
-    closeFrame: (value: number) => void,
+    closeFrame: (node: CallTreeNode, value: number) => void,
   ): void
 
   getColorBucketForFrame(f: Frame): number
@@ -65,7 +65,7 @@ export class Flamechart {
     }
 
     this.minFrameWidth = Infinity
-    const closeFrame = (value: number) => {
+    const closeFrame = (node: CallTreeNode, value: number) => {
       console.assert(stack.length > 0)
       const stackTop = stack.pop()!
       stackTop.end = value

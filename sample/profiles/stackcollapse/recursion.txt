@@ -1,0 +1,10 @@
+a;a 1
+b;b 1
+a;b 1
+a;b;a;b 1
+a;b;a;c 1
+a;b;a;b;a;b 1
+a;b;a;b;c 1
+a;b;a;b 1
+a;b;a;c 1
+a;b;a;b;c 1
