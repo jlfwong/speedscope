@@ -5,7 +5,7 @@ import {CanvasContext} from './canvas-context'
 import {Vec2, Rect, AffineTransform} from './math'
 import {LRUCache} from './lru-cache'
 import {Color} from './color'
-import {getOrInsert} from './utils'
+import {KeyedSet} from './utils'
 
 const MAX_BATCH_SIZE = 10000
 
@@ -185,10 +185,28 @@ export interface FlamechartRendererProps {
   renderOutlines: boolean
 }
 
-interface FlamechartRowAtlasKey {
+interface FlamechartRowAtlasKeyInfo {
   stackDepth: number
   zoomLevel: number
   index: number
+}
+
+class FlamechartRowAtlasKey {
+  readonly stackDepth: number
+  readonly zoomLevel: number
+  readonly index: number
+
+  get key() {
+    return `${this.stackDepth}_${this.index}_${this.zoomLevel}`
+  }
+  private constructor(options: FlamechartRowAtlasKeyInfo) {
+    this.stackDepth = options.stackDepth
+    this.zoomLevel = options.zoomLevel
+    this.index = options.index
+  }
+  static getOrInsert(set: KeyedSet<FlamechartRowAtlasKey>, info: FlamechartRowAtlasKeyInfo) {
+    return set.getOrInsert(new FlamechartRowAtlasKey(info))
+  }
 }
 
 export class FlamechartRenderer {
@@ -267,11 +285,7 @@ export class FlamechartRenderer {
     })
   }
 
-  private atlasKeys = new Map<string, FlamechartRowAtlasKey>()
-  getOrInsertKey(key: FlamechartRowAtlasKey): FlamechartRowAtlasKey {
-    const hash = `${key.stackDepth}_${key.index}_${key.zoomLevel}`
-    return getOrInsert(this.atlasKeys, hash, () => key)
-  }
+  private atlasKeys = new KeyedSet<FlamechartRowAtlasKey>()
 
   configSpaceBoundsForKey(key: FlamechartRowAtlasKey): Rect {
     const {stackDepth, zoomLevel, index} = key
@@ -285,7 +299,7 @@ export class FlamechartRenderer {
   render(props: FlamechartRendererProps) {
     const {configSpaceSrcRect, physicalSpaceDstRect} = props
 
-    const atlasKeysToRender: {stackDepth: number; zoomLevel: number; index: number}[] = []
+    const atlasKeysToRender: FlamechartRowAtlasKey[] = []
 
     // We want to render the lowest resolution we can while still guaranteeing that the
     // atlas line is higher resolution than its corresponding destination rectangle on
@@ -298,7 +312,12 @@ export class FlamechartRenderer {
 
     let zoomLevel = 0
     while (true) {
-      const configSpaceBounds = this.configSpaceBoundsForKey({stackDepth: 0, zoomLevel, index: 0})
+      const key = FlamechartRowAtlasKey.getOrInsert(this.atlasKeys, {
+        stackDepth: 0,
+        zoomLevel,
+        index: 0,
+      })
+      const configSpaceBounds = this.configSpaceBoundsForKey(key)
       const physicalBounds = configToPhysical.transformRect(configSpaceBounds)
       if (physicalBounds.width() < this.rowAtlas.getResolution()) {
         break
@@ -320,7 +339,11 @@ export class FlamechartRenderer {
 
     for (let stackDepth = top; stackDepth < bottom; stackDepth++) {
       for (let index = left; index <= right; index++) {
-        const key = this.getOrInsertKey({stackDepth, zoomLevel, index})
+        const key = FlamechartRowAtlasKey.getOrInsert(this.atlasKeys, {
+          stackDepth,
+          zoomLevel,
+          index,
+        })
         const configSpaceBounds = this.configSpaceBoundsForKey(key)
         if (!configSpaceBounds.hasIntersectionWith(configSpaceSrcRect)) continue
         atlasKeysToRender.push(key)
