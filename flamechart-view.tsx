@@ -868,7 +868,7 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
         new Vec2(0, 0),
         this.configSpaceSize()
           .minus(viewportRect.size)
-          .plus(new Vec2(0, configSpaceDetailViewHeight)),
+          .plus(new Vec2(0, configSpaceDetailViewHeight + 1)),
       ),
     )
 
