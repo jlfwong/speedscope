@@ -860,9 +860,16 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
   }
 
   private setConfigSpaceViewportRect = (viewportRect: Rect): void => {
+    const configSpaceDetailViewHeight = Sizes.DETAIL_VIEW_HEIGHT / Sizes.FRAME_HEIGHT
+
     const configSpaceOriginBounds = new Rect(
       new Vec2(0, -1),
-      Vec2.max(new Vec2(0, 0), this.configSpaceSize().minus(viewportRect.size)),
+      Vec2.max(
+        new Vec2(0, 0),
+        this.configSpaceSize()
+          .minus(viewportRect.size)
+          .plus(new Vec2(0, configSpaceDetailViewHeight)),
+      ),
     )
 
     const configSpaceSizeBounds = new Rect(
