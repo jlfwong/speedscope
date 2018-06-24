@@ -260,9 +260,10 @@ export class Profile {
     function visit(node: CallTreeNode) {
       if (node.frame === focalFrame) {
         nodes.push(node)
-      }
-      for (let child of node.children) {
-        visit(child)
+      } else {
+        for (let child of node.children) {
+          visit(child)
+        }
       }
     }
 
@@ -287,10 +288,12 @@ export class Profile {
     const builder = new StackListProfileBuilder()
 
     function recordSubtree(focalFrameNode: CallTreeNode) {
-      const stack: FrameInfo[] = []
+      const stack: FrameInfo[] = [focalFrameNode.frame]
 
       function visit(node: CallTreeNode) {
-        stack.push(node.frame)
+        if (node.frame !== focalFrameNode.frame) {
+          stack.push(node.frame)
+        }
         builder.appendSample(stack, node.getSelfWeight())
         for (let child of node.children) {
           visit(child)

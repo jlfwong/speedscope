@@ -121,6 +121,10 @@ export class FlamechartRowAtlasKey {
   }
 }
 
+interface RendererOptions {
+  inverted: boolean
+}
+
 export class FlamechartRenderer {
   private layers: RangeTreeNode[] = []
   private rectInfoTexture: regl.Texture
@@ -130,11 +134,12 @@ export class FlamechartRenderer {
     private canvasContext: CanvasContext,
     private rowAtlas: RowAtlas<FlamechartRowAtlasKey>,
     private flamechart: Flamechart,
+    private options: RendererOptions = {inverted: false},
   ) {
     const nLayers = flamechart.getLayers().length
     for (let stackDepth = 0; stackDepth < nLayers; stackDepth++) {
       const leafNodes: RangeTreeLeafNode[] = []
-      const y = stackDepth
+      const y = options.inverted ? nLayers - 1 - stackDepth : stackDepth
 
       let minLeft = Infinity
       let maxRight = -Infinity
@@ -150,7 +155,7 @@ export class FlamechartRenderer {
           leafNodes.push(
             new RangeTreeLeafNode(
               batch,
-              new Rect(new Vec2(minLeft, stackDepth), new Vec2(maxRight - minLeft, 1)),
+              new Rect(new Vec2(minLeft, y), new Vec2(maxRight - minLeft, 1)),
               rectCount,
             ),
           )
@@ -183,7 +188,7 @@ export class FlamechartRenderer {
         leafNodes.push(
           new RangeTreeLeafNode(
             batch,
-            new Rect(new Vec2(minLeft, stackDepth), new Vec2(maxRight - minLeft, 1)),
+            new Rect(new Vec2(minLeft, y), new Vec2(maxRight - minLeft, 1)),
             rectCount,
           ),
         )
@@ -207,7 +212,9 @@ export class FlamechartRenderer {
 
     const width = configSpaceContentWidth / Math.pow(2, zoomLevel)
 
-    return new Rect(new Vec2(width * index, stackDepth), new Vec2(width, 1))
+    const nLayers = this.flamechart.getLayers().length
+    const y = this.options.inverted ? nLayers - 1 - stackDepth : stackDepth
+    return new Rect(new Vec2(width * index, y), new Vec2(width, 1))
   }
 
   render(props: FlamechartRendererProps) {
@@ -251,8 +258,11 @@ export class FlamechartRenderer {
       numAtlasEntriesPerLayer * configSpaceSrcRect.right() / configSpaceContentWidth,
     )
 
-    for (let stackDepth = top; stackDepth < bottom; stackDepth++) {
+    const nLayers = this.flamechart.getLayers().length
+
+    for (let y = top; y < bottom; y++) {
       for (let index = left; index <= right; index++) {
+        const stackDepth = this.options.inverted ? nLayers - 1 - y : y
         const key = FlamechartRowAtlasKey.getOrInsert(this.atlasKeys, {
           stackDepth,
           zoomLevel,

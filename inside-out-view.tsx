@@ -3,7 +3,7 @@ import {Profile, Frame} from './profile'
 import {StyleSheet, css} from 'aphrodite'
 import {SortMethod, ProfileTableView} from './profile-table-view'
 import {h} from 'preact'
-import {commonStyle, Sizes, Colors} from './style'
+import {commonStyle, Sizes, Colors, FontSize} from './style'
 import {CanvasContext} from './canvas-context'
 import {FlamechartRenderer, FlamechartRowAtlasKey} from './flamechart-renderer'
 import {Flamechart} from './flamechart'
@@ -67,6 +67,7 @@ export class InsideOutView extends ReloadableComponent<InsideOutViewProps, Insid
       canvasContext,
       rowAtlas,
       invertedCallerFlamegraph,
+      {inverted: true},
     )
 
     const calleeProfile = this.props.profile.getProfileForCalleesOf(selectedFrame)
@@ -95,17 +96,12 @@ export class InsideOutView extends ReloadableComponent<InsideOutViewProps, Insid
     })
   }
 
-  private clampViewportToFlamegraph(viewportRect: Rect, flamegraph: Flamechart) {
-    const configSpaceDetailViewHeight = Sizes.DETAIL_VIEW_HEIGHT / Sizes.FRAME_HEIGHT
-
+  private clampViewportToFlamegraph(viewportRect: Rect, flamegraph: Flamechart, inverted: boolean) {
     const configSpaceSize = new Vec2(flamegraph.getTotalWeight(), flamegraph.getLayers().length)
 
-    const configSpaceOriginBounds = new Rect(
-      new Vec2(0, -1),
-      Vec2.max(
-        new Vec2(0, 0),
-        configSpaceSize.minus(viewportRect.size).plus(new Vec2(0, configSpaceDetailViewHeight + 1)),
-      ),
+    let configSpaceOriginBounds = new Rect(
+      new Vec2(0, inverted ? 0 : -1),
+      Vec2.max(new Vec2(0, 0), configSpaceSize.minus(viewportRect.size).plus(new Vec2(0, 1))),
     )
 
     const minConfigSpaceViewportRectWidth = Math.min(
@@ -131,6 +127,7 @@ export class InsideOutView extends ReloadableComponent<InsideOutViewProps, Insid
     const calleeConfigSpaceViewportRect = this.clampViewportToFlamegraph(
       viewportRect,
       callerCallee.calleeFlamegraph,
+      /* inverted: */ false,
     )
     this.setState({
       callerCallee: {
@@ -147,6 +144,7 @@ export class InsideOutView extends ReloadableComponent<InsideOutViewProps, Insid
     const invertedCallerConfigSpaceViewportRect = this.clampViewportToFlamegraph(
       viewportRect,
       callerCallee.invertedCallerFlamegraph,
+      /* inverted: */ true,
     )
     this.setState({
       callerCallee: {
@@ -170,40 +168,64 @@ export class InsideOutView extends ReloadableComponent<InsideOutViewProps, Insid
     this.setInvertedCallerViewport(viewportRect)
   }
 
+  onWindowKeyPress = (ev: KeyboardEvent) => {
+    if (ev.key === 'Escape') {
+      this.setState({callerCallee: null})
+    }
+  }
+  componentDidMount() {
+    window.addEventListener('keydown', this.onWindowKeyPress)
+  }
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.onWindowKeyPress)
+  }
+
   render() {
     const {canvasContext} = this.props
     const {callerCallee} = this.state
 
     let selectedFrame: Frame | null = null
-    let calleeFlamechartView: JSX.Element | null = null
+    let flamegraphViews: JSX.Element | null = null
 
     if (callerCallee) {
       selectedFrame = callerCallee.selectedFrame
-      calleeFlamechartView = (
-        <div className={css(commonStyle.vbox, commonStyle.fillY)}>
-          <FlamechartPanZoomView
-            flamechart={callerCallee.invertedCallerFlamegraph}
-            canvasContext={canvasContext}
-            flamechartRenderer={callerCallee.invertedCallerFlamegraphRenderer}
-            selectedNode={null}
-            setNodeHover={() => {}}
-            setSelectedNode={() => {}}
-            configSpaceViewportRect={callerCallee.invertedCallerConfigSpaceViewportRect}
-            setConfigSpaceViewportRect={this.setInvertedCallerViewport}
-            transformViewport={this.transformInvertedCallerViewport}
-          />
+      flamegraphViews = (
+        <div className={css(commonStyle.fillY, style.callersAndCallees, commonStyle.vbox)}>
+          <div className={css(commonStyle.hbox, style.panZoomViewWraper)}>
+            <div className={css(style.flamechartLabelParent)}>
+              <div className={css(style.flamechartLabel)}>Callers</div>
+            </div>
+            <FlamechartPanZoomView
+              flamechart={callerCallee.invertedCallerFlamegraph}
+              canvasContext={canvasContext}
+              flamechartRenderer={callerCallee.invertedCallerFlamegraphRenderer}
+              renderInverted={true}
+              selectedNode={null}
+              setNodeHover={() => {}}
+              setSelectedNode={() => {}}
+              configSpaceViewportRect={callerCallee.invertedCallerConfigSpaceViewportRect}
+              setConfigSpaceViewportRect={this.setInvertedCallerViewport}
+              transformViewport={this.transformInvertedCallerViewport}
+            />
+          </div>
           <div className={css(style.divider)} />
-          <FlamechartPanZoomView
-            flamechart={callerCallee.calleeFlamegraph}
-            canvasContext={canvasContext}
-            flamechartRenderer={callerCallee.calleeFlamegraphRenderer}
-            selectedNode={null}
-            setNodeHover={() => {}}
-            setSelectedNode={() => {}}
-            configSpaceViewportRect={callerCallee.calleeConfigSpaceViewportRect}
-            setConfigSpaceViewportRect={this.setCalleeViewport}
-            transformViewport={this.transformCalleeViewport}
-          />
+          <div className={css(commonStyle.hbox, style.panZoomViewWraper)}>
+            <div className={css(style.flamechartLabelParent, style.flamechartLabelParentBottom)}>
+              <div className={css(style.flamechartLabel, style.flamechartLabelBottom)}>Callees</div>
+            </div>
+            <FlamechartPanZoomView
+              flamechart={callerCallee.calleeFlamegraph}
+              canvasContext={canvasContext}
+              flamechartRenderer={callerCallee.calleeFlamegraphRenderer}
+              renderInverted={false}
+              selectedNode={null}
+              setNodeHover={() => {}}
+              setSelectedNode={() => {}}
+              configSpaceViewportRect={callerCallee.calleeConfigSpaceViewportRect}
+              setConfigSpaceViewportRect={this.setCalleeViewport}
+              transformViewport={this.transformCalleeViewport}
+            />
+          </div>
         </div>
       )
     }
@@ -220,9 +242,7 @@ export class InsideOutView extends ReloadableComponent<InsideOutViewProps, Insid
             setSortMethod={this.props.setSortMethod}
           />
         </div>
-        <div className={css(commonStyle.fillY, style.callersAndCallees, commonStyle.vbox)}>
-          {calleeFlamechartView}
-        </div>
+        {flamegraphViews}
       </div>
     )
   }
@@ -230,7 +250,33 @@ export class InsideOutView extends ReloadableComponent<InsideOutViewProps, Insid
 
 const style = StyleSheet.create({
   tableView: {
-    width: '50%',
+    flex: 1,
+  },
+  panZoomViewWraper: {
+    flex: 1,
+  },
+  flamechartLabelParent: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+    alignItems: 'flex-start',
+    fontSize: FontSize.TITLE,
+    width: FontSize.TITLE * 1.2,
+    borderRight: `1px solid ${Colors.LIGHT_GRAY}`,
+  },
+  flamechartLabelParentBottom: {
+    justifyContent: 'flex-start',
+  },
+  flamechartLabel: {
+    transform: 'rotate(-90deg)',
+    transformOrigin: '50% 50% 0',
+    width: FontSize.TITLE * 1.2,
+    flexShrink: 1,
+  },
+  flamechartLabelBottom: {
+    transform: 'rotate(-90deg)',
+    display: 'flex',
+    justifyContent: 'flex-end',
   },
   callersAndCallees: {
     flex: 1,
