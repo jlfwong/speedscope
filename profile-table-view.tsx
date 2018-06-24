@@ -23,13 +23,6 @@ export interface SortMethod {
   direction: SortDirection
 }
 
-interface ProfileTableViewProps {
-  profile: Profile
-  getCSSColorForFrame: (frame: Frame) => string
-  sortMethod: SortMethod
-  setSortMethod: (sortMethod: SortMethod) => void
-}
-
 interface HBarProps {
   perc: number
 }
@@ -68,6 +61,13 @@ class SortIcon extends Component<SortIconProps, {}> {
       </svg>
     )
   }
+}
+
+interface ProfileTableViewProps {
+  profile: Profile
+  getCSSColorForFrame: (frame: Frame) => string
+  sortMethod: SortMethod
+  setSortMethod: (sortMethod: SortMethod) => void
 }
 
 export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps, void> {

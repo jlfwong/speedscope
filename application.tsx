@@ -21,11 +21,12 @@ import {Flamechart} from './flamechart'
 import {FlamechartView} from './flamechart-view'
 import {FontFamily, FontSize, Colors, Sizes} from './style'
 import {getHashParams, HashParams} from './hash-params'
-import {ProfileTableView, SortMethod, SortField, SortDirection} from './profile-table-view'
+import {SortMethod, SortField, SortDirection} from './profile-table-view'
 import {triangle} from './utils'
 import {Color} from './color'
 import {RowAtlas} from './row-atlas'
 import {importAsmJsSymbolMap} from './asm-js'
+import {InsideOutView} from './inside-out-view'
 
 declare function require(x: string): any
 const exampleProfileURL = require('./sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt')
@@ -33,7 +34,7 @@ const exampleProfileURL = require('./sample/profiles/stackcollapse/perf-vertx-st
 const enum ViewMode {
   CHRONO_FLAME_CHART,
   LEFT_HEAVY_FLAME_GRAPH,
-  TABLE_VIEW,
+  INSIDE_OUT_VIEW,
 }
 
 interface ApplicationState {
@@ -130,8 +131,8 @@ export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
     this.props.setViewMode(ViewMode.LEFT_HEAVY_FLAME_GRAPH)
   }
 
-  setTableView = () => {
-    this.props.setViewMode(ViewMode.TABLE_VIEW)
+  setInsideOutView = () => {
+    this.props.setViewMode(ViewMode.INSIDE_OUT_VIEW)
   }
 
   render() {
@@ -179,11 +180,11 @@ export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
           <div
             className={css(
               style.toolbarTab,
-              this.props.viewMode === ViewMode.TABLE_VIEW && style.toolbarTabActive,
+              this.props.viewMode === ViewMode.INSIDE_OUT_VIEW && style.toolbarTabActive,
             )}
-            onClick={this.setTableView}
+            onClick={this.setInsideOutView}
           >
-            <span className={css(style.emoji)}>📒</span>Table View
+            <span className={css(style.emoji)}>↕️</span>Inside Out
           </div>
           {help}
         </div>
@@ -491,7 +492,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       })
     } else if (ev.key === '3') {
       this.setState({
-        viewMode: ViewMode.TABLE_VIEW,
+        viewMode: ViewMode.INSIDE_OUT_VIEW,
       })
     } else if (ev.key === 'r') {
       const {flattenRecursion, profile} = this.state
@@ -710,9 +711,9 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
           />
         )
       }
-      case ViewMode.TABLE_VIEW: {
+      case ViewMode.INSIDE_OUT_VIEW: {
         return (
-          <ProfileTableView
+          <InsideOutView
             profile={this.state.activeProfile}
             getCSSColorForFrame={this.getCSSColorForFrame}
             sortMethod={this.state.tableSortMethod}
