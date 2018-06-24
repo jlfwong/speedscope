@@ -223,3 +223,40 @@ test('getProfileForCalleesOf', () => {
     'b',
   ])
 })
+
+test('getProfileWithRecursionFlattened', () => {
+  const b = new StackListProfileBuilder()
+
+  const samples = [
+    // prettier-ignore
+    [fa],
+    [fa, fb, fa],
+    [fa, fb, fa, fb, fa],
+    [fa, fb, fa],
+  ]
+  samples.forEach(stack => {
+    b.appendSample(stack, 1)
+  })
+
+  const profile = b.build()
+  const inverted = profile.getProfileWithRecursionFlattened()
+
+  expect(toStackList(inverted, false)).toEqual([
+    // prettier-ignore
+    'a',
+    'a;b',
+  ])
+
+  const framesInProfile = new Set<string | number>()
+  inverted.forEachFrame(f => {
+    if (f.key === fa.key) {
+      expect(f.getSelfWeight()).toEqual(4)
+    }
+    if (f.key === fb.key) {
+      expect(f.getSelfWeight()).toEqual(0)
+    }
+    framesInProfile.add(f.key)
+  })
+  const allFrameKeys = new Set([fa, fb].map(f => f.key))
+  expect(allFrameKeys).toEqual(framesInProfile)
+})

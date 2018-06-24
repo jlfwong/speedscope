@@ -13,6 +13,7 @@ import {Rect, AffineTransform, Vec2} from './math'
 
 interface InsideOutViewProps {
   profile: Profile
+  flattenRecursion: boolean
 
   // TODO(jlfwong): It's kind of awkward requiring both of these
   getColorBucketForFrame: (frame: Frame) => number
@@ -48,15 +49,22 @@ export class InsideOutView extends ReloadableComponent<InsideOutViewProps, Insid
     }
   }
 
-  private setSelectedFrame = (selectedFrame: Frame | null) => {
-    const {canvasContext, rowAtlas, getColorBucketForFrame} = this.props
+  private setSelectedFrame = (
+    selectedFrame: Frame | null,
+    props: InsideOutViewProps = this.props,
+  ) => {
+    const {profile, canvasContext, rowAtlas, getColorBucketForFrame, flattenRecursion} = props
 
     if (!selectedFrame) {
       this.setState({callerCallee: null})
       return
     }
 
-    const invertedCallerProfile = this.props.profile.getInvertedProfileForCallersOf(selectedFrame)
+    let invertedCallerProfile = profile.getInvertedProfileForCallersOf(selectedFrame)
+    if (flattenRecursion) {
+      invertedCallerProfile = invertedCallerProfile.getProfileWithRecursionFlattened()
+    }
+
     const invertedCallerFlamegraph = new Flamechart({
       getTotalWeight: invertedCallerProfile.getTotalNonIdleWeight.bind(invertedCallerProfile),
       forEachCall: invertedCallerProfile.forEachCallGrouped.bind(invertedCallerProfile),
@@ -70,7 +78,12 @@ export class InsideOutView extends ReloadableComponent<InsideOutViewProps, Insid
       {inverted: true},
     )
 
-    const calleeProfile = this.props.profile.getProfileForCalleesOf(selectedFrame)
+    let calleeProfile = profile.getProfileForCalleesOf(selectedFrame)
+
+    if (flattenRecursion) {
+      calleeProfile = calleeProfile.getProfileWithRecursionFlattened()
+    }
+
     const calleeFlamegraph = new Flamechart({
       getTotalWeight: calleeProfile.getTotalNonIdleWeight.bind(calleeProfile),
       forEachCall: calleeProfile.forEachCallGrouped.bind(calleeProfile),
@@ -173,6 +186,15 @@ export class InsideOutView extends ReloadableComponent<InsideOutViewProps, Insid
       this.setState({callerCallee: null})
     }
   }
+
+  componentWillReceiveProps(nextProps: InsideOutViewProps) {
+    if (this.props.flattenRecursion !== nextProps.flattenRecursion) {
+      if (this.state.callerCallee) {
+        this.setSelectedFrame(this.state.callerCallee.selectedFrame, nextProps)
+      }
+    }
+  }
+
   componentDidMount() {
     window.addEventListener('keydown', this.onWindowKeyPress)
   }
