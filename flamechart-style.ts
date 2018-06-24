@@ -27,14 +27,6 @@ export const style = StyleSheet.create({
   hoverCount: {
     color: Colors.GREEN,
   },
-  clip: {
-    overflow: 'hidden',
-  },
-  vbox: {
-    display: 'flex',
-    flexDirection: 'column',
-    position: 'relative',
-  },
   fill: {
     width: '100%',
     height: '100%',

@@ -5,7 +5,7 @@ import {Rect, Vec2, AffineTransform, clamp} from './math'
 import {FlamechartRenderer} from './flamechart-renderer'
 import {cachedMeasureTextWidth} from './utils'
 import {style} from './flamechart-style'
-import {FontFamily, FontSize, Colors, Sizes} from './style'
+import {FontFamily, FontSize, Colors, Sizes, commonStyle} from './style'
 import {CanvasContext} from './canvas-context'
 import {TextureCachedRenderer} from './texture-cached-renderer'
 
@@ -444,7 +444,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
         onWheel={this.onWheel}
         onMouseDown={this.onMouseDown}
         onMouseMove={this.onMouseMove}
-        className={css(style.minimap, style.vbox)}
+        className={css(style.minimap, commonStyle.vbox)}
       >
         <canvas width={1} height={1} ref={this.overlayCanvasRef} className={css(style.fill)} />
       </div>

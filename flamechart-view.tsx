@@ -10,7 +10,7 @@ import {cachedMeasureTextWidth, formatPercent} from './utils'
 import {FlamechartMinimapView} from './flamechart-minimap-view'
 
 import {style} from './flamechart-style'
-import {FontSize, FontFamily, Colors, Sizes} from './style'
+import {FontSize, FontFamily, Colors, Sizes, commonStyle} from './style'
 import {CanvasContext} from './canvas-context'
 import {FlamechartRenderer} from './flamechart-renderer'
 import {ColorChit} from './color-chit'
@@ -688,7 +688,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   render() {
     return (
       <div
-        className={css(style.panZoomView, style.vbox)}
+        className={css(style.panZoomView, commonStyle.vbox)}
         onMouseDown={this.onMouseDown}
         onMouseMove={this.onMouseMove}
         onMouseLeave={this.onMouseLeave}
@@ -966,7 +966,7 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
 
   render() {
     return (
-      <div className={css(style.fill, style.clip, style.vbox)} ref={this.containerRef}>
+      <div className={css(style.fill, commonStyle.vbox)} ref={this.containerRef}>
         <FlamechartMinimapView
           configSpaceViewportRect={this.state.configSpaceViewportRect}
           transformViewport={this.transformViewport}

@@ -1,3 +1,5 @@
+import {StyleSheet} from 'aphrodite'
+
 export enum FontFamily {
   MONOSPACE = '"Source Code Pro", Courier, monospace',
 }
@@ -32,3 +34,18 @@ export enum Sizes {
   TOOLBAR_HEIGHT = 20,
   TOOLBAR_TAB_HEIGHT = TOOLBAR_HEIGHT - SEPARATOR_HEIGHT,
 }
+
+export const commonStyle = StyleSheet.create({
+  hbox: {
+    display: 'flex',
+    flexDirection: 'column',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  vbox: {
+    display: 'flex',
+    flexDirection: 'column',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+})

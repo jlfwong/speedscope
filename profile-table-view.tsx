@@ -3,7 +3,7 @@ import {StyleSheet, css} from 'aphrodite'
 import {ReloadableComponent} from './reloadable'
 import {Profile, Frame} from './profile'
 import {sortBy, formatPercent} from './utils'
-import {FontSize, Colors, Sizes} from './style'
+import {FontSize, Colors, Sizes, commonStyle} from './style'
 import {ColorChit} from './color-chit'
 import {ScrollableListView, ListItem} from './scrollable-list-view'
 
@@ -172,7 +172,7 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
     const listItems: ListItem[] = frameList.map(f => ({size: Sizes.FRAME_HEIGHT}))
 
     return (
-      <div className={css(style.vbox, style.profileTableView)}>
+      <div className={css(commonStyle.vbox, style.profileTableView)}>
         <table className={css(style.tableView)}>
           <thead className={css(style.tableHeader)}>
             <tr>
@@ -226,11 +226,6 @@ const style = StyleSheet.create({
   profileTableView: {
     background: Colors.WHITE,
     height: '100%',
-  },
-  vbox: {
-    display: 'flex',
-    flexDirection: 'column',
-    position: 'relative',
   },
   scrollView: {
     overflowY: 'auto',

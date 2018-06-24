@@ -184,7 +184,7 @@ export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
             )}
             onClick={this.setInsideOutView}
           >
-            <span className={css(style.emoji)}>↕️</span>Inside Out
+            <span className={css(style.emoji)}>🔃</span>Inside Out
           </div>
           {help}
         </div>
