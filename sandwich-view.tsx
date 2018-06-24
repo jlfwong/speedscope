@@ -11,7 +11,7 @@ import {RowAtlas} from './row-atlas'
 import {FlamechartPanZoomView} from './flamechart-view'
 import {Rect, AffineTransform, Vec2} from './math'
 
-interface InsideOutViewProps {
+interface SandwichViewProps {
   profile: Profile
   flattenRecursion: boolean
 
@@ -37,12 +37,12 @@ interface CallerCalleeState {
   calleeConfigSpaceViewportRect: Rect
 }
 
-interface InsideOutViewState {
+interface SandwichViewState {
   callerCallee: CallerCalleeState | null
 }
 
-export class InsideOutView extends ReloadableComponent<InsideOutViewProps, InsideOutViewState> {
-  constructor(props: InsideOutViewProps) {
+export class SandwichView extends ReloadableComponent<SandwichViewProps, SandwichViewState> {
+  constructor(props: SandwichViewProps) {
     super(props)
     this.state = {
       callerCallee: null,
@@ -51,7 +51,7 @@ export class InsideOutView extends ReloadableComponent<InsideOutViewProps, Insid
 
   private setSelectedFrame = (
     selectedFrame: Frame | null,
-    props: InsideOutViewProps = this.props,
+    props: SandwichViewProps = this.props,
   ) => {
     const {profile, canvasContext, rowAtlas, getColorBucketForFrame, flattenRecursion} = props
 
@@ -187,7 +187,7 @@ export class InsideOutView extends ReloadableComponent<InsideOutViewProps, Insid
     }
   }
 
-  componentWillReceiveProps(nextProps: InsideOutViewProps) {
+  componentWillReceiveProps(nextProps: SandwichViewProps) {
     if (this.props.flattenRecursion !== nextProps.flattenRecursion) {
       if (this.state.callerCallee) {
         this.setSelectedFrame(this.state.callerCallee.selectedFrame, nextProps)

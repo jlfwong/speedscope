@@ -26,7 +26,7 @@ import {triangle} from './utils'
 import {Color} from './color'
 import {RowAtlas} from './row-atlas'
 import {importAsmJsSymbolMap} from './asm-js'
-import {InsideOutView} from './inside-out-view'
+import {SandwichView} from './sandwich-view'
 
 declare function require(x: string): any
 const exampleProfileURL = require('./sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt')
@@ -34,7 +34,7 @@ const exampleProfileURL = require('./sample/profiles/stackcollapse/perf-vertx-st
 const enum ViewMode {
   CHRONO_FLAME_CHART,
   LEFT_HEAVY_FLAME_GRAPH,
-  INSIDE_OUT_VIEW,
+  SANDWICH_VIEW,
 }
 
 interface ApplicationState {
@@ -131,8 +131,8 @@ export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
     this.props.setViewMode(ViewMode.LEFT_HEAVY_FLAME_GRAPH)
   }
 
-  setInsideOutView = () => {
-    this.props.setViewMode(ViewMode.INSIDE_OUT_VIEW)
+  setSandwichView = () => {
+    this.props.setViewMode(ViewMode.SANDWICH_VIEW)
   }
 
   render() {
@@ -180,11 +180,11 @@ export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
           <div
             className={css(
               style.toolbarTab,
-              this.props.viewMode === ViewMode.INSIDE_OUT_VIEW && style.toolbarTabActive,
+              this.props.viewMode === ViewMode.SANDWICH_VIEW && style.toolbarTabActive,
             )}
-            onClick={this.setInsideOutView}
+            onClick={this.setSandwichView}
           >
-            <span className={css(style.emoji)}>🔃</span>Inside Out
+            <span className={css(style.emoji)}>🥪</span>Sandwich
           </div>
           {help}
         </div>
@@ -492,7 +492,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       })
     } else if (ev.key === '3') {
       this.setState({
-        viewMode: ViewMode.INSIDE_OUT_VIEW,
+        viewMode: ViewMode.SANDWICH_VIEW,
       })
     } else if (ev.key === 'r') {
       const {flattenRecursion, profile} = this.state
@@ -717,10 +717,10 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
           />
         )
       }
-      case ViewMode.INSIDE_OUT_VIEW: {
+      case ViewMode.SANDWICH_VIEW: {
         if (!this.rowAtlas || !this.state.profile) return null
         return (
-          <InsideOutView
+          <SandwichView
             profile={this.state.profile}
             flattenRecursion={this.state.flattenRecursion}
             getColorBucketForFrame={this.getColorBucketForFrame}
