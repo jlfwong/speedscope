@@ -500,7 +500,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
         this.setActiveProfile(profile)
         this.setState({flattenRecursion: false})
       } else {
-        this.setActiveProfile(profile.flattenRecursion())
+        this.setActiveProfile(profile.getProfileWithRecursionFlattened())
         this.setState({flattenRecursion: true})
       }
     }

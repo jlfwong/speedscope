@@ -218,7 +218,7 @@ export class Profile {
     this.frames.forEach(fn)
   }
 
-  flattenRecursion(): Profile {
+  getProfileWithRecursionFlattened(): Profile {
     const builder = new CallTreeProfileBuilder()
 
     const stack: (CallTreeNode | null)[] = []
@@ -247,6 +247,76 @@ export class Profile {
     flattenedProfile.name = this.name
     flattenedProfile.valueFormatter = this.valueFormatter
     return flattenedProfile
+  }
+
+  getInvertedProfileForCallersOf(focalFrameInfo: FrameInfo): Profile {
+    const focalFrame = Frame.getOrInsert(this.frames, focalFrameInfo)
+    const builder = new StackListProfileBuilder()
+
+    // TODO(jlfwong): Could construct this at profile
+    // construction time rather than on demand.
+    const nodes: CallTreeNode[] = []
+
+    function visit(node: CallTreeNode) {
+      if (node.frame === focalFrame) {
+        nodes.push(node)
+      }
+      for (let child of node.children) {
+        visit(child)
+      }
+    }
+
+    visit(this.appendOrderCalltreeRoot)
+
+    for (let node of nodes) {
+      const stack: FrameInfo[] = []
+      for (let n: CallTreeNode | null = node; n != null && n.frame !== Frame.root; n = n.parent) {
+        stack.push(n.frame)
+      }
+      builder.appendSample(stack, node.getTotalWeight())
+    }
+
+    const ret = builder.build()
+    ret.name = this.name
+    ret.valueFormatter = this.valueFormatter
+    return ret
+  }
+
+  getProfileForCalleesOf(focalFrameInfo: FrameInfo): Profile {
+    const focalFrame = Frame.getOrInsert(this.frames, focalFrameInfo)
+    const builder = new StackListProfileBuilder()
+
+    function recordSubtree(focalFrameNode: CallTreeNode) {
+      const stack: FrameInfo[] = []
+
+      function visit(node: CallTreeNode) {
+        stack.push(node.frame)
+        builder.appendSample(stack, node.getSelfWeight())
+        for (let child of node.children) {
+          visit(child)
+        }
+        stack.pop()
+      }
+
+      visit(focalFrameNode)
+    }
+
+    function findCalls(node: CallTreeNode) {
+      if (node.frame === focalFrame) {
+        recordSubtree(node)
+      } else {
+        for (let child of node.children) {
+          findCalls(child)
+        }
+      }
+    }
+
+    findCalls(this.appendOrderCalltreeRoot)
+
+    const ret = builder.build()
+    ret.name = this.name
+    ret.valueFormatter = this.valueFormatter
+    return ret
   }
 
   // Demangle symbols for readability
