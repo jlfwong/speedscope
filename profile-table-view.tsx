@@ -65,24 +65,40 @@ class SortIcon extends Component<SortIconProps, {}> {
 
 interface ProfileTableViewProps {
   profile: Profile
+  selectedFrame: Frame | null
+  setSelectedFrame: (frame: Frame | null) => void
   getCSSColorForFrame: (frame: Frame) => string
   sortMethod: SortMethod
   setSortMethod: (sortMethod: SortMethod) => void
 }
 
 export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps, void> {
+  setSelectedFrame = (frame: Frame | null) => {
+    this.props.setSelectedFrame(frame)
+  }
+
   renderRow(frame: Frame, index: number) {
-    const {profile} = this.props
+    const {profile, selectedFrame} = this.props
 
     const totalWeight = frame.getTotalWeight()
     const selfWeight = frame.getSelfWeight()
     const totalPerc = 100.0 * totalWeight / profile.getTotalNonIdleWeight()
     const selfPerc = 100.0 * selfWeight / profile.getTotalNonIdleWeight()
 
+    const selected = frame === selectedFrame
+
     // We intentionally use index rather than frame.key here as the tr key
     // in order to re-use rows when sorting rather than creating all new elements.
     return (
-      <tr key={`${index}`} className={css(style.tableRow, index % 2 == 0 && style.tableRowEven)}>
+      <tr
+        key={`${index}`}
+        onClick={this.setSelectedFrame.bind(null, frame)}
+        className={css(
+          style.tableRow,
+          index % 2 == 0 && style.tableRowEven,
+          selected && style.tableRowSelected,
+        )}
+      >
         <td className={css(style.numericCell)}>
           {profile.formatValue(totalWeight)} ({formatPercent(totalPerc)})
           <HBarDisplay perc={totalPerc} />
@@ -253,6 +269,9 @@ const style = StyleSheet.create({
   },
   tableRowEven: {
     background: Colors.OFF_WHITE,
+  },
+  tableRowSelected: {
+    background: Colors.DARK_BLUE,
   },
   numericCell: {
     textOverflow: 'ellipsis',

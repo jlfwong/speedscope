@@ -79,7 +79,6 @@ function trimTextMid(ctx: CanvasRenderingContext2D, text: string, maxWidth: numb
  */
 interface FlamechartPanZoomViewProps {
   flamechart: Flamechart
-
   canvasContext: CanvasContext
   flamechartRenderer: FlamechartRenderer
   selectedNode: CallTreeNode | null
@@ -667,6 +666,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   componentWillReceiveProps(nextProps: FlamechartPanZoomViewProps) {
     if (this.props.flamechart !== nextProps.flamechart) {
       this.hoveredLabel = null
+      this.lastBounds = null
       this.renderCanvas()
     } else if (this.props.selectedNode !== nextProps.selectedNode) {
       this.renderCanvas()

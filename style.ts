@@ -36,9 +36,15 @@ export enum Sizes {
 }
 
 export const commonStyle = StyleSheet.create({
+  fillY: {
+    height: '100%',
+  },
+  fillX: {
+    width: '100%',
+  },
   hbox: {
     display: 'flex',
-    flexDirection: 'column',
+    flexDirection: 'row',
     position: 'relative',
     overflow: 'hidden',
   },

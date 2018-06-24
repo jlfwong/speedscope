@@ -650,6 +650,12 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     }
   }
 
+  getColorBucketForFrame = (frame: Frame): number => {
+    const {chronoFlamechart} = this.state
+    if (!chronoFlamechart) return 0
+    return chronoFlamechart.getColorBucketForFrame(frame)
+  }
+
   getCSSColorForFrame = (frame: Frame): string => {
     const {chronoFlamechart} = this.state
     if (!chronoFlamechart) return '#FFFFFF'
@@ -712,12 +718,16 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
         )
       }
       case ViewMode.INSIDE_OUT_VIEW: {
+        if (!this.rowAtlas) return null
         return (
           <InsideOutView
             profile={this.state.activeProfile}
+            getColorBucketForFrame={this.getColorBucketForFrame}
             getCSSColorForFrame={this.getCSSColorForFrame}
             sortMethod={this.state.tableSortMethod}
             setSortMethod={this.setTableSortMethod}
+            canvasContext={this.canvasContext}
+            rowAtlas={this.rowAtlas}
           />
         )
       }
