@@ -272,6 +272,7 @@ const style = StyleSheet.create({
   },
   tableRowSelected: {
     background: Colors.DARK_BLUE,
+    color: Colors.WHITE,
   },
   numericCell: {
     textOverflow: 'ellipsis',
