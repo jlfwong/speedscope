@@ -418,8 +418,13 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
             }
 
             if (this.state.profile) {
+              // If a profile is already loaded, it's possible the file being imported is
+              // a symbol map. If that's the case, we want to parse it, and apply the symbol
+              // mapping to the already loaded profile. This can be use to take an opaque
+              // profile and make it readable.
               const map = importAsmJsSymbolMap(reader.result)
               if (map) {
+                console.log('Importing as asm.js symbol map')
                 let profile = this.state.profile
                 profile.remapNames(name => map.get(name) || name)
                 resolve(profile)
