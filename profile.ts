@@ -267,7 +267,7 @@ export class Profile {
 
   remapNames(callback: (name: string) => string) {
     for (let frame of this.frames) {
-      frame.name = callback(frame.name);
+      frame.name = callback(frame.name)
     }
   }
 }

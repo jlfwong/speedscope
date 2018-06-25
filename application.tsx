@@ -132,16 +132,16 @@ function importAsmJsSymbolMap(contents: string): AsmJsSymbolMap | null {
   if (!lines.length) return null
 
   // Remove a trailing blank line if there is one
-  if (lines[lines.length - 1] === '') lines.pop();
+  if (lines[lines.length - 1] === '') lines.pop()
   if (!lines.length) return null
 
-  const map: AsmJsSymbolMap = new Map();
-  const regex = /^([\$\w]+):([\$\w]+)$/;
+  const map: AsmJsSymbolMap = new Map()
+  const regex = /^([\$\w]+):([\$\w]+)$/
 
   for (const line of lines) {
-    const match = regex.exec(line);
+    const match = regex.exec(line)
     if (!match) return null
-    map.set(match[1], match[2]);
+    map.set(match[1], match[2])
   }
 
   return map
@@ -447,7 +447,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
               const map = importAsmJsSymbolMap(reader.result)
               if (map) {
                 let profile = this.state.profile
-                profile.remapNames(name => map.get(name) || name);
+                profile.remapNames(name => map.get(name) || name)
                 resolve(profile)
                 return
               }
