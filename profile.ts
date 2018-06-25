@@ -264,6 +264,12 @@ export class Profile {
       }
     }
   }
+
+  remapNames(callback: (name: string) => string) {
+    for (let frame of this.frames) {
+      frame.name = callback(frame.name)
+    }
+  }
 }
 
 export class StackListProfileBuilder extends Profile {
