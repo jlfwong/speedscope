@@ -74,6 +74,14 @@ function frameInfoForCallFrame(callFrame: CPUProfileCallFrame) {
   })
 }
 
+function shouldIgnoreFunction(functionName: string) {
+  return functionName === '(root)' || functionName === '(idle)'
+}
+
+function shouldPlaceOnTopOfPreviousStack(functionName: string) {
+  return functionName === '(garbage collector)' || functionName === '(program)'
+}
+
 export function importFromChromeCPUProfile(chromeProfile: CPUProfile): Profile {
   const profile = new CallTreeProfileBuilder(chromeProfile.endTime - chromeProfile.startTime)
 
@@ -131,10 +139,9 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile): Profile {
     for (
       lca = stackTop;
       lca && prevStack.indexOf(lca) === -1;
-      lca =
-        lca.callFrame.functionName === '(garbage collector)'
-          ? lastOf(prevStack)
-          : lca.parent || null
+      lca = shouldPlaceOnTopOfPreviousStack(lca.callFrame.functionName)
+        ? lastOf(prevStack)
+        : lca.parent || null
     ) {}
 
     // Close frames that are no longer open
@@ -148,12 +155,11 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile): Profile {
     const toOpen: CPUProfileNode[] = []
     for (
       let node: CPUProfileNode | null = stackTop;
-      node && node != lca;
-      // Place GC calls on top of the previous call stack
-      node =
-        node.callFrame.functionName === '(garbage collector)'
-          ? lastOf(prevStack)
-          : node.parent || null
+      node && node != lca && !shouldIgnoreFunction(node.callFrame.functionName);
+      // Place Chrome internal functions on top of the previous call stack
+      node = shouldPlaceOnTopOfPreviousStack(node.callFrame.functionName)
+        ? lastOf(prevStack)
+        : node.parent || null
     ) {
       toOpen.push(node)
     }
