@@ -318,7 +318,7 @@ export class Profile {
     const builder = new StackListProfileBuilder()
 
     function recordSubtree(focalFrameNode: CallTreeNode) {
-      const stack: FrameInfo[] = [focalFrameNode.frame]
+      const stack: FrameInfo[] = []
 
       function visit(node: CallTreeNode) {
         stack.push(node.frame)
