@@ -3,11 +3,11 @@ import {css} from 'aphrodite'
 import {Flamechart} from './flamechart'
 import {Rect, Vec2, AffineTransform, clamp} from './math'
 import {FlamechartRenderer} from './flamechart-renderer'
-import {cachedMeasureTextWidth} from './utils'
 import {style} from './flamechart-style'
 import {FontFamily, FontSize, Colors, Sizes, commonStyle} from './style'
 import {CanvasContext} from './canvas-context'
 import {TextureCachedRenderer} from './texture-cached-renderer'
+import {cachedMeasureTextWidth} from './text-utils'
 
 interface FlamechartMinimapViewProps {
   flamechart: Flamechart

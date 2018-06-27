@@ -6,7 +6,7 @@ import {CallTreeNode, Frame} from './profile'
 import {Flamechart, FlamechartFrame} from './flamechart'
 
 import {Rect, Vec2, AffineTransform, clamp} from './math'
-import {cachedMeasureTextWidth, formatPercent} from './utils'
+import {formatPercent} from './utils'
 import {FlamechartMinimapView} from './flamechart-minimap-view'
 
 import {style} from './flamechart-style'
@@ -14,49 +14,11 @@ import {FontSize, FontFamily, Colors, Sizes, commonStyle} from './style'
 import {CanvasContext} from './canvas-context'
 import {FlamechartRenderer} from './flamechart-renderer'
 import {ColorChit} from './color-chit'
+import {cachedMeasureTextWidth, ELLIPSIS, trimTextMid} from './text-utils'
 
 interface FlamechartFrameLabel {
   configSpaceBounds: Rect
   node: CallTreeNode
-}
-
-function binarySearch(
-  lo: number,
-  hi: number,
-  f: (val: number) => number,
-  target: number,
-  targetRangeSize = 1,
-): [number, number] {
-  console.assert(!isNaN(targetRangeSize) && !isNaN(target))
-  while (true) {
-    if (hi - lo <= targetRangeSize) return [lo, hi]
-    const mid = (hi + lo) / 2
-    const val = f(mid)
-    if (val < target) lo = mid
-    else hi = mid
-  }
-}
-
-const ELLIPSIS = '\u2026'
-
-function buildTrimmedText(text: string, length: number) {
-  const prefixLength = Math.floor(length / 2)
-  const prefix = text.substr(0, prefixLength)
-  const suffix = text.substr(text.length - prefixLength, prefixLength)
-  return prefix + ELLIPSIS + suffix
-}
-
-function trimTextMid(ctx: CanvasRenderingContext2D, text: string, maxWidth: number) {
-  if (cachedMeasureTextWidth(ctx, text) <= maxWidth) return text
-  const [lo] = binarySearch(
-    0,
-    text.length,
-    n => {
-      return cachedMeasureTextWidth(ctx, buildTrimmedText(text, n))
-    },
-    maxWidth,
-  )
-  return buildTrimmedText(text, lo)
 }
 
 /**
