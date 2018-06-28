@@ -8,8 +8,8 @@ import {CanvasContext} from './canvas-context'
 import {FlamechartRenderer, FlamechartRowAtlasKey} from './flamechart-renderer'
 import {Flamechart} from './flamechart'
 import {RowAtlas} from './row-atlas'
-import {FlamechartPanZoomView} from './flamechart-view'
 import {Rect, AffineTransform, Vec2} from './math'
+import { FlamechartPanZoomView } from './flamechart-pan-zoom-view';
 
 interface SandwichViewProps {
   profile: Profile
