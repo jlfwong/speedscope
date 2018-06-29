@@ -10,7 +10,8 @@ import {Flamechart} from './flamechart'
 import {RowAtlas} from './row-atlas'
 import {Rect, AffineTransform, Vec2} from './math'
 import {FlamechartPanZoomView, FlamechartPanZoomViewProps} from './flamechart-pan-zoom-view'
-import {noop} from './utils'
+import {noop, formatPercent} from './utils'
+import {Hovertip} from './hovertip'
 
 interface FlamechartWrapperProps {
   flamechart: Flamechart
@@ -31,9 +32,12 @@ export class FlamechartWrapper extends ReloadableComponent<
   FlamechartWrapperProps,
   FlamechartWrapperState
 > {
-  state = {
-    hover: null,
-    configSpaceViewportRect: Rect.empty,
+  constructor(props: FlamechartWrapperProps) {
+    super(props)
+    this.state = {
+      hover: null,
+      configSpaceViewportRect: Rect.empty,
+    }
   }
 
   private clampViewportToFlamegraph(viewportRect: Rect, flamegraph: Flamechart, inverted: boolean) {
@@ -74,17 +78,60 @@ export class FlamechartWrapper extends ReloadableComponent<
     this.setConfigSpaceViewportRect(transform.transformRect(this.state.configSpaceViewportRect))
   }
 
+  private formatValue(weight: number) {
+    const totalWeight = this.props.flamechart.getTotalWeight()
+    const percent = 100 * weight / totalWeight
+    const formattedPercent = formatPercent(percent)
+    return `${this.props.flamechart.formatValue(weight)} (${formattedPercent})`
+  }
+
+  private renderTooltip() {
+    if (!this.container) return null
+
+    const {hover} = this.state
+    if (!hover) return null
+    const {width, height, left, top} = this.container.getBoundingClientRect()
+    const offset = new Vec2(hover.event.clientX - left, hover.event.clientY - top)
+
+    return (
+      <Hovertip containerSize={new Vec2(width, height)} offset={offset}>
+        <span className={css(style.hoverCount)}>
+          {this.formatValue(hover.node.getTotalWeight())}
+        </span>{' '}
+        Hello
+        {hover.node.frame.name}
+      </Hovertip>
+    )
+  }
+
+  container: HTMLDivElement | null = null
+  containerRef = (container?: Element) => {
+    this.container = (container as HTMLDivElement) || null
+  }
+
+  private setNodeHover = (hover: {node: CallTreeNode; event: MouseEvent} | null) => {
+    this.setState({hover})
+  }
+
   render() {
     const props: FlamechartPanZoomViewProps = {
       ...(this.props as FlamechartWrapperProps),
       selectedNode: null,
-      onNodeHover: noop,
+      onNodeHover: this.setNodeHover,
       onNodeSelect: noop,
       configSpaceViewportRect: this.state.configSpaceViewportRect,
       setConfigSpaceViewportRect: this.setConfigSpaceViewportRect,
       transformViewport: this.transformViewport,
     }
-    return <FlamechartPanZoomView {...props} />
+    return (
+      <div
+        className={css(commonStyle.fillY, commonStyle.fillX, commonStyle.vbox)}
+        ref={this.containerRef}
+      >
+        <FlamechartPanZoomView {...props} />
+        {this.renderTooltip()}
+      </div>
+    )
   }
 }
 
@@ -296,5 +343,8 @@ const style = StyleSheet.create({
   divider: {
     height: 2,
     background: Colors.LIGHT_GRAY,
+  },
+  hoverCount: {
+    color: Colors.GREEN,
   },
 })
