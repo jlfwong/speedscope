@@ -119,3 +119,5 @@ export function binarySearch(
     else hi = mid
   }
 }
+
+export function noop(...args: any[]) {}

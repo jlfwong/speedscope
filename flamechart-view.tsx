@@ -15,6 +15,7 @@ import {CanvasContext} from './canvas-context'
 import {FlamechartRenderer} from './flamechart-renderer'
 import {FlamechartDetailView} from './flamechart-detail-view'
 import {FlamechartPanZoomView} from './flamechart-pan-zoom-view'
+import {Hovertip} from './hovertip'
 
 interface FlamechartViewProps {
   flamechart: Flamechart
@@ -24,22 +25,21 @@ interface FlamechartViewProps {
 }
 
 interface FlamechartViewState {
-  hoveredNode: CallTreeNode | null
+  hover: {
+    node: CallTreeNode
+    event: MouseEvent
+  } | null
   selectedNode: CallTreeNode | null
   configSpaceViewportRect: Rect
-  logicalSpaceMouse: Vec2
 }
 
 export class FlamechartView extends ReloadableComponent<FlamechartViewProps, FlamechartViewState> {
-  container: HTMLDivElement | null = null
-
   constructor() {
     super()
     this.state = {
-      hoveredNode: null,
+      hover: null,
       selectedNode: null,
       configSpaceViewportRect: Rect.empty,
-      logicalSpaceMouse: Vec2.zero,
     }
   }
 
@@ -88,11 +88,8 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
     this.setConfigSpaceViewportRect(viewportRect)
   }
 
-  onNodeHover = (node: CallTreeNode | null, logicalSpaceMouse: Vec2) => {
-    this.setState({
-      hoveredNode: node,
-      logicalSpaceMouse: logicalSpaceMouse.plus(new Vec2(0, Sizes.MINIMAP_HEIGHT)),
-    })
+  onNodeHover = (hover: {node: CallTreeNode; event: MouseEvent} | null) => {
+    this.setState({hover})
   }
 
   onNodeClick = (node: CallTreeNode | null) => {
@@ -111,43 +108,22 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
   renderTooltip() {
     if (!this.container) return null
 
-    const {hoveredNode, logicalSpaceMouse} = this.state
-    if (!hoveredNode) return null
-
-    const {width, height} = this.container.getBoundingClientRect()
-
-    const positionStyle: {
-      left?: number
-      right?: number
-      top?: number
-      bottom?: number
-    } = {}
-
-    const OFFSET_FROM_MOUSE = 7
-    if (logicalSpaceMouse.x + OFFSET_FROM_MOUSE + Sizes.TOOLTIP_WIDTH_MAX < width) {
-      positionStyle.left = logicalSpaceMouse.x + OFFSET_FROM_MOUSE
-    } else {
-      positionStyle.right = width - logicalSpaceMouse.x + 1
-    }
-
-    if (logicalSpaceMouse.y + OFFSET_FROM_MOUSE + Sizes.TOOLTIP_HEIGHT_MAX < height) {
-      positionStyle.top = logicalSpaceMouse.y + OFFSET_FROM_MOUSE
-    } else {
-      positionStyle.bottom = height - logicalSpaceMouse.y + 1
-    }
+    const {hover} = this.state
+    if (!hover) return null
+    const {width, height, left, top} = this.container.getBoundingClientRect()
+    const offset = new Vec2(hover.event.clientX - left, hover.event.clientY - top)
 
     return (
-      <div className={css(style.hoverTip)} style={positionStyle}>
-        <div className={css(style.hoverTipRow)}>
-          <span className={css(style.hoverCount)}>
-            {this.formatValue(hoveredNode.getTotalWeight())}
-          </span>{' '}
-          {hoveredNode.frame.name}
-        </div>
-      </div>
+      <Hovertip containerSize={new Vec2(width, height)} offset={offset}>
+        <span className={css(style.hoverCount)}>
+          {this.formatValue(hover.node.getTotalWeight())}
+        </span>{' '}
+        {hover.node.frame.name}
+      </Hovertip>
     )
   }
 
+  container: HTMLDivElement | null = null
   containerRef = (container?: Element) => {
     this.container = (container as HTMLDivElement) || null
   }
@@ -179,13 +155,14 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
           flamechart={this.props.flamechart}
           flamechartRenderer={this.props.flamechartRenderer}
           renderInverted={false}
-          setNodeHover={this.onNodeHover}
-          setSelectedNode={this.onNodeClick}
+          onNodeHover={this.onNodeHover}
+          onNodeSelect={this.onNodeClick}
           selectedNode={this.state.selectedNode}
           transformViewport={this.transformViewport}
           configSpaceViewportRect={this.state.configSpaceViewportRect}
           setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
         />
+        {this.renderTooltip()}
         {this.state.selectedNode && (
           <FlamechartDetailView
             flamechart={this.props.flamechart}
@@ -193,7 +170,6 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
             selectedNode={this.state.selectedNode}
           />
         )}
-        {this.renderTooltip()}
       </div>
     )
   }

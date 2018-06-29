@@ -33,15 +33,15 @@ interface FlamechartFrameLabel {
  * which we render via WebGL, and one for the labels, which we render via 2D
  * canvas primitives.
  */
-interface FlamechartPanZoomViewProps {
+export interface FlamechartPanZoomViewProps {
   flamechart: Flamechart
   canvasContext: CanvasContext
   flamechartRenderer: FlamechartRenderer
   renderInverted: boolean
   selectedNode: CallTreeNode | null
 
-  setNodeHover: (node: CallTreeNode | null, logicalViewSpaceMouse: Vec2) => void
-  setSelectedNode: (node: CallTreeNode | null) => void
+  onNodeHover: (hover: {node: CallTreeNode; event: MouseEvent} | null) => void
+  onNodeSelect: (node: CallTreeNode | null) => void
   configSpaceViewportRect: Rect
   transformViewport: (transform: AffineTransform) => void
   setConfigSpaceViewportRect: (rect: Rect) => void
@@ -439,7 +439,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     const configDelta = this.configSpaceToPhysicalViewSpace().inverseTransformVector(physicalDelta)
 
     if (this.hoveredLabel) {
-      this.props.setNodeHover(null, Vec2.zero)
+      this.props.onNodeHover(null)
     }
 
     if (!configDelta) return
@@ -480,7 +480,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     // When panning by scrolling, the element under
     // the cursor will change, so clear the hovered label.
     if (this.hoveredLabel) {
-      this.props.setNodeHover(null, logicalMousePos)
+      this.props.onNodeHover(null)
     }
   }
 
@@ -497,10 +497,10 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
   private onClick = (ev: MouseEvent) => {
     if (this.hoveredLabel) {
-      this.props.setSelectedNode(this.hoveredLabel.node)
+      this.props.onNodeSelect(this.hoveredLabel.node)
       this.renderCanvas()
     } else {
-      this.props.setSelectedNode(null)
+      this.props.onNodeSelect(null)
     }
   }
 
@@ -561,9 +561,9 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     }
 
     if (this.hoveredLabel) {
-      this.props.setNodeHover(this.hoveredLabel!.node, logicalViewSpaceMouse)
+      this.props.onNodeHover({node: this.hoveredLabel!.node, event: ev})
     } else {
-      this.props.setNodeHover(null, logicalViewSpaceMouse)
+      this.props.onNodeHover(null)
     }
 
     this.renderCanvas()
@@ -571,7 +571,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
   private onMouseLeave = (ev: MouseEvent) => {
     this.hoveredLabel = null
-    this.props.setNodeHover(null, Vec2.zero)
+    this.props.onNodeHover(null)
     this.renderCanvas()
   }
 
@@ -629,7 +629,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     } else if (ev.key === 'ArrowDown' || ev.key === 's') {
       this.pan(new Vec2(0, 100))
     } else if (ev.key === 'Escape') {
-      this.props.setSelectedNode(null)
+      this.props.onNodeSelect(null)
       this.renderCanvas()
     }
   }

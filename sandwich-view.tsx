@@ -1,5 +1,5 @@
 import {ReloadableComponent} from './reloadable'
-import {Profile, Frame} from './profile'
+import {Profile, Frame, CallTreeNode} from './profile'
 import {StyleSheet, css} from 'aphrodite'
 import {SortMethod, ProfileTableView} from './profile-table-view'
 import {h} from 'preact'
@@ -9,7 +9,84 @@ import {FlamechartRenderer, FlamechartRowAtlasKey} from './flamechart-renderer'
 import {Flamechart} from './flamechart'
 import {RowAtlas} from './row-atlas'
 import {Rect, AffineTransform, Vec2} from './math'
-import { FlamechartPanZoomView } from './flamechart-pan-zoom-view';
+import {FlamechartPanZoomView, FlamechartPanZoomViewProps} from './flamechart-pan-zoom-view'
+import {noop} from './utils'
+
+interface FlamechartWrapperProps {
+  flamechart: Flamechart
+  canvasContext: CanvasContext
+  flamechartRenderer: FlamechartRenderer
+  renderInverted: boolean
+}
+
+interface FlamechartWrapperState {
+  hover: {
+    node: CallTreeNode
+    event: MouseEvent
+  } | null
+  configSpaceViewportRect: Rect
+}
+
+export class FlamechartWrapper extends ReloadableComponent<
+  FlamechartWrapperProps,
+  FlamechartWrapperState
+> {
+  state = {
+    hover: null,
+    configSpaceViewportRect: Rect.empty,
+  }
+
+  private clampViewportToFlamegraph(viewportRect: Rect, flamegraph: Flamechart, inverted: boolean) {
+    const configSpaceSize = new Vec2(flamegraph.getTotalWeight(), flamegraph.getLayers().length)
+
+    let configSpaceOriginBounds = new Rect(
+      new Vec2(0, inverted ? 0 : -1),
+      Vec2.max(new Vec2(0, 0), configSpaceSize.minus(viewportRect.size).plus(new Vec2(0, 1))),
+    )
+
+    const minConfigSpaceViewportRectWidth = Math.min(
+      flamegraph.getTotalWeight(),
+      3 * flamegraph.getMinFrameWidth(),
+    )
+
+    const configSpaceSizeBounds = new Rect(
+      new Vec2(minConfigSpaceViewportRectWidth, viewportRect.height()),
+      new Vec2(configSpaceSize.x, viewportRect.height()),
+    )
+
+    return new Rect(
+      configSpaceOriginBounds.closestPointTo(viewportRect.origin),
+      configSpaceSizeBounds.closestPointTo(viewportRect.size),
+    )
+  }
+
+  private setConfigSpaceViewportRect = (viewportRect: Rect) => {
+    this.setState({
+      configSpaceViewportRect: this.clampViewportToFlamegraph(
+        viewportRect,
+        this.props.flamechart,
+        this.props.renderInverted,
+      ),
+    })
+  }
+
+  private transformViewport = (transform: AffineTransform) => {
+    this.setConfigSpaceViewportRect(transform.transformRect(this.state.configSpaceViewportRect))
+  }
+
+  render() {
+    const props: FlamechartPanZoomViewProps = {
+      ...(this.props as FlamechartWrapperProps),
+      selectedNode: null,
+      onNodeHover: noop,
+      onNodeSelect: noop,
+      configSpaceViewportRect: this.state.configSpaceViewportRect,
+      setConfigSpaceViewportRect: this.setConfigSpaceViewportRect,
+      transformViewport: this.transformViewport,
+    }
+    return <FlamechartPanZoomView {...props} />
+  }
+}
 
 interface SandwichViewProps {
   profile: Profile
@@ -30,11 +107,9 @@ interface CallerCalleeState {
 
   invertedCallerFlamegraph: Flamechart
   invertedCallerFlamegraphRenderer: FlamechartRenderer
-  invertedCallerConfigSpaceViewportRect: Rect
 
   calleeFlamegraph: Flamechart
   calleeFlamegraphRenderer: FlamechartRenderer
-  calleeConfigSpaceViewportRect: Rect
 }
 
 interface SandwichViewState {
@@ -101,84 +176,10 @@ export class SandwichView extends ReloadableComponent<SandwichViewProps, Sandwic
         selectedFrame,
         invertedCallerFlamegraph,
         invertedCallerFlamegraphRenderer,
-        invertedCallerConfigSpaceViewportRect: Rect.empty,
         calleeFlamegraph,
         calleeFlamegraphRenderer,
-        calleeConfigSpaceViewportRect: Rect.empty,
       },
     })
-  }
-
-  private clampViewportToFlamegraph(viewportRect: Rect, flamegraph: Flamechart, inverted: boolean) {
-    const configSpaceSize = new Vec2(flamegraph.getTotalWeight(), flamegraph.getLayers().length)
-
-    let configSpaceOriginBounds = new Rect(
-      new Vec2(0, inverted ? 0 : -1),
-      Vec2.max(new Vec2(0, 0), configSpaceSize.minus(viewportRect.size).plus(new Vec2(0, 1))),
-    )
-
-    const minConfigSpaceViewportRectWidth = Math.min(
-      flamegraph.getTotalWeight(),
-      3 * flamegraph.getMinFrameWidth(),
-    )
-
-    const configSpaceSizeBounds = new Rect(
-      new Vec2(minConfigSpaceViewportRectWidth, viewportRect.height()),
-      new Vec2(configSpaceSize.x, viewportRect.height()),
-    )
-
-    return new Rect(
-      configSpaceOriginBounds.closestPointTo(viewportRect.origin),
-      configSpaceSizeBounds.closestPointTo(viewportRect.size),
-    )
-  }
-
-  private setCalleeViewport = (viewportRect: Rect) => {
-    const {callerCallee} = this.state
-    if (!callerCallee) return
-
-    const calleeConfigSpaceViewportRect = this.clampViewportToFlamegraph(
-      viewportRect,
-      callerCallee.calleeFlamegraph,
-      /* inverted: */ false,
-    )
-    this.setState({
-      callerCallee: {
-        ...callerCallee,
-        calleeConfigSpaceViewportRect,
-      },
-    })
-  }
-
-  private setInvertedCallerViewport = (viewportRect: Rect) => {
-    const {callerCallee} = this.state
-    if (!callerCallee) return
-
-    const invertedCallerConfigSpaceViewportRect = this.clampViewportToFlamegraph(
-      viewportRect,
-      callerCallee.invertedCallerFlamegraph,
-      /* inverted: */ true,
-    )
-    this.setState({
-      callerCallee: {
-        ...callerCallee,
-        invertedCallerConfigSpaceViewportRect,
-      },
-    })
-  }
-
-  private transformCalleeViewport = (transform: AffineTransform) => {
-    const {callerCallee} = this.state
-    if (!callerCallee) return
-    const viewportRect = transform.transformRect(callerCallee.calleeConfigSpaceViewportRect)
-    this.setCalleeViewport(viewportRect)
-  }
-
-  private transformInvertedCallerViewport = (transform: AffineTransform) => {
-    const {callerCallee} = this.state
-    if (!callerCallee) return
-    const viewportRect = transform.transformRect(callerCallee.invertedCallerConfigSpaceViewportRect)
-    this.setInvertedCallerViewport(viewportRect)
   }
 
   onWindowKeyPress = (ev: KeyboardEvent) => {
@@ -217,17 +218,11 @@ export class SandwichView extends ReloadableComponent<SandwichViewProps, Sandwic
             <div className={css(style.flamechartLabelParent)}>
               <div className={css(style.flamechartLabel)}>Callers</div>
             </div>
-            <FlamechartPanZoomView
+            <FlamechartWrapper
               flamechart={callerCallee.invertedCallerFlamegraph}
               canvasContext={canvasContext}
               flamechartRenderer={callerCallee.invertedCallerFlamegraphRenderer}
               renderInverted={true}
-              selectedNode={null}
-              setNodeHover={() => {}}
-              setSelectedNode={() => {}}
-              configSpaceViewportRect={callerCallee.invertedCallerConfigSpaceViewportRect}
-              setConfigSpaceViewportRect={this.setInvertedCallerViewport}
-              transformViewport={this.transformInvertedCallerViewport}
             />
           </div>
           <div className={css(style.divider)} />
@@ -235,17 +230,11 @@ export class SandwichView extends ReloadableComponent<SandwichViewProps, Sandwic
             <div className={css(style.flamechartLabelParent, style.flamechartLabelParentBottom)}>
               <div className={css(style.flamechartLabel, style.flamechartLabelBottom)}>Callees</div>
             </div>
-            <FlamechartPanZoomView
+            <FlamechartWrapper
               flamechart={callerCallee.calleeFlamegraph}
               canvasContext={canvasContext}
               flamechartRenderer={callerCallee.calleeFlamegraphRenderer}
               renderInverted={false}
-              selectedNode={null}
-              setNodeHover={() => {}}
-              setSelectedNode={() => {}}
-              configSpaceViewportRect={callerCallee.calleeConfigSpaceViewportRect}
-              setConfigSpaceViewportRect={this.setCalleeViewport}
-              transformViewport={this.transformCalleeViewport}
             />
           </div>
         </div>

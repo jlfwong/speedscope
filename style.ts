@@ -35,6 +35,10 @@ export enum Sizes {
   TOOLBAR_TAB_HEIGHT = TOOLBAR_HEIGHT - SEPARATOR_HEIGHT,
 }
 
+export enum ZIndex {
+  HOVERTIP = 1,
+}
+
 export const commonStyle = StyleSheet.create({
   fillY: {
     height: '100%',
