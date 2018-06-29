@@ -21,11 +21,12 @@ import {Flamechart} from './flamechart'
 import {FlamechartView} from './flamechart-view'
 import {FontFamily, FontSize, Colors, Sizes} from './style'
 import {getHashParams, HashParams} from './hash-params'
-import {ProfileTableView, SortMethod, SortField, SortDirection} from './profile-table-view'
+import {SortMethod, SortField, SortDirection} from './profile-table-view'
 import {triangle} from './utils'
 import {Color} from './color'
 import {RowAtlas} from './row-atlas'
 import {importAsmJsSymbolMap} from './asm-js'
+import {SandwichView} from './sandwich-view'
 
 declare function require(x: string): any
 const exampleProfileURL = require('./sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt')
@@ -33,7 +34,7 @@ const exampleProfileURL = require('./sample/profiles/stackcollapse/perf-vertx-st
 const enum ViewMode {
   CHRONO_FLAME_CHART,
   LEFT_HEAVY_FLAME_GRAPH,
-  TABLE_VIEW,
+  SANDWICH_VIEW,
 }
 
 interface ApplicationState {
@@ -130,8 +131,8 @@ export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
     this.props.setViewMode(ViewMode.LEFT_HEAVY_FLAME_GRAPH)
   }
 
-  setTableView = () => {
-    this.props.setViewMode(ViewMode.TABLE_VIEW)
+  setSandwichView = () => {
+    this.props.setViewMode(ViewMode.SANDWICH_VIEW)
   }
 
   render() {
@@ -179,11 +180,11 @@ export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
           <div
             className={css(
               style.toolbarTab,
-              this.props.viewMode === ViewMode.TABLE_VIEW && style.toolbarTabActive,
+              this.props.viewMode === ViewMode.SANDWICH_VIEW && style.toolbarTabActive,
             )}
-            onClick={this.setTableView}
+            onClick={this.setSandwichView}
           >
-            <span className={css(style.emoji)}>📒</span>Table View
+            <span className={css(style.emoji)}>🥪</span>Sandwich
           </div>
           {help}
         </div>
@@ -480,7 +481,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     ev.preventDefault()
   }
 
-  onWindowKeyPress = (ev: KeyboardEvent) => {
+  onWindowKeyPress = async (ev: KeyboardEvent) => {
     if (ev.key === '1') {
       this.setState({
         viewMode: ViewMode.CHRONO_FLAME_CHART,
@@ -491,16 +492,16 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       })
     } else if (ev.key === '3') {
       this.setState({
-        viewMode: ViewMode.TABLE_VIEW,
+        viewMode: ViewMode.SANDWICH_VIEW,
       })
     } else if (ev.key === 'r') {
       const {flattenRecursion, profile} = this.state
       if (!profile) return
       if (flattenRecursion) {
-        this.setActiveProfile(profile)
+        await this.setActiveProfile(profile)
         this.setState({flattenRecursion: false})
       } else {
-        this.setActiveProfile(profile.flattenRecursion())
+        await this.setActiveProfile(profile.getProfileWithRecursionFlattened())
         this.setState({flattenRecursion: true})
       }
     }
@@ -649,6 +650,12 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     }
   }
 
+  getColorBucketForFrame = (frame: Frame): number => {
+    const {chronoFlamechart} = this.state
+    if (!chronoFlamechart) return 0
+    return chronoFlamechart.getColorBucketForFrame(frame)
+  }
+
   getCSSColorForFrame = (frame: Frame): string => {
     const {chronoFlamechart} = this.state
     if (!chronoFlamechart) return '#FFFFFF'
@@ -710,13 +717,18 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
           />
         )
       }
-      case ViewMode.TABLE_VIEW: {
+      case ViewMode.SANDWICH_VIEW: {
+        if (!this.rowAtlas || !this.state.profile) return null
         return (
-          <ProfileTableView
-            profile={this.state.activeProfile}
+          <SandwichView
+            profile={this.state.profile}
+            flattenRecursion={this.state.flattenRecursion}
+            getColorBucketForFrame={this.getColorBucketForFrame}
             getCSSColorForFrame={this.getCSSColorForFrame}
             sortMethod={this.state.tableSortMethod}
             setSortMethod={this.setTableSortMethod}
+            canvasContext={this.canvasContext}
+            rowAtlas={this.rowAtlas}
           />
         )
       }

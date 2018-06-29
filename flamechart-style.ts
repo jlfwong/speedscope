@@ -1,39 +1,9 @@
 import {StyleSheet} from 'aphrodite'
-import {FontFamily, FontSize, Colors, Sizes} from './style'
-
-const HOVERTIP_PADDING = 2
+import {FontSize, Colors, Sizes} from './style'
 
 export const style = StyleSheet.create({
-  hoverTip: {
-    position: 'absolute',
-    background: Colors.WHITE,
-    border: '1px solid black',
-    maxWidth: Sizes.TOOLTIP_WIDTH_MAX,
-    paddingTop: HOVERTIP_PADDING,
-    paddingBottom: HOVERTIP_PADDING,
-    pointerEvents: 'none',
-    userSelect: 'none',
-    fontSize: FontSize.LABEL,
-    fontFamily: FontFamily.MONOSPACE,
-  },
-  hoverTipRow: {
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    overflowX: 'hidden',
-    paddingLeft: HOVERTIP_PADDING,
-    paddingRight: HOVERTIP_PADDING,
-    maxWidth: Sizes.TOOLTIP_WIDTH_MAX,
-  },
   hoverCount: {
     color: Colors.GREEN,
-  },
-  clip: {
-    overflow: 'hidden',
-  },
-  vbox: {
-    display: 'flex',
-    flexDirection: 'column',
-    position: 'relative',
   },
   fill: {
     width: '100%',

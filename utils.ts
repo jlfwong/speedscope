@@ -85,22 +85,6 @@ export function zeroPad(s: string, width: number) {
   return new Array(Math.max(width - s.length, 0) + 1).join('0') + s
 }
 
-// NOTE: This blindly assumes the same result across contexts.
-const measureTextCache = new Map<string, number>()
-
-let lastDevicePixelRatio = -1
-export function cachedMeasureTextWidth(ctx: CanvasRenderingContext2D, text: string): number {
-  if (window.devicePixelRatio !== lastDevicePixelRatio) {
-    // This cache is no longer valid!
-    measureTextCache.clear()
-    lastDevicePixelRatio = window.devicePixelRatio
-  }
-  if (!measureTextCache.has(text)) {
-    measureTextCache.set(text, ctx.measureText(text).width)
-  }
-  return measureTextCache.get(text)!
-}
-
 export function formatPercent(percent: number) {
   let formattedPercent = `${percent.toFixed(0)}%`
   if (percent === 100) formattedPercent = '100%'
@@ -118,3 +102,22 @@ export function fract(x: number) {
 export function triangle(x: number) {
   return 2.0 * Math.abs(fract(x) - 0.5) - 1.0
 }
+
+export function binarySearch(
+  lo: number,
+  hi: number,
+  f: (val: number) => number,
+  target: number,
+  targetRangeSize = 1,
+): [number, number] {
+  console.assert(!isNaN(targetRangeSize) && !isNaN(target))
+  while (true) {
+    if (hi - lo <= targetRangeSize) return [lo, hi]
+    const mid = (hi + lo) / 2
+    const val = f(mid)
+    if (val < target) lo = mid
+    else hi = mid
+  }
+}
+
+export function noop(...args: any[]) {}

@@ -38,6 +38,11 @@ export class HasWeights {
   addToSelfWeight(delta: number) {
     this.selfWeight += delta
   }
+
+  overwriteWeightWith(other: HasWeights) {
+    this.selfWeight = other.selfWeight
+    this.totalWeight = other.totalWeight
+  }
 }
 
 export class Frame extends HasWeights {
@@ -218,7 +223,7 @@ export class Profile {
     this.frames.forEach(fn)
   }
 
-  flattenRecursion(): Profile {
+  getProfileWithRecursionFlattened(): Profile {
     const builder = new CallTreeProfileBuilder()
 
     const stack: (CallTreeNode | null)[] = []
@@ -246,7 +251,103 @@ export class Profile {
     const flattenedProfile = builder.build()
     flattenedProfile.name = this.name
     flattenedProfile.valueFormatter = this.valueFormatter
+
+    // When constructing a profile with recursion flattened,
+    // counter-intuitive things can happen to "self time" measurements
+    // for functions.
+    // For example, given the following list of stacks w/ weights:
+    //
+    // a 1
+    // a;b;a 1
+    // a;b;a;b;a 1
+    // a;b;a 1
+    //
+    // The resulting profile with recursion flattened out will look like this:
+    //
+    // a 1
+    // a;b 3
+    //
+    // Which is useful to view, but it's counter-intuitive to move self-time
+    // for frames around, since analyzing the self-time of functions is an important
+    // thing to be able to do accurately, and we don't want this to change when recursion
+    // is flattened. To work around that, we'll just copy the weights directly from the
+    // un-flattened profile.
+    this.forEachFrame(f => {
+      flattenedProfile.frames.getOrInsert(f).overwriteWeightWith(f)
+    })
+
     return flattenedProfile
+  }
+
+  getInvertedProfileForCallersOf(focalFrameInfo: FrameInfo): Profile {
+    const focalFrame = Frame.getOrInsert(this.frames, focalFrameInfo)
+    const builder = new StackListProfileBuilder()
+
+    // TODO(jlfwong): Could construct this at profile
+    // construction time rather than on demand.
+    const nodes: CallTreeNode[] = []
+
+    function visit(node: CallTreeNode) {
+      if (node.frame === focalFrame) {
+        nodes.push(node)
+      } else {
+        for (let child of node.children) {
+          visit(child)
+        }
+      }
+    }
+
+    visit(this.appendOrderCalltreeRoot)
+
+    for (let node of nodes) {
+      const stack: FrameInfo[] = []
+      for (let n: CallTreeNode | null = node; n != null && n.frame !== Frame.root; n = n.parent) {
+        stack.push(n.frame)
+      }
+      builder.appendSample(stack, node.getTotalWeight())
+    }
+
+    const ret = builder.build()
+    ret.name = this.name
+    ret.valueFormatter = this.valueFormatter
+    return ret
+  }
+
+  getProfileForCalleesOf(focalFrameInfo: FrameInfo): Profile {
+    const focalFrame = Frame.getOrInsert(this.frames, focalFrameInfo)
+    const builder = new StackListProfileBuilder()
+
+    function recordSubtree(focalFrameNode: CallTreeNode) {
+      const stack: FrameInfo[] = []
+
+      function visit(node: CallTreeNode) {
+        stack.push(node.frame)
+        builder.appendSample(stack, node.getSelfWeight())
+        for (let child of node.children) {
+          visit(child)
+        }
+        stack.pop()
+      }
+
+      visit(focalFrameNode)
+    }
+
+    function findCalls(node: CallTreeNode) {
+      if (node.frame === focalFrame) {
+        recordSubtree(node)
+      } else {
+        for (let child of node.children) {
+          findCalls(child)
+        }
+      }
+    }
+
+    findCalls(this.appendOrderCalltreeRoot)
+
+    const ret = builder.build()
+    ret.name = this.name
+    ret.valueFormatter = this.valueFormatter
+    return ret
   }
 
   // Demangle symbols for readability

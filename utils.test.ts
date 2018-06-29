@@ -9,6 +9,7 @@ import {
   zeroPad,
   formatPercent,
   KeyedSet,
+  binarySearch,
 } from './utils'
 
 test('sortBy', () => {
@@ -100,4 +101,11 @@ test('formatPercent', () => {
   expect(formatPercent(99)).toBe('99%')
   expect(formatPercent(99.9)).toBe('>99%')
   expect(formatPercent(100)).toBe('100%')
+})
+
+test('binarySearch', () => {
+  const [lo, hi] = binarySearch(0, 10, n => Math.log(n), 1, 0.0001)
+  expect(lo).toBeCloseTo(Math.E, 4)
+  expect(lo).toBeLessThan(Math.E)
+  expect(hi).toBeGreaterThan(Math.E)
 })
