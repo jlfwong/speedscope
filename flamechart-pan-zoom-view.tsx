@@ -87,13 +87,32 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     )
   }
 
+  private physicalBounds(): Rect {
+    if (this.props.renderInverted) {
+      // If we're rendering inverted and the flamegraph won't fill the viewport,
+      // we want to stick the flamegraph to the bottom of the viewport, not the top.
+
+      const physicalViewportHeight = this.physicalViewSize().y
+      const physicalFlamegraphHeight =
+        (this.configSpaceSize().y + 1) *
+        this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT *
+        window.devicePixelRatio
+
+      if (physicalFlamegraphHeight < physicalViewportHeight) {
+        return new Rect(
+          new Vec2(0, physicalViewportHeight - physicalFlamegraphHeight),
+          this.physicalViewSize(),
+        )
+      }
+    }
+
+    return new Rect(new Vec2(0, 0), this.physicalViewSize())
+  }
+
   private LOGICAL_VIEW_SPACE_FRAME_HEIGHT = Sizes.FRAME_HEIGHT
 
   private configSpaceToPhysicalViewSpace() {
-    return AffineTransform.betweenRects(
-      this.props.configSpaceViewportRect,
-      new Rect(new Vec2(0, 0), this.physicalViewSize()),
-    )
+    return AffineTransform.betweenRects(this.props.configSpaceViewportRect, this.physicalBounds())
   }
 
   private logicalToPhysicalViewSpace() {
@@ -388,7 +407,7 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
 
     this.props.canvasContext.renderInto(this.container, context => {
       this.props.flamechartRenderer.render({
-        physicalSpaceDstRect: new Rect(Vec2.zero, this.physicalViewSize()),
+        physicalSpaceDstRect: this.physicalBounds(),
         configSpaceSrcRect: this.props.configSpaceViewportRect,
         renderOutlines: true,
       })
