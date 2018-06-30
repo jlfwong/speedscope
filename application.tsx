@@ -18,7 +18,16 @@ import {Color} from './color'
 import {RowAtlas} from './row-atlas'
 import {importAsmJsSymbolMap} from './asm-js'
 import {SandwichView} from './sandwich-view'
-import {importProfile, importFromFileSystemDirectoryEntry} from './import'
+
+const importModule = import('./import')
+// Force eager loading of the module
+importModule.then(() => {})
+async function importProfile(fileName: string, contents: string): Promise<Profile | null> {
+  return (await importModule).importProfile(fileName, contents)
+}
+async function importFromFileSystemDirectoryEntry(entry: FileSystemDirectoryEntry) {
+  return (await importModule).importFromFileSystemDirectoryEntry(entry)
+}
 
 declare function require(x: string): any
 const exampleProfileURL = require('./sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt')

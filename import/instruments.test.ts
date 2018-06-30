@@ -1,13 +1,10 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import {dumpProfile} from '../test-utils'
-import {
-  importFromInstrumentsDeepCopy,
-  FileSystemEntry,
-  importFromInstrumentsTrace,
-} from './instruments'
+import {importFromInstrumentsDeepCopy, importFromInstrumentsTrace} from './instruments'
 
 import * as JSZip from 'jszip'
+import {FileSystemEntry} from './file-system-entry'
 
 describe('importFromInstrumentsDeepCopy', () => {
   test('time profile', () => {
