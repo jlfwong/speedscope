@@ -60,7 +60,7 @@ interface ToolbarProps extends ApplicationState {
   setViewMode(order: ViewMode): void
 }
 
-function importProfile(fileName: string, contents: string): Profile | null {
+async function importProfile(fileName: string, contents: string): Promise<Profile | null> {
   try {
     // First pass: Check known file format names to infer the file type
     if (fileName.endsWith('.cpuprofile')) {
@@ -408,8 +408,8 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       () =>
         new Promise((resolve, reject) => {
           const reader = new FileReader()
-          reader.addEventListener('loadend', () => {
-            const profile = importProfile(file.name, reader.result)
+          reader.addEventListener('loadend', async () => {
+            const profile = await importProfile(file.name, reader.result)
             if (profile) {
               if (!profile.getName()) {
                 profile.setName(file.name)
