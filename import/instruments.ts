@@ -5,6 +5,7 @@ import {Profile, FrameInfo, CallTreeProfileBuilder, StackListProfileBuilder} fro
 import {sortBy, getOrThrow, getOrInsert, lastOf, getOrElse, zeroPad} from '../utils'
 import * as pako from 'pako'
 import {ByteFormatter, TimeFormatter} from '../value-formatters'
+import {FileSystemDirectoryEntry, FileSystemEntry, FileSystemFileEntry} from './file-system-entry'
 
 function parseTSV<T>(contents: string): T[] {
   const lines = contents.split('\n').map(l => l.split('\t'))
@@ -146,24 +147,6 @@ interface TraceDirectoryTree {
   name: string
   files: Map<string, File>
   subdirectories: Map<string, TraceDirectoryTree>
-}
-
-// The bits of this API that we care about. This is implemented by WebKitEntry
-// https://wicg.github.io/entries-api/#api-entry
-export interface FileSystemDirectoryReader {
-  readEntries(cb: (entries: FileSystemEntry[]) => void, error: (err: Error) => void): void
-}
-export interface FileSystemEntry {
-  readonly isFile: boolean
-  readonly isDirectory: boolean
-  readonly name: string
-  readonly fullPath: string
-}
-export interface FileSystemDirectoryEntry extends FileSystemEntry {
-  createReader(): FileSystemDirectoryReader
-}
-export interface FileSystemFileEntry extends FileSystemEntry {
-  file(cb: (file: File) => void, errCb: (err: Error) => void): void
 }
 
 async function extractDirectoryTree(entry: FileSystemDirectoryEntry): Promise<TraceDirectoryTree> {

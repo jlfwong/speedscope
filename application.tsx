@@ -2,16 +2,7 @@ import {h} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 import {ReloadableComponent, SerializedComponent} from './reloadable'
 
-// TODO(jlfwong): Load these async, since none of them are required for initial render
-import {importFromBGFlameGraph} from './import/bg-flamegraph'
-import {importFromStackprof} from './import/stackprof'
-import {importFromChromeTimeline, importFromChromeCPUProfile} from './import/chrome'
-import {importFromFirefox} from './import/firefox'
-import {
-  importFromInstrumentsDeepCopy,
-  importFromInstrumentsTrace,
-  FileSystemDirectoryEntry,
-} from './import/instruments'
+import {FileSystemDirectoryEntry} from './import/file-system-entry'
 
 import {FlamechartRenderer, FlamechartRowAtlasKey} from './flamechart-renderer'
 import {CanvasContext} from './canvas-context'
@@ -27,6 +18,7 @@ import {Color} from './color'
 import {RowAtlas} from './row-atlas'
 import {importAsmJsSymbolMap} from './asm-js'
 import {SandwichView} from './sandwich-view'
+import {importProfile, importFromFileSystemDirectoryEntry} from './import'
 
 declare function require(x: string): any
 const exampleProfileURL = require('./sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt')
@@ -58,68 +50,6 @@ interface ApplicationState {
 
 interface ToolbarProps extends ApplicationState {
   setViewMode(order: ViewMode): void
-}
-
-async function importProfile(fileName: string, contents: string): Promise<Profile | null> {
-  try {
-    // First pass: Check known file format names to infer the file type
-    if (fileName.endsWith('.cpuprofile')) {
-      console.log('Importing as Chrome CPU Profile')
-      return importFromChromeCPUProfile(JSON.parse(contents))
-    } else if (fileName.endsWith('.chrome.json') || /Profile-\d{8}T\d{6}/.exec(fileName)) {
-      console.log('Importing as Chrome Timeline')
-      return importFromChromeTimeline(JSON.parse(contents))
-    } else if (fileName.endsWith('.stackprof.json')) {
-      console.log('Importing as stackprof profile')
-      return importFromStackprof(JSON.parse(contents))
-    } else if (fileName.endsWith('.instruments.txt')) {
-      console.log('Importing as Instruments.app deep copy')
-      return importFromInstrumentsDeepCopy(contents)
-    } else if (fileName.endsWith('.collapsedstack.txt')) {
-      console.log('Importing as collapsed stack format')
-      return importFromBGFlameGraph(contents)
-    }
-
-    // Second pass: Try to guess what file format it is based on structure
-    try {
-      const parsed = JSON.parse(contents)
-      if (parsed['systemHost'] && parsed['systemHost']['name'] == 'Firefox') {
-        console.log('Importing as Firefox profile')
-        return importFromFirefox(parsed)
-      } else if (Array.isArray(parsed) && parsed[parsed.length - 1].name === 'CpuProfile') {
-        console.log('Importing as Chrome CPU Profile')
-        return importFromChromeTimeline(parsed)
-      } else if ('nodes' in parsed && 'samples' in parsed && 'timeDeltas' in parsed) {
-        console.log('Importing as Chrome Timeline')
-        return importFromChromeCPUProfile(parsed)
-      } else if ('mode' in parsed && 'frames' in parsed) {
-        console.log('Importing as stackprof profile')
-        return importFromStackprof(parsed)
-      }
-    } catch (e) {
-      // Format is not JSON
-
-      // If the first line contains "Symbol Name", preceded by a tab, it's probably
-      // a deep copy from OS X Instruments.app
-      if (/^[\w \t\(\)]*\tSymbol Name/.exec(contents)) {
-        console.log('Importing as Instruments.app deep copy')
-        return importFromInstrumentsDeepCopy(contents)
-      }
-
-      // If every line ends with a space followed by a number, it's probably
-      // the collapsed stack format.
-      const lineCount = contents.split(/\n/).length
-      if (lineCount >= 1 && lineCount === contents.split(/ \d+\n/).length) {
-        console.log('Importing as collapsed stack format')
-        return importFromBGFlameGraph(contents)
-      }
-    }
-
-    return null
-  } catch (e) {
-    console.error(e)
-    return null
-  }
 }
 
 export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
@@ -460,7 +390,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       // Instrument.app file format is actually a directory.
       if (webkitEntry.isDirectory && webkitEntry.name.endsWith('.trace')) {
         console.log('Importing as Instruments.app .trace file')
-        this.loadProfile(async () => await importFromInstrumentsTrace(webkitEntry))
+        this.loadProfile(async () => await importFromFileSystemDirectoryEntry(webkitEntry))
         return
       }
     }
