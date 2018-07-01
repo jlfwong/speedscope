@@ -50,13 +50,6 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
     )
   }
 
-  private minConfigSpaceViewportRectWidth() {
-    return Math.min(
-      this.props.flamechart.getTotalWeight(),
-      3 * this.props.flamechart.getMinFrameWidth(),
-    )
-  }
-
   private setConfigSpaceViewportRect = (viewportRect: Rect): void => {
     const configSpaceDetailViewHeight = Sizes.DETAIL_VIEW_HEIGHT / Sizes.FRAME_HEIGHT
 
