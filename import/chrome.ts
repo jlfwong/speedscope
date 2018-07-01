@@ -114,7 +114,13 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile): Profile {
       elapsed = 0
     }
 
-    elapsed += chromeProfile.timeDeltas[i]
+    let timeDelta = chromeProfile.timeDeltas[i]
+    if (timeDelta < 0) {
+      console.warn('Substituting zero for unexpected time delta:', timeDelta, 'at index', i)
+      timeDelta = 0
+    }
+
+    elapsed += timeDelta
     lastNodeId = nodeId
   }
   if (!isNaN(lastNodeId)) {
