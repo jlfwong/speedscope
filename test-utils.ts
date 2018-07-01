@@ -1,4 +1,7 @@
+import * as fs from 'fs'
+import * as path from 'path'
 import {Profile, CallTreeNode, Frame} from './profile'
+import {importProfile} from './import'
 
 interface DumpedProfile {
   stacks: string[]
@@ -38,4 +41,14 @@ export function dumpProfile(profile: Profile): any {
   profile.forEachCall(openFrame, closeFrame)
 
   return dump
+}
+
+export async function checkProfileSnapshot(filepath: string) {
+  const input = fs.readFileSync(filepath, 'utf8')
+  const profile = await importProfile(path.basename(filepath), input)
+  if (profile) {
+    expect(dumpProfile(profile)).toMatchSnapshot()
+  } else {
+    fail('Failed to extract profile')
+  }
 }

@@ -1,28 +1,22 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import {dumpProfile} from '../test-utils'
-import {importFromInstrumentsDeepCopy, importFromInstrumentsTrace} from './instruments'
+import {dumpProfile, checkProfileSnapshot} from '../test-utils'
 
 import * as JSZip from 'jszip'
 import {FileSystemEntry} from './file-system-entry'
+import {importFromFileSystemDirectoryEntry} from '.'
 
 describe('importFromInstrumentsDeepCopy', () => {
-  test('time profile', () => {
-    const input = fs.readFileSync(
+  test('time profile', async () => {
+    await checkProfileSnapshot(
       './sample/profiles/Instruments/7.3.1/simple-time-profile-deep-copy.txt',
-      'utf8',
     )
-    const profile = importFromInstrumentsDeepCopy(input)
-    expect(dumpProfile(profile)).toMatchSnapshot()
   })
 
-  test('allocations profile', () => {
-    const input = fs.readFileSync(
+  test('allocations profile', async () => {
+    await checkProfileSnapshot(
       './sample/profiles/Instruments/7.3.1/random-allocations-deep-copy.txt',
-      'utf8',
     )
-    const profile = importFromInstrumentsDeepCopy(input)
-    expect(dumpProfile(profile)).toMatchSnapshot()
   })
 })
 
@@ -93,7 +87,7 @@ describe('importFromInstrumentsTrace', () => {
       })
     })
     const root = new ZipBackedFileSystemEntry(zip, 'simple-time-profile.trace')
-    const profile = await importFromInstrumentsTrace(root)
+    const profile = await importFromFileSystemDirectoryEntry(root)
     expect(dumpProfile(profile)).toMatchSnapshot()
   }
 
