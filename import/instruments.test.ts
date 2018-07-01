@@ -1,31 +1,22 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import {dumpProfile} from '../test-utils'
-import {
-  importFromInstrumentsDeepCopy,
-  FileSystemEntry,
-  importFromInstrumentsTrace,
-} from './instruments'
+import {dumpProfile, checkProfileSnapshot} from '../test-utils'
 
 import * as JSZip from 'jszip'
+import {FileSystemEntry} from './file-system-entry'
+import {importFromFileSystemDirectoryEntry} from '.'
 
 describe('importFromInstrumentsDeepCopy', () => {
-  test('time profile', () => {
-    const input = fs.readFileSync(
+  test('time profile', async () => {
+    await checkProfileSnapshot(
       './sample/profiles/Instruments/7.3.1/simple-time-profile-deep-copy.txt',
-      'utf8',
     )
-    const profile = importFromInstrumentsDeepCopy(input)
-    expect(dumpProfile(profile)).toMatchSnapshot()
   })
 
-  test('allocations profile', () => {
-    const input = fs.readFileSync(
+  test('allocations profile', async () => {
+    await checkProfileSnapshot(
       './sample/profiles/Instruments/7.3.1/random-allocations-deep-copy.txt',
-      'utf8',
     )
-    const profile = importFromInstrumentsDeepCopy(input)
-    expect(dumpProfile(profile)).toMatchSnapshot()
   })
 })
 
@@ -35,7 +26,7 @@ class ZipBackedFileSystemEntry implements FileSystemEntry {
   readonly name: string
   readonly fullPath: string
 
-  private zipDir: JSZip | null
+  private zipDir: any | null
   private zipFile: JSZip.JSZipObject | null
 
   constructor(private zip: JSZip, fullPath: string) {
@@ -76,7 +67,7 @@ class ZipBackedFileSystemEntry implements FileSystemEntry {
       readEntries: (cb: (entries: FileSystemEntry[]) => void, errCb: (error: Error) => void) => {
         if (!this.zipDir) return errCb(new Error('Failed to read folder entries'))
         const ret: FileSystemEntry[] = []
-        this.zipDir.forEach((relativePath, file) => {
+        this.zipDir.forEach((relativePath: string, file: {name: string}) => {
           if (relativePath.split('/').length === (relativePath.endsWith('/') ? 2 : 1)) {
             ret.push(new ZipBackedFileSystemEntry(this.zip, file.name))
           }
@@ -89,14 +80,14 @@ class ZipBackedFileSystemEntry implements FileSystemEntry {
 
 describe('importFromInstrumentsTrace', () => {
   async function importFromTrace(tracePath: string) {
-    const zip = await new Promise<JSZip>((resolve, reject) => {
+    const zip = await new Promise<any>((resolve, reject) => {
       fs.readFile(tracePath, (err, data) => {
         if (err) return reject(err)
         JSZip.loadAsync(data).then(resolve)
       })
     })
     const root = new ZipBackedFileSystemEntry(zip, 'simple-time-profile.trace')
-    const profile = await importFromInstrumentsTrace(root)
+    const profile = await importFromFileSystemDirectoryEntry(root)
     expect(dumpProfile(profile)).toMatchSnapshot()
   }
 

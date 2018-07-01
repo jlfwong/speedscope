@@ -1,9 +1,5 @@
-import * as fs from 'fs'
-import {dumpProfile} from '../test-utils'
-import {importFromStackprof} from './stackprof'
+import {checkProfileSnapshot} from '../test-utils'
 
-test('importFromStackprof', () => {
-  const input = fs.readFileSync('./sample/profiles/stackprof/simple-stackprof.json', 'utf8')
-  const profile = importFromStackprof(JSON.parse(input))
-  expect(dumpProfile(profile)).toMatchSnapshot()
+test('importFromStackprof', async () => {
+  await checkProfileSnapshot('./sample/profiles/stackprof/simple-stackprof.json')
 })
