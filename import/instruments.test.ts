@@ -32,7 +32,7 @@ class ZipBackedFileSystemEntry implements FileSystemEntry {
   readonly name: string
   readonly fullPath: string
 
-  private zipDir: JSZip | null
+  private zipDir: any | null
   private zipFile: JSZip.JSZipObject | null
 
   constructor(private zip: JSZip, fullPath: string) {
@@ -73,7 +73,7 @@ class ZipBackedFileSystemEntry implements FileSystemEntry {
       readEntries: (cb: (entries: FileSystemEntry[]) => void, errCb: (error: Error) => void) => {
         if (!this.zipDir) return errCb(new Error('Failed to read folder entries'))
         const ret: FileSystemEntry[] = []
-        this.zipDir.forEach((relativePath, file) => {
+        this.zipDir.forEach((relativePath: string, file: {name: string}) => {
           if (relativePath.split('/').length === (relativePath.endsWith('/') ? 2 : 1)) {
             ret.push(new ZipBackedFileSystemEntry(this.zip, file.name))
           }
@@ -86,7 +86,7 @@ class ZipBackedFileSystemEntry implements FileSystemEntry {
 
 describe('importFromInstrumentsTrace', () => {
   async function importFromTrace(tracePath: string) {
-    const zip = await new Promise<JSZip>((resolve, reject) => {
+    const zip = await new Promise<any>((resolve, reject) => {
       fs.readFile(tracePath, (err, data) => {
         if (err) return reject(err)
         JSZip.loadAsync(data).then(resolve)
