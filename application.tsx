@@ -255,8 +255,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     try {
       profile = await loader()
     } catch (e) {
-      alert('Failed to load format. See console for details')
-      console.log(e)
+      console.log('Failed to load format', e)
       this.setState({error: true})
       return
     }
@@ -264,6 +263,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     if (profile == null) {
       // TODO(jlfwong): Make this a nicer overlay
       alert('Unrecognized format! See documentation about supported formats.')
+      await new Promise(resolve => this.setState({loading: false}, resolve))
       return
     }
 
@@ -343,40 +343,36 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   loadFromFile(file: File) {
-    this.loadProfile(
-      () =>
-        new Promise((resolve, reject) => {
-          const reader = new FileReader()
-          reader.addEventListener('loadend', async () => {
-            const profile = await importProfile(file.name, reader.result)
-            if (profile) {
-              if (!profile.getName()) {
-                profile.setName(file.name)
-              }
-              resolve(profile)
-              return
-            }
+    this.loadProfile(async () => {
+      const reader = new FileReader()
+      const loadPromise = new Promise(resolve => reader.addEventListener('loadend', resolve))
+      reader.readAsText(file)
+      await loadPromise
 
-            if (this.state.profile) {
-              // If a profile is already loaded, it's possible the file being imported is
-              // a symbol map. If that's the case, we want to parse it, and apply the symbol
-              // mapping to the already loaded profile. This can be use to take an opaque
-              // profile and make it readable.
-              const map = importAsmJsSymbolMap(reader.result)
-              if (map) {
-                console.log('Importing as asm.js symbol map')
-                let profile = this.state.profile
-                profile.remapNames(name => map.get(name) || name)
-                resolve(profile)
-                return
-              }
-            }
+      const profile = await importProfile(file.name, reader.result)
+      if (profile) {
+        if (!profile.getName()) {
+          profile.setName(file.name)
+        }
+        return profile
+      }
 
-            reject()
-          })
-          reader.readAsText(file)
-        }),
-    )
+      if (this.state.profile) {
+        // If a profile is already loaded, it's possible the file being imported is
+        // a symbol map. If that's the case, we want to parse it, and apply the symbol
+        // mapping to the already loaded profile. This can be use to take an opaque
+        // profile and make it readable.
+        const map = importAsmJsSymbolMap(reader.result)
+        if (map) {
+          console.log('Importing as asm.js symbol map')
+          let profile = this.state.profile
+          profile.remapNames(name => map.get(name) || name)
+          return profile
+        }
+      }
+
+      return null
+    })
   }
 
   loadExample = () => {
