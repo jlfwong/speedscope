@@ -56,6 +56,10 @@ export class Vec2 {
     return new Vec2(Math.max(a.x, b.x), Math.max(a.y, b.y))
   }
 
+  static clamp(v: Vec2, min: Vec2, max: Vec2) {
+    return new Vec2(clamp(v.x, min.x, max.x), clamp(v.y, min.y, max.y))
+  }
+
   static zero = new Vec2(0, 0)
   static unit = new Vec2(1, 1)
 

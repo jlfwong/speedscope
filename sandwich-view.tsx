@@ -8,7 +8,7 @@ import {CanvasContext} from './canvas-context'
 import {FlamechartRenderer, FlamechartRowAtlasKey} from './flamechart-renderer'
 import {Flamechart} from './flamechart'
 import {RowAtlas} from './row-atlas'
-import {Rect, AffineTransform, Vec2} from './math'
+import {Rect, AffineTransform, Vec2, clamp} from './math'
 import {FlamechartPanZoomView, FlamechartPanZoomViewProps} from './flamechart-pan-zoom-view'
 import {noop, formatPercent} from './utils'
 import {Hovertip} from './hovertip'
@@ -43,25 +43,21 @@ export class FlamechartWrapper extends ReloadableComponent<
   private clampViewportToFlamegraph(viewportRect: Rect, flamegraph: Flamechart, inverted: boolean) {
     const configSpaceSize = new Vec2(flamegraph.getTotalWeight(), flamegraph.getLayers().length)
 
-    let configSpaceOriginBounds = new Rect(
+    const width = clamp(
+      viewportRect.size.x,
+      Math.min(configSpaceSize.x, 3 * flamegraph.getMinFrameWidth()),
+      configSpaceSize.x,
+    )
+
+    const size = viewportRect.size.withX(width)
+
+    const origin = Vec2.clamp(
+      viewportRect.origin,
       new Vec2(0, inverted ? 0 : -1),
-      Vec2.max(new Vec2(0, 0), configSpaceSize.minus(viewportRect.size).plus(new Vec2(0, 1))),
+      Vec2.max(Vec2.zero, configSpaceSize.minus(size).plus(new Vec2(0, 1))),
     )
 
-    const minConfigSpaceViewportRectWidth = Math.min(
-      flamegraph.getTotalWeight(),
-      3 * flamegraph.getMinFrameWidth(),
-    )
-
-    const configSpaceSizeBounds = new Rect(
-      new Vec2(minConfigSpaceViewportRectWidth, viewportRect.height()),
-      new Vec2(configSpaceSize.x, viewportRect.height()),
-    )
-
-    return new Rect(
-      configSpaceOriginBounds.closestPointTo(viewportRect.origin),
-      configSpaceSizeBounds.closestPointTo(viewportRect.size),
-    )
+    return new Rect(origin, viewportRect.size.withX(width))
   }
 
   private setConfigSpaceViewportRect = (viewportRect: Rect) => {

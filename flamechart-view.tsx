@@ -5,7 +5,7 @@ import {ReloadableComponent} from './reloadable'
 import {CallTreeNode, Frame} from './profile'
 import {Flamechart} from './flamechart'
 
-import {Rect, Vec2, AffineTransform} from './math'
+import {Rect, Vec2, AffineTransform, clamp} from './math'
 import {formatPercent} from './utils'
 import {FlamechartMinimapView} from './flamechart-minimap-view'
 
@@ -50,36 +50,30 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
     )
   }
 
-  private minConfigSpaceViewportRectWidth() {
-    return Math.min(
-      this.props.flamechart.getTotalWeight(),
-      3 * this.props.flamechart.getMinFrameWidth(),
-    )
-  }
-
   private setConfigSpaceViewportRect = (viewportRect: Rect): void => {
     const configSpaceDetailViewHeight = Sizes.DETAIL_VIEW_HEIGHT / Sizes.FRAME_HEIGHT
 
-    const configSpaceOriginBounds = new Rect(
-      new Vec2(0, -1),
-      Vec2.max(
-        new Vec2(0, 0),
-        this.configSpaceSize()
-          .minus(viewportRect.size)
-          .plus(new Vec2(0, configSpaceDetailViewHeight + 1)),
-      ),
+    const configSpaceSize = this.configSpaceSize()
+
+    const width = clamp(
+      viewportRect.size.x,
+      Math.min(configSpaceSize.x, 3 * this.props.flamechart.getMinFrameWidth()),
+      configSpaceSize.x,
     )
 
-    const configSpaceSizeBounds = new Rect(
-      new Vec2(this.minConfigSpaceViewportRectWidth(), viewportRect.height()),
-      new Vec2(this.configSpaceSize().x, viewportRect.height()),
+    const size = viewportRect.size.withX(width)
+
+    const origin = Vec2.clamp(
+      viewportRect.origin,
+      new Vec2(0, -1),
+      Vec2.max(
+        Vec2.zero,
+        configSpaceSize.minus(size).plus(new Vec2(0, configSpaceDetailViewHeight + 1)),
+      ),
     )
 
     this.setState({
-      configSpaceViewportRect: new Rect(
-        configSpaceOriginBounds.closestPointTo(viewportRect.origin),
-        configSpaceSizeBounds.closestPointTo(viewportRect.size),
-      ),
+      configSpaceViewportRect: new Rect(origin, viewportRect.size.withX(width)),
     })
   }
 
