@@ -1,5 +1,6 @@
 import {lastOf, KeyedSet} from './utils'
 import {ValueFormatter, RawValueFormatter} from './value-formatters'
+import {WeightUnit} from './file-format'
 const demangleCppModule = import('./demangle-cpp')
 
 // Force eager loading of the module
@@ -119,6 +120,9 @@ export class Profile {
   setValueFormatter(f: ValueFormatter) {
     this.valueFormatter = f
   }
+  getWeightUnit(): WeightUnit {
+    return this.valueFormatter.unit
+  }
 
   getName() {
     return this.name
@@ -221,6 +225,12 @@ export class Profile {
 
   forEachFrame(fn: (frame: Frame) => void) {
     this.frames.forEach(fn)
+  }
+
+  forEachSample(fn: (sample: CallTreeNode, weight: number) => void) {
+    for (let i = 0; i < this.samples.length; i++) {
+      fn(this.samples[i], this.weights[i])
+    }
   }
 
   getProfileWithRecursionFlattened(): Profile {
