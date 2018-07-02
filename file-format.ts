@@ -105,7 +105,7 @@ export function exportProfile(profile: Profile): SerializedSpeedscopeFile {
         frame: getIndexForFrame(node.frame),
       }
       if (node.parent && !node.parent.isRoot()) {
-        serializedNode.parent = getIndexForNode(node)
+        serializedNode.parent = getIndexForNode(node.parent)
       }
 
       index = nodes.length
