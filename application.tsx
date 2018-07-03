@@ -18,6 +18,7 @@ import {Color} from './color'
 import {RowAtlas} from './row-atlas'
 import {importAsmJsSymbolMap} from './asm-js'
 import {SandwichView} from './sandwich-view'
+import {exportProfile, saveToFile} from './file-format'
 
 const importModule = import('./import')
 // Force eager loading of the module
@@ -381,9 +382,12 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   loadExample = () => {
     this.loadProfile(async () => {
       const filename = 'perf-vertx-stacks-01-collapsed-all.txt'
-      return await fetch(exampleProfileURL)
-        .then(resp => resp.text())
-        .then(data => importProfile(filename, data))
+      const data = await fetch(exampleProfileURL).then(resp => resp.text())
+      const profile = await importProfile(filename, data)
+      if (profile && !profile.getName()) {
+        profile.setName(filename)
+      }
+      return profile
     })
   }
 
@@ -445,6 +449,25 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     }
   }
 
+  onWindowKeyDown = async (ev: KeyboardEvent) => {
+    // This has to be handled on key down in order to prevent the default
+    // page save action.
+    if (ev.key === 's' && (ev.ctrlKey || ev.metaKey)) {
+      ev.preventDefault()
+
+      if (this.state.profile) {
+        saveToFile(this.state.profile)
+      }
+    } else if (ev.key === 'o' && (ev.ctrlKey || ev.metaKey)) {
+      ev.preventDefault()
+
+      const input = document.createElement('input')
+      input.type = 'file'
+      input.addEventListener('change', this.onFileSelect)
+      input.click()
+    }
+  }
+
   onDocumentPaste = (ev: Event) => {
     ev.preventDefault()
     ev.stopPropagation()
@@ -454,9 +477,16 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   componentDidMount() {
+    window.addEventListener('keydown', this.onWindowKeyDown)
     window.addEventListener('keypress', this.onWindowKeyPress)
     document.addEventListener('paste', this.onDocumentPaste)
     this.maybeLoadHashParamProfile()
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.onWindowKeyDown)
+    window.removeEventListener('keypress', this.onWindowKeyPress)
+    document.removeEventListener('paste', this.onDocumentPaste)
   }
 
   async maybeLoadHashParamProfile() {
@@ -474,11 +504,6 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
         return await importProfile(filename, await response.text())
       })
     }
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('keypress', this.onWindowKeyPress)
-    document.removeEventListener('paste', this.onDocumentPaste)
   }
 
   flamechartView: FlamechartView | null = null

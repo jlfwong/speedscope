@@ -55,6 +55,7 @@ interface SerializedSamplingProfile {
 
 export interface SerializedSpeedscopeFile {
   version: string
+  exporter: 'https://www.speedscope.app'
   profiles: SerializedSamplingProfile[]
 }
 
@@ -122,6 +123,7 @@ export function exportProfile(profile: Profile): SerializedSpeedscopeFile {
 
   return {
     version: '0.0.1',
+    exporter: 'https://www.speedscope.app',
     profiles: [serialized],
   }
 }
@@ -218,4 +220,23 @@ export function importSingleSpeedscopeProfile(serialized: SerializedSpeedscopeFi
     throw new Error(`Unexpected profiles length ${serialized.profiles}`)
   }
   return importSpeedscopeProfile(serialized.profiles[0])
+}
+
+export function saveToFile(profile: Profile): void {
+  const blob = new Blob([JSON.stringify(exportProfile(profile))], {type: 'text/json'})
+
+  const nameWithoutExt = profile.getName().split('.')[0]!
+  const filename = `${nameWithoutExt.replace(/\W+/g, '_')}.speedscope.json`
+
+  console.log('Saving', filename)
+
+  const a = document.createElement('a')
+  a.download = filename
+  a.href = window.URL.createObjectURL(blob)
+  a.dataset.downloadurl = ['text/json', a.download, a.href].join(':')
+
+  // For this to work in Firefox, the <a> must be in the DOM
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
 }
