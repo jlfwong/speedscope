@@ -22,7 +22,7 @@ date > "$OUTDIR"/release.txt
 git rev-parse HEAD >> "$OUTDIR"/release.txt
 
 # Build the compiled assets
-node_modules/.bin/parcel build index.html --out-dir "$OUTDIR" --public-url / --detailed-report
+node_modules/.bin/parcel build index.html --no-cache --out-dir "$OUTDIR" --public-url "./" --detailed-report
 
 # Create a shallow clone of the repository
 TMPDIR=`mktemp -d -t speedscope-release`
