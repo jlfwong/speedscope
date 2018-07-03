@@ -94,7 +94,6 @@ export class FlamechartWrapper extends ReloadableComponent<
         <span className={css(style.hoverCount)}>
           {this.formatValue(hover.node.getTotalWeight())}
         </span>{' '}
-        Hello
         {hover.node.frame.name}
       </Hovertip>
     )
