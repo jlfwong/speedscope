@@ -6,7 +6,7 @@ import {importFromStackprof} from './stackprof'
 import {importFromInstrumentsDeepCopy, importFromInstrumentsTrace} from './instruments'
 import {importFromBGFlameGraph} from './bg-flamegraph'
 import {importFromFirefox} from './firefox'
-import {importSingleSpeedscopeProfile, importSpeedscopeProfile} from '../file-format'
+import {importSingleSpeedscopeProfile} from '../file-format'
 
 export async function importProfile(fileName: string, contents: string): Promise<Profile | null> {
   // First pass: Check known file format names to infer the file type

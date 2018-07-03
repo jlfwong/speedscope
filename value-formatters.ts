@@ -1,4 +1,4 @@
-import {WeightUnit} from './file-format'
+import {WeightUnit} from './file-format-spec'
 
 export interface ValueFormatter {
   unit: WeightUnit

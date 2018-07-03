@@ -18,7 +18,7 @@ import {Color} from './color'
 import {RowAtlas} from './row-atlas'
 import {importAsmJsSymbolMap} from './asm-js'
 import {SandwichView} from './sandwich-view'
-import {exportProfile, saveToFile} from './file-format'
+import {saveToFile} from './file-format'
 
 const importModule = import('./import')
 // Force eager loading of the module

@@ -1,6 +1,6 @@
 import {lastOf, KeyedSet} from './utils'
 import {ValueFormatter, RawValueFormatter} from './value-formatters'
-import {WeightUnit} from './file-format'
+import {WeightUnit} from './file-format-spec'
 const demangleCppModule = import('./demangle-cpp')
 
 // Force eager loading of the module
