@@ -176,8 +176,8 @@ function importSpeedscopeProfile(serialized: SerializedSamplingProfile): Profile
     // so hopefully this isn't much of a problem
     for (
       lca = stackTop;
-      lca && prevStack.indexOf(lca) === -1;
-      lca = lca.parent ? nodes[lca.parent] : null
+      lca != null && prevStack.indexOf(lca) === -1;
+      lca = lca.parent != null ? nodes[lca.parent] : null
     ) {}
 
     // Close frames that are no longer open
@@ -190,8 +190,8 @@ function importSpeedscopeProfile(serialized: SerializedSamplingProfile): Profile
     const toOpen: SerializedNode[] = []
     for (
       let node: SerializedNode | null = stackTop;
-      node && node != lca;
-      node = node.parent ? nodes[node.parent] : null
+      node != null && node != lca;
+      node = node.parent != null ? nodes[node.parent] : null
     ) {
       toOpen.push(node)
     }
