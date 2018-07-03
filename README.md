@@ -98,3 +98,5 @@ Once a profile has loaded, the main view is split into two: the top area is the 
 * `2`: Switch to the "Left Heavy" view
 * `3`: Switch to the "Sandwich" view
 * `r`: Collapse recursion in the flamegraphs
+* `Cmd+S`/`Ctrl+S` to save the current profile
+* `Cmd+O`/`Ctrl+O` to open a new profile
