@@ -29,6 +29,9 @@ async function importFromFileSystemDirectoryEntry(entry: FileSystemDirectoryEntr
   return (await importModule).importFromFileSystemDirectoryEntry(entry)
 }
 
+const protocol = window.location.protocol
+const canUseXHR = protocol === 'http:' || protocol === 'https:'
+
 declare function require(x: string): any
 const exampleProfileURL = require('./sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt')
 
@@ -195,7 +198,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     this.state = {
       // Start out at a loading state if we know that we'll immediately be fetching a profile to
       // view.
-      loading: this.hashParams.profileURL != null,
+      loading: canUseXHR && this.hashParams.profileURL != null,
       dragActive: false,
       error: false,
       profile: null,
@@ -458,6 +461,10 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
 
   async maybeLoadHashParamProfile() {
     if (this.hashParams.profileURL) {
+      if (!canUseXHR) {
+        alert(`Cannot load a profile URL when loading from "${protocol}" URL protocol`)
+        return
+      }
       this.loadProfile(async () => {
         const response = await fetch(this.hashParams.profileURL!)
         let filename = new URL(this.hashParams.profileURL!).pathname
@@ -503,15 +510,21 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
             </a>{' '}
             visualizer. Use it to help you make your software faster.
           </p>
-          <p className={css(style.landingP)}>
-            Drag and drop a profile file onto this window to get started, click the big blue button
-            below to browse for a profile to explore, or{' '}
-            <a className={css(style.link)} onClick={this.loadExample}>
-              click here
-            </a>{' '}
-            to load an example profile.
-          </p>
-
+          {canUseXHR ? (
+            <p className={css(style.landingP)}>
+              Drag and drop a profile file onto this window to get started, click the big blue
+              button below to browse for a profile to explore, or{' '}
+              <a className={css(style.link)} onClick={this.loadExample}>
+                click here
+              </a>{' '}
+              to load an example profile.
+            </p>
+          ) : (
+            <p className={css(style.landingP)}>
+              Drag and drop a profile file onto this window to get started, or click the big blue
+              button below to browse for a profile to explore.
+            </p>
+          )}
           <div className={css(style.browseButtonContainer)}>
             <input
               type="file"

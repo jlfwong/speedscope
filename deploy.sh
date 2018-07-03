@@ -24,6 +24,12 @@ git rev-parse HEAD >> "$OUTDIR"/release.txt
 # Build the compiled assets
 node_modules/.bin/parcel build index.html --no-cache --out-dir "$OUTDIR" --public-url "./" --detailed-report
 
+# Create an archive with the release contents in it
+pushd "$OUTDIR"
+rm -rf ../release.zip
+zip -r ../release.zip .
+popd
+
 # Create a shallow clone of the repository
 TMPDIR=`mktemp -d -t speedscope-release`
 echo "Entering $TMPDIR"
