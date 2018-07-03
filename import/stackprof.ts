@@ -21,16 +21,22 @@ export function importFromStackprof(stackprofProfile: StackprofProfile): Profile
 
   const {frames, raw, raw_timestamp_deltas} = stackprofProfile
   let sampleIndex = 0
+
+  let prevStack: FrameInfo[] = []
+
   for (let i = 0; i < raw.length; ) {
     const stackHeight = raw[i++]
 
-    const stack: FrameInfo[] = []
+    let stack: FrameInfo[] = []
     for (let j = 0; j < stackHeight; j++) {
       const id = raw[i++]
       stack.push({
         key: id,
         ...frames[id],
       })
+    }
+    if (stack.length === 1 && stack[0].name === '(garbage collection)') {
+      stack = prevStack.concat(stack)
     }
     const nSamples = raw[i++]
 
@@ -40,6 +46,7 @@ export function importFromStackprof(stackprofProfile: StackprofProfile): Profile
     }
 
     profile.appendSample(stack, sampleDuration)
+    prevStack = stack
   }
 
   profile.setValueFormatter(new TimeFormatter('microseconds'))
