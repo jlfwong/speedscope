@@ -1,46 +1,21 @@
 // This file contains types which specify the speedscope file format.
 
 export namespace FileFormat {
+  export interface File {
+    version: string
+    exporter: 'https://www.speedscope.app'
+    shared: {
+      frames: Frame[]
+    }
+    profiles: EventedProfile[]
+  }
+
   export interface Frame {
     name: string
     file?: string
     line?: number
     col?: number
   }
-
-  export enum EventType {
-    OPEN_FRAME = 'O',
-    CLOSE_FRAME = 'C',
-  }
-
-  interface IEvent {
-    type: EventType
-    at: number
-  }
-
-  // Indicates a stack frame opened. Every opened stack frame must have a
-  // corresponding close frame event, and the ordering must be balanced.
-  interface OpenFrameEvent extends IEvent {
-    type: EventType.OPEN_FRAME
-    // An index into the frames array in the shared data within the profile
-    frame: number
-  }
-
-  interface CloseFrameEvent extends IEvent {
-    type: EventType.CLOSE_FRAME
-    // An index into the frames array in the shared data within the profile
-    frame: number
-  }
-
-  export type Event = OpenFrameEvent | CloseFrameEvent
-
-  export type ValueUnit =
-    | 'none'
-    | 'nanoseconds'
-    | 'microseconds'
-    | 'milliseconds'
-    | 'seconds'
-    | 'bytes'
 
   export enum ProfileType {
     EVENTED = 'evented',
@@ -50,7 +25,7 @@ export namespace FileFormat {
     type: ProfileType
   }
 
-  export interface SerializedEventedProfile extends IProfile {
+  export interface EventedProfile extends IProfile {
     // Type of profile. This will future proof the file format to allow many
     // different kinds of profiles to be contained and each type to be part of
     // a discriminated union.
@@ -75,17 +50,38 @@ export namespace FileFormat {
 
     // List of events that occured as part of this profile.
     // The "at" field of every event must be in non-decreasing order.
-    events: Event[]
+    events: (OpenFrameEvent | CloseFrameEvent)[]
   }
 
-  export type Profile = SerializedEventedProfile
+  export type ValueUnit =
+    | 'none'
+    | 'nanoseconds'
+    | 'microseconds'
+    | 'milliseconds'
+    | 'seconds'
+    | 'bytes'
 
-  export interface File {
-    version: string
-    exporter: 'https://www.speedscope.app'
-    shared: {
-      frames: Frame[]
-    }
-    profiles: Profile[]
+  export enum EventType {
+    OPEN_FRAME = 'O',
+    CLOSE_FRAME = 'C',
+  }
+
+  interface IEvent {
+    type: EventType
+    at: number
+  }
+
+  // Indicates a stack frame opened. Every opened stack frame must have a
+  // corresponding close frame event, and the ordering must be balanced.
+  interface OpenFrameEvent extends IEvent {
+    type: EventType.OPEN_FRAME
+    // An index into the frames array in the shared data within the profile
+    frame: number
+  }
+
+  interface CloseFrameEvent extends IEvent {
+    type: EventType.CLOSE_FRAME
+    // An index into the frames array in the shared data within the profile
+    frame: number
   }
 }

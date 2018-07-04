@@ -1,6 +1,6 @@
 import {lastOf, KeyedSet} from './utils'
 import {ValueFormatter, RawValueFormatter} from './value-formatters'
-import {ValueUnit} from './file-format-spec'
+import {FileFormat} from './file-format-spec'
 const demangleCppModule = import('./demangle-cpp')
 
 // Force eager loading of the module
@@ -120,7 +120,7 @@ export class Profile {
   setValueFormatter(f: ValueFormatter) {
     this.valueFormatter = f
   }
-  getWeightUnit(): ValueUnit {
+  getWeightUnit(): FileFormat.ValueUnit {
     return this.valueFormatter.unit
   }
 

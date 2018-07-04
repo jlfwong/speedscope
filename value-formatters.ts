@@ -1,12 +1,12 @@
-import {ValueUnit} from './file-format-spec'
+import {FileFormat} from './file-format-spec'
 
 export interface ValueFormatter {
-  unit: ValueUnit
+  unit: FileFormat.ValueUnit
   format(v: number): string
 }
 
 export class RawValueFormatter implements ValueFormatter {
-  unit: ValueUnit = 'none'
+  unit: FileFormat.ValueUnit = 'none'
   format(v: number) {
     return v.toLocaleString()
   }
@@ -34,7 +34,7 @@ export class TimeFormatter implements ValueFormatter {
 }
 
 export class ByteFormatter implements ValueFormatter {
-  unit: ValueUnit = 'bytes'
+  unit: FileFormat.ValueUnit = 'bytes'
 
   format(v: number) {
     if (v < 1024) return `${v.toFixed(0)} B`

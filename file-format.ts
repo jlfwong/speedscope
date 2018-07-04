@@ -10,7 +10,7 @@ export interface InMemorySpeedscopeFile {
 export function exportProfile(profile: Profile): FileFormat.File {
   const frames: FileFormat.Frame[] = []
 
-  const eventedProfile: FileFormat.Profile = {
+  const eventedProfile: FileFormat.EventedProfile = {
     type: FileFormat.ProfileType.EVENTED,
     name: profile.getName(),
     unit: profile.getWeightUnit(),
@@ -64,7 +64,7 @@ export function exportProfile(profile: Profile): FileFormat.File {
 }
 
 function importSpeedscopeProfile(
-  serialized: FileFormat.Profile,
+  serialized: FileFormat.EventedProfile,
   frames: FileFormat.Frame[],
 ): Profile {
   const {startValue, endValue, name, unit, events} = serialized
