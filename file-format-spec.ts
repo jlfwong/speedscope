@@ -1,58 +1,91 @@
 // This file contains types which specify the speedscope file format.
 
-export interface SerializedFrame {
-  name: string
-  file?: string
-  line?: number
-  col?: number
-}
+export namespace FileFormat {
+  export interface Frame {
+    name: string
+    file?: string
+    line?: number
+    col?: number
+  }
 
-export interface SerializedNode {
-  // Index into the frames array on the SerializedProfile
-  frame: number
+  export enum EventType {
+    OPEN_FRAME = 'O',
+    CLOSE_FRAME = 'C',
+  }
 
-  // Index into the nodes array on the SerializedProfile
-  parent?: number
-}
+  interface IEvent {
+    type: EventType
+    at: number
+  }
 
-export type WeightUnit =
-  | 'none'
-  | 'nanoseconds'
-  | 'microseconds'
-  | 'milliseconds'
-  | 'seconds'
-  | 'bytes'
+  // Indicates a stack frame opened. Every opened stack frame must have a
+  // corresponding close frame event, and the ordering must be balanced.
+  interface OpenFrameEvent extends IEvent {
+    type: EventType.OPEN_FRAME
+    // An index into the frames array in the shared data within the profile
+    frame: number
+  }
 
-export interface SerializedSamplingProfile {
-  // Type of profile. This will future proof the file format to allow many
-  // different kinds of profiles to be contained and each type to be part of
-  // a discriminate union.
-  type: 'SamplingProfile'
+  interface CloseFrameEvent extends IEvent {
+    type: EventType.CLOSE_FRAME
+    // An index into the frames array in the shared data within the profile
+    frame: number
+  }
 
-  // Name of the profile. Typically a filename for the source of the profile.
-  name: string
+  export type Event = OpenFrameEvent | CloseFrameEvent
 
-  // List of all call frames
-  frames: SerializedFrame[]
+  export type ValueUnit =
+    | 'none'
+    | 'nanoseconds'
+    | 'microseconds'
+    | 'milliseconds'
+    | 'seconds'
+    | 'bytes'
 
-  // List of nodes in the call tree
-  nodes: SerializedNode[]
+  export enum ProfileType {
+    EVENTED = 'evented',
+  }
 
-  // List of indices into nodes, with -1 indicating that the call-stack
-  // was empty at the time of the sample
-  samples: number[]
+  export interface IProfile {
+    type: ProfileType
+  }
 
-  // The weight of the sample at the given index. Should have
-  // the same length as the samples array.
-  weights: number[]
+  export interface SerializedEventedProfile extends IProfile {
+    // Type of profile. This will future proof the file format to allow many
+    // different kinds of profiles to be contained and each type to be part of
+    // a discriminated union.
+    type: ProfileType.EVENTED
 
-  // Unit of the weights provided in the profile. If none provided,
-  // the weights are assumed to be unit-less.
-  weightUnit: WeightUnit
-}
+    // Name of the profile. Typically a filename for the source of the profile.
+    name: string
 
-export interface SerializedSpeedscopeFile {
-  version: string
-  exporter: 'https://www.speedscope.app'
-  profiles: SerializedSamplingProfile[]
+    // Unit which all value are specified using in the profile.
+    unit: ValueUnit
+
+    // The starting value of the profile. This will typically be a timestamp.
+    // All event values will be relative to this startValue.
+    startValue: number
+
+    // The final value of the profile. This will typically be a timestamp. This
+    // must be greater than or equal to the startValue. This is useful in
+    // situations where the recorded profile extends past the end of the recorded
+    // events, which may happen if nothing was happening at the end of the
+    // profile.
+    endValue: number
+
+    // List of events that occured as part of this profile.
+    // The "at" field of every event must be in non-decreasing order.
+    events: Event[]
+  }
+
+  export type Profile = SerializedEventedProfile
+
+  export interface File {
+    version: string
+    exporter: 'https://www.speedscope.app'
+    shared: {
+      frames: Frame[]
+    }
+    profiles: Profile[]
+  }
 }

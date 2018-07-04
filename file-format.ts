@@ -1,37 +1,36 @@
 import {Profile, CallTreeNode, Frame, CallTreeProfileBuilder, FrameInfo} from './profile'
 import {TimeFormatter, ByteFormatter, RawValueFormatter} from './value-formatters'
-import {lastOf} from './utils'
-import {
-  SerializedSpeedscopeFile,
-  SerializedSamplingProfile,
-  SerializedFrame,
-  SerializedNode,
-} from './file-format-spec'
+import {FileFormat} from './file-format-spec'
 
 export interface InMemorySpeedscopeFile {
   version: string
   profile: Profile[]
 }
 
-export function exportProfile(profile: Profile): SerializedSpeedscopeFile {
-  const serialized: SerializedSamplingProfile = {
-    type: 'SamplingProfile',
+export function exportProfile(profile: Profile): FileFormat.File {
+  const frames: FileFormat.Frame[] = []
+
+  const eventedProfile: FileFormat.Profile = {
+    type: FileFormat.ProfileType.EVENTED,
     name: profile.getName(),
-    frames: [],
-    nodes: [],
-    samples: [],
-    weights: [],
-    weightUnit: profile.getWeightUnit(),
+    unit: profile.getWeightUnit(),
+    startValue: 0,
+    endValue: profile.getTotalWeight(),
+    events: [],
   }
-  const {frames, nodes, samples, weights} = serialized
+
+  const file: FileFormat.File = {
+    version: '0.0.1',
+    exporter: 'https://www.speedscope.app',
+    shared: {frames},
+    profiles: [eventedProfile],
+  }
 
   const indexForFrame = new Map<Frame, number>()
-  const indexForNode = new Map<CallTreeNode, number>()
-
   function getIndexForFrame(frame: Frame): number {
     let index = indexForFrame.get(frame)
     if (index == null) {
-      const serializedFrame: SerializedFrame = {
+      const serializedFrame: FileFormat.Frame = {
         name: frame.name,
       }
       if (frame.file != null) serializedFrame.file = frame.file
@@ -45,47 +44,39 @@ export function exportProfile(profile: Profile): SerializedSpeedscopeFile {
     return index
   }
 
-  function getIndexForNode(node: CallTreeNode): number {
-    if (node.isRoot()) {
-      return -1
-    }
-    let index = indexForNode.get(node)
-    if (index == null) {
-      const serializedNode: SerializedNode = {
-        frame: getIndexForFrame(node.frame),
-      }
-      if (node.parent && !node.parent.isRoot()) {
-        serializedNode.parent = getIndexForNode(node.parent)
-      }
-
-      index = nodes.length
-      indexForNode.set(node, index)
-      nodes.push(serializedNode)
-    }
-    return index
+  const openFrame = (node: CallTreeNode, value: number) => {
+    eventedProfile.events.push({
+      type: FileFormat.EventType.OPEN_FRAME,
+      frame: getIndexForFrame(node.frame),
+      at: value,
+    })
   }
-
-  profile.forEachSample((sample, weight) => {
-    samples.push(getIndexForNode(sample))
-    weights.push(weight)
-  })
-
-  return {
-    version: '0.0.1',
-    exporter: 'https://www.speedscope.app',
-    profiles: [serialized],
+  const closeFrame = (node: CallTreeNode, value: number) => {
+    eventedProfile.events.push({
+      type: FileFormat.EventType.CLOSE_FRAME,
+      frame: getIndexForFrame(node.frame),
+      at: value,
+    })
   }
+  profile.forEachCall(openFrame, closeFrame)
+
+  return file
 }
 
-function importSpeedscopeProfile(serialized: SerializedSamplingProfile): Profile {
-  const profile = new CallTreeProfileBuilder()
+function importSpeedscopeProfile(
+  serialized: FileFormat.Profile,
+  frames: FileFormat.Frame[],
+): Profile {
+  const {startValue, endValue, name, unit, events} = serialized
 
-  switch (serialized.weightUnit) {
+  const profile = new CallTreeProfileBuilder(endValue - startValue)
+
+  switch (unit) {
     case 'nanoseconds':
     case 'microseconds':
     case 'milliseconds':
     case 'seconds':
-      profile.setValueFormatter(new TimeFormatter(serialized.weightUnit))
+      profile.setValueFormatter(new TimeFormatter(unit))
       break
 
     case 'bytes':
@@ -96,79 +87,31 @@ function importSpeedscopeProfile(serialized: SerializedSamplingProfile): Profile
       profile.setValueFormatter(new RawValueFormatter())
       break
   }
-
-  let prevStack: SerializedNode[] = []
-
-  const {samples, weights, nodes, frames} = serialized
-  if (samples.length !== weights.length) {
-    throw new Error(
-      `Expected equal count of samples and weights. samples.length=${
-        samples.length
-      }, weights.length=${weights.length}`,
-    )
-  }
+  profile.setName(name)
 
   const frameInfos: FrameInfo[] = frames.map((frame, i) => ({key: i, ...frame}))
 
-  let value = 0
-  for (let i = 0; i < samples.length; i++) {
-    const weight = weights[i]
-    const nodeIndex = samples[i]
-
-    let stackTop: SerializedNode | null = nodes[nodeIndex]
-    if (nodeIndex === -1) {
-      stackTop = null
+  for (let ev of events) {
+    switch (ev.type) {
+      case FileFormat.EventType.OPEN_FRAME: {
+        profile.enterFrame(frameInfos[ev.frame], ev.at - startValue)
+        break
+      }
+      case FileFormat.EventType.CLOSE_FRAME: {
+        profile.leaveFrame(frameInfos[ev.frame], ev.at - startValue)
+        break
+      }
     }
-
-    // Find lowest common ancestor of the current stack and the previous one
-    let lca: SerializedNode | null = null
-
-    // This is O(n^2), but n should be relatively small here (stack height),
-    // so hopefully this isn't much of a problem
-    for (
-      lca = stackTop;
-      lca != null && prevStack.indexOf(lca) === -1;
-      lca = lca.parent != null ? nodes[lca.parent] : null
-    ) {}
-
-    // Close frames that are no longer open
-    while (prevStack.length > 0 && lastOf(prevStack) != lca) {
-      const closingNode = prevStack.pop()!
-      profile.leaveFrame(frameInfos[closingNode.frame], value)
-    }
-
-    // Open frames that are now becoming open
-    const toOpen: SerializedNode[] = []
-    for (
-      let node: SerializedNode | null = stackTop;
-      node != null && node != lca;
-      node = node.parent != null ? nodes[node.parent] : null
-    ) {
-      toOpen.push(node)
-    }
-    toOpen.reverse()
-
-    for (let node of toOpen) {
-      profile.enterFrame(frameInfos[node.frame], value)
-    }
-
-    prevStack = prevStack.concat(toOpen)
-    value += weight
-  }
-
-  // Close frames that are open at the end of the trace
-  for (let i = prevStack.length - 1; i >= 0; i--) {
-    profile.leaveFrame(frameInfos[prevStack[i].frame], value)
   }
 
   return profile.build()
 }
 
-export function importSingleSpeedscopeProfile(serialized: SerializedSpeedscopeFile): Profile {
+export function importSingleSpeedscopeProfile(serialized: FileFormat.File): Profile {
   if (serialized.profiles.length !== 1) {
     throw new Error(`Unexpected profiles length ${serialized.profiles}`)
   }
-  return importSpeedscopeProfile(serialized.profiles[0])
+  return importSpeedscopeProfile(serialized.profiles[0], serialized.shared.frames)
 }
 
 export function saveToFile(profile: Profile): void {

@@ -57,5 +57,11 @@ export async function checkProfileSnapshot(filepath: string) {
 
   const exported = exportProfile(profile)
   const reimported = importSingleSpeedscopeProfile(exported)
+
+  expect(reimported.getName()).toEqual(profile.getName())
+  expect(reimported.getTotalWeight()).toEqual(profile.getTotalWeight())
   expect(dumpProfile(reimported).stacks.join('\n')).toEqual(dumpProfile(profile).stacks.join('\n'))
+
+  const reexported = exportProfile(reimported)
+  expect(exported).toEqual(reexported)
 }
