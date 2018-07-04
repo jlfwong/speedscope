@@ -36,7 +36,7 @@ export async function importProfile(fileName: string, contents: string): Promise
     parsed = JSON.parse(contents)
   } catch (e) {}
   if (parsed) {
-    if (parsed['exporter'] === 'https://www.speedscope.app') {
+    if (parsed['$schema'] === 'https://www.speedscope.app/file-format-schema.json') {
       console.log('Importing as speedscope json file')
       return importSingleSpeedscopeProfile(parsed)
     } else if (parsed['systemHost'] && parsed['systemHost']['name'] == 'Firefox') {

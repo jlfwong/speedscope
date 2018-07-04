@@ -3,7 +3,7 @@
 export namespace FileFormat {
   export interface File {
     version: string
-    exporter: 'https://www.speedscope.app'
+    $schema: 'https://www.speedscope.app/file-format-schema.json'
     shared: {
       frames: Frame[]
     }
