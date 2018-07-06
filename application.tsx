@@ -514,7 +514,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
             <p className={css(style.landingP)}>
               Drag and drop a profile file onto this window to get started, click the big blue
               button below to browse for a profile to explore, or{' '}
-              <a className={css(style.link)} onClick={this.loadExample}>
+              <a tabIndex={0} className={css(style.link)} onClick={this.loadExample}>
                 click here
               </a>{' '}
               to load an example profile.
@@ -533,7 +533,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
               onChange={this.onFileSelect}
               className={css(style.hide)}
             />
-            <label for="file" className={css(style.browseButton)}>
+            <label for="file" className={css(style.browseButton)} tabIndex={0}>
               Browse
             </label>
           </div>
