@@ -10,7 +10,7 @@ import {CanvasContext} from './canvas-context'
 import {Profile, Frame} from './profile'
 import {Flamechart} from './flamechart'
 import {FlamechartView} from './flamechart-view'
-import {FontFamily, FontSize, Colors, Sizes} from './style'
+import {FontFamily, FontSize, Colors, Sizes, Duration} from './style'
 import {getHashParams, HashParams} from './hash-params'
 import {SortMethod, SortField, SortDirection} from './profile-table-view'
 import {triangle} from './utils'
@@ -128,9 +128,9 @@ export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
           >
             <span className={css(style.emoji)}>🥪</span>Sandwich
           </div>
-          {help}
         </div>
         {this.props.profile.getName()}
+        <div className={css(style.toolbarRight)}>{help}</div>
       </div>
     )
   }
@@ -793,7 +793,10 @@ const style = StyleSheet.create({
     lineHeight: '72px',
     background: Colors.DARK_BLUE,
     color: Colors.WHITE,
-    cursor: 'pointer',
+    transition: `all ${Duration.HOVER_CHANGE} ease-in`,
+    ':hover': {
+      background: Colors.BRIGHT_BLUE,
+    },
   },
   link: {
     color: Colors.BRIGHT_BLUE,
@@ -838,9 +841,9 @@ const style = StyleSheet.create({
     paddingRight: 8,
     display: 'inline-block',
     marginLeft: 2,
+    transition: `all ${Duration.HOVER_CHANGE} ease-in`,
     ':hover': {
-      background: Colors.DARK_GRAY,
-      cursor: 'pointer',
+      background: Colors.GRAY,
     },
   },
   toolbarTabActive: {
