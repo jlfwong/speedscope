@@ -93,8 +93,8 @@ export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
     if (!this.props.profile) {
       return (
         <div className={css(style.toolbar)}>
-          <div className={css(style.toolbarLeft)}>{help}</div>
           🔬speedscope
+          <div className={css(style.toolbarRight)}>{help}</div>
         </div>
       )
     }
