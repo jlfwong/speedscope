@@ -2,11 +2,6 @@ import {Profile, CallTreeNode, Frame, CallTreeProfileBuilder, FrameInfo} from '.
 import {TimeFormatter, ByteFormatter, RawValueFormatter} from './value-formatters'
 import {FileFormat} from './file-format-spec'
 
-export interface InMemorySpeedscopeFile {
-  version: string
-  profile: Profile[]
-}
-
 export function exportProfile(profile: Profile): FileFormat.File {
   const frames: FileFormat.Frame[] = []
 
