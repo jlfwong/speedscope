@@ -35,6 +35,10 @@ export enum Sizes {
   TOOLBAR_TAB_HEIGHT = TOOLBAR_HEIGHT - SEPARATOR_HEIGHT,
 }
 
+export enum Duration {
+  HOVER_CHANGE = '0.07s',
+}
+
 export enum ZIndex {
   HOVERTIP = 1,
 }

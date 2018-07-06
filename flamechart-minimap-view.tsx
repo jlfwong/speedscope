@@ -410,6 +410,12 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     }
   }
 
+  private onMouseLeave = (ev: MouseEvent) => {
+    if (this.draggingMode == null) {
+      document.body.style.cursor = 'default'
+    }
+  }
+
   private onMouseMove = (ev: MouseEvent) => {
     const configSpaceMouse = this.configSpaceMouse(ev)
     if (!configSpaceMouse) return
@@ -444,6 +450,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
         onWheel={this.onWheel}
         onMouseDown={this.onMouseDown}
         onMouseMove={this.onMouseMove}
+        onMouseLeave={this.onMouseLeave}
         className={css(style.minimap, commonStyle.vbox)}
       >
         <canvas width={1} height={1} ref={this.overlayCanvasRef} className={css(style.fill)} />
