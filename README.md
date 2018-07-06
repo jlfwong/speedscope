@@ -11,7 +11,7 @@ Given raw profiling data, speedscope allows you to interactively explore the dat
 
 # Usage
 
-Visit https://jlfwong.github.io/speedscope/, then either browse to find a profile file or drag-and-drop one onto the page. The profiles are not uploaded anywhere -- the application is totally in-browser.
+Visit https://www.speedscope.app, then either browse to find a profile file or drag-and-drop one onto the page. The profiles are not uploaded anywhere -- the application is totally in-browser.
 
 ## Supported file formats
 
