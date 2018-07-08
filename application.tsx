@@ -529,7 +529,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       // There isn't good cross-browser support for XHR of local files, even from
       // other local files. To work around this restriction, we load the local profile
       // as a JavaScript file which will invoke a global function.
-      ;(window as any)['Speedscope'] = {
+      ;(window as any)['speedscope'] = {
         loadFileFromBase64: (filename: string, base64source: string) => {
           const source = atob(base64source)
           this.loadProfile(() => importProfile(filename, source))

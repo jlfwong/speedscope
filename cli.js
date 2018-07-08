@@ -41,7 +41,7 @@ if (process.argv.length === 3) {
   }
   const filename = path.basename(absPath)
   const sourceBase64 = sourceBuffer.toString('base64')
-  const jsSource = `Speedscope.loadFileFromBase64(${JSON.stringify(filename)}, ${JSON.stringify(
+  const jsSource = `speedscope.loadFileFromBase64(${JSON.stringify(filename)}, ${JSON.stringify(
     sourceBase64,
   )})`
 
