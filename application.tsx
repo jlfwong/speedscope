@@ -215,7 +215,9 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     this.state = {
       // Start out at a loading state if we know that we'll immediately be fetching a profile to
       // view.
-      loading: canUseXHR && this.hashParams.profileURL != null,
+      loading:
+        (canUseXHR && this.hashParams.profileURL != null) ||
+        this.hashParams.localProfilePath != null,
       dragActive: false,
       error: false,
       profile: null,
