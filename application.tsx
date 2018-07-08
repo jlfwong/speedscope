@@ -525,6 +525,20 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
         }
         return await importProfile(filename, await response.text())
       })
+    } else if (this.hashParams.localProfilePath) {
+      // There isn't good cross-browser support for XHR of local files, even from
+      // other local files. To work around this restriction, we load the local profile
+      // as a JavaScript file which will invoke a global function.
+      ;(window as any)['Speedscope'] = {
+        loadFileFromBase64: (filename: string, base64source: string) => {
+          const source = atob(base64source)
+          this.loadProfile(() => importProfile(filename, source))
+        },
+      }
+
+      const script = document.createElement('script')
+      script.src = `file:///${this.hashParams.localProfilePath}`
+      document.head.appendChild(script)
     }
   }
 
