@@ -10,28 +10,7 @@ set -e
 OUTDIR=`pwd`/dist/release
 echo $OUTDIR
 
-# Typecheck
-node_modules/.bin/tsc --noEmit
-
-# Clean out the release directory
-rm -rf "$OUTDIR"
-mkdir -p "$OUTDIR"
-
-# Place info about the current commit into the build dir to easily identify releases
-date > "$OUTDIR"/release.txt
-git rev-parse HEAD >> "$OUTDIR"/release.txt
-
-# Place a json schema for the file format into the build directory too
-node generate-file-format-schema-json.js > "$OUTDIR"/file-format-schema.json
-
-# Build the compiled assets
-node_modules/.bin/parcel build index.html --no-cache --out-dir "$OUTDIR" --public-url "./" --detailed-report
-
-# Create an archive with the release contents in it
-pushd "$OUTDIR"
-rm -rf ../release.zip
-zip -r ../release.zip .
-popd
+./build-release.sh
 
 # Create a shallow clone of the repository
 TMPDIR=`mktemp -d -t speedscope-release`

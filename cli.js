@@ -1,2 +1,3 @@
 #!/usr/bin/env node
-console.log('Coming soon!')
+const opn = require('opn')
+opn('./dist/release/index.html')
