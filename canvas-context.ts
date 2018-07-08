@@ -46,6 +46,12 @@ export class CanvasContext {
       optionalExtensions: ['EXT_disjoint_timer_query'],
       profile: true,
     })
+
+    console.log(
+      `WebGL initialized. renderer: ${this.gl.limits.renderer}, vendor: ${
+        this.gl.limits.vendor
+      }, version: ${this.gl.limits.version}`,
+    )
     ;(window as any)['CanvasContext'] = this
     this.rectangleBatchRenderer = new RectangleBatchRenderer(this.gl)
     this.viewportRectangleRenderer = new ViewportRectangleRenderer(this.gl)
