@@ -9,6 +9,14 @@ import {importFromFirefox} from './firefox'
 import {importSingleSpeedscopeProfile} from '../file-format'
 
 export async function importProfile(fileName: string, contents: string): Promise<Profile | null> {
+  const profile = await _importProfile(fileName, contents)
+  if (profile && !profile.getName()) {
+    profile.setName(fileName)
+  }
+  return profile
+}
+
+async function _importProfile(fileName: string, contents: string): Promise<Profile | null> {
   // First pass: Check known file format names to infer the file type
   if (fileName.endsWith('.speedscope.json')) {
     console.log('Importing as speedscope json file')
