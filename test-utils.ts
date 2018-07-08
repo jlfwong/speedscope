@@ -2,6 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import {Profile, CallTreeNode, Frame} from './profile'
 import {importProfile} from './import'
+import {exportProfile, importSingleSpeedscopeProfile} from './file-format'
 
 interface DumpedProfile {
   stacks: string[]
@@ -45,10 +46,22 @@ export function dumpProfile(profile: Profile): any {
 
 export async function checkProfileSnapshot(filepath: string) {
   const input = fs.readFileSync(filepath, 'utf8')
+
   const profile = await importProfile(path.basename(filepath), input)
   if (profile) {
     expect(dumpProfile(profile)).toMatchSnapshot()
   } else {
     fail('Failed to extract profile')
+    return
   }
+
+  const exported = exportProfile(profile)
+  const reimported = importSingleSpeedscopeProfile(exported)
+
+  expect(reimported.getName()).toEqual(profile.getName())
+  expect(reimported.getTotalWeight()).toEqual(profile.getTotalWeight())
+  expect(dumpProfile(reimported).stacks.join('\n')).toEqual(dumpProfile(profile).stacks.join('\n'))
+
+  const reexported = exportProfile(reimported)
+  expect(exported).toEqual(reexported)
 }

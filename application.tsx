@@ -18,6 +18,7 @@ import {Color} from './color'
 import {RowAtlas} from './row-atlas'
 import {importAsmJsSymbolMap} from './asm-js'
 import {SandwichView} from './sandwich-view'
+import {saveToFile} from './file-format'
 
 const importModule = import('./import')
 // Force eager loading of the module
@@ -62,6 +63,8 @@ interface ApplicationState {
 
 interface ToolbarProps extends ApplicationState {
   setViewMode(order: ViewMode): void
+  browseForFile(): void
+  saveFile(): void
 }
 
 export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
@@ -78,6 +81,11 @@ export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
   }
 
   render() {
+    const importFile = (
+      <div className={css(style.toolbarTab)} onClick={this.props.browseForFile}>
+        <span className={css(style.emoji)}>⤵️</span>Import
+      </div>
+    )
     const help = (
       <div className={css(style.toolbarTab)}>
         <a
@@ -94,7 +102,10 @@ export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
       return (
         <div className={css(style.toolbar)}>
           🔬speedscope
-          <div className={css(style.toolbarRight)}>{help}</div>
+          <div className={css(style.toolbarRight)}>
+            {importFile}
+            {help}
+          </div>
         </div>
       )
     }
@@ -130,7 +141,13 @@ export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
           </div>
         </div>
         {this.props.profile.getName()}
-        <div className={css(style.toolbarRight)}>{help}</div>
+        <div className={css(style.toolbarRight)}>
+          <div className={css(style.toolbarTab)} onClick={this.props.saveFile}>
+            <span className={css(style.emoji)}>⤴️</span>Export
+          </div>
+          {importFile}
+          {help}
+        </div>
       </div>
     )
   }
@@ -381,9 +398,12 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   loadExample = () => {
     this.loadProfile(async () => {
       const filename = 'perf-vertx-stacks-01-collapsed-all.txt'
-      return await fetch(exampleProfileURL)
-        .then(resp => resp.text())
-        .then(data => importProfile(filename, data))
+      const data = await fetch(exampleProfileURL).then(resp => resp.text())
+      const profile = await importProfile(filename, data)
+      if (profile && !profile.getName()) {
+        profile.setName(filename)
+      }
+      return profile
     })
   }
 
@@ -445,6 +465,31 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     }
   }
 
+  private saveFile = () => {
+    if (this.state.profile) {
+      saveToFile(this.state.profile)
+    }
+  }
+
+  private browseForFile = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.addEventListener('change', this.onFileSelect)
+    input.click()
+  }
+
+  private onWindowKeyDown = async (ev: KeyboardEvent) => {
+    // This has to be handled on key down in order to prevent the default
+    // page save action.
+    if (ev.key === 's' && (ev.ctrlKey || ev.metaKey)) {
+      ev.preventDefault()
+      this.saveFile()
+    } else if (ev.key === 'o' && (ev.ctrlKey || ev.metaKey)) {
+      ev.preventDefault()
+      this.browseForFile()
+    }
+  }
+
   onDocumentPaste = (ev: Event) => {
     ev.preventDefault()
     ev.stopPropagation()
@@ -454,9 +499,16 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   componentDidMount() {
+    window.addEventListener('keydown', this.onWindowKeyDown)
     window.addEventListener('keypress', this.onWindowKeyPress)
     document.addEventListener('paste', this.onDocumentPaste)
     this.maybeLoadHashParamProfile()
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.onWindowKeyDown)
+    window.removeEventListener('keypress', this.onWindowKeyPress)
+    document.removeEventListener('paste', this.onDocumentPaste)
   }
 
   async maybeLoadHashParamProfile() {
@@ -474,11 +526,6 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
         return await importProfile(filename, await response.text())
       })
     }
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('keypress', this.onWindowKeyPress)
-    document.removeEventListener('paste', this.onDocumentPaste)
   }
 
   flamechartView: FlamechartView | null = null
@@ -692,7 +739,12 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
         className={css(style.root, this.state.dragActive && style.dragTargetRoot)}
       >
         <GLCanvas setCanvasContext={this.setCanvasContext} />
-        <Toolbar setViewMode={this.setViewMode} {...this.state} />
+        <Toolbar
+          setViewMode={this.setViewMode}
+          saveFile={this.saveFile}
+          browseForFile={this.browseForFile}
+          {...this.state}
+        />
         <div className={css(style.contentContainer)}>{this.renderContent()}</div>
         {this.state.dragActive && <div className={css(style.dragTarget)} />}
       </div>

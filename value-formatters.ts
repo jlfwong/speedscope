@@ -1,8 +1,12 @@
+import {FileFormat} from './file-format-spec'
+
 export interface ValueFormatter {
+  unit: FileFormat.ValueUnit
   format(v: number): string
 }
 
 export class RawValueFormatter implements ValueFormatter {
+  unit: FileFormat.ValueUnit = 'none'
   format(v: number) {
     return v.toLocaleString()
   }
@@ -11,7 +15,7 @@ export class RawValueFormatter implements ValueFormatter {
 export class TimeFormatter implements ValueFormatter {
   private multiplier: number
 
-  constructor(unit: 'nanoseconds' | 'microseconds' | 'milliseconds' | 'seconds') {
+  constructor(public unit: 'nanoseconds' | 'microseconds' | 'milliseconds' | 'seconds') {
     if (unit === 'nanoseconds') this.multiplier = 1e-9
     else if (unit === 'microseconds') this.multiplier = 1e-6
     else if (unit === 'milliseconds') this.multiplier = 1e-3
@@ -30,6 +34,8 @@ export class TimeFormatter implements ValueFormatter {
 }
 
 export class ByteFormatter implements ValueFormatter {
+  unit: FileFormat.ValueUnit = 'bytes'
+
   format(v: number) {
     if (v < 1024) return `${v.toFixed(0)} B`
     v /= 1024

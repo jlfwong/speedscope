@@ -637,7 +637,11 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     } else if (ev.key === '-' || ev.key === '_') {
       this.zoom(new Vec2(width / 2, height / 2), 2)
       ev.preventDefault()
-    } else if (ev.key === '0') {
+    }
+
+    if (ev.ctrlKey || ev.shiftKey || ev.metaKey) return
+
+    if (ev.key === '0') {
       this.zoom(new Vec2(width / 2, height / 2), 1e9)
     } else if (ev.key === 'ArrowRight' || ev.key === 'd') {
       this.pan(new Vec2(100, 0))

@@ -6,10 +6,14 @@ import {importFromStackprof} from './stackprof'
 import {importFromInstrumentsDeepCopy, importFromInstrumentsTrace} from './instruments'
 import {importFromBGFlameGraph} from './bg-flamegraph'
 import {importFromFirefox} from './firefox'
+import {importSingleSpeedscopeProfile} from '../file-format'
 
 export async function importProfile(fileName: string, contents: string): Promise<Profile | null> {
   // First pass: Check known file format names to infer the file type
-  if (fileName.endsWith('.cpuprofile')) {
+  if (fileName.endsWith('.speedscope.json')) {
+    console.log('Importing as speedscope json file')
+    return importSingleSpeedscopeProfile(JSON.parse(contents))
+  } else if (fileName.endsWith('.cpuprofile')) {
     console.log('Importing as Chrome CPU Profile')
     return importFromChromeCPUProfile(JSON.parse(contents))
   } else if (fileName.endsWith('.chrome.json') || /Profile-\d{8}T\d{6}/.exec(fileName)) {
@@ -32,7 +36,10 @@ export async function importProfile(fileName: string, contents: string): Promise
     parsed = JSON.parse(contents)
   } catch (e) {}
   if (parsed) {
-    if (parsed['systemHost'] && parsed['systemHost']['name'] == 'Firefox') {
+    if (parsed['$schema'] === 'https://www.speedscope.app/file-format-schema.json') {
+      console.log('Importing as speedscope json file')
+      return importSingleSpeedscopeProfile(parsed)
+    } else if (parsed['systemHost'] && parsed['systemHost']['name'] == 'Firefox') {
       console.log('Importing as Firefox profile')
       return importFromFirefox(parsed)
     } else if (Array.isArray(parsed) && parsed[parsed.length - 1].name === 'CpuProfile') {
