@@ -13,6 +13,13 @@ Given raw profiling data, speedscope allows you to interactively explore the dat
 
 Visit https://www.speedscope.app, then either browse to find a profile file or drag-and-drop one onto the page. The profiles are not uploaded anywhere -- the application is totally in-browser.
 
+For offline use, or convenience in the terminal, you can also install speedscope
+via npm:
+
+    npm install -g speedscope
+
+Invoking `speedscope /path/to/profile` will load speedscope in your default browser.
+
 ## Supported file formats
 
 ### Chrome

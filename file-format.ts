@@ -15,7 +15,7 @@ export function exportProfile(profile: Profile): FileFormat.File {
   }
 
   const file: FileFormat.File = {
-    version: '0.0.1',
+    version: require('./package.json').version,
     $schema: 'https://www.speedscope.app/file-format-schema.json',
     shared: {frames},
     profiles: [eventedProfile],

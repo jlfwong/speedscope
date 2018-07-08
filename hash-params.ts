@@ -1,6 +1,7 @@
 export interface HashParams {
   profileURL?: string
   title?: string
+  localProfilePath?: string
 }
 
 export function getHashParams(): HashParams {
@@ -17,6 +18,8 @@ export function getHashParams(): HashParams {
         result.profileURL = decodeURIComponent(value)
       } else if (key === 'title') {
         result.title = decodeURIComponent(value)
+      } else if (key === 'localProfilePath') {
+        result.localProfilePath = decodeURIComponent(value)
       }
     }
     return result
