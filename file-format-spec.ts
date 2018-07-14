@@ -1,13 +1,15 @@
 // This file contains types which specify the speedscope file format.
 
 export namespace FileFormat {
+  export type Profile = EventedProfile | SampledProfile
+
   export interface File {
     version: string
     $schema: 'https://www.speedscope.app/file-format-schema.json'
     shared: {
       frames: Frame[]
     }
-    profiles: (EventedProfile | SampledProfile)[]
+    profiles: Profile[]
   }
 
   export interface Frame {
@@ -54,13 +56,8 @@ export namespace FileFormat {
     events: (OpenFrameEvent | CloseFrameEvent)[]
   }
 
-  interface CallTreeNode {
-    // Index into the frames array
-    frame: number
-
-    // Index into the nodes array
-    parent?: number
-  }
+  // List of indices into the frame array
+  type SampledStack = number[]
 
   export interface SampledProfile extends IProfile {
     type: ProfileType.SAMPLED
@@ -82,12 +79,8 @@ export namespace FileFormat {
     // profile.
     endValue: number
 
-    // List of nodes in the call tree
-    nodes: CallTreeNode[]
-
-    // List of indices into nodes, with -1 indicating that the call-stack
-    // was empty at the time of the sample
-    samples: number[]
+    // List of stacks
+    samples: SampledStack[]
 
     // The weight of the sample at the given index. Should have
     // the same length as the samples array.
