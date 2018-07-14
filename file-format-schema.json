@@ -1,6 +1,16 @@
 {
     "$schema": "http://json-schema.org/draft-06/schema#",
     "definitions": {
+        "FileFormat.Profile": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/FileFormat.EventedProfile"
+                },
+                {
+                    "$ref": "#/definitions/FileFormat.SampledProfile"
+                }
+            ]
+        },
         "FileFormat.File": {
             "title": "FileFormat.File",
             "type": "object",
@@ -35,7 +45,14 @@
                 "profiles": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/FileFormat.EventedProfile"
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/FileFormat.EventedProfile"
+                            },
+                            {
+                                "$ref": "#/definitions/FileFormat.SampledProfile"
+                            }
+                        ]
                     },
                     "title": "profiles"
                 }
@@ -73,20 +90,19 @@
             ]
         },
         "FileFormat.ProfileType": {
-            "type": "string",
+            "title": "FileFormat.ProfileType",
             "enum": [
-                "evented"
-            ]
+                "evented",
+                "sampled"
+            ],
+            "type": "string"
         },
         "FileFormat.IProfile": {
             "title": "FileFormat.IProfile",
             "type": "object",
             "properties": {
                 "type": {
-                    "type": "string",
-                    "enum": [
-                        "evented"
-                    ],
+                    "$ref": "#/definitions/FileFormat.ProfileType",
                     "title": "type"
                 }
             },
@@ -143,6 +159,67 @@
                 "startValue",
                 "type",
                 "unit"
+            ]
+        },
+        "SampledStack": {
+            "type": "array",
+            "items": {
+                "type": "number"
+            }
+        },
+        "FileFormat.SampledProfile": {
+            "title": "FileFormat.SampledProfile",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "sampled"
+                    ],
+                    "title": "type"
+                },
+                "name": {
+                    "type": "string",
+                    "title": "name"
+                },
+                "unit": {
+                    "$ref": "#/definitions/FileFormat.ValueUnit",
+                    "title": "unit"
+                },
+                "startValue": {
+                    "type": "number",
+                    "title": "startValue"
+                },
+                "endValue": {
+                    "type": "number",
+                    "title": "endValue"
+                },
+                "samples": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        }
+                    },
+                    "title": "samples"
+                },
+                "weights": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "title": "weights"
+                }
+            },
+            "required": [
+                "endValue",
+                "name",
+                "samples",
+                "startValue",
+                "type",
+                "unit",
+                "weights"
             ]
         },
         "FileFormat.ValueUnit": {
