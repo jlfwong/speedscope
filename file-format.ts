@@ -1,4 +1,11 @@
-import {Profile, CallTreeNode, Frame, CallTreeProfileBuilder, FrameInfo} from './profile'
+import {
+  Profile,
+  CallTreeNode,
+  Frame,
+  CallTreeProfileBuilder,
+  FrameInfo,
+  StackListProfileBuilder,
+} from './profile'
 import {TimeFormatter, ByteFormatter, RawValueFormatter} from './value-formatters'
 import {FileFormat} from './file-format-spec'
 
@@ -59,54 +66,86 @@ export function exportProfile(profile: Profile): FileFormat.File {
 }
 
 function importSpeedscopeProfile(
-  serialized: FileFormat.EventedProfile,
+  serialized: FileFormat.Profile,
   frames: FileFormat.Frame[],
 ): Profile {
-  const {startValue, endValue, name, unit, events} = serialized
+  function setCommonProperties(p: Profile) {
+    const {name, unit} = serialized
 
-  const profile = new CallTreeProfileBuilder(endValue - startValue)
+    switch (unit) {
+      case 'nanoseconds':
+      case 'microseconds':
+      case 'milliseconds':
+      case 'seconds':
+        p.setValueFormatter(new TimeFormatter(unit))
+        break
 
-  switch (unit) {
-    case 'nanoseconds':
-    case 'microseconds':
-    case 'milliseconds':
-    case 'seconds':
-      profile.setValueFormatter(new TimeFormatter(unit))
-      break
+      case 'bytes':
+        p.setValueFormatter(new ByteFormatter())
+        break
 
-    case 'bytes':
-      profile.setValueFormatter(new ByteFormatter())
-      break
-
-    case 'none':
-      profile.setValueFormatter(new RawValueFormatter())
-      break
+      case 'none':
+        p.setValueFormatter(new RawValueFormatter())
+        break
+    }
+    p.setName(name)
   }
-  profile.setName(name)
 
-  const frameInfos: FrameInfo[] = frames.map((frame, i) => ({key: i, ...frame}))
+  function importEventedProfile(evented: FileFormat.EventedProfile) {
+    const {startValue, endValue, events} = evented
 
-  for (let ev of events) {
-    switch (ev.type) {
-      case FileFormat.EventType.OPEN_FRAME: {
-        profile.enterFrame(frameInfos[ev.frame], ev.at - startValue)
-        break
-      }
-      case FileFormat.EventType.CLOSE_FRAME: {
-        profile.leaveFrame(frameInfos[ev.frame], ev.at - startValue)
-        break
+    const profile = new CallTreeProfileBuilder(endValue - startValue)
+    setCommonProperties(profile)
+
+    const frameInfos: FrameInfo[] = frames.map((frame, i) => ({key: i, ...frame}))
+
+    for (let ev of events) {
+      switch (ev.type) {
+        case FileFormat.EventType.OPEN_FRAME: {
+          profile.enterFrame(frameInfos[ev.frame], ev.at - startValue)
+          break
+        }
+        case FileFormat.EventType.CLOSE_FRAME: {
+          profile.leaveFrame(frameInfos[ev.frame], ev.at - startValue)
+          break
+        }
       }
     }
+    return profile.build()
   }
 
-  return profile.build()
+  function importSampledProfile(sampled: FileFormat.SampledProfile) {
+    const {startValue, endValue, samples, weights} = sampled
+    const profile = new StackListProfileBuilder(endValue - startValue)
+    setCommonProperties(profile)
+
+    const frameInfos: FrameInfo[] = frames.map((frame, i) => ({key: i, ...frame}))
+
+    if (samples.length !== weights.length) {
+      throw new Error(
+        `Expected samples.length (${samples.length}) to equal weights.length (${weights.length})`,
+      )
+    }
+
+    for (let i = 0; i < samples.length; i++) {
+      const stack = samples[i]
+      const weight = weights[i]
+      profile.appendSample(stack.map(n => frameInfos[n]), weight)
+    }
+
+    return profile.build()
+  }
+
+  switch (serialized.type) {
+    case FileFormat.ProfileType.EVENTED:
+      return importEventedProfile(serialized)
+    case FileFormat.ProfileType.SAMPLED:
+      return importSampledProfile(serialized)
+  }
 }
 
-export function importSingleSpeedscopeProfile(serialized: FileFormat.File): Profile {
-  if (serialized.profiles.length !== 1) {
-    throw new Error(`Unexpected profiles length ${serialized.profiles}`)
-  }
-  return importSpeedscopeProfile(serialized.profiles[0], serialized.shared.frames)
+export function importSpeedscopeProfiles(serialized: FileFormat.File): Profile[] {
+  return serialized.profiles.map(p => importSpeedscopeProfile(p, serialized.shared.frames))
 }
 
 export function saveToFile(profile: Profile): void {

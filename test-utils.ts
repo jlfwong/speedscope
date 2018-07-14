@@ -2,7 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import {Profile, CallTreeNode, Frame} from './profile'
 import {importProfile} from './import'
-import {exportProfile, importSingleSpeedscopeProfile} from './file-format'
+import {exportProfile, importSpeedscopeProfiles} from './file-format'
 
 interface DumpedProfile {
   stacks: string[]
@@ -56,7 +56,7 @@ export async function checkProfileSnapshot(filepath: string) {
   }
 
   const exported = exportProfile(profile)
-  const reimported = importSingleSpeedscopeProfile(exported)
+  const reimported = importSpeedscopeProfiles(exported)[0]
 
   expect(reimported.getName()).toEqual(profile.getName())
   expect(reimported.getTotalWeight()).toEqual(profile.getTotalWeight())

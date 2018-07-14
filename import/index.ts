@@ -6,7 +6,8 @@ import {importFromStackprof} from './stackprof'
 import {importFromInstrumentsDeepCopy, importFromInstrumentsTrace} from './instruments'
 import {importFromBGFlameGraph} from './bg-flamegraph'
 import {importFromFirefox} from './firefox'
-import {importSingleSpeedscopeProfile} from '../file-format'
+import {importSpeedscopeProfiles} from '../file-format'
+import {FileFormat} from '../file-format-spec'
 
 export async function importProfile(fileName: string, contents: string): Promise<Profile | null> {
   const profile = await _importProfile(fileName, contents)
@@ -14,6 +15,14 @@ export async function importProfile(fileName: string, contents: string): Promise
     profile.setName(fileName)
   }
   return profile
+}
+
+function importSingleSpeedscopeProfile(serialized: FileFormat.File) {
+  const profiles = importSpeedscopeProfiles(serialized)
+  if (profiles.length === 0) {
+    throw new Error('Failed to extract any profiles from the imported speedscope profile')
+  }
+  return profiles[0]
 }
 
 async function _importProfile(fileName: string, contents: string): Promise<Profile | null> {
