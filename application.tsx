@@ -16,7 +16,7 @@ import {SortMethod, SortField, SortDirection} from './profile-table-view'
 import {triangle} from './utils'
 import {Color} from './color'
 import {RowAtlas} from './row-atlas'
-import {importAsmJsSymbolMap} from './asm-js'
+import {importEmscriptenSymbolMap} from './emscripten'
 import {SandwichView} from './sandwich-view'
 import {saveToFile} from './file-format'
 
@@ -384,9 +384,9 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
         // a symbol map. If that's the case, we want to parse it, and apply the symbol
         // mapping to the already loaded profile. This can be use to take an opaque
         // profile and make it readable.
-        const map = importAsmJsSymbolMap(reader.result)
+        const map = importEmscriptenSymbolMap(reader.result)
         if (map) {
-          console.log('Importing as asm.js symbol map')
+          console.log('Importing as emscripten symbol map')
           let profile = this.state.profile
           profile.remapNames(name => map.get(name) || name)
           return profile

@@ -1,9 +1,9 @@
-import {importAsmJsSymbolMap} from './asm-js'
+import {importEmscriptenSymbolMap} from './emscripten'
 
-test('importAsmJSSymbolMap', () => {
+test('importEmscriptenSymbolMap', () => {
   // Valid symbol map
   expect(
-    importAsmJsSymbolMap(
+    importEmscriptenSymbolMap(
       [
         /* prettier: ignore */
         'a:A',
@@ -15,7 +15,7 @@ test('importAsmJSSymbolMap', () => {
 
   // Valid symbol map with trailing newline
   expect(
-    importAsmJsSymbolMap(
+    importEmscriptenSymbolMap(
       [
         /* prettier: ignore */
         'a:A',
@@ -27,14 +27,27 @@ test('importAsmJSSymbolMap', () => {
   ).toEqual(new Map([['a', 'A'], ['b', 'B'], ['c', 'C']]))
 
   // Valid symbol map with non-alpha characters
-
-  expect(importAsmJsSymbolMap('u6:__ZN8tinyxml210XMLCommentD0Ev\n')).toEqual(
+  expect(importEmscriptenSymbolMap('u6:__ZN8tinyxml210XMLCommentD0Ev\n')).toEqual(
     new Map([['u6', '__ZN8tinyxml210XMLCommentD0Ev']]),
+  )
+
+  // WebAssembly symbol map
+  expect(
+    importEmscriptenSymbolMap(
+      [
+        /* prettier: ignore */
+        '0:A',
+        '1:B',
+        '2:C',
+      ].join('\n'),
+    ),
+  ).toEqual(
+    new Map([['wasm-function[0]', 'A'], ['wasm-function[1]', 'B'], ['wasm-function[2]', 'C']]),
   )
 
   // Invalid symbol map
   expect(
-    importAsmJsSymbolMap(
+    importEmscriptenSymbolMap(
       [
         /* prettier: ignore */
         'a:A',
@@ -47,7 +60,7 @@ test('importAsmJSSymbolMap', () => {
 
   // Collapsed stack format should not be imported as an asm.js symbol map
   expect(
-    importAsmJsSymbolMap(
+    importEmscriptenSymbolMap(
       [
         /* prettier: ignore */
         'a;b 1',
@@ -58,6 +71,6 @@ test('importAsmJSSymbolMap', () => {
   ).toEqual(null)
 
   // Unrelated files
-  expect(importAsmJsSymbolMap('')).toEqual(null)
-  expect(importAsmJsSymbolMap('\n')).toEqual(null)
+  expect(importEmscriptenSymbolMap('')).toEqual(null)
+  expect(importEmscriptenSymbolMap('\n')).toEqual(null)
 })
