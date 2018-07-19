@@ -55,6 +55,15 @@ export async function checkProfileSnapshot(filepath: string) {
     return
   }
 
+  const profileWithoutFilename = await importProfile('unknown', input)
+  if (profileWithoutFilename) {
+    profileWithoutFilename.setName(profile.getName())
+    expect(exportProfile(profileWithoutFilename)).toEqual(exportProfile(profile))
+  } else {
+    fail('Failed to extract profile when filename was "unknown"')
+    return
+  }
+
   const exported = exportProfile(profile)
   const reimported = importSpeedscopeProfiles(exported)[0]
 
