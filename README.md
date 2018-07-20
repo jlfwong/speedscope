@@ -31,6 +31,21 @@ https://medium.com/@paul_irish/debugging-node-js-nightlies-with-chrome-devtools-
 
 The `profile.json` file format output by Firefox can be saved and import into speedscope: https://developer.mozilla.org/en-US/docs/Tools/Performance
 
+### Node
+
+If you record profiling information like so:
+
+    node --prof /path/to/my/script
+
+Then this will generate a bunch of `isolate*.log` files. Process one of them
+into usable JSON like so:
+
+    node --prof-process -preprocess -j isolate*.log > profile.v8log.json
+
+Then drop the resulting `profile.v8log.json` file into speedscope, or run
+
+    speedscope profile.v8log.json
+
 ### Instruments.app
 
 You can import call trees from OSX Instruments.app into speedscope by
