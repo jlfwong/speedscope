@@ -85,7 +85,7 @@ function codeToFrameInfo(code: Code, v8log: V8LogProfile): FrameInfo {
           name: matches[1].length > 0 ? matches[1] : '(anonymous)',
           file: matches[2].length > 0 ? matches[2] : '(unknown file)',
           line: parseInt(matches[3], 10),
-          col: parseInt(matches[1], 10),
+          col: parseInt(matches[4], 10),
         }
       }
       break

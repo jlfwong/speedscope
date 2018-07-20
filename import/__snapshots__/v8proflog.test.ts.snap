@@ -4,7 +4,7 @@ exports[`importFromV8ProfLog 1`] = `
 Object {
   "frames": Array [
     Frame {
-      "col": NaN,
+      "col": 10,
       "file": "bootstrap_node.js",
       "key": " bootstrap_node.js:10:10",
       "line": 10,
@@ -13,7 +13,7 @@ Object {
       "totalWeight": 116424,
     },
     Frame {
-      "col": NaN,
+      "col": 19,
       "file": "bootstrap_node.js",
       "key": "startup bootstrap_node.js:12:19",
       "line": 12,
@@ -22,7 +22,7 @@ Object {
       "totalWeight": 116424,
     },
     Frame {
-      "col": NaN,
+      "col": 32,
       "file": "bootstrap_node.js",
       "key": "setupGlobalVariables bootstrap_node.js:265:32",
       "line": 265,
@@ -31,7 +31,7 @@ Object {
       "totalWeight": 29385,
     },
     Frame {
-      "col": NaN,
+      "col": 34,
       "file": "bootstrap_node.js",
       "key": "NativeModule.require bootstrap_node.js:534:34",
       "line": 534,
@@ -40,7 +40,7 @@ Object {
       "totalWeight": 52273,
     },
     Frame {
-      "col": NaN,
+      "col": 44,
       "file": "bootstrap_node.js",
       "key": "NativeModule.compile bootstrap_node.js:602:44",
       "line": 602,
@@ -49,7 +49,7 @@ Object {
       "totalWeight": 52273,
     },
     Frame {
-      "col": NaN,
+      "col": 11,
       "file": "util.js",
       "key": " util.js:1:11",
       "line": 1,
@@ -58,7 +58,7 @@ Object {
       "totalWeight": 29385,
     },
     Frame {
-      "col": NaN,
+      "col": 11,
       "file": "internal/encoding.js",
       "key": " internal/encoding.js:1:11",
       "line": 1,
@@ -85,7 +85,7 @@ Object {
       "totalWeight": 29385,
     },
     Frame {
-      "col": NaN,
+      "col": 30,
       "file": "bootstrap_node.js",
       "key": "setupGlobalConsole bootstrap_node.js:320:30",
       "line": 320,
@@ -94,7 +94,7 @@ Object {
       "totalWeight": 22888,
     },
     Frame {
-      "col": NaN,
+      "col": 40,
       "file": "bootstrap_node.js",
       "key": "setupInspectorCommandLineAPI bootstrap_node.js:364:40",
       "line": 364,
@@ -103,7 +103,7 @@ Object {
       "totalWeight": 22888,
     },
     Frame {
-      "col": NaN,
+      "col": 11,
       "file": "module.js",
       "key": " module.js:1:11",
       "line": 1,
@@ -112,7 +112,7 @@ Object {
       "totalWeight": 22888,
     },
     Frame {
-      "col": NaN,
+      "col": 11,
       "file": "fs.js",
       "key": " fs.js:1:11",
       "line": 1,
@@ -139,7 +139,7 @@ Object {
       "totalWeight": 22888,
     },
     Frame {
-      "col": NaN,
+      "col": 26,
       "file": "module.js",
       "key": "Module.runMain module.js:663:26",
       "line": 663,
@@ -148,7 +148,7 @@ Object {
       "totalWeight": 64151,
     },
     Frame {
-      "col": NaN,
+      "col": 24,
       "file": "module.js",
       "key": "Module._load module.js:443:24",
       "line": 443,
@@ -157,7 +157,7 @@ Object {
       "totalWeight": 64151,
     },
     Frame {
-      "col": NaN,
+      "col": 23,
       "file": "module.js",
       "key": "tryModuleLoad module.js:505:23",
       "line": 505,
@@ -166,7 +166,7 @@ Object {
       "totalWeight": 64151,
     },
     Frame {
-      "col": NaN,
+      "col": 33,
       "file": "module.js",
       "key": "Module.load module.js:536:33",
       "line": 536,
@@ -175,7 +175,7 @@ Object {
       "totalWeight": 64151,
     },
     Frame {
-      "col": NaN,
+      "col": 37,
       "file": "module.js",
       "key": "Module._extensions..js module.js:633:37",
       "line": 633,
@@ -184,7 +184,7 @@ Object {
       "totalWeight": 64151,
     },
     Frame {
-      "col": NaN,
+      "col": 37,
       "file": "module.js",
       "key": "Module._compile module.js:581:37",
       "line": 581,
@@ -193,7 +193,7 @@ Object {
       "totalWeight": 64151,
     },
     Frame {
-      "col": NaN,
+      "col": 11,
       "file": "/Users/jlfwong/code/speedscope/sample/programs/javascript/simple.js",
       "key": " /Users/jlfwong/code/speedscope/sample/programs/javascript/simple.js:1:11",
       "line": 1,
@@ -202,7 +202,7 @@ Object {
       "totalWeight": 64151,
     },
     Frame {
-      "col": NaN,
+      "col": 73,
       "file": "/Users/jlfwong/code/speedscope/sample/programs/javascript/simple.js",
       "key": "a /Users/jlfwong/code/speedscope/sample/programs/javascript/simple.js:1:73",
       "line": 1,
@@ -211,7 +211,7 @@ Object {
       "totalWeight": 64151,
     },
     Frame {
-      "col": NaN,
+      "col": 11,
       "file": "/Users/jlfwong/code/speedscope/sample/programs/javascript/simple.js",
       "key": "b /Users/jlfwong/code/speedscope/sample/programs/javascript/simple.js:8:11",
       "line": 8,
@@ -220,7 +220,7 @@ Object {
       "totalWeight": 53997,
     },
     Frame {
-      "col": NaN,
+      "col": 11,
       "file": "/Users/jlfwong/code/speedscope/sample/programs/javascript/simple.js",
       "key": "d /Users/jlfwong/code/speedscope/sample/programs/javascript/simple.js:20:11",
       "line": 20,
@@ -229,7 +229,7 @@ Object {
       "totalWeight": 51562,
     },
     Frame {
-      "col": NaN,
+      "col": 11,
       "file": "/Users/jlfwong/code/speedscope/sample/programs/javascript/simple.js",
       "key": "c /Users/jlfwong/code/speedscope/sample/programs/javascript/simple.js:14:11",
       "line": 14,
