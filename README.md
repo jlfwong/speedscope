@@ -35,7 +35,7 @@ The `profile.json` file format output by Firefox can be saved and import into sp
 
 If you record profiling information like so:
 
-    node --prof /path/to/my/script
+    node --prof /path/to/my/script.js
 
 Then this will generate a bunch of `isolate*.log` files. Process one of them
 into usable JSON like so:

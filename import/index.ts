@@ -46,6 +46,9 @@ async function _importProfile(fileName: string, contents: string): Promise<Profi
   } else if (fileName.endsWith('.collapsedstack.txt')) {
     console.log('Importing as collapsed stack format')
     return importFromBGFlameGraph(contents)
+  } else if (fileName.endsWith('.v8log.json')) {
+    console.log('Importing as --prof-process v8 log')
+    return importFromV8ProfLog(JSON.parse(contents))
   }
 
   // Second pass: Try to guess what file format it is based on structure
