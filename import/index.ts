@@ -8,6 +8,7 @@ import {importFromBGFlameGraph} from './bg-flamegraph'
 import {importFromFirefox} from './firefox'
 import {importSpeedscopeProfiles} from '../file-format'
 import {FileFormat} from '../file-format-spec'
+import {importFromV8ProfLog} from './v8proflog'
 
 export async function importProfile(fileName: string, contents: string): Promise<Profile | null> {
   const profile = await _importProfile(fileName, contents)
@@ -45,6 +46,9 @@ async function _importProfile(fileName: string, contents: string): Promise<Profi
   } else if (fileName.endsWith('.collapsedstack.txt')) {
     console.log('Importing as collapsed stack format')
     return importFromBGFlameGraph(contents)
+  } else if (fileName.endsWith('.v8log.json')) {
+    console.log('Importing as --prof-process v8 log')
+    return importFromV8ProfLog(JSON.parse(contents))
   }
 
   // Second pass: Try to guess what file format it is based on structure
@@ -68,6 +72,9 @@ async function _importProfile(fileName: string, contents: string): Promise<Profi
     } else if ('mode' in parsed && 'frames' in parsed) {
       console.log('Importing as stackprof profile')
       return importFromStackprof(parsed)
+    } else if ('code' in parsed && 'functions' in parsed && 'ticks' in parsed) {
+      console.log('Importing as --prof-process v8 log')
+      return importFromV8ProfLog(parsed)
     }
   } else {
     // Format is not JSON

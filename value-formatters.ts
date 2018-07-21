@@ -22,7 +22,7 @@ export class TimeFormatter implements ValueFormatter {
     else this.multiplier = 1
   }
 
-  format(v: number) {
+  formatUnsigned(v: number) {
     const s = v * this.multiplier
 
     if (s / 60 >= 1) return `${(s / 60).toFixed(2)}min`
@@ -30,6 +30,10 @@ export class TimeFormatter implements ValueFormatter {
     if (s / 1e-3 >= 1) return `${(s / 1e-3).toFixed(2)}ms`
     if (s / 1e-6 >= 1) return `${(s / 1e-6).toFixed(2)}µs`
     else return `${(s / 1e-9).toFixed(2)}ns`
+  }
+
+  format(v: number) {
+    return `${v < 0 ? '-' : ''}${this.formatUnsigned(Math.abs(v))}`
   }
 }
 
