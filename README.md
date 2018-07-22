@@ -40,7 +40,7 @@ If you record profiling information like so:
 Then this will generate one or more `isolate*.log` files. You can open
 the resulting profile in speedscope by running the following command:
 
-    node --prof-process -preprocess -j isolate*.log | speedscope -
+    node --prof-process --preprocess -j isolate*.log | speedscope -
 
 ### Instruments.app
 
