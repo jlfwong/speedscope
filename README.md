@@ -37,14 +37,10 @@ If you record profiling information like so:
 
     node --prof /path/to/my/script.js
 
-Then this will generate a bunch of `isolate*.log` files. Process one of them
-into usable JSON like so:
+Then this will generate one or more `isolate*.log` files. You can open
+the resulting profile in speedscope by running the following command:
 
-    node --prof-process -preprocess -j isolate*.log > profile.v8log.json
-
-Then drop the resulting `profile.v8log.json` file into speedscope, or run
-
-    speedscope profile.v8log.json
+    node --prof-process -preprocess -j isolate*.log | speedscope -
 
 ### Instruments.app
 
