@@ -210,14 +210,14 @@ export class Application extends ReloadableComponent<{}, {model: ApplicationMode
         {
           // Start out at a loading state if we know that we'll immediately be fetching a profile to
           // view.
-          loading:
+          isLoading:
             (canUseXHR && this.hashParams.profileURL != null) ||
             this.hashParams.localProfilePath != null,
-          dragActive: false,
-          error: false,
+          isDragActive: false,
+          didEncounterError: false,
           profile: null,
           activeProfile: null,
-          flattenRecursion: false,
+          shouldFlattenRecursion: false,
 
           chronoFlamechart: null,
           chronoFlamechartRenderer: null,
@@ -606,7 +606,7 @@ export class Application extends ReloadableComponent<{}, {model: ApplicationMode
   renderContent() {
     const {viewMode} = this.model
 
-    if (this.model.isInErrorState) {
+    if (this.model.didEncounterError) {
       return this.renderError()
     }
 

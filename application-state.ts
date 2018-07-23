@@ -41,7 +41,7 @@ export const enum ViewMode {
 export interface ApplicationState {
   profile: Profile | null
   activeProfile: Profile | null
-  flattenRecursion: boolean
+  shouldFlattenRecursion: boolean
 
   chronoFlamechart: Flamechart | null
   chronoFlamechartRenderer: FlamechartRenderer | null
@@ -52,9 +52,9 @@ export interface ApplicationState {
   tableSortMethod: SortMethod
 
   viewMode: ViewMode
-  dragActive: boolean
-  loading: boolean
-  error: boolean
+  isDragActive: boolean
+  isLoading: boolean
+  didEncounterError: boolean
 }
 
 export class ApplicationModel extends ImmutableModel<ApplicationState> {
@@ -138,16 +138,16 @@ export class ApplicationModel extends ImmutableModel<ApplicationState> {
       chronoFlamechartRenderer,
       leftHeavyFlamegraph,
       leftHeavyFlamegraphRenderer,
-      loading: false,
+      isLoading: false,
     })
   }
 
   get shouldFlattenRecursion(): boolean {
-    return this.get().flattenRecursion
+    return this.get().shouldFlattenRecursion
   }
 
-  async setShouldFlattenRecursion(flattenRecursion: boolean) {
-    await this.update({flattenRecursion})
+  async setShouldFlattenRecursion(shouldFlattenRecursion: boolean) {
+    await this.update({shouldFlattenRecursion})
   }
 
   get viewMode(): ViewMode {
@@ -167,27 +167,27 @@ export class ApplicationModel extends ImmutableModel<ApplicationState> {
   }
 
   get isLoading(): boolean {
-    return this.get().loading
+    return this.get().isLoading
   }
 
-  async setIsLoading(loading: boolean) {
-    await this.update({loading})
+  async setIsLoading(isLoading: boolean) {
+    await this.update({isLoading})
   }
 
-  get isInErrorState(): boolean {
-    return this.get().error
+  get didEncounterError(): boolean {
+    return this.get().didEncounterError
   }
 
-  async setIsInErrorState(error: boolean) {
-    await this.update({error})
+  async setIsInErrorState(didEncounterError: boolean) {
+    await this.update({didEncounterError})
   }
 
   get isDragActive(): boolean {
-    return this.get().dragActive
+    return this.get().isDragActive
   }
 
-  async setIsDragActive(dragActive: boolean) {
-    await this.update({dragActive})
+  async setIsDragActive(isDragActive: boolean) {
+    await this.update({isDragActive})
   }
 }
 
