@@ -6,22 +6,7 @@ import {sortBy, formatPercent} from './utils'
 import {FontSize, Colors, Sizes, commonStyle} from './style'
 import {ColorChit} from './color-chit'
 import {ScrollableListView, ListItem} from './scrollable-list-view'
-
-export enum SortField {
-  SYMBOL_NAME,
-  SELF,
-  TOTAL,
-}
-
-export enum SortDirection {
-  ASCENDING,
-  DESCENDING,
-}
-
-export interface SortMethod {
-  field: SortField
-  direction: SortDirection
-}
+import {SortDirection, SortMethod, SortField} from './application-state'
 
 interface HBarProps {
   perc: number

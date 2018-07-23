@@ -1,7 +1,7 @@
 import {ReloadableComponent} from './reloadable'
 import {Profile, Frame, CallTreeNode} from './profile'
 import {StyleSheet, css} from 'aphrodite'
-import {SortMethod, ProfileTableView} from './profile-table-view'
+import {ProfileTableView} from './profile-table-view'
 import {h} from 'preact'
 import {commonStyle, Sizes, Colors, FontSize} from './style'
 import {CanvasContext} from './canvas-context'
@@ -12,6 +12,7 @@ import {Rect, AffineTransform, Vec2, clamp} from './math'
 import {FlamechartPanZoomView, FlamechartPanZoomViewProps} from './flamechart-pan-zoom-view'
 import {noop, formatPercent} from './utils'
 import {Hovertip} from './hovertip'
+import {SortMethod} from './application-state'
 
 interface FlamechartWrapperProps {
   flamechart: Flamechart
