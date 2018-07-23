@@ -144,26 +144,17 @@ interface SandwichViewProps {
   rowAtlas: RowAtlas<FlamechartRowAtlasKey>
 }
 
-interface CallerCalleeState {
-  selectedFrame: Frame
-
-  invertedCallerFlamegraph: Flamechart
-  invertedCallerFlamegraphRenderer: FlamechartRenderer
-
-  calleeFlamegraph: Flamechart
-  calleeFlamegraphRenderer: FlamechartRenderer
+interface Stateless {
+  __dummy: void
 }
 
-interface SandwichViewState {
-  callerCallee: CallerCalleeState | null
-}
-
-export class SandwichView extends ReloadableComponent<SandwichViewProps, SandwichViewState> {
+export class SandwichView extends ReloadableComponent<SandwichViewProps, Stateless> {
   constructor(props: SandwichViewProps) {
     super(props)
-    this.state = {
-      callerCallee: null,
-    }
+  }
+
+  get model() {
+    return this.props.model
   }
 
   private setSelectedFrame = (
@@ -173,7 +164,7 @@ export class SandwichView extends ReloadableComponent<SandwichViewProps, Sandwic
     const {profile, canvasContext, rowAtlas, getColorBucketForFrame, flattenRecursion} = props
 
     if (!selectedFrame) {
-      this.setState({callerCallee: null})
+      this.model.setCallerCallee(null)
       return
     }
 
@@ -213,27 +204,25 @@ export class SandwichView extends ReloadableComponent<SandwichViewProps, Sandwic
       calleeFlamegraph,
     )
 
-    this.setState({
-      callerCallee: {
-        selectedFrame,
-        invertedCallerFlamegraph,
-        invertedCallerFlamegraphRenderer,
-        calleeFlamegraph,
-        calleeFlamegraphRenderer,
-      },
+    this.model.setCallerCallee({
+      selectedFrame,
+      invertedCallerFlamegraph,
+      invertedCallerFlamegraphRenderer,
+      calleeFlamegraph,
+      calleeFlamegraphRenderer,
     })
   }
 
   onWindowKeyPress = (ev: KeyboardEvent) => {
     if (ev.key === 'Escape') {
-      this.setState({callerCallee: null})
+      this.model.setCallerCallee(null)
     }
   }
 
   componentWillReceiveProps(nextProps: SandwichViewProps) {
     if (this.props.flattenRecursion !== nextProps.flattenRecursion) {
-      if (this.state.callerCallee) {
-        this.setSelectedFrame(this.state.callerCallee.selectedFrame, nextProps)
+      if (this.model.callerCallee) {
+        this.setSelectedFrame(this.model.callerCallee.selectedFrame, nextProps)
       }
     }
   }
@@ -247,7 +236,7 @@ export class SandwichView extends ReloadableComponent<SandwichViewProps, Sandwic
 
   render() {
     const {canvasContext} = this.props
-    const {callerCallee} = this.state
+    const {callerCallee} = this.model
 
     let selectedFrame: Frame | null = null
     let flamegraphViews: JSX.Element | null = null

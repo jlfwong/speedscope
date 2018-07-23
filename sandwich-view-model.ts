@@ -1,4 +1,7 @@
 import {ImmutableModel} from './immutable-model'
+import {Flamechart} from './flamechart'
+import {Frame} from './profile'
+import {FlamechartRenderer} from './flamechart-renderer'
 
 export enum SortField {
   SYMBOL_NAME,
@@ -16,8 +19,19 @@ export interface SortMethod {
   direction: SortDirection
 }
 
+interface CallerCalleeState {
+  selectedFrame: Frame
+
+  invertedCallerFlamegraph: Flamechart
+  invertedCallerFlamegraphRenderer: FlamechartRenderer
+
+  calleeFlamegraph: Flamechart
+  calleeFlamegraphRenderer: FlamechartRenderer
+}
+
 export interface SandwichViewState {
   sortMethod: SortMethod
+  callerCallee: CallerCalleeState | null
 }
 
 export class SandwichViewModel extends ImmutableModel<SandwichViewState> {
@@ -27,6 +41,7 @@ export class SandwichViewModel extends ImmutableModel<SandwichViewState> {
         field: SortField.SELF,
         direction: SortDirection.DESCENDING,
       },
+      callerCallee: null,
     }
 
     super({...(defaultState as any), ...(state as any)})
@@ -38,5 +53,13 @@ export class SandwichViewModel extends ImmutableModel<SandwichViewState> {
 
   async setSortMethod(sortMethod: SortMethod) {
     await this.update({sortMethod})
+  }
+
+  get callerCallee(): CallerCalleeState | null {
+    return this.get().callerCallee
+  }
+
+  async setCallerCallee(callerCallee: CallerCalleeState | null) {
+    await this.update({callerCallee})
   }
 }
