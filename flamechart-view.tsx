@@ -16,12 +16,14 @@ import {FlamechartRenderer} from './flamechart-renderer'
 import {FlamechartDetailView} from './flamechart-detail-view'
 import {FlamechartPanZoomView} from './flamechart-pan-zoom-view'
 import {Hovertip} from './hovertip'
+import {FlamechartViewModel} from './flamechart-view-model'
 
 interface FlamechartViewProps {
   flamechart: Flamechart
   canvasContext: CanvasContext
   flamechartRenderer: FlamechartRenderer
   getCSSColorForFrame: (frame: Frame) => string
+  model: FlamechartViewModel
 }
 
 interface FlamechartViewState {
@@ -29,8 +31,6 @@ interface FlamechartViewState {
     node: CallTreeNode
     event: MouseEvent
   } | null
-  selectedNode: CallTreeNode | null
-  configSpaceViewportRect: Rect
 }
 
 export class FlamechartView extends ReloadableComponent<FlamechartViewProps, FlamechartViewState> {
@@ -38,9 +38,11 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
     super()
     this.state = {
       hover: null,
-      selectedNode: null,
-      configSpaceViewportRect: Rect.empty,
     }
+  }
+
+  get model() {
+    return this.props.model
   }
 
   private configSpaceSize() {
@@ -72,13 +74,11 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
       ),
     )
 
-    this.setState({
-      configSpaceViewportRect: new Rect(origin, viewportRect.size.withX(width)),
-    })
+    this.model.setConfigSpaceViewportRect(new Rect(origin, viewportRect.size.withX(width)))
   }
 
   private transformViewport = (transform: AffineTransform): void => {
-    const viewportRect = transform.transformRect(this.state.configSpaceViewportRect)
+    const viewportRect = transform.transformRect(this.model.configSpaceViewportRect)
     this.setConfigSpaceViewportRect(viewportRect)
   }
 
@@ -87,9 +87,7 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
   }
 
   onNodeClick = (node: CallTreeNode | null) => {
-    this.setState({
-      selectedNode: node,
-    })
+    this.model.setSelectedNode(node)
   }
 
   formatValue(weight: number) {
@@ -136,7 +134,7 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
     return (
       <div className={css(style.fill, commonStyle.vbox)} ref={this.containerRef}>
         <FlamechartMinimapView
-          configSpaceViewportRect={this.state.configSpaceViewportRect}
+          configSpaceViewportRect={this.model.configSpaceViewportRect}
           transformViewport={this.transformViewport}
           flamechart={this.props.flamechart}
           flamechartRenderer={this.props.flamechartRenderer}
@@ -151,17 +149,17 @@ export class FlamechartView extends ReloadableComponent<FlamechartViewProps, Fla
           renderInverted={false}
           onNodeHover={this.onNodeHover}
           onNodeSelect={this.onNodeClick}
-          selectedNode={this.state.selectedNode}
+          selectedNode={this.model.selectedNode}
           transformViewport={this.transformViewport}
-          configSpaceViewportRect={this.state.configSpaceViewportRect}
+          configSpaceViewportRect={this.model.configSpaceViewportRect}
           setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
         />
         {this.renderTooltip()}
-        {this.state.selectedNode && (
+        {this.model.selectedNode && (
           <FlamechartDetailView
             flamechart={this.props.flamechart}
             getCSSColorForFrame={this.props.getCSSColorForFrame}
-            selectedNode={this.state.selectedNode}
+            selectedNode={this.model.selectedNode}
           />
         )}
       </div>

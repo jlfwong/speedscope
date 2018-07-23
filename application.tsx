@@ -606,6 +606,7 @@ export class Application extends ReloadableComponent<{}, {model: ApplicationMode
             flamechartRenderer={chronoFlamechartRenderer}
             ref={this.flamechartRef}
             flamechart={chronoFlamechart}
+            model={this.model.chronoFlamechartModel}
             getCSSColorForFrame={this.getCSSColorForFrame}
           />
         )
@@ -620,6 +621,7 @@ export class Application extends ReloadableComponent<{}, {model: ApplicationMode
             flamechartRenderer={leftHeavyFlamegraphRenderer}
             ref={this.flamechartRef}
             flamechart={leftHeavyFlamegraph}
+            model={this.model.leftHeavyFlamegraphModel}
             getCSSColorForFrame={this.getCSSColorForFrame}
           />
         )

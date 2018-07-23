@@ -4,7 +4,8 @@ import {FlamechartRenderer, FlamechartRowAtlasKey} from './flamechart-renderer'
 import {CanvasContext} from './canvas-context'
 import {RowAtlas} from './row-atlas'
 import {ImmutableModel} from './immutable-model'
-import {SandwichViewModel, SandwichViewState} from './sandwich-view-model'
+import {SandwichViewModel} from './sandwich-view-model'
+import {FlamechartViewModel} from './flamechart-view-model'
 
 export const enum ViewMode {
   CHRONO_FLAME_CHART,
@@ -23,12 +24,14 @@ export interface ApplicationState {
   leftHeavyFlamegraph: Flamechart | null
   leftHeavyFlamegraphRenderer: FlamechartRenderer | null
 
-  sandwichViewModel: SandwichViewModel
-
   viewMode: ViewMode
   isDragActive: boolean
   isLoading: boolean
   didEncounterError: boolean
+
+  sandwichViewModel: SandwichViewModel
+  leftHeavyFlamegraphModel: FlamechartViewModel
+  chronoFlamechartModel: FlamechartViewModel
 }
 
 export class ApplicationModel extends ImmutableModel<ApplicationState> {
@@ -50,11 +53,19 @@ export class ApplicationModel extends ImmutableModel<ApplicationState> {
       viewMode: ViewMode.CHRONO_FLAME_CHART,
 
       sandwichViewModel: new SandwichViewModel({}),
+      leftHeavyFlamegraphModel: new FlamechartViewModel({}),
+      chronoFlamechartModel: new FlamechartViewModel({}),
     }
 
     super({...defaultState, ...state})
-    this.sandwichViewModel.setUpdateHandler(async (substate: SandwichViewState) => {
+    this.sandwichViewModel.setUpdateHandler(async substate => {
       await this.update({sandwichViewModel: new SandwichViewModel(substate)})
+    })
+    this.leftHeavyFlamegraphModel.setUpdateHandler(async substate => {
+      await this.update({leftHeavyFlamegraphModel: new FlamechartViewModel(substate)})
+    })
+    this.chronoFlamechartModel.setUpdateHandler(async substate => {
+      await this.update({chronoFlamechartModel: new FlamechartViewModel(substate)})
     })
   }
 
@@ -184,5 +195,13 @@ export class ApplicationModel extends ImmutableModel<ApplicationState> {
 
   get sandwichViewModel(): SandwichViewModel {
     return this.get().sandwichViewModel
+  }
+
+  get leftHeavyFlamegraphModel(): FlamechartViewModel {
+    return this.get().leftHeavyFlamegraphModel
+  }
+
+  get chronoFlamechartModel(): FlamechartViewModel {
+    return this.get().chronoFlamechartModel
   }
 }
