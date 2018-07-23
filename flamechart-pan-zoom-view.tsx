@@ -3,11 +3,10 @@ import {CallTreeNode} from './profile'
 import {Flamechart, FlamechartFrame} from './flamechart'
 import {CanvasContext} from './canvas-context'
 import {FlamechartRenderer} from './flamechart-renderer'
-import {ReloadableComponent} from './reloadable'
 import {Sizes, FontSize, Colors, FontFamily, commonStyle} from './style'
 import {cachedMeasureTextWidth, ELLIPSIS, trimTextMid} from './text-utils'
 import {style} from './flamechart-style'
-import {h} from 'preact'
+import {h, Component} from 'preact'
 import {css} from 'aphrodite'
 
 interface FlamechartFrameLabel {
@@ -47,7 +46,7 @@ export interface FlamechartPanZoomViewProps {
   setConfigSpaceViewportRect: (rect: Rect) => void
 }
 
-export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoomViewProps, {}> {
+export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps, {}> {
   private container: Element | null = null
   private containerRef = (element?: Element) => {
     this.container = element || null

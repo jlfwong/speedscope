@@ -1,15 +1,14 @@
-import {ReloadableComponent} from './reloadable'
 import {Vec2} from './math'
 import {Sizes, Colors, FontSize, FontFamily, ZIndex} from './style'
 import {css, StyleSheet} from 'aphrodite'
-import {h} from 'preact'
+import {h, Component} from 'preact'
 
 interface HovertipProps {
   containerSize: Vec2
   offset: Vec2
 }
 
-export class Hovertip extends ReloadableComponent<HovertipProps, {}> {
+export class Hovertip extends Component<HovertipProps, {}> {
   render() {
     const {containerSize, offset} = this.props
     const width = containerSize.x

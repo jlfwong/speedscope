@@ -1,6 +1,5 @@
-import {h} from 'preact'
+import {h, Component} from 'preact'
 import {css} from 'aphrodite'
-import {ReloadableComponent} from './reloadable'
 
 import {CallTreeNode, Frame} from './profile'
 import {Flamechart} from './flamechart'
@@ -33,7 +32,7 @@ interface FlamechartViewState {
   configSpaceViewportRect: Rect
 }
 
-export class FlamechartView extends ReloadableComponent<FlamechartViewProps, FlamechartViewState> {
+export class FlamechartView extends Component<FlamechartViewProps, FlamechartViewState> {
   constructor() {
     super()
     this.state = {

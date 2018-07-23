@@ -1,24 +1,23 @@
-import {h} from 'preact'
+import {h, Component} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
-import {ReloadableComponent, SerializedComponent} from './reloadable'
-
 import {FileSystemDirectoryEntry} from './import/file-system-entry'
 
-import {FlamechartRenderer, FlamechartRowAtlasKey} from './flamechart-renderer'
+import {FlamechartRowAtlasKey} from './flamechart-renderer'
 import {CanvasContext} from './canvas-context'
 
 import {Profile, Frame} from './profile'
-import {Flamechart} from './flamechart'
 import {FlamechartView} from './flamechart-view'
 import {FontFamily, FontSize, Colors, Sizes, Duration} from './style'
 import {getHashParams, HashParams} from './hash-params'
-import {SortMethod, SortField, SortDirection} from './profile-table-view'
+import {SortMethod} from './profile-table-view'
 import {triangle} from './utils'
 import {Color} from './color'
 import {RowAtlas} from './row-atlas'
 import {importEmscriptenSymbolMap} from './emscripten'
 import {SandwichView} from './sandwich-view'
 import {saveToFile} from './file-format'
+import {ApplicationState, actions, ViewMode} from './application-store'
+import {Dispatch} from './typed-redux'
 
 const importModule = import('./import')
 // Force eager loading of the module
@@ -36,38 +35,13 @@ const canUseXHR = protocol === 'http:' || protocol === 'https:'
 declare function require(x: string): any
 const exampleProfileURL = require('./sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt')
 
-const enum ViewMode {
-  CHRONO_FLAME_CHART,
-  LEFT_HEAVY_FLAME_GRAPH,
-  SANDWICH_VIEW,
-}
-
-interface ApplicationState {
-  profile: Profile | null
-  activeProfile: Profile | null
-  flattenRecursion: boolean
-
-  chronoFlamechart: Flamechart | null
-  chronoFlamechartRenderer: FlamechartRenderer | null
-
-  leftHeavyFlamegraph: Flamechart | null
-  leftHeavyFlamegraphRenderer: FlamechartRenderer | null
-
-  tableSortMethod: SortMethod
-
-  viewMode: ViewMode
-  dragActive: boolean
-  loading: boolean
-  error: boolean
-}
-
 interface ToolbarProps extends ApplicationState {
   setViewMode(order: ViewMode): void
   browseForFile(): void
   saveFile(): void
 }
 
-export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
+export class Toolbar extends Component<ToolbarProps, void> {
   setTimeOrder = () => {
     this.props.setViewMode(ViewMode.CHRONO_FLAME_CHART)
   }
@@ -156,7 +130,7 @@ export class Toolbar extends ReloadableComponent<ToolbarProps, void> {
 interface GLCanvasProps {
   setCanvasContext(canvasContext: CanvasContext | null): void
 }
-export class GLCanvas extends ReloadableComponent<GLCanvasProps, void> {
+export class GLCanvas extends Component<GLCanvasProps, void> {
   private canvas: HTMLCanvasElement | null = null
   private canvasContext: CanvasContext | null = null
 
@@ -206,67 +180,33 @@ export class GLCanvas extends ReloadableComponent<GLCanvasProps, void> {
   }
 }
 
-export class Application extends ReloadableComponent<{}, ApplicationState> {
+interface EmptyState {
+  __dummy: void
+}
+
+export class Application extends Component<
+  {app: ApplicationState; dispatch: Dispatch},
+  EmptyState
+> {
   hashParams: HashParams
 
   constructor() {
     super()
     this.hashParams = getHashParams()
+    /*
+    // TODO(jlfwong): Reimplement this bit
     this.state = {
       // Start out at a loading state if we know that we'll immediately be fetching a profile to
       // view.
       loading:
         (canUseXHR && this.hashParams.profileURL != null) ||
         this.hashParams.localProfilePath != null,
-      dragActive: false,
-      error: false,
-      profile: null,
-      activeProfile: null,
-      flattenRecursion: false,
-
-      chronoFlamechart: null,
-      chronoFlamechartRenderer: null,
-
-      leftHeavyFlamegraph: null,
-      leftHeavyFlamegraphRenderer: null,
-
-      tableSortMethod: {
-        field: SortField.SELF,
-        direction: SortDirection.DESCENDING,
-      },
-
-      viewMode: ViewMode.CHRONO_FLAME_CHART,
     }
-  }
-
-  serialize() {
-    const result = super.serialize()
-    delete result.state.chronoFlamechartRenderer
-    delete result.state.leftHeavyFlamegraphRenderer
-    return result
-  }
-
-  rehydrate(serialized: SerializedComponent<ApplicationState>) {
-    super.rehydrate(serialized)
-    const {chronoFlamechart, leftHeavyFlamegraph} = serialized.state
-    if (this.canvasContext && this.rowAtlas && chronoFlamechart && leftHeavyFlamegraph) {
-      this.setState({
-        chronoFlamechartRenderer: new FlamechartRenderer(
-          this.canvasContext,
-          this.rowAtlas,
-          chronoFlamechart,
-        ),
-        leftHeavyFlamegraphRenderer: new FlamechartRenderer(
-          this.canvasContext,
-          this.rowAtlas,
-          leftHeavyFlamegraph,
-        ),
-      })
-    }
+    */
   }
 
   async loadProfile(loader: () => Promise<Profile | null>) {
-    await new Promise(resolve => this.setState({loading: true}, resolve))
+    this.props.dispatch(actions.setLoading(true))
     await new Promise(resolve => setTimeout(resolve, 0))
 
     if (!this.canvasContext || !this.rowAtlas) return
@@ -278,14 +218,14 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
       profile = await loader()
     } catch (e) {
       console.log('Failed to load format', e)
-      this.setState({error: true})
+      this.props.dispatch(actions.setError(true))
       return
     }
 
     if (profile == null) {
       // TODO(jlfwong): Make this a nicer overlay
       alert('Unrecognized format! See documentation about supported formats.')
-      await new Promise(resolve => this.setState({loading: false}, resolve))
+      this.props.dispatch(actions.setLoading(false))
       return
     }
 
@@ -297,7 +237,8 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     await this.setActiveProfile(profile)
 
     console.timeEnd('import')
-    this.setState({profile})
+    this.props.dispatch(actions.setProfile(profile))
+    this.props.dispatch(actions.setLoading(false))
   }
 
   async setActiveProfile(profile: Profile) {
@@ -318,50 +259,15 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
     for (let i = 0; i < frames.length; i++) {
       frameToColorBucket.set(frames[i].key, Math.floor(255 * i / frames.length))
     }
-    function getColorBucketForFrame(frame: Frame) {
-      return frameToColorBucket.get(frame.key) || 0
-    }
 
-    const chronoFlamechart = new Flamechart({
-      getTotalWeight: profile.getTotalWeight.bind(profile),
-      forEachCall: profile.forEachCall.bind(profile),
-      formatValue: profile.formatValue.bind(profile),
-      getColorBucketForFrame,
-    })
-    const chronoFlamechartRenderer = new FlamechartRenderer(
-      this.canvasContext,
-      this.rowAtlas,
-      chronoFlamechart,
+    this.props.dispatch(
+      actions.setActiveProfile({
+        profile,
+        canvasContext: this.canvasContext,
+        rowAtlas: this.rowAtlas,
+        frameToColorBucket,
+      }),
     )
-
-    const leftHeavyFlamegraph = new Flamechart({
-      getTotalWeight: profile.getTotalNonIdleWeight.bind(profile),
-      forEachCall: profile.forEachCallGrouped.bind(profile),
-      formatValue: profile.formatValue.bind(profile),
-      getColorBucketForFrame,
-    })
-    const leftHeavyFlamegraphRenderer = new FlamechartRenderer(
-      this.canvasContext,
-      this.rowAtlas,
-      leftHeavyFlamegraph,
-    )
-
-    await new Promise(resolve => {
-      this.setState(
-        {
-          activeProfile: profile,
-
-          chronoFlamechart,
-          chronoFlamechartRenderer,
-
-          leftHeavyFlamegraph,
-          leftHeavyFlamegraphRenderer,
-
-          loading: false,
-        },
-        resolve,
-      )
-    })
   }
 
   loadFromFile(file: File) {
@@ -379,7 +285,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
         return profile
       }
 
-      if (this.state.profile) {
+      if (this.props.app.profile) {
         // If a profile is already loaded, it's possible the file being imported is
         // a symbol map. If that's the case, we want to parse it, and apply the symbol
         // mapping to the already loaded profile. This can be use to take an opaque
@@ -387,7 +293,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
         const map = importEmscriptenSymbolMap(reader.result)
         if (map) {
           console.log('Importing as emscripten symbol map')
-          let profile = this.state.profile
+          let profile = this.props.app.profile
           profile.remapNames(name => map.get(name) || name)
           return profile
         }
@@ -410,7 +316,7 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   onDrop = (ev: DragEvent) => {
-    this.setState({dragActive: false})
+    this.props.dispatch(actions.setDragActive(false))
     ev.preventDefault()
 
     const firstItem = ev.dataTransfer.items[0]
@@ -432,44 +338,38 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   onDragOver = (ev: DragEvent) => {
-    this.setState({dragActive: true})
+    this.props.dispatch(actions.setDragActive(true))
     ev.preventDefault()
   }
 
   onDragLeave = (ev: DragEvent) => {
-    this.setState({dragActive: false})
+    this.props.dispatch(actions.setDragActive(false))
     ev.preventDefault()
   }
 
   onWindowKeyPress = async (ev: KeyboardEvent) => {
     if (ev.key === '1') {
-      this.setState({
-        viewMode: ViewMode.CHRONO_FLAME_CHART,
-      })
+      this.props.dispatch(actions.setViewMode(ViewMode.CHRONO_FLAME_CHART))
     } else if (ev.key === '2') {
-      this.setState({
-        viewMode: ViewMode.LEFT_HEAVY_FLAME_GRAPH,
-      })
+      this.props.dispatch(actions.setViewMode(ViewMode.LEFT_HEAVY_FLAME_GRAPH))
     } else if (ev.key === '3') {
-      this.setState({
-        viewMode: ViewMode.SANDWICH_VIEW,
-      })
+      this.props.dispatch(actions.setViewMode(ViewMode.SANDWICH_VIEW))
     } else if (ev.key === 'r') {
-      const {flattenRecursion, profile} = this.state
+      const {flattenRecursion, profile} = this.props.app
       if (!profile) return
       if (flattenRecursion) {
         await this.setActiveProfile(profile)
-        this.setState({flattenRecursion: false})
+        this.props.dispatch(actions.setFlattenRecursion(false))
       } else {
         await this.setActiveProfile(profile.getProfileWithRecursionFlattened())
-        this.setState({flattenRecursion: true})
+        this.props.dispatch(actions.setFlattenRecursion(true))
       }
     }
   }
 
   private saveFile = () => {
-    if (this.state.profile) {
-      saveToFile(this.state.profile)
+    if (this.props.app.profile) {
+      saveToFile(this.props.app.profile)
     }
   }
 
@@ -643,11 +543,11 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   setViewMode = (viewMode: ViewMode) => {
-    this.setState({viewMode})
+    this.props.dispatch(actions.setViewMode(viewMode))
   }
 
   setTableSortMethod = (tableSortMethod: SortMethod) => {
-    this.setState({tableSortMethod})
+    this.props.dispatch(actions.setTableSortMethod(tableSortMethod))
   }
 
   private canvasContext: CanvasContext | null = null
@@ -662,16 +562,16 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   getColorBucketForFrame = (frame: Frame): number => {
-    const {chronoFlamechart} = this.state
-    if (!chronoFlamechart) return 0
-    return chronoFlamechart.getColorBucketForFrame(frame)
+    const {flamechart} = this.props.app.chronoView
+    if (!flamechart) return 0
+    return flamechart.getColorBucketForFrame(frame)
   }
 
   getCSSColorForFrame = (frame: Frame): string => {
-    const {chronoFlamechart} = this.state
-    if (!chronoFlamechart) return '#FFFFFF'
+    const {flamechart} = this.props.app.chronoView
+    if (!flamechart) return '#FFFFFF'
 
-    const t = chronoFlamechart.getColorBucketForFrame(frame) / 255
+    const t = flamechart.getColorBucketForFrame(frame) / 255
 
     const x = triangle(30.0 * t)
     const H = 360.0 * (0.9 * t)
@@ -681,17 +581,17 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
   }
 
   renderContent() {
-    const {viewMode} = this.state
+    const {viewMode, error, loading, activeProfile} = this.props.app
 
-    if (this.state.error) {
+    if (error) {
       return this.renderError()
     }
 
-    if (this.state.loading) {
+    if (loading) {
       return this.renderLoadingBar()
     }
 
-    if (!this.state.activeProfile) {
+    if (!activeProfile) {
       return this.renderLanding()
     }
 
@@ -701,42 +601,42 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
 
     switch (viewMode) {
       case ViewMode.CHRONO_FLAME_CHART: {
-        const {chronoFlamechart, chronoFlamechartRenderer} = this.state
-        if (!chronoFlamechart || !chronoFlamechartRenderer)
+        const {flamechart, flamechartRenderer} = this.props.app.chronoView
+        if (!flamechart || !flamechartRenderer)
           throw new Error('Missing dependencies for chrono flame chart')
         return (
           <FlamechartView
             canvasContext={this.canvasContext}
-            flamechartRenderer={chronoFlamechartRenderer}
+            flamechartRenderer={flamechartRenderer}
             ref={this.flamechartRef}
-            flamechart={chronoFlamechart}
+            flamechart={flamechart}
             getCSSColorForFrame={this.getCSSColorForFrame}
           />
         )
       }
       case ViewMode.LEFT_HEAVY_FLAME_GRAPH: {
-        const {leftHeavyFlamegraph, leftHeavyFlamegraphRenderer} = this.state
-        if (!leftHeavyFlamegraph || !leftHeavyFlamegraphRenderer)
-          throw new Error('Missing dependencies for left heavy flame graph')
+        const {flamechart, flamechartRenderer} = this.props.app.leftHeavyView
+        if (!flamechart || !flamechartRenderer)
+          throw new Error('Missing dependencies for left heavy flame chart')
         return (
           <FlamechartView
             canvasContext={this.canvasContext}
-            flamechartRenderer={leftHeavyFlamegraphRenderer}
+            flamechartRenderer={flamechartRenderer}
             ref={this.flamechartRef}
-            flamechart={leftHeavyFlamegraph}
+            flamechart={flamechart}
             getCSSColorForFrame={this.getCSSColorForFrame}
           />
         )
       }
       case ViewMode.SANDWICH_VIEW: {
-        if (!this.rowAtlas || !this.state.profile) return null
+        if (!this.rowAtlas || !this.props.app.profile) return null
         return (
           <SandwichView
-            profile={this.state.profile}
-            flattenRecursion={this.state.flattenRecursion}
+            profile={this.props.app.profile}
+            flattenRecursion={this.props.app.flattenRecursion}
             getColorBucketForFrame={this.getColorBucketForFrame}
             getCSSColorForFrame={this.getCSSColorForFrame}
-            sortMethod={this.state.tableSortMethod}
+            sortMethod={this.props.app.sandwichView.tableSortMethod}
             setSortMethod={this.setTableSortMethod}
             canvasContext={this.canvasContext}
             rowAtlas={this.rowAtlas}
@@ -752,17 +652,17 @@ export class Application extends ReloadableComponent<{}, ApplicationState> {
         onDrop={this.onDrop}
         onDragOver={this.onDragOver}
         onDragLeave={this.onDragLeave}
-        className={css(style.root, this.state.dragActive && style.dragTargetRoot)}
+        className={css(style.root, this.props.app.dragActive && style.dragTargetRoot)}
       >
         <GLCanvas setCanvasContext={this.setCanvasContext} />
         <Toolbar
           setViewMode={this.setViewMode}
           saveFile={this.saveFile}
           browseForFile={this.browseForFile}
-          {...this.state}
+          {...this.props.app}
         />
         <div className={css(style.contentContainer)}>{this.renderContent()}</div>
-        {this.state.dragActive && <div className={css(style.dragTarget)} />}
+        {this.props.app.dragActive && <div className={css(style.dragTarget)} />}
       </div>
     )
   }

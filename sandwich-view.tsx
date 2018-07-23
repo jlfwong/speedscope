@@ -1,8 +1,7 @@
-import {ReloadableComponent} from './reloadable'
 import {Profile, Frame, CallTreeNode} from './profile'
 import {StyleSheet, css} from 'aphrodite'
 import {SortMethod, ProfileTableView} from './profile-table-view'
-import {h} from 'preact'
+import {h, Component} from 'preact'
 import {commonStyle, Sizes, Colors, FontSize} from './style'
 import {CanvasContext} from './canvas-context'
 import {FlamechartRenderer, FlamechartRowAtlasKey} from './flamechart-renderer'
@@ -28,10 +27,7 @@ interface FlamechartWrapperState {
   configSpaceViewportRect: Rect
 }
 
-export class FlamechartWrapper extends ReloadableComponent<
-  FlamechartWrapperProps,
-  FlamechartWrapperState
-> {
+export class FlamechartWrapper extends Component<FlamechartWrapperProps, FlamechartWrapperState> {
   constructor(props: FlamechartWrapperProps) {
     super(props)
     this.state = {
@@ -158,7 +154,7 @@ interface SandwichViewState {
   callerCallee: CallerCalleeState | null
 }
 
-export class SandwichView extends ReloadableComponent<SandwichViewProps, SandwichViewState> {
+export class SandwichView extends Component<SandwichViewProps, SandwichViewState> {
   constructor(props: SandwichViewProps) {
     super(props)
     this.state = {

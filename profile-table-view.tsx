@@ -1,6 +1,5 @@
 import {h, Component} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
-import {ReloadableComponent} from './reloadable'
 import {Profile, Frame} from './profile'
 import {sortBy, formatPercent} from './utils'
 import {FontSize, Colors, Sizes, commonStyle} from './style'
@@ -72,7 +71,7 @@ interface ProfileTableViewProps {
   setSortMethod: (sortMethod: SortMethod) => void
 }
 
-export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps, void> {
+export class ProfileTableView extends Component<ProfileTableViewProps, void> {
   setSelectedFrame = (frame: Frame | null) => {
     this.props.setSelectedFrame(frame)
   }
