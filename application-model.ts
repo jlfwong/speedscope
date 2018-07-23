@@ -150,6 +150,11 @@ export class ApplicationModel extends ImmutableModel<ApplicationState> {
       leftHeavyFlamegraph,
       leftHeavyFlamegraphRenderer,
       isLoading: false,
+      leftHeavyFlamegraphModel: new FlamechartViewModel({}),
+      chronoFlamechartModel: new FlamechartViewModel({}),
+      sandwichViewModel: new SandwichViewModel({
+        sortMethod: this.sandwichViewModel.sortMethod,
+      }),
     })
   }
 

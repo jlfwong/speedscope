@@ -8,6 +8,8 @@ import {ColorChit} from './color-chit'
 import {ScrollableListView, ListItem} from './scrollable-list-view'
 import {SortDirection, SandwichViewModel, SortField} from './sandwich-view-model'
 
+// TODO(jlfwong): Should make many of the small components in here pure components
+
 interface HBarProps {
   perc: number
 }
