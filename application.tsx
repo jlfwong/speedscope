@@ -4,11 +4,10 @@ import {ReloadableComponent, SerializedComponent} from './reloadable'
 
 import {FileSystemDirectoryEntry} from './import/file-system-entry'
 
-import {FlamechartRenderer, FlamechartRowAtlasKey} from './flamechart-renderer'
+import {FlamechartRowAtlasKey} from './flamechart-renderer'
 import {CanvasContext} from './canvas-context'
 
 import {Profile, Frame} from './profile'
-import {Flamechart} from './flamechart'
 import {FlamechartView} from './flamechart-view'
 import {FontFamily, FontSize, Colors, Sizes, Duration} from './style'
 import {getHashParams, HashParams} from './hash-params'
@@ -196,15 +195,15 @@ export class Application extends ReloadableComponent<{}, {model: ApplicationMode
     return this.state.model
   }
 
+  handleModelUpdate = (state: ApplicationState) => {
+    return new Promise<void>(resolve => {
+      this.setState({model: new ApplicationModel(state, this.handleModelUpdate)}, resolve)
+    })
+  }
+
   constructor() {
     super()
     this.hashParams = getHashParams()
-
-    const handleModelUpdate = (state: ApplicationState) => {
-      return new Promise<void>(resolve => {
-        this.setState({model: new ApplicationModel(state, handleModelUpdate)}, resolve)
-      })
-    }
 
     this.state = {
       model: new ApplicationModel(
@@ -233,21 +232,24 @@ export class Application extends ReloadableComponent<{}, {model: ApplicationMode
 
           viewMode: ViewMode.CHRONO_FLAME_CHART,
         },
-        handleModelUpdate,
+        this.handleModelUpdate,
       ),
     }
   }
 
-  serialize() {
-    const result = super.serialize()
-    // delete result.state.chronoFlamechartRenderer
-    // delete result.state.leftHeavyFlamegraphRenderer
-    return result
-  }
-
   rehydrate(serialized: SerializedComponent<{model: ApplicationModel}>) {
-    // TODO(jlfwong): Rework this bit
     super.rehydrate(serialized)
+
+    this.setState(
+      {
+        model: new ApplicationModel(serialized.state.model.get(), this.handleModelUpdate),
+      },
+      () => {
+        if (this.model.activeProfile && this.canvasContext && this.rowAtlas) {
+          this.model.setActiveProfile(this.model.activeProfile, this.canvasContext, this.rowAtlas)
+        }
+      },
+    )
   }
 
   async loadProfile(loader: () => Promise<Profile | null>) {
@@ -287,57 +289,8 @@ export class Application extends ReloadableComponent<{}, {model: ApplicationMode
 
   async setActiveProfile(profile: Profile) {
     if (!this.canvasContext || !this.rowAtlas) return
-
     document.title = `${profile.getName()} - speedscope`
-
-    const frames: Frame[] = []
-    profile.forEachFrame(f => frames.push(f))
-    function key(f: Frame) {
-      return (f.file || '') + f.name
-    }
-    function compare(a: Frame, b: Frame) {
-      return key(a) > key(b) ? 1 : -1
-    }
-    frames.sort(compare)
-    const frameToColorBucket = new Map<string | number, number>()
-    for (let i = 0; i < frames.length; i++) {
-      frameToColorBucket.set(frames[i].key, Math.floor(255 * i / frames.length))
-    }
-    function getColorBucketForFrame(frame: Frame) {
-      return frameToColorBucket.get(frame.key) || 0
-    }
-
-    const chronoFlamechart = new Flamechart({
-      getTotalWeight: profile.getTotalWeight.bind(profile),
-      forEachCall: profile.forEachCall.bind(profile),
-      formatValue: profile.formatValue.bind(profile),
-      getColorBucketForFrame,
-    })
-    const chronoFlamechartRenderer = new FlamechartRenderer(
-      this.canvasContext,
-      this.rowAtlas,
-      chronoFlamechart,
-    )
-
-    const leftHeavyFlamegraph = new Flamechart({
-      getTotalWeight: profile.getTotalNonIdleWeight.bind(profile),
-      forEachCall: profile.forEachCallGrouped.bind(profile),
-      formatValue: profile.formatValue.bind(profile),
-      getColorBucketForFrame,
-    })
-    const leftHeavyFlamegraphRenderer = new FlamechartRenderer(
-      this.canvasContext,
-      this.rowAtlas,
-      leftHeavyFlamegraph,
-    )
-
-    await this.model.setActiveProfile(
-      profile,
-      chronoFlamechart,
-      chronoFlamechartRenderer,
-      leftHeavyFlamegraph,
-      leftHeavyFlamegraphRenderer,
-    )
+    await this.model.setActiveProfile(profile, this.canvasContext, this.rowAtlas)
   }
 
   loadFromFile(file: File) {

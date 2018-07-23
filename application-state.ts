@@ -1,7 +1,17 @@
-import {Profile} from './profile'
+import {Profile, Frame} from './profile'
 import {Flamechart} from './flamechart'
-import {FlamechartRenderer} from './flamechart-renderer'
+import {FlamechartRenderer, FlamechartRowAtlasKey} from './flamechart-renderer'
+import {CanvasContext} from './canvas-context'
+import {RowAtlas} from './row-atlas'
 
+// An immutable model represents a snapshot of the world.
+// The constructor takes the current state and a method to handle updates when it changes.
+// This is similar to having an observer pattern with a single observer, except that the
+// model is not mutated in place. Instead, the observer is responsible for propogating
+// the state change upwards in the state tree.
+//
+// This pattern is very roughly inspired by redux, but with less indirection & reduced
+// complexity needed for type safety.
 export abstract class ImmutableModel<T> {
   private isStale: boolean = false
   constructor(private state: T, private handleUpdate: (state: T) => Promise<void>) {}
@@ -14,7 +24,7 @@ export abstract class ImmutableModel<T> {
     this.isStale = true
   }
 
-  public get(): T {
+  public get(): Readonly<T> {
     if (this.isStale) {
       throw new Error('Refusing to fetch from a stale model')
     }
@@ -77,12 +87,51 @@ export class ApplicationModel extends ImmutableModel<ApplicationState> {
   }
 
   async setActiveProfile(
-    activeProfile: Profile | null,
-    chronoFlamechart: Flamechart | null,
-    chronoFlamechartRenderer: FlamechartRenderer | null,
-    leftHeavyFlamegraph: Flamechart | null,
-    leftHeavyFlamegraphRenderer: FlamechartRenderer | null,
+    activeProfile: Profile,
+    canvasContext: CanvasContext,
+    rowAtlas: RowAtlas<FlamechartRowAtlasKey>,
   ) {
+    const frames: Frame[] = []
+    activeProfile.forEachFrame(f => frames.push(f))
+    function key(f: Frame) {
+      return (f.file || '') + f.name
+    }
+    function compare(a: Frame, b: Frame) {
+      return key(a) > key(b) ? 1 : -1
+    }
+    frames.sort(compare)
+    const frameToColorBucket = new Map<string | number, number>()
+    for (let i = 0; i < frames.length; i++) {
+      frameToColorBucket.set(frames[i].key, Math.floor(255 * i / frames.length))
+    }
+    function getColorBucketForFrame(frame: Frame) {
+      return frameToColorBucket.get(frame.key) || 0
+    }
+
+    const chronoFlamechart = new Flamechart({
+      getTotalWeight: activeProfile.getTotalWeight.bind(activeProfile),
+      forEachCall: activeProfile.forEachCall.bind(activeProfile),
+      formatValue: activeProfile.formatValue.bind(activeProfile),
+      getColorBucketForFrame,
+    })
+    const chronoFlamechartRenderer = new FlamechartRenderer(
+      canvasContext,
+      rowAtlas,
+      chronoFlamechart,
+    )
+
+    const leftHeavyFlamegraph = new Flamechart({
+      getTotalWeight: activeProfile.getTotalNonIdleWeight.bind(activeProfile),
+      forEachCall: activeProfile.forEachCallGrouped.bind(activeProfile),
+      formatValue: activeProfile.formatValue.bind(activeProfile),
+      getColorBucketForFrame,
+    })
+    const leftHeavyFlamegraphRenderer = new FlamechartRenderer(
+      canvasContext,
+      rowAtlas,
+      leftHeavyFlamegraph,
+    )
+
     return await this.update({
       activeProfile,
       chronoFlamechart,
