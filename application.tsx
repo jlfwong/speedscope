@@ -17,14 +17,7 @@ import {RowAtlas} from './row-atlas'
 import {importEmscriptenSymbolMap} from './emscripten'
 import {SandwichView} from './sandwich-view'
 import {saveToFile} from './file-format'
-import {
-  ApplicationModel,
-  ViewMode,
-  ApplicationState,
-  SortField,
-  SortDirection,
-  SortMethod,
-} from './application-state'
+import {ApplicationModel, ViewMode, ApplicationState} from './application-model'
 
 const importModule = import('./import')
 // Force eager loading of the module
@@ -197,7 +190,9 @@ export class Application extends ReloadableComponent<{}, {model: ApplicationMode
 
   handleModelUpdate = (state: ApplicationState) => {
     return new Promise<void>(resolve => {
-      this.setState({model: new ApplicationModel(state, this.handleModelUpdate)}, resolve)
+      const model = new ApplicationModel(state)
+      model.setUpdateHandler(this.handleModelUpdate)
+      this.setState({model: model}, resolve)
     })
   }
 
@@ -205,44 +200,26 @@ export class Application extends ReloadableComponent<{}, {model: ApplicationMode
     super()
     this.hashParams = getHashParams()
 
-    this.state = {
-      model: new ApplicationModel(
-        {
-          // Start out at a loading state if we know that we'll immediately be fetching a profile to
-          // view.
-          isLoading:
-            (canUseXHR && this.hashParams.profileURL != null) ||
-            this.hashParams.localProfilePath != null,
-          isDragActive: false,
-          didEncounterError: false,
-          profile: null,
-          activeProfile: null,
-          shouldFlattenRecursion: false,
+    const model = new ApplicationModel({
+      // Start out at a loading state if we know that we'll immediately be fetching a profile to
+      // view.
+      isLoading:
+        (canUseXHR && this.hashParams.profileURL != null) ||
+        this.hashParams.localProfilePath != null,
+    })
+    model.setUpdateHandler(this.handleModelUpdate)
 
-          chronoFlamechart: null,
-          chronoFlamechartRenderer: null,
-
-          leftHeavyFlamegraph: null,
-          leftHeavyFlamegraphRenderer: null,
-
-          tableSortMethod: {
-            field: SortField.SELF,
-            direction: SortDirection.DESCENDING,
-          },
-
-          viewMode: ViewMode.CHRONO_FLAME_CHART,
-        },
-        this.handleModelUpdate,
-      ),
-    }
+    this.state = {model}
   }
 
   rehydrate(serialized: SerializedComponent<{model: ApplicationModel}>) {
     super.rehydrate(serialized)
+    const model = new ApplicationModel(serialized.state.model.get())
+    model.setUpdateHandler(this.handleModelUpdate)
 
     this.setState(
       {
-        model: new ApplicationModel(serialized.state.model.get(), this.handleModelUpdate),
+        model,
       },
       () => {
         if (this.model.activeProfile && this.canvasContext && this.rowAtlas) {
@@ -569,10 +546,6 @@ export class Application extends ReloadableComponent<{}, {model: ApplicationMode
     this.model.setViewMode(viewMode)
   }
 
-  setTableSortMethod = (tableSortMethod: SortMethod) => {
-    this.model.setTableSortMethod(tableSortMethod)
-  }
-
   private canvasContext: CanvasContext | null = null
   private rowAtlas: RowAtlas<FlamechartRowAtlasKey> | null = null
   private setCanvasContext = (canvasContext: CanvasContext | null) => {
@@ -659,8 +632,7 @@ export class Application extends ReloadableComponent<{}, {model: ApplicationMode
             flattenRecursion={this.model.shouldFlattenRecursion}
             getColorBucketForFrame={this.getColorBucketForFrame}
             getCSSColorForFrame={this.getCSSColorForFrame}
-            sortMethod={this.model.tableSortMethod}
-            setSortMethod={this.setTableSortMethod}
+            model={this.model.sandwichViewModel}
             canvasContext={this.canvasContext}
             rowAtlas={this.rowAtlas}
           />

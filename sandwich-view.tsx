@@ -12,7 +12,7 @@ import {Rect, AffineTransform, Vec2, clamp} from './math'
 import {FlamechartPanZoomView, FlamechartPanZoomViewProps} from './flamechart-pan-zoom-view'
 import {noop, formatPercent} from './utils'
 import {Hovertip} from './hovertip'
-import {SortMethod} from './application-state'
+import {SandwichViewModel} from './sandwich-view-model'
 
 interface FlamechartWrapperProps {
   flamechart: Flamechart
@@ -139,8 +139,7 @@ interface SandwichViewProps {
   getColorBucketForFrame: (frame: Frame) => number
   getCSSColorForFrame: (frame: Frame) => string
 
-  sortMethod: SortMethod
-  setSortMethod: (sortMethod: SortMethod) => void
+  model: SandwichViewModel
   canvasContext: CanvasContext
   rowAtlas: RowAtlas<FlamechartRowAtlasKey>
 }
@@ -292,8 +291,7 @@ export class SandwichView extends ReloadableComponent<SandwichViewProps, Sandwic
             setSelectedFrame={this.setSelectedFrame}
             profile={this.props.profile}
             getCSSColorForFrame={this.props.getCSSColorForFrame}
-            sortMethod={this.props.sortMethod}
-            setSortMethod={this.props.setSortMethod}
+            model={this.props.model}
           />
         </div>
         {flamegraphViews}

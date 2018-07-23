@@ -3,34 +3,8 @@ import {Flamechart} from './flamechart'
 import {FlamechartRenderer, FlamechartRowAtlasKey} from './flamechart-renderer'
 import {CanvasContext} from './canvas-context'
 import {RowAtlas} from './row-atlas'
-
-// An immutable model represents a snapshot of the world.
-// The constructor takes the current state and a method to handle updates when it changes.
-// This is similar to having an observer pattern with a single observer, except that the
-// model is not mutated in place. Instead, the observer is responsible for propogating
-// the state change upwards in the state tree.
-//
-// This pattern is very roughly inspired by redux, but with less indirection & reduced
-// complexity needed for type safety.
-export abstract class ImmutableModel<T> {
-  private isStale: boolean = false
-  constructor(private state: T, private handleUpdate: (state: T) => Promise<void>) {}
-
-  protected async update(fields: Partial<T>) {
-    if (this.isStale) {
-      throw new Error('Refusing to update from a stale model')
-    }
-    await this.handleUpdate({...(this.state as any), ...(fields as any)})
-    this.isStale = true
-  }
-
-  public get(): Readonly<T> {
-    if (this.isStale) {
-      throw new Error('Refusing to fetch from a stale model')
-    }
-    return this.state
-  }
-}
+import {ImmutableModel} from './immutable-model'
+import {SandwichViewModel, SandwichViewState} from './sandwich-view-model'
 
 export const enum ViewMode {
   CHRONO_FLAME_CHART,
@@ -49,7 +23,7 @@ export interface ApplicationState {
   leftHeavyFlamegraph: Flamechart | null
   leftHeavyFlamegraphRenderer: FlamechartRenderer | null
 
-  tableSortMethod: SortMethod
+  sandwichViewModel: SandwichViewModel
 
   viewMode: ViewMode
   isDragActive: boolean
@@ -58,6 +32,32 @@ export interface ApplicationState {
 }
 
 export class ApplicationModel extends ImmutableModel<ApplicationState> {
+  constructor(state: Partial<ApplicationState>) {
+    const defaultState: ApplicationState = {
+      isLoading: false,
+      isDragActive: false,
+      didEncounterError: false,
+      profile: null,
+      activeProfile: null,
+      shouldFlattenRecursion: false,
+
+      chronoFlamechart: null,
+      chronoFlamechartRenderer: null,
+
+      leftHeavyFlamegraph: null,
+      leftHeavyFlamegraphRenderer: null,
+
+      viewMode: ViewMode.CHRONO_FLAME_CHART,
+
+      sandwichViewModel: new SandwichViewModel({}),
+    }
+
+    super({...defaultState, ...state})
+    this.sandwichViewModel.setUpdateHandler(async (substate: SandwichViewState) => {
+      await this.update({sandwichViewModel: new SandwichViewModel(substate)})
+    })
+  }
+
   get profile(): Profile | null {
     return this.get().profile
   }
@@ -158,14 +158,6 @@ export class ApplicationModel extends ImmutableModel<ApplicationState> {
     await this.update({viewMode})
   }
 
-  get tableSortMethod(): SortMethod {
-    return this.get().tableSortMethod
-  }
-
-  async setTableSortMethod(tableSortMethod: SortMethod) {
-    await this.update({tableSortMethod})
-  }
-
   get isLoading(): boolean {
     return this.get().isLoading
   }
@@ -189,28 +181,8 @@ export class ApplicationModel extends ImmutableModel<ApplicationState> {
   async setIsDragActive(isDragActive: boolean) {
     await this.update({isDragActive})
   }
-}
 
-export enum SortField {
-  SYMBOL_NAME,
-  SELF,
-  TOTAL,
+  get sandwichViewModel(): SandwichViewModel {
+    return this.get().sandwichViewModel
+  }
 }
-
-export enum SortDirection {
-  ASCENDING,
-  DESCENDING,
-}
-
-export interface SortMethod {
-  field: SortField
-  direction: SortDirection
-}
-
-/*
-export interface SandwichViewState {
-  sortMethod: SortMethod
-}
-
-export class SandwichViewModel extends ImmutableModel<SandwichViewState> {}
-*/

@@ -6,7 +6,7 @@ import {sortBy, formatPercent} from './utils'
 import {FontSize, Colors, Sizes, commonStyle} from './style'
 import {ColorChit} from './color-chit'
 import {ScrollableListView, ListItem} from './scrollable-list-view'
-import {SortDirection, SortMethod, SortField} from './application-state'
+import {SortDirection, SandwichViewModel, SortField} from './sandwich-view-model'
 
 interface HBarProps {
   perc: number
@@ -53,8 +53,7 @@ interface ProfileTableViewProps {
   selectedFrame: Frame | null
   setSelectedFrame: (frame: Frame | null) => void
   getCSSColorForFrame: (frame: Frame) => string
-  sortMethod: SortMethod
-  setSortMethod: (sortMethod: SortMethod) => void
+  model: SandwichViewModel
 }
 
 export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps, void> {
@@ -103,11 +102,11 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
   onSortClick = (field: SortField, ev: MouseEvent) => {
     ev.preventDefault()
 
-    const {sortMethod} = this.props
+    const {sortMethod} = this.props.model
 
     if (sortMethod.field == field) {
       // Toggle
-      this.props.setSortMethod({
+      this.props.model.setSortMethod({
         field,
         direction:
           sortMethod.direction === SortDirection.ASCENDING
@@ -118,15 +117,15 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
       // Set a sane default
       switch (field) {
         case SortField.SYMBOL_NAME: {
-          this.props.setSortMethod({field, direction: SortDirection.ASCENDING})
+          this.props.model.setSortMethod({field, direction: SortDirection.ASCENDING})
           break
         }
         case SortField.SELF: {
-          this.props.setSortMethod({field, direction: SortDirection.DESCENDING})
+          this.props.model.setSortMethod({field, direction: SortDirection.DESCENDING})
           break
         }
         case SortField.TOTAL: {
-          this.props.setSortMethod({field, direction: SortDirection.DESCENDING})
+          this.props.model.setSortMethod({field, direction: SortDirection.DESCENDING})
           break
         }
       }
@@ -134,7 +133,8 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
   }
 
   render() {
-    const {profile, sortMethod} = this.props
+    const {profile} = this.props
+    const {sortMethod} = this.props.model
 
     const frameList: Frame[] = []
 
