@@ -2,7 +2,6 @@ import {h, Component} from 'preact'
 import {css} from 'aphrodite'
 
 import {CallTreeNode, Frame} from './profile'
-import {Flamechart} from './flamechart'
 
 import {Rect, Vec2, AffineTransform, clamp} from './math'
 import {formatPercent} from './utils'
@@ -11,15 +10,14 @@ import {FlamechartMinimapView} from './flamechart-minimap-view'
 import {style} from './flamechart-style'
 import {Sizes, commonStyle} from './style'
 import {CanvasContext} from './canvas-context'
-import {FlamechartRenderer} from './flamechart-renderer'
 import {FlamechartDetailView} from './flamechart-detail-view'
 import {FlamechartPanZoomView} from './flamechart-pan-zoom-view'
 import {Hovertip} from './hovertip'
+import {FlamechartAppState} from './app-state/flamechart-view-state'
 
 interface FlamechartViewProps {
-  flamechart: Flamechart
   canvasContext: CanvasContext
-  flamechartRenderer: FlamechartRenderer
+  appState: FlamechartAppState
   getCSSColorForFrame: (frame: Frame) => string
 }
 
@@ -44,8 +42,8 @@ export class FlamechartView extends Component<FlamechartViewProps, FlamechartVie
 
   private configSpaceSize() {
     return new Vec2(
-      this.props.flamechart.getTotalWeight(),
-      this.props.flamechart.getLayers().length,
+      this.props.appState.flamechart.getTotalWeight(),
+      this.props.appState.flamechart.getLayers().length,
     )
   }
 
@@ -56,7 +54,7 @@ export class FlamechartView extends Component<FlamechartViewProps, FlamechartVie
 
     const width = clamp(
       viewportRect.size.x,
-      Math.min(configSpaceSize.x, 3 * this.props.flamechart.getMinFrameWidth()),
+      Math.min(configSpaceSize.x, 3 * this.props.appState.flamechart.getMinFrameWidth()),
       configSpaceSize.x,
     )
 
@@ -92,10 +90,10 @@ export class FlamechartView extends Component<FlamechartViewProps, FlamechartVie
   }
 
   formatValue(weight: number) {
-    const totalWeight = this.props.flamechart.getTotalWeight()
+    const totalWeight = this.props.appState.flamechart.getTotalWeight()
     const percent = 100 * weight / totalWeight
     const formattedPercent = formatPercent(percent)
-    return `${this.props.flamechart.formatValue(weight)} (${formattedPercent})`
+    return `${this.props.appState.flamechart.formatValue(weight)} (${formattedPercent})`
   }
 
   renderTooltip() {
@@ -121,32 +119,21 @@ export class FlamechartView extends Component<FlamechartViewProps, FlamechartVie
     this.container = (container as HTMLDivElement) || null
   }
 
-  panZoomView: FlamechartPanZoomView | null = null
-  panZoomRef = (view: FlamechartPanZoomView | null) => {
-    this.panZoomView = view
-  }
-  subcomponents() {
-    return {
-      panZoom: this.panZoomView,
-    }
-  }
-
   render() {
     return (
       <div className={css(style.fill, commonStyle.vbox)} ref={this.containerRef}>
         <FlamechartMinimapView
           configSpaceViewportRect={this.state.configSpaceViewportRect}
           transformViewport={this.transformViewport}
-          flamechart={this.props.flamechart}
-          flamechartRenderer={this.props.flamechartRenderer}
+          flamechart={this.props.appState.flamechart}
+          flamechartRenderer={this.props.appState.flamechartRenderer}
           canvasContext={this.props.canvasContext}
           setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
         />
         <FlamechartPanZoomView
-          ref={this.panZoomRef}
           canvasContext={this.props.canvasContext}
-          flamechart={this.props.flamechart}
-          flamechartRenderer={this.props.flamechartRenderer}
+          flamechart={this.props.appState.flamechart}
+          flamechartRenderer={this.props.appState.flamechartRenderer}
           renderInverted={false}
           onNodeHover={this.onNodeHover}
           onNodeSelect={this.onNodeClick}
@@ -158,7 +145,7 @@ export class FlamechartView extends Component<FlamechartViewProps, FlamechartVie
         {this.renderTooltip()}
         {this.state.selectedNode && (
           <FlamechartDetailView
-            flamechart={this.props.flamechart}
+            flamechart={this.props.appState.flamechart}
             getCSSColorForFrame={this.props.getCSSColorForFrame}
             selectedNode={this.state.selectedNode}
           />

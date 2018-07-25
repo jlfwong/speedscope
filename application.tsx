@@ -445,14 +445,6 @@ export class Application extends Component<
     }
   }
 
-  flamechartView: FlamechartView | null = null
-  flamechartRef = (view: FlamechartView | null) => (this.flamechartView = view)
-  subcomponents() {
-    return {
-      flamechart: this.flamechartView,
-    }
-  }
-
   onFileSelect = (ev: Event) => {
     const file = (ev.target as HTMLInputElement).files!.item(0)
     if (file) {
@@ -602,29 +594,23 @@ export class Application extends Component<
 
     switch (viewMode) {
       case ViewMode.CHRONO_FLAME_CHART: {
-        const {flamechart, flamechartRenderer} = this.props.app.chronoView
-        if (!flamechart || !flamechartRenderer)
+        if (!this.props.app.chronoView)
           throw new Error('Missing dependencies for chrono flame chart')
         return (
           <FlamechartView
             canvasContext={this.canvasContext}
-            flamechartRenderer={flamechartRenderer}
-            ref={this.flamechartRef}
-            flamechart={flamechart}
+            appState={this.props.app.chronoView}
             getCSSColorForFrame={this.getCSSColorForFrame}
           />
         )
       }
       case ViewMode.LEFT_HEAVY_FLAME_GRAPH: {
-        const {flamechart, flamechartRenderer} = this.props.app.leftHeavyView
-        if (!flamechart || !flamechartRenderer)
-          throw new Error('Missing dependencies for left heavy flame chart')
+        if (!this.props.app.leftHeavyView)
+          throw new Error('Missing dependencies for chrono flame chart')
         return (
           <FlamechartView
             canvasContext={this.canvasContext}
-            flamechartRenderer={flamechartRenderer}
-            ref={this.flamechartRef}
-            flamechart={flamechart}
+            appState={this.props.app.leftHeavyView}
             getCSSColorForFrame={this.getCSSColorForFrame}
           />
         )

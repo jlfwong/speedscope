@@ -9,7 +9,10 @@ import * as redux from 'redux'
 import {reducer, setter} from '../typed-redux'
 import {Profile} from '../profile'
 import {SortMethod, SortField, SortDirection} from '../profile-table-view'
-import {FlamechartViewState, chronoView, leftHeavyView} from './flamechart-view-state'
+import {FlamechartAppState, chronoView, leftHeavyView} from './flamechart-view-state'
+import {RowAtlas} from '../row-atlas'
+import {FlamechartRowAtlasKey} from '../flamechart-renderer'
+import {CanvasContext} from '../canvas-context'
 
 export const enum ViewMode {
   CHRONO_FLAME_CHART,
@@ -23,6 +26,10 @@ export interface SandwichViewState {
 
 export interface ApplicationState {
   profile: Profile | null
+
+  canvasContext: CanvasContext
+  rowAtlas: RowAtlas<FlamechartRowAtlasKey>
+
   activeProfile: Profile | null
   flattenRecursion: boolean
 
@@ -31,9 +38,9 @@ export interface ApplicationState {
   loading: boolean
   error: boolean
 
-  chronoView: FlamechartViewState
+  chronoView: FlamechartAppState
 
-  leftHeavyView: FlamechartViewState
+  leftHeavyView: FlamechartAppState
 
   sandwichView: SandwichViewState
 }
@@ -69,6 +76,12 @@ export function createApplicationStore(
     flattenRecursion: setter<boolean>(actions.setFlattenRecursion, false),
 
     viewMode: setter<ViewMode>(actions.setViewMode, ViewMode.CHRONO_FLAME_CHART),
+
+    canvasContext: setter<CanvasContext | null>(actions.setCanvasContext, null),
+    flamechartRowAtlas: setter<RowAtlas<FlamechartRowAtlasKey> | null>(
+      actions.setFlamechartRowAtlas,
+      null,
+    ),
 
     dragActive: setter<boolean>(actions.setDragActive, false),
     loading: setter<boolean>(actions.setLoading, false),
