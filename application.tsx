@@ -16,7 +16,8 @@ import {RowAtlas} from './row-atlas'
 import {importEmscriptenSymbolMap} from './emscripten'
 import {SandwichView} from './sandwich-view'
 import {saveToFile} from './file-format'
-import {ApplicationState, actions, ViewMode} from './application-store'
+import {ApplicationState, ViewMode} from './app-state'
+import {actions} from './app-state/actions'
 import {Dispatch} from './typed-redux'
 
 const importModule = import('./import')

@@ -1,6 +1,6 @@
 import {h, render} from 'preact'
 import {Application} from './application'
-import {createApplicationStore} from './application-store'
+import {createApplicationStore} from './app-state'
 
 console.log(`speedscope v${require('./package.json').version}`)
 
