@@ -24,11 +24,16 @@ export interface SandwichViewState {
   tableSortMethod: SortMethod
 }
 
+interface GlState {
+  canvas: HTMLCanvasElement
+  context: CanvasContext
+  rowAtlas: RowAtlas<FlamechartRowAtlasKey>
+}
+
 export interface ApplicationState {
   profile: Profile | null
 
-  canvasContext: CanvasContext
-  rowAtlas: RowAtlas<FlamechartRowAtlasKey>
+  gl: GlState
 
   activeProfile: Profile | null
   flattenRecursion: boolean
@@ -67,6 +72,21 @@ const sandwichView = reducer<SandwichViewState>(
   },
 )
 
+const gl = reducer<GlState | null>((state = null, action) => {
+  if (actions.setGLCanvas.matches(action)) {
+    const canvas = action.payload
+    if (!canvas) return null
+
+    // TODO(jlfwong): The context & rowAtlas are derived state
+    // that probably shouldn't live inside the redux store
+    const context = new CanvasContext(canvas)
+    const rowAtlas = new RowAtlas<FlamechartRowAtlasKey>(context)
+
+    return {canvas, context, rowAtlas}
+  }
+  return state
+})
+
 export function createApplicationStore(
   initialState: Partial<ApplicationState>,
 ): redux.Store<ApplicationState> {
@@ -77,11 +97,7 @@ export function createApplicationStore(
 
     viewMode: setter<ViewMode>(actions.setViewMode, ViewMode.CHRONO_FLAME_CHART),
 
-    canvasContext: setter<CanvasContext | null>(actions.setCanvasContext, null),
-    flamechartRowAtlas: setter<RowAtlas<FlamechartRowAtlasKey> | null>(
-      actions.setFlamechartRowAtlas,
-      null,
-    ),
+    gl,
 
     dragActive: setter<boolean>(actions.setDragActive, false),
     loading: setter<boolean>(actions.setLoading, false),

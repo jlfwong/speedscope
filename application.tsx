@@ -2,9 +2,6 @@ import {h, Component} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 import {FileSystemDirectoryEntry} from './import/file-system-entry'
 
-import {FlamechartRowAtlasKey} from './flamechart-renderer'
-import {CanvasContext} from './canvas-context'
-
 import {Profile, Frame} from './profile'
 import {FlamechartView} from './flamechart-view'
 import {FontFamily, FontSize, Colors, Sizes, Duration} from './style'
@@ -12,7 +9,6 @@ import {getHashParams, HashParams} from './hash-params'
 import {SortMethod} from './profile-table-view'
 import {triangle} from './utils'
 import {Color} from './color'
-import {RowAtlas} from './row-atlas'
 import {importEmscriptenSymbolMap} from './emscripten'
 import {SandwichView} from './sandwich-view'
 import {saveToFile} from './file-format'
@@ -129,21 +125,19 @@ export class Toolbar extends Component<ToolbarProps, void> {
 }
 
 interface GLCanvasProps {
-  setCanvasContext(canvasContext: CanvasContext | null): void
+  dispatch: Dispatch
 }
 export class GLCanvas extends Component<GLCanvasProps, void> {
   private canvas: HTMLCanvasElement | null = null
-  private canvasContext: CanvasContext | null = null
 
   private ref = (canvas?: Element) => {
     if (canvas instanceof HTMLCanvasElement) {
       this.canvas = canvas
-      this.canvasContext = new CanvasContext(canvas)
     } else {
       this.canvas = null
-      this.canvasContext = null
     }
-    this.props.setCanvasContext(this.canvasContext)
+
+    this.props.dispatch(actions.setGLCanvas(this.canvas))
   }
 
   private maybeResize() {
@@ -175,7 +169,6 @@ export class GLCanvas extends Component<GLCanvasProps, void> {
   componentWillUnmount() {
     window.removeEventListener('resize', this.onWindowResize)
   }
-
   render() {
     return <canvas className={css(style.glCanvasView)} ref={this.ref} width={1} height={1} />
   }
@@ -210,7 +203,7 @@ export class Application extends Component<
     this.props.dispatch(actions.setLoading(true))
     await new Promise(resolve => setTimeout(resolve, 0))
 
-    if (!this.canvasContext || !this.rowAtlas) return
+    if (!this.props.app.gl) return
 
     console.time('import')
 
@@ -243,7 +236,7 @@ export class Application extends Component<
   }
 
   async setActiveProfile(profile: Profile) {
-    if (!this.canvasContext || !this.rowAtlas) return
+    if (!this.props.app.gl) return
 
     document.title = `${profile.getName()} - speedscope`
 
@@ -264,8 +257,8 @@ export class Application extends Component<
     this.props.dispatch(
       actions.setActiveProfile({
         profile,
-        canvasContext: this.canvasContext,
-        rowAtlas: this.rowAtlas,
+        canvasContext: this.props.app.gl.context,
+        rowAtlas: this.props.app.gl.rowAtlas,
         frameToColorBucket,
       }),
     )
@@ -543,17 +536,6 @@ export class Application extends Component<
     this.props.dispatch(actions.setTableSortMethod(tableSortMethod))
   }
 
-  private canvasContext: CanvasContext | null = null
-  private rowAtlas: RowAtlas<FlamechartRowAtlasKey> | null = null
-  private setCanvasContext = (canvasContext: CanvasContext | null) => {
-    this.canvasContext = canvasContext
-    if (canvasContext) {
-      this.rowAtlas = new RowAtlas(canvasContext)
-    } else {
-      this.rowAtlas = null
-    }
-  }
-
   getColorBucketForFrame = (frame: Frame): number => {
     const {flamechart} = this.props.app.chronoView
     if (!flamechart) return 0
@@ -584,12 +566,8 @@ export class Application extends Component<
       return this.renderLoadingBar()
     }
 
-    if (!activeProfile) {
+    if (!activeProfile || !this.props.app.gl) {
       return this.renderLanding()
-    }
-
-    if (!this.canvasContext) {
-      throw new Error('Missing canvas context')
     }
 
     switch (viewMode) {
@@ -598,7 +576,7 @@ export class Application extends Component<
           throw new Error('Missing dependencies for chrono flame chart')
         return (
           <FlamechartView
-            canvasContext={this.canvasContext}
+            canvasContext={this.props.app.gl.context}
             appState={this.props.app.chronoView}
             getCSSColorForFrame={this.getCSSColorForFrame}
           />
@@ -609,14 +587,14 @@ export class Application extends Component<
           throw new Error('Missing dependencies for chrono flame chart')
         return (
           <FlamechartView
-            canvasContext={this.canvasContext}
+            canvasContext={this.props.app.gl.context}
             appState={this.props.app.leftHeavyView}
             getCSSColorForFrame={this.getCSSColorForFrame}
           />
         )
       }
       case ViewMode.SANDWICH_VIEW: {
-        if (!this.rowAtlas || !this.props.app.profile) return null
+        if (!this.props.app.gl.rowAtlas || !this.props.app.profile) return null
         return (
           <SandwichView
             profile={this.props.app.profile}
@@ -625,8 +603,8 @@ export class Application extends Component<
             getCSSColorForFrame={this.getCSSColorForFrame}
             sortMethod={this.props.app.sandwichView.tableSortMethod}
             setSortMethod={this.setTableSortMethod}
-            canvasContext={this.canvasContext}
-            rowAtlas={this.rowAtlas}
+            canvasContext={this.props.app.gl.context}
+            rowAtlas={this.props.app.gl.rowAtlas}
           />
         )
       }
@@ -641,7 +619,7 @@ export class Application extends Component<
         onDragLeave={this.onDragLeave}
         className={css(style.root, this.props.app.dragActive && style.dragTargetRoot)}
       >
-        <GLCanvas setCanvasContext={this.setCanvasContext} />
+        <GLCanvas dispatch={this.props.dispatch} />
         <Toolbar
           setViewMode={this.setViewMode}
           saveFile={this.saveFile}

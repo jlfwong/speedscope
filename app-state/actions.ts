@@ -18,11 +18,7 @@ export namespace actions {
     frameToColorBucket: Map<string | number, number>
   }>('setActiveProfile')
 
-  export const setCanvasContext = actionCreator<CanvasContext>('setCanvasContext')
-
-  export const setFlamechartRowAtlas = actionCreator<RowAtlas<FlamechartRowAtlasKey>>(
-    'setFlamechartRowAtlas',
-  )
+  export const setGLCanvas = actionCreator<HTMLCanvasElement | null>('setGLCanvas')
 
   // Set which top-level view should be displayed
   export const setViewMode = actionCreator<ViewMode>('setViewMode')
