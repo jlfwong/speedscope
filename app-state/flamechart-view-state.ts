@@ -40,6 +40,10 @@ export function createFlamechartViewStateReducer(id: FlamechartID) {
     if (actions.flamechart.setConfigSpaceViewportRect.matches(action) && action.payload.id === id) {
       return {...state, configSpaceViewportRect: action.payload.configSpaceViewportRect}
     }
+    if (actions.setProfile.matches(action)) {
+      // If the profile changes, we should invalidate all of our state, since none of it still applies
+      return initialState
+    }
 
     return state
   })
