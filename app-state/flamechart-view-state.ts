@@ -53,6 +53,10 @@ export function createFlamechartViewStateReducer(id: FlamechartID) {
       // If the profile changes, we should invalidate all of our state, since none of it still applies
       return initialState
     }
+    if (actions.setViewMode.matches(action)) {
+      // If we switch views, the hover information is no longer relevant
+      return {...state, hover: null}
+    }
 
     return state
   })
