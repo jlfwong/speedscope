@@ -1,31 +1,20 @@
-import {Profile, Frame, CallTreeNode} from './profile'
+import {Frame, CallTreeNode} from './profile'
 import {StyleSheet, css} from 'aphrodite'
-import {SortMethod, ProfileTableView} from './profile-table-view'
+import {ProfileTableView} from './profile-table-view'
 import {h, Component} from 'preact'
 import {commonStyle, Sizes, Colors, FontSize} from './style'
-import {CanvasContext} from './canvas-context'
-import {FlamechartRenderer, FlamechartRowAtlasKey} from './flamechart-renderer'
+import {FlamechartRenderer} from './flamechart-renderer'
 import {Flamechart} from './flamechart'
-import {RowAtlas} from './row-atlas'
 import {Rect, AffineTransform, Vec2, clamp} from './math'
 import {FlamechartPanZoomView, FlamechartPanZoomViewProps} from './flamechart-pan-zoom-view'
 import {noop, formatPercent} from './utils'
 import {Hovertip} from './hovertip'
-
-interface FlamechartWrapperProps {
-  flamechart: Flamechart
-  canvasContext: CanvasContext
-  flamechartRenderer: FlamechartRenderer
-  renderInverted: boolean
-}
-
-interface FlamechartWrapperState {
-  hover: {
-    node: CallTreeNode
-    event: MouseEvent
-  } | null
-  configSpaceViewportRect: Rect
-}
+import {
+  FlamechartWrapperProps,
+  FlamechartWrapperState,
+  SandwichViewProps,
+  SandwichViewState,
+} from './app-state/sandwich-view-state'
 
 export class FlamechartWrapper extends Component<FlamechartWrapperProps, FlamechartWrapperState> {
   constructor(props: FlamechartWrapperProps) {
@@ -124,34 +113,6 @@ export class FlamechartWrapper extends Component<FlamechartWrapperProps, Flamech
       </div>
     )
   }
-}
-
-interface SandwichViewProps {
-  profile: Profile
-  flattenRecursion: boolean
-
-  // TODO(jlfwong): It's kind of awkward requiring both of these
-  getColorBucketForFrame: (frame: Frame) => number
-  getCSSColorForFrame: (frame: Frame) => string
-
-  sortMethod: SortMethod
-  setSortMethod: (sortMethod: SortMethod) => void
-  canvasContext: CanvasContext
-  rowAtlas: RowAtlas<FlamechartRowAtlasKey>
-}
-
-interface CallerCalleeState {
-  selectedFrame: Frame
-
-  invertedCallerFlamegraph: Flamechart
-  invertedCallerFlamegraphRenderer: FlamechartRenderer
-
-  calleeFlamegraph: Flamechart
-  calleeFlamegraphRenderer: FlamechartRenderer
-}
-
-interface SandwichViewState {
-  callerCallee: CallerCalleeState | null
 }
 
 export class SandwichView extends Component<SandwichViewProps, SandwichViewState> {

@@ -24,6 +24,15 @@ export interface FlamechartViewState {
   configSpaceViewportRect: Rect
 }
 
+export type FlamechartViewProps = {
+  id: FlamechartID
+  canvasContext: CanvasContext
+  flamechart: Flamechart
+  flamechartRenderer: FlamechartRenderer
+  dispatch: Dispatch
+  getCSSColorForFrame: (frame: Frame) => string
+} & FlamechartViewState
+
 export function createFlamechartViewStateReducer(id: FlamechartID) {
   let initialState: FlamechartViewState = {
     hover: null,
@@ -48,15 +57,6 @@ export function createFlamechartViewStateReducer(id: FlamechartID) {
     return state
   })
 }
-
-export type FlamechartViewProps = {
-  id: FlamechartID
-  canvasContext: CanvasContext
-  flamechart: Flamechart
-  flamechartRenderer: FlamechartRenderer
-  dispatch: Dispatch
-  getCSSColorForFrame: (frame: Frame) => string
-} & FlamechartViewState
 
 export const chronoViewFlamechart = memoizeByShallowEquality<
   {
