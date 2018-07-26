@@ -6,13 +6,18 @@ import {actions} from './actions'
  */
 
 import * as redux from 'redux'
-import {reducer, setter} from '../typed-redux'
+import {reducer, setter, Reducer} from '../typed-redux'
 import {Profile} from '../profile'
 import {SortMethod, SortField, SortDirection} from '../profile-table-view'
 import {RowAtlas} from '../row-atlas'
 import {FlamechartRowAtlasKey} from '../flamechart-renderer'
 import {CanvasContext} from '../canvas-context'
 import {memoizeByReference} from '../utils'
+import {
+  createFlamechartViewStateReducer,
+  FlamechartID,
+  FlamechartViewState,
+} from './flamechart-view-state'
 
 export const enum ViewMode {
   CHRONO_FLAME_CHART,
@@ -28,7 +33,7 @@ export interface ApplicationState {
   profile: Profile | null
   frameToColorBucket: Map<string | number, number>
 
-  glCanvas: HTMLCanvasElement
+  glCanvas: HTMLCanvasElement | null
 
   activeProfile: Profile | null
   flattenRecursion: boolean
@@ -38,6 +43,8 @@ export interface ApplicationState {
   loading: boolean
   error: boolean
 
+  chronoView: FlamechartViewState
+  leftHeavyView: FlamechartViewState
   sandwichView: SandwichViewState
 }
 
@@ -69,7 +76,7 @@ export const rowAtlas = memoizeByReference<CanvasContext, RowAtlas<FlamechartRow
 export function createApplicationStore(
   initialState: Partial<ApplicationState>,
 ): redux.Store<ApplicationState> {
-  const reducer = redux.combineReducers({
+  const reducer: Reducer<ApplicationState> = redux.combineReducers({
     profile: setter<Profile | null>(actions.setProfile, null),
     frameToColorBucket: setter<Map<string | number, number>>(
       actions.setFrameToColorBucket,
@@ -86,6 +93,9 @@ export function createApplicationStore(
     dragActive: setter<boolean>(actions.setDragActive, false),
     loading: setter<boolean>(actions.setLoading, false),
     error: setter<boolean>(actions.setError, false),
+
+    chronoView: createFlamechartViewStateReducer(FlamechartID.CHRONO),
+    leftHeavyView: createFlamechartViewStateReducer(FlamechartID.LEFT_HEAVY),
 
     sandwichView,
   })

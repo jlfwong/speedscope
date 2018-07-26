@@ -563,7 +563,7 @@ export class Application extends Component<
       return this.renderLoadingBar()
     }
 
-    if (!activeProfile || !this.props.app.glCanvas) {
+    if (!activeProfile || !glCanvas) {
       return this.renderLanding()
     }
 
@@ -572,9 +572,11 @@ export class Application extends Component<
         return (
           <FlamechartView
             {...chronoViewProps({
+              ...this.props.app.chronoView,
               profile: activeProfile,
               canvasContext: canvasContext(glCanvas),
               getCSSColorForFrame: this.getCSSColorForFrame,
+              dispatch: this.props.dispatch,
               frameToColorBucket,
             })}
           />
@@ -584,9 +586,11 @@ export class Application extends Component<
         return (
           <FlamechartView
             {...leftHeavyViewProps({
+              ...this.props.app.leftHeavyView,
               profile: activeProfile,
               canvasContext: canvasContext(glCanvas),
               getCSSColorForFrame: this.getCSSColorForFrame,
+              dispatch: this.props.dispatch,
               frameToColorBucket,
             })}
           />
@@ -602,8 +606,8 @@ export class Application extends Component<
             getCSSColorForFrame={this.getCSSColorForFrame}
             sortMethod={this.props.app.sandwichView.tableSortMethod}
             setSortMethod={this.setTableSortMethod}
-            canvasContext={canvasContext(this.props.app.glCanvas)}
-            rowAtlas={rowAtlas(canvasContext(this.props.app.glCanvas))}
+            canvasContext={canvasContext(glCanvas)}
+            rowAtlas={rowAtlas(canvasContext(glCanvas))}
           />
         )
       }

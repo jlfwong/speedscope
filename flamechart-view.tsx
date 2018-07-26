@@ -12,18 +12,14 @@ import {Sizes, commonStyle} from './style'
 import {FlamechartDetailView} from './flamechart-detail-view'
 import {FlamechartPanZoomView} from './flamechart-pan-zoom-view'
 import {Hovertip} from './hovertip'
-import {FlamechartViewState, FlamechartViewProps} from './app-state/flamechart-view-state'
+import {FlamechartViewProps} from './app-state/flamechart-view-state'
+import {actions} from './app-state/actions'
 
-export class FlamechartView extends Component<FlamechartViewProps, FlamechartViewState> {
-  constructor() {
-    super()
-    this.state = {
-      hover: null,
-      selectedNode: null,
-      configSpaceViewportRect: Rect.empty,
-    }
-  }
+interface EmptyState {
+  __dummy: 1
+}
 
+export class FlamechartView extends Component<FlamechartViewProps, EmptyState> {
   private configSpaceSize() {
     return new Vec2(
       this.props.flamechart.getTotalWeight(),
@@ -53,24 +49,30 @@ export class FlamechartView extends Component<FlamechartViewProps, FlamechartVie
       ),
     )
 
-    this.setState({
-      configSpaceViewportRect: new Rect(origin, viewportRect.size.withX(width)),
-    })
+    this.props.dispatch(
+      actions.flamechart.setConfigSpaceViewportRect({
+        id: this.props.id,
+        configSpaceViewportRect: new Rect(origin, viewportRect.size.withX(width)),
+      }),
+    )
   }
 
   private transformViewport = (transform: AffineTransform): void => {
-    const viewportRect = transform.transformRect(this.state.configSpaceViewportRect)
+    const viewportRect = transform.transformRect(this.props.configSpaceViewportRect)
     this.setConfigSpaceViewportRect(viewportRect)
   }
 
   onNodeHover = (hover: {node: CallTreeNode; event: MouseEvent} | null) => {
-    this.setState({hover})
+    this.props.dispatch(
+      actions.flamechart.setHoveredNode({
+        id: this.props.id,
+        hover,
+      }),
+    )
   }
 
   onNodeClick = (node: CallTreeNode | null) => {
-    this.setState({
-      selectedNode: node,
-    })
+    this.props.dispatch(actions.flamechart.setSelectedNode({id: this.props.id, selectedNode: node}))
   }
 
   formatValue(weight: number) {
@@ -83,7 +85,7 @@ export class FlamechartView extends Component<FlamechartViewProps, FlamechartVie
   renderTooltip() {
     if (!this.container) return null
 
-    const {hover} = this.state
+    const {hover} = this.props
     if (!hover) return null
     const {width, height, left, top} = this.container.getBoundingClientRect()
     const offset = new Vec2(hover.event.clientX - left, hover.event.clientY - top)
@@ -107,7 +109,7 @@ export class FlamechartView extends Component<FlamechartViewProps, FlamechartVie
     return (
       <div className={css(style.fill, commonStyle.vbox)} ref={this.containerRef}>
         <FlamechartMinimapView
-          configSpaceViewportRect={this.state.configSpaceViewportRect}
+          configSpaceViewportRect={this.props.configSpaceViewportRect}
           transformViewport={this.transformViewport}
           flamechart={this.props.flamechart}
           flamechartRenderer={this.props.flamechartRenderer}
@@ -121,17 +123,17 @@ export class FlamechartView extends Component<FlamechartViewProps, FlamechartVie
           renderInverted={false}
           onNodeHover={this.onNodeHover}
           onNodeSelect={this.onNodeClick}
-          selectedNode={this.state.selectedNode}
+          selectedNode={this.props.selectedNode}
           transformViewport={this.transformViewport}
-          configSpaceViewportRect={this.state.configSpaceViewportRect}
+          configSpaceViewportRect={this.props.configSpaceViewportRect}
           setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
         />
         {this.renderTooltip()}
-        {this.state.selectedNode && (
+        {this.props.selectedNode && (
           <FlamechartDetailView
             flamechart={this.props.flamechart}
             getCSSColorForFrame={this.props.getCSSColorForFrame}
-            selectedNode={this.state.selectedNode}
+            selectedNode={this.props.selectedNode}
           />
         )}
       </div>

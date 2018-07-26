@@ -3,6 +3,7 @@ import {Profile, CallTreeNode} from '../profile'
 import {SortMethod} from '../profile-table-view'
 import {ViewMode} from './index'
 import {FlamechartID} from './flamechart-view-state'
+import {Rect} from '../math'
 
 export namespace actions {
   // Set the top-level profile from which other data will be derived
@@ -47,5 +48,10 @@ export namespace actions {
       id: FlamechartID
       selectedNode: CallTreeNode | null
     }>('flamechart.setSelectedNode')
+
+    export const setConfigSpaceViewportRect = actionCreator<{
+      id: FlamechartID
+      configSpaceViewportRect: Rect
+    }>('flamechart.setConfigSpaceViewportRect')
   }
 }

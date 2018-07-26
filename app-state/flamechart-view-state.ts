@@ -5,19 +5,14 @@ import {memoizeByShallowEquality} from '../utils'
 import {rowAtlas} from '.'
 import {Rect} from '../math'
 import {CanvasContext} from '../canvas-context'
+import {reducer, Dispatch} from '../typed-redux'
+import {actions} from './actions'
 
 export enum FlamechartID {
   LEFT_HEAVY,
   CHRONO,
   SANDWICH_CALLERS,
   SANDWICH_CALLEES,
-}
-
-export interface FlamechartViewProps {
-  canvasContext: CanvasContext
-  flamechart: Flamechart
-  flamechartRenderer: FlamechartRenderer
-  getCSSColorForFrame: (frame: Frame) => string
 }
 
 export interface FlamechartViewState {
@@ -28,6 +23,36 @@ export interface FlamechartViewState {
   selectedNode: CallTreeNode | null
   configSpaceViewportRect: Rect
 }
+
+export function createFlamechartViewStateReducer(id: FlamechartID) {
+  let initialState: FlamechartViewState = {
+    hover: null,
+    selectedNode: null,
+    configSpaceViewportRect: Rect.empty,
+  }
+  return reducer<FlamechartViewState>((state = initialState, action) => {
+    if (actions.flamechart.setHoveredNode.matches(action) && action.payload.id === id) {
+      return {...state, hover: action.payload.hover}
+    }
+    if (actions.flamechart.setSelectedNode.matches(action) && action.payload.id === id) {
+      return {...state, selectedNode: action.payload.selectedNode}
+    }
+    if (actions.flamechart.setConfigSpaceViewportRect.matches(action) && action.payload.id === id) {
+      return {...state, configSpaceViewportRect: action.payload.configSpaceViewportRect}
+    }
+
+    return state
+  })
+}
+
+export type FlamechartViewProps = {
+  id: FlamechartID
+  canvasContext: CanvasContext
+  flamechart: Flamechart
+  flamechartRenderer: FlamechartRenderer
+  dispatch: Dispatch
+  getCSSColorForFrame: (frame: Frame) => string
+} & FlamechartViewState
 
 export const chronoViewFlamechart = memoizeByShallowEquality<
   {
@@ -67,9 +92,11 @@ export const chronoViewProps = memoizeByShallowEquality<
     canvasContext: CanvasContext
     getCSSColorForFrame: (frame: Frame) => string
     frameToColorBucket: Map<number | string, number>
-  },
+    dispatch: Dispatch
+  } & FlamechartViewState,
   FlamechartViewProps
->(({profile, canvasContext, getCSSColorForFrame, frameToColorBucket}) => {
+>(args => {
+  const {profile, frameToColorBucket, canvasContext} = args
   const flamechart = chronoViewFlamechart({profile, frameToColorBucket})
   const flamechartRenderer = chronoViewFlamechartRenderer({
     canvasContext: canvasContext,
@@ -77,10 +104,10 @@ export const chronoViewProps = memoizeByShallowEquality<
   })
 
   return {
+    id: FlamechartID.CHRONO,
     flamechart,
     flamechartRenderer,
-    getCSSColorForFrame,
-    canvasContext,
+    ...args,
   }
 })
 
@@ -111,9 +138,11 @@ export const leftHeavyViewProps = memoizeByShallowEquality<
     canvasContext: CanvasContext
     getCSSColorForFrame: (frame: Frame) => string
     frameToColorBucket: Map<number | string, number>
-  },
+    dispatch: Dispatch
+  } & FlamechartViewState,
   FlamechartViewProps
->(({profile, canvasContext, getCSSColorForFrame, frameToColorBucket}) => {
+>(args => {
+  const {profile, frameToColorBucket, canvasContext} = args
   const flamechart = leftHeavyFlamechart({profile, frameToColorBucket})
   const flamechartRenderer = leftHeavyFlamechartRenderer({
     canvasContext,
@@ -121,16 +150,9 @@ export const leftHeavyViewProps = memoizeByShallowEquality<
   })
 
   return {
+    id: FlamechartID.LEFT_HEAVY,
     flamechart,
     flamechartRenderer,
-    getCSSColorForFrame,
-    canvasContext,
-  }
-
-  return {
-    flamechart,
-    flamechartRenderer,
-    getCSSColorForFrame,
-    canvasContext,
+    ...args,
   }
 })

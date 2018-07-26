@@ -35,9 +35,8 @@ export function actionCreator(type: string) {
 }
 
 // Helper to reduce boilerplate for type definitions
-export function reducer<T>(
-  cb: (state: T | undefined, action: Action<any>) => T,
-): (state: T | undefined, action: Action<any>) => T {
+export type Reducer<T> = (state: T | undefined, action: Action<any>) => T
+export function reducer<T>(cb: Reducer<T>): Reducer<T> {
   return cb
 }
 
