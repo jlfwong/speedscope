@@ -15,7 +15,11 @@ import {saveToFile} from './file-format'
 import {ApplicationState, ViewMode, canvasContext, rowAtlas} from './app-state'
 import {actions} from './app-state/actions'
 import {Dispatch} from './typed-redux'
-import {chronoView, leftHeavyView} from './app-state/flamechart-view-state'
+import {
+  chronoViewProps,
+  leftHeavyViewProps,
+  chronoViewFlamechart,
+} from './app-state/flamechart-view-state'
 
 const importModule = import('./import')
 // Force eager loading of the module
@@ -534,7 +538,7 @@ export class Application extends Component<
   getColorBucketForFrame = (frame: Frame): number => {
     const {activeProfile, glCanvas, frameToColorBucket} = this.props.app
     if (!activeProfile || !glCanvas) return 0
-    const {flamechart} = chronoView({profile: activeProfile, glCanvas, frameToColorBucket})
+    const flamechart = chronoViewFlamechart({profile: activeProfile, frameToColorBucket})
     return flamechart.getColorBucketForFrame(frame)
   }
 
@@ -567,18 +571,24 @@ export class Application extends Component<
       case ViewMode.CHRONO_FLAME_CHART: {
         return (
           <FlamechartView
-            canvasContext={canvasContext(this.props.app.glCanvas)}
-            appState={chronoView({profile: activeProfile, glCanvas, frameToColorBucket})}
-            getCSSColorForFrame={this.getCSSColorForFrame}
+            {...chronoViewProps({
+              profile: activeProfile,
+              canvasContext: canvasContext(glCanvas),
+              getCSSColorForFrame: this.getCSSColorForFrame,
+              frameToColorBucket,
+            })}
           />
         )
       }
       case ViewMode.LEFT_HEAVY_FLAME_GRAPH: {
         return (
           <FlamechartView
-            canvasContext={canvasContext(this.props.app.glCanvas)}
-            appState={leftHeavyView({profile: activeProfile, glCanvas, frameToColorBucket})}
-            getCSSColorForFrame={this.getCSSColorForFrame}
+            {...leftHeavyViewProps({
+              profile: activeProfile,
+              canvasContext: canvasContext(glCanvas),
+              getCSSColorForFrame: this.getCSSColorForFrame,
+              frameToColorBucket,
+            })}
           />
         )
       }
@@ -593,7 +603,7 @@ export class Application extends Component<
             sortMethod={this.props.app.sandwichView.tableSortMethod}
             setSortMethod={this.setTableSortMethod}
             canvasContext={canvasContext(this.props.app.glCanvas)}
-            rowAtlas={rowAtlas(this.props.app.glCanvas)}
+            rowAtlas={rowAtlas(canvasContext(this.props.app.glCanvas))}
           />
         )
       }

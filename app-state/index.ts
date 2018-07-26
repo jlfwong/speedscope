@@ -60,9 +60,9 @@ export const canvasContext = memoizeByReference<HTMLCanvasElement, CanvasContext
   return new CanvasContext(canvas)
 })
 
-export const rowAtlas = memoizeByReference<HTMLCanvasElement, RowAtlas<FlamechartRowAtlasKey>>(
-  canvas => {
-    return new RowAtlas(canvasContext(canvas))
+export const rowAtlas = memoizeByReference<CanvasContext, RowAtlas<FlamechartRowAtlasKey>>(
+  canvasContext => {
+    return new RowAtlas(canvasContext)
   },
 )
 

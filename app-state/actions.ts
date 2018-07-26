@@ -1,7 +1,8 @@
 import {actionCreator} from '../typed-redux'
-import {Profile} from '../profile'
+import {Profile, CallTreeNode} from '../profile'
 import {SortMethod} from '../profile-table-view'
 import {ViewMode} from './index'
+import {FlamechartID} from './flamechart-view-state'
 
 export namespace actions {
   // Set the top-level profile from which other data will be derived
@@ -35,4 +36,16 @@ export namespace actions {
 
   // Set the table sorting method used for the sandwich view.
   export const setTableSortMethod = actionCreator<SortMethod>('setTableSortMethod')
+
+  export namespace flamechart {
+    export const setHoveredNode = actionCreator<{
+      id: FlamechartID
+      hover: {node: CallTreeNode; event: MouseEvent} | null
+    }>('flamechart.setHoveredNode')
+
+    export const setSelectedNode = actionCreator<{
+      id: FlamechartID
+      selectedNode: CallTreeNode | null
+    }>('flamechart.setSelectedNode')
+  }
 }
