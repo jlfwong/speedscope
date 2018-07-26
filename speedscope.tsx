@@ -13,7 +13,7 @@ if (module.hot) {
 }
 
 const lastStore: any = (window as any)['store']
-const store = createApplicationStore(lastStore ? {...lastStore.getState(), gl: null} : {})
+const store = createApplicationStore(lastStore ? lastStore.getState() : {})
 ;(window as any)['store'] = store
 
 class Root extends Component<{}, {}> {

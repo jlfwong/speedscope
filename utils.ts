@@ -121,3 +121,51 @@ export function binarySearch(
 }
 
 export function noop(...args: any[]) {}
+
+function shallowEquals<T extends object>(a: T, b: T): boolean {
+  for (let key in a) {
+    if (a[key] !== b[key]) return false
+  }
+  for (let key in b) {
+    if (a[key] !== b[key]) return false
+  }
+  return true
+}
+
+// TODO(jlfwong): Write tests for this
+type Fn1<T, U> = (args: T) => U
+export function memoizeByShallowEquality<T extends object, U>(cb: Fn1<T, U>): Fn1<T, U> {
+  let last: {args: T; result: U} | null = null
+  return (args: T) => {
+    let result: U
+    if (last == null) {
+      result = cb(args)
+      last = {args, result}
+      return result
+    } else if (shallowEquals(last.args, args)) {
+      return last.result
+    } else {
+      last.args = args
+      last.result = cb(args)
+      return last.result
+    }
+  }
+}
+
+export function memoizeByReference<T, U>(cb: Fn1<T, U>): Fn1<T, U> {
+  let last: {args: T; result: U} | null = null
+  return (args: T) => {
+    let result: U
+    if (last == null) {
+      result = cb(args)
+      last = {args, result}
+      return result
+    } else if (last.args === args) {
+      return last.result
+    } else {
+      last.args = args
+      last.result = cb(args)
+      return last.result
+    }
+  }
+}

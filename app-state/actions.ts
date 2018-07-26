@@ -1,9 +1,6 @@
 import {actionCreator} from '../typed-redux'
 import {Profile} from '../profile'
-import {FlamechartRowAtlasKey} from '../flamechart-renderer'
 import {SortMethod} from '../profile-table-view'
-import {CanvasContext} from '../canvas-context'
-import {RowAtlas} from '../row-atlas'
 import {ViewMode} from './index'
 
 export namespace actions {
@@ -11,12 +8,11 @@ export namespace actions {
   export const setProfile = actionCreator<Profile>('setProfile')
 
   // Set the profile currently being viewed
-  export const setActiveProfile = actionCreator<{
-    profile: Profile
-    canvasContext: CanvasContext
-    rowAtlas: RowAtlas<FlamechartRowAtlasKey>
-    frameToColorBucket: Map<string | number, number>
-  }>('setActiveProfile')
+  export const setActiveProfile = actionCreator<Profile>('setActiveProfile')
+
+  export const setFrameToColorBucket = actionCreator<Map<string | number, number>>(
+    'setFrameToColorBucket',
+  )
 
   export const setGLCanvas = actionCreator<HTMLCanvasElement | null>('setGLCanvas')
 

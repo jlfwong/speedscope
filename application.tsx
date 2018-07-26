@@ -12,9 +12,10 @@ import {Color} from './color'
 import {importEmscriptenSymbolMap} from './emscripten'
 import {SandwichView} from './sandwich-view'
 import {saveToFile} from './file-format'
-import {ApplicationState, ViewMode} from './app-state'
+import {ApplicationState, ViewMode, canvasContext, rowAtlas} from './app-state'
 import {actions} from './app-state/actions'
 import {Dispatch} from './typed-redux'
+import {chronoView, leftHeavyView} from './app-state/flamechart-view-state'
 
 const importModule = import('./import')
 // Force eager loading of the module
@@ -203,7 +204,7 @@ export class Application extends Component<
     this.props.dispatch(actions.setLoading(true))
     await new Promise(resolve => setTimeout(resolve, 0))
 
-    if (!this.props.app.gl) return
+    if (!this.props.app.glCanvas) return
 
     console.time('import')
 
@@ -236,7 +237,7 @@ export class Application extends Component<
   }
 
   async setActiveProfile(profile: Profile) {
-    if (!this.props.app.gl) return
+    if (!this.props.app.glCanvas) return
 
     document.title = `${profile.getName()} - speedscope`
 
@@ -254,14 +255,8 @@ export class Application extends Component<
       frameToColorBucket.set(frames[i].key, Math.floor(255 * i / frames.length))
     }
 
-    this.props.dispatch(
-      actions.setActiveProfile({
-        profile,
-        canvasContext: this.props.app.gl.context,
-        rowAtlas: this.props.app.gl.rowAtlas,
-        frameToColorBucket,
-      }),
-    )
+    this.props.dispatch(actions.setActiveProfile(profile))
+    this.props.dispatch(actions.setFrameToColorBucket(frameToColorBucket))
   }
 
   loadFromFile(file: File) {
@@ -537,16 +532,14 @@ export class Application extends Component<
   }
 
   getColorBucketForFrame = (frame: Frame): number => {
-    const {flamechart} = this.props.app.chronoView
-    if (!flamechart) return 0
+    const {activeProfile, glCanvas, frameToColorBucket} = this.props.app
+    if (!activeProfile || !glCanvas) return 0
+    const {flamechart} = chronoView({profile: activeProfile, glCanvas, frameToColorBucket})
     return flamechart.getColorBucketForFrame(frame)
   }
 
   getCSSColorForFrame = (frame: Frame): string => {
-    const {flamechart} = this.props.app.chronoView
-    if (!flamechart) return '#FFFFFF'
-
-    const t = flamechart.getColorBucketForFrame(frame) / 255
+    const t = this.getColorBucketForFrame(frame) / 255
 
     const x = triangle(30.0 * t)
     const H = 360.0 * (0.9 * t)
@@ -556,7 +549,7 @@ export class Application extends Component<
   }
 
   renderContent() {
-    const {viewMode, error, loading, activeProfile} = this.props.app
+    const {viewMode, error, loading, activeProfile, glCanvas, frameToColorBucket} = this.props.app
 
     if (error) {
       return this.renderError()
@@ -566,35 +559,31 @@ export class Application extends Component<
       return this.renderLoadingBar()
     }
 
-    if (!activeProfile || !this.props.app.gl) {
+    if (!activeProfile || !this.props.app.glCanvas) {
       return this.renderLanding()
     }
 
     switch (viewMode) {
       case ViewMode.CHRONO_FLAME_CHART: {
-        if (!this.props.app.chronoView)
-          throw new Error('Missing dependencies for chrono flame chart')
         return (
           <FlamechartView
-            canvasContext={this.props.app.gl.context}
-            appState={this.props.app.chronoView}
+            canvasContext={canvasContext(this.props.app.glCanvas)}
+            appState={chronoView({profile: activeProfile, glCanvas, frameToColorBucket})}
             getCSSColorForFrame={this.getCSSColorForFrame}
           />
         )
       }
       case ViewMode.LEFT_HEAVY_FLAME_GRAPH: {
-        if (!this.props.app.leftHeavyView)
-          throw new Error('Missing dependencies for chrono flame chart')
         return (
           <FlamechartView
-            canvasContext={this.props.app.gl.context}
-            appState={this.props.app.leftHeavyView}
+            canvasContext={canvasContext(this.props.app.glCanvas)}
+            appState={leftHeavyView({profile: activeProfile, glCanvas, frameToColorBucket})}
             getCSSColorForFrame={this.getCSSColorForFrame}
           />
         )
       }
       case ViewMode.SANDWICH_VIEW: {
-        if (!this.props.app.gl.rowAtlas || !this.props.app.profile) return null
+        if (!this.props.app.profile) return null
         return (
           <SandwichView
             profile={this.props.app.profile}
@@ -603,8 +592,8 @@ export class Application extends Component<
             getCSSColorForFrame={this.getCSSColorForFrame}
             sortMethod={this.props.app.sandwichView.tableSortMethod}
             setSortMethod={this.setTableSortMethod}
-            canvasContext={this.props.app.gl.context}
-            rowAtlas={this.props.app.gl.rowAtlas}
+            canvasContext={canvasContext(this.props.app.glCanvas)}
+            rowAtlas={rowAtlas(this.props.app.glCanvas)}
           />
         )
       }
