@@ -5,7 +5,7 @@ import {memoizeByShallowEquality} from '../utils'
 import {rowAtlas} from '.'
 import {Rect} from '../math'
 import {CanvasContext} from '../canvas-context'
-import {reducer, Dispatch} from '../typed-redux'
+import {Dispatch, Reducer} from '../typed-redux'
 import {actions} from './actions'
 
 export enum FlamechartID {
@@ -33,13 +33,13 @@ export type FlamechartViewProps = {
   getCSSColorForFrame: (frame: Frame) => string
 } & FlamechartViewState
 
-export function createFlamechartViewStateReducer(id: FlamechartID) {
+export function createFlamechartViewStateReducer(id: FlamechartID): Reducer<FlamechartViewState> {
   let initialState: FlamechartViewState = {
     hover: null,
     selectedNode: null,
     configSpaceViewportRect: Rect.empty,
   }
-  return reducer<FlamechartViewState>((state = initialState, action) => {
+  return (state = initialState, action) => {
     if (actions.flamechart.setHoveredNode.matches(action) && action.payload.id === id) {
       return {...state, hover: action.payload.hover}
     }
@@ -59,7 +59,7 @@ export function createFlamechartViewStateReducer(id: FlamechartID) {
     }
 
     return state
-  })
+  }
 }
 
 export const chronoViewFlamechart = memoizeByShallowEquality<

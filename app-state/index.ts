@@ -6,7 +6,7 @@ import {actions} from './actions'
  */
 
 import * as redux from 'redux'
-import {reducer, setter, Reducer} from '../typed-redux'
+import {setter, Reducer} from '../typed-redux'
 import {Profile} from '../profile'
 import {SortMethod, SortField, SortDirection} from '../profile-table-view'
 import {RowAtlas} from '../row-atlas'
@@ -53,15 +53,16 @@ const defaultSortMethod = {
   direction: SortDirection.DESCENDING,
 }
 
-const sandwichView = reducer<SandwichViewState>(
-  (state = {tableSortMethod: defaultSortMethod}, action) => {
-    if (actions.setTableSortMethod.matches(action)) {
-      return {tableSortMethod: action.payload}
-    }
+const sandwichView: Reducer<SandwichViewState> = (
+  state = {tableSortMethod: defaultSortMethod},
+  action,
+) => {
+  if (actions.setTableSortMethod.matches(action)) {
+    return {tableSortMethod: action.payload}
+  }
 
-    return state
-  },
-)
+  return state
+}
 
 export const canvasContext = memoizeByReference<HTMLCanvasElement, CanvasContext>(canvas => {
   return new CanvasContext(canvas)

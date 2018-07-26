@@ -34,11 +34,7 @@ export function actionCreator(type: string) {
   return creator
 }
 
-// Helper to reduce boilerplate for type definitions
 export type Reducer<T> = (state: T | undefined, action: Action<any>) => T
-export function reducer<T>(cb: Reducer<T>): Reducer<T> {
-  return cb
-}
 
 export function setter<T>(
   setterAction: ActionCreator<T>,
