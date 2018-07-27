@@ -15,7 +15,7 @@ import {ApplicationState, ViewMode, canvasContext} from './app-state'
 import {actions} from './app-state/actions'
 import {Dispatch} from './typed-redux'
 import {chronoViewProps, leftHeavyViewProps} from './app-state/flamechart-view-state'
-import {sandwichViewProps} from './app-state/sandwich-view-state'
+import {sandwichViewProps} from './sandwich-view-container'
 
 const importModule = import('./import')
 // Force eager loading of the module

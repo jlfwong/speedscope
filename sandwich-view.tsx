@@ -7,7 +7,7 @@ import {Rect, AffineTransform, Vec2, clamp} from './math'
 import {FlamechartPanZoomView, FlamechartPanZoomViewProps} from './flamechart-pan-zoom-view'
 import {noop, formatPercent} from './utils'
 import {Hovertip} from './hovertip'
-import {SandwichViewProps} from './app-state/sandwich-view-state'
+import {SandwichViewProps} from './sandwich-view-container'
 import {actions} from './app-state/actions'
 import {FlamechartViewProps} from './app-state/flamechart-view-state'
 
