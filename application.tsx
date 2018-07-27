@@ -6,20 +6,16 @@ import {Profile, Frame} from './profile'
 import {FlamechartView} from './flamechart-view'
 import {FontFamily, FontSize, Colors, Sizes, Duration} from './style'
 import {getHashParams, HashParams} from './hash-params'
-import {SortMethod} from './profile-table-view'
 import {triangle} from './utils'
 import {Color} from './color'
 import {importEmscriptenSymbolMap} from './emscripten'
 import {SandwichView} from './sandwich-view'
 import {saveToFile} from './file-format'
-import {ApplicationState, ViewMode, canvasContext, rowAtlas} from './app-state'
+import {ApplicationState, ViewMode, canvasContext} from './app-state'
 import {actions} from './app-state/actions'
 import {Dispatch} from './typed-redux'
-import {
-  chronoViewProps,
-  leftHeavyViewProps,
-  chronoViewFlamechart,
-} from './app-state/flamechart-view-state'
+import {chronoViewProps, leftHeavyViewProps} from './app-state/flamechart-view-state'
+import {sandwichViewProps} from './app-state/sandwich-view-state'
 
 const importModule = import('./import')
 // Force eager loading of the module
@@ -531,15 +527,9 @@ export class Application extends Component<
     this.props.dispatch(actions.setViewMode(viewMode))
   }
 
-  setTableSortMethod = (tableSortMethod: SortMethod) => {
-    this.props.dispatch(actions.setTableSortMethod(tableSortMethod))
-  }
-
   getColorBucketForFrame = (frame: Frame): number => {
-    const {activeProfile, glCanvas, frameToColorBucket} = this.props.app
-    if (!activeProfile || !glCanvas) return 0
-    const flamechart = chronoViewFlamechart({profile: activeProfile, frameToColorBucket})
-    return flamechart.getColorBucketForFrame(frame)
+    const {frameToColorBucket} = this.props.app
+    return frameToColorBucket.get(frame.key) || 0
   }
 
   getCSSColorForFrame = (frame: Frame): string => {
@@ -553,7 +543,7 @@ export class Application extends Component<
   }
 
   renderContent() {
-    const {viewMode, error, loading, activeProfile, glCanvas, frameToColorBucket} = this.props.app
+    const {viewMode, error, loading, activeProfile, glCanvas} = this.props.app
 
     if (error) {
       return this.renderError()
@@ -577,7 +567,7 @@ export class Application extends Component<
               canvasContext: canvasContext(glCanvas),
               getCSSColorForFrame: this.getCSSColorForFrame,
               dispatch: this.props.dispatch,
-              frameToColorBucket,
+              getColorBucketForFrame: this.getColorBucketForFrame,
             })}
           />
         )
@@ -591,7 +581,7 @@ export class Application extends Component<
               canvasContext: canvasContext(glCanvas),
               getCSSColorForFrame: this.getCSSColorForFrame,
               dispatch: this.props.dispatch,
-              frameToColorBucket,
+              getColorBucketForFrame: this.getColorBucketForFrame,
             })}
           />
         )
@@ -600,14 +590,16 @@ export class Application extends Component<
         if (!this.props.app.profile) return null
         return (
           <SandwichView
-            profile={this.props.app.profile}
-            flattenRecursion={this.props.app.flattenRecursion}
-            getColorBucketForFrame={this.getColorBucketForFrame}
-            getCSSColorForFrame={this.getCSSColorForFrame}
-            sortMethod={this.props.app.sandwichView.tableSortMethod}
-            setSortMethod={this.setTableSortMethod}
-            canvasContext={canvasContext(glCanvas)}
-            rowAtlas={rowAtlas(canvasContext(glCanvas))}
+            {...sandwichViewProps({
+              profile: this.props.app.profile,
+              flattenRecursion: this.props.app.flattenRecursion,
+              getColorBucketForFrame: this.getColorBucketForFrame,
+              getCSSColorForFrame: this.getCSSColorForFrame,
+              tableSortMethod: this.props.app.sandwichView.tableSortMethod,
+              callerCallee: this.props.app.sandwichView.callerCallee,
+              canvasContext: canvasContext(glCanvas),
+              dispatch: this.props.dispatch,
+            })}
           />
         )
       }

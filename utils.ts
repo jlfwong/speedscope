@@ -133,8 +133,7 @@ function shallowEquals<T extends object>(a: T, b: T): boolean {
 }
 
 // TODO(jlfwong): Write tests for this
-type Fn1<T, U> = (args: T) => U
-export function memoizeByShallowEquality<T extends object, U>(cb: Fn1<T, U>): Fn1<T, U> {
+export function memoizeByShallowEquality<T extends object, U>(cb: (t: T) => U): (t: T) => U {
   let last: {args: T; result: U} | null = null
   return (args: T) => {
     let result: U
@@ -152,7 +151,7 @@ export function memoizeByShallowEquality<T extends object, U>(cb: Fn1<T, U>): Fn
   }
 }
 
-export function memoizeByReference<T, U>(cb: Fn1<T, U>): Fn1<T, U> {
+export function memoizeByReference<T, U>(cb: (t: T) => U): (t: T) => U {
   let last: {args: T; result: U} | null = null
   return (args: T) => {
     let result: U

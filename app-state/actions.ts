@@ -1,5 +1,5 @@
 import {actionCreator} from '../typed-redux'
-import {Profile, CallTreeNode} from '../profile'
+import {Profile, CallTreeNode, Frame} from '../profile'
 import {SortMethod} from '../profile-table-view'
 import {ViewMode} from './index'
 import {FlamechartID} from './flamechart-view-state'
@@ -35,8 +35,12 @@ export namespace actions {
   // Set whether the application is in an errored state.
   export const setError = actionCreator<boolean>('setError')
 
-  // Set the table sorting method used for the sandwich view.
-  export const setTableSortMethod = actionCreator<SortMethod>('setTableSortMethod')
+  export namespace sandwichView {
+    // Set the table sorting method used for the sandwich view.
+    export const setTableSortMethod = actionCreator<SortMethod>('sandwichView.setTableSortMethod')
+
+    export const setSelectedFrame = actionCreator<Frame | null>('sandwichView.setSelectedFarmr')
+  }
 
   export namespace flamechart {
     export const setHoveredNode = actionCreator<{

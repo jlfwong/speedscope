@@ -3,34 +3,23 @@ import {StyleSheet, css} from 'aphrodite'
 import {ProfileTableView} from './profile-table-view'
 import {h, Component} from 'preact'
 import {commonStyle, Sizes, Colors, FontSize} from './style'
-import {FlamechartRenderer} from './flamechart-renderer'
-import {Flamechart} from './flamechart'
 import {Rect, AffineTransform, Vec2, clamp} from './math'
 import {FlamechartPanZoomView, FlamechartPanZoomViewProps} from './flamechart-pan-zoom-view'
 import {noop, formatPercent} from './utils'
 import {Hovertip} from './hovertip'
-import {
-  FlamechartWrapperProps,
-  FlamechartWrapperState,
-  SandwichViewProps,
-  SandwichViewState,
-} from './app-state/sandwich-view-state'
+import {SandwichViewProps} from './app-state/sandwich-view-state'
+import {actions} from './app-state/actions'
+import {FlamechartViewProps} from './app-state/flamechart-view-state'
 
-export class FlamechartWrapper extends Component<FlamechartWrapperProps, FlamechartWrapperState> {
-  constructor(props: FlamechartWrapperProps) {
-    super(props)
-    this.state = {
-      hover: null,
-      configSpaceViewportRect: Rect.empty,
-    }
-  }
+export class FlamechartWrapper extends Component<FlamechartViewProps, EmptyState> {
+  private clampViewportToFlamegraph(viewportRect: Rect) {
+    const {flamechart, renderInverted} = this.props
 
-  private clampViewportToFlamegraph(viewportRect: Rect, flamegraph: Flamechart, inverted: boolean) {
-    const configSpaceSize = new Vec2(flamegraph.getTotalWeight(), flamegraph.getLayers().length)
+    const configSpaceSize = new Vec2(flamechart.getTotalWeight(), flamechart.getLayers().length)
 
     const width = clamp(
       viewportRect.size.x,
-      Math.min(configSpaceSize.x, 3 * flamegraph.getMinFrameWidth()),
+      Math.min(configSpaceSize.x, 3 * flamechart.getMinFrameWidth()),
       configSpaceSize.x,
     )
 
@@ -38,25 +27,24 @@ export class FlamechartWrapper extends Component<FlamechartWrapperProps, Flamech
 
     const origin = Vec2.clamp(
       viewportRect.origin,
-      new Vec2(0, inverted ? 0 : -1),
+      new Vec2(0, renderInverted ? 0 : -1),
       Vec2.max(Vec2.zero, configSpaceSize.minus(size).plus(new Vec2(0, 1))),
     )
 
     return new Rect(origin, viewportRect.size.withX(width))
   }
 
-  private setConfigSpaceViewportRect = (viewportRect: Rect) => {
-    this.setState({
-      configSpaceViewportRect: this.clampViewportToFlamegraph(
-        viewportRect,
-        this.props.flamechart,
-        this.props.renderInverted,
-      ),
-    })
+  private setConfigSpaceViewportRect = (configSpaceViewportRect: Rect) => {
+    this.props.dispatch(
+      actions.flamechart.setConfigSpaceViewportRect({
+        id: this.props.id,
+        configSpaceViewportRect: this.clampViewportToFlamegraph(configSpaceViewportRect),
+      }),
+    )
   }
 
   private transformViewport = (transform: AffineTransform) => {
-    this.setConfigSpaceViewportRect(transform.transformRect(this.state.configSpaceViewportRect))
+    this.setConfigSpaceViewportRect(transform.transformRect(this.props.configSpaceViewportRect))
   }
 
   private formatValue(weight: number) {
@@ -69,7 +57,7 @@ export class FlamechartWrapper extends Component<FlamechartWrapperProps, Flamech
   private renderTooltip() {
     if (!this.container) return null
 
-    const {hover} = this.state
+    const {hover} = this.props
     if (!hover) return null
     const {width, height, left, top} = this.container.getBoundingClientRect()
     const offset = new Vec2(hover.event.clientX - left, hover.event.clientY - top)
@@ -90,18 +78,21 @@ export class FlamechartWrapper extends Component<FlamechartWrapperProps, Flamech
   }
 
   private setNodeHover = (hover: {node: CallTreeNode; event: MouseEvent} | null) => {
-    this.setState({hover})
+    this.props.dispatch(actions.flamechart.setHoveredNode({id: this.props.id, hover}))
   }
 
   render() {
     const props: FlamechartPanZoomViewProps = {
-      ...(this.props as FlamechartWrapperProps),
       selectedNode: null,
       onNodeHover: this.setNodeHover,
       onNodeSelect: noop,
-      configSpaceViewportRect: this.state.configSpaceViewportRect,
+      configSpaceViewportRect: this.props.configSpaceViewportRect,
       setConfigSpaceViewportRect: this.setConfigSpaceViewportRect,
       transformViewport: this.transformViewport,
+      flamechart: this.props.flamechart,
+      flamechartRenderer: this.props.flamechartRenderer,
+      canvasContext: this.props.canvasContext,
+      renderInverted: this.props.renderInverted,
     }
     return (
       <div
@@ -115,83 +106,18 @@ export class FlamechartWrapper extends Component<FlamechartWrapperProps, Flamech
   }
 }
 
-export class SandwichView extends Component<SandwichViewProps, SandwichViewState> {
-  constructor(props: SandwichViewProps) {
-    super(props)
-    this.state = {
-      callerCallee: null,
-    }
-  }
+interface EmptyState {
+  __dummy: 1
+}
 
-  private setSelectedFrame = (
-    selectedFrame: Frame | null,
-    props: SandwichViewProps = this.props,
-  ) => {
-    const {profile, canvasContext, rowAtlas, getColorBucketForFrame, flattenRecursion} = props
-
-    if (!selectedFrame) {
-      this.setState({callerCallee: null})
-      return
-    }
-
-    let invertedCallerProfile = profile.getInvertedProfileForCallersOf(selectedFrame)
-    if (flattenRecursion) {
-      invertedCallerProfile = invertedCallerProfile.getProfileWithRecursionFlattened()
-    }
-
-    const invertedCallerFlamegraph = new Flamechart({
-      getTotalWeight: invertedCallerProfile.getTotalNonIdleWeight.bind(invertedCallerProfile),
-      forEachCall: invertedCallerProfile.forEachCallGrouped.bind(invertedCallerProfile),
-      formatValue: invertedCallerProfile.formatValue.bind(invertedCallerProfile),
-      getColorBucketForFrame,
-    })
-    const invertedCallerFlamegraphRenderer = new FlamechartRenderer(
-      canvasContext,
-      rowAtlas,
-      invertedCallerFlamegraph,
-      {inverted: true},
-    )
-
-    let calleeProfile = profile.getProfileForCalleesOf(selectedFrame)
-
-    if (flattenRecursion) {
-      calleeProfile = calleeProfile.getProfileWithRecursionFlattened()
-    }
-
-    const calleeFlamegraph = new Flamechart({
-      getTotalWeight: calleeProfile.getTotalNonIdleWeight.bind(calleeProfile),
-      forEachCall: calleeProfile.forEachCallGrouped.bind(calleeProfile),
-      formatValue: calleeProfile.formatValue.bind(calleeProfile),
-      getColorBucketForFrame,
-    })
-    const calleeFlamegraphRenderer = new FlamechartRenderer(
-      canvasContext,
-      rowAtlas,
-      calleeFlamegraph,
-    )
-
-    this.setState({
-      callerCallee: {
-        selectedFrame,
-        invertedCallerFlamegraph,
-        invertedCallerFlamegraphRenderer,
-        calleeFlamegraph,
-        calleeFlamegraphRenderer,
-      },
-    })
+export class SandwichView extends Component<SandwichViewProps, EmptyState> {
+  private setSelectedFrame = (selectedFrame: Frame | null) => {
+    this.props.dispatch(actions.sandwichView.setSelectedFrame(selectedFrame))
   }
 
   onWindowKeyPress = (ev: KeyboardEvent) => {
     if (ev.key === 'Escape') {
-      this.setState({callerCallee: null})
-    }
-  }
-
-  componentWillReceiveProps(nextProps: SandwichViewProps) {
-    if (this.props.flattenRecursion !== nextProps.flattenRecursion) {
-      if (this.state.callerCallee) {
-        this.setSelectedFrame(this.state.callerCallee.selectedFrame, nextProps)
-      }
+      this.setSelectedFrame(null)
     }
   }
 
@@ -203,8 +129,7 @@ export class SandwichView extends Component<SandwichViewProps, SandwichViewState
   }
 
   render() {
-    const {canvasContext} = this.props
-    const {callerCallee} = this.state
+    const {callerCallee} = this.props
 
     let selectedFrame: Frame | null = null
     let flamegraphViews: JSX.Element | null = null
@@ -217,24 +142,14 @@ export class SandwichView extends Component<SandwichViewProps, SandwichViewState
             <div className={css(style.flamechartLabelParent)}>
               <div className={css(style.flamechartLabel)}>Callers</div>
             </div>
-            <FlamechartWrapper
-              flamechart={callerCallee.invertedCallerFlamegraph}
-              canvasContext={canvasContext}
-              flamechartRenderer={callerCallee.invertedCallerFlamegraphRenderer}
-              renderInverted={true}
-            />
+            <FlamechartWrapper {...callerCallee.invertedCallerFlamegraph} />
           </div>
           <div className={css(style.divider)} />
           <div className={css(commonStyle.hbox, style.panZoomViewWraper)}>
             <div className={css(style.flamechartLabelParent, style.flamechartLabelParentBottom)}>
               <div className={css(style.flamechartLabel, style.flamechartLabelBottom)}>Callees</div>
             </div>
-            <FlamechartWrapper
-              flamechart={callerCallee.calleeFlamegraph}
-              canvasContext={canvasContext}
-              flamechartRenderer={callerCallee.calleeFlamegraphRenderer}
-              renderInverted={false}
-            />
+            <FlamechartWrapper {...callerCallee.calleeFlamegraph} />
           </div>
         </div>
       )
@@ -245,11 +160,10 @@ export class SandwichView extends Component<SandwichViewProps, SandwichViewState
         <div className={css(style.tableView)}>
           <ProfileTableView
             selectedFrame={selectedFrame}
-            setSelectedFrame={this.setSelectedFrame}
             profile={this.props.profile}
             getCSSColorForFrame={this.props.getCSSColorForFrame}
-            sortMethod={this.props.sortMethod}
-            setSortMethod={this.props.setSortMethod}
+            sortMethod={this.props.tableSortMethod}
+            dispatch={this.props.dispatch}
           />
         </div>
         {flamegraphViews}

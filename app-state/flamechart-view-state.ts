@@ -1,5 +1,5 @@
 import {Flamechart} from '../flamechart'
-import {FlamechartRenderer} from '../flamechart-renderer'
+import {FlamechartRenderer, FlamechartRendererOptions} from '../flamechart-renderer'
 import {Frame, Profile, CallTreeNode} from '../profile'
 import {memoizeByShallowEquality} from '../utils'
 import {rowAtlas} from '.'
@@ -11,7 +11,7 @@ import {actions} from './actions'
 export enum FlamechartID {
   LEFT_HEAVY,
   CHRONO,
-  SANDWICH_CALLERS,
+  SANDWICH_INVERTED_CALLERS,
   SANDWICH_CALLEES,
 }
 
@@ -29,6 +29,7 @@ export type FlamechartViewProps = {
   canvasContext: CanvasContext
   flamechart: Flamechart
   flamechartRenderer: FlamechartRenderer
+  renderInverted: boolean
   dispatch: Dispatch
   getCSSColorForFrame: (frame: Frame) => string
 } & FlamechartViewState
@@ -62,105 +63,129 @@ export function createFlamechartViewStateReducer(id: FlamechartID): Reducer<Flam
   }
 }
 
-export const chronoViewFlamechart = memoizeByShallowEquality<
-  {
-    profile: Profile
-    frameToColorBucket: Map<string | number, number>
-  },
-  Flamechart
->(({profile, frameToColorBucket}) => {
-  function getColorBucketForFrame(frame: Frame) {
-    return frameToColorBucket.get(frame.key) || 0
-  }
-
-  return new Flamechart({
-    getTotalWeight: profile.getTotalWeight.bind(profile),
-    forEachCall: profile.forEachCall.bind(profile),
-    formatValue: profile.formatValue.bind(profile),
+export const chronoViewFlamechart = memoizeByShallowEquality(
+  ({
+    profile,
     getColorBucketForFrame,
-  })
-})
+  }: {
+    profile: Profile
+    getColorBucketForFrame: (frame: Frame) => number
+  }): Flamechart => {
+    return new Flamechart({
+      getTotalWeight: profile.getTotalWeight.bind(profile),
+      forEachCall: profile.forEachCall.bind(profile),
+      formatValue: profile.formatValue.bind(profile),
+      getColorBucketForFrame,
+    })
+  },
+)
 
-const createMemoizedFlamechartRenderer = () =>
-  memoizeByShallowEquality<
-    {
+export const createMemoizedFlamechartRenderer = (options?: FlamechartRendererOptions) =>
+  memoizeByShallowEquality(
+    ({
+      canvasContext,
+      flamechart,
+    }: {
       canvasContext: CanvasContext
       flamechart: Flamechart
+    }): FlamechartRenderer => {
+      return new FlamechartRenderer(canvasContext, rowAtlas(canvasContext), flamechart, options)
     },
-    FlamechartRenderer
-  >(({canvasContext, flamechart}) => {
-    return new FlamechartRenderer(canvasContext, rowAtlas(canvasContext), flamechart)
-  })
+  )
 
 const chronoViewFlamechartRenderer = createMemoizedFlamechartRenderer()
 
-export const chronoViewProps = memoizeByShallowEquality<
-  {
+export const chronoViewProps = memoizeByShallowEquality(
+  ({
+    profile,
+    getColorBucketForFrame,
+    canvasContext,
+    dispatch,
+    getCSSColorForFrame,
+    hover,
+    selectedNode,
+    configSpaceViewportRect,
+  }: {
     profile: Profile
     canvasContext: CanvasContext
     getCSSColorForFrame: (frame: Frame) => string
-    frameToColorBucket: Map<number | string, number>
+    getColorBucketForFrame: (frame: Frame) => number
     dispatch: Dispatch
-  } & FlamechartViewState,
-  FlamechartViewProps
->(args => {
-  const {profile, frameToColorBucket, canvasContext} = args
-  const flamechart = chronoViewFlamechart({profile, frameToColorBucket})
-  const flamechartRenderer = chronoViewFlamechartRenderer({
-    canvasContext: canvasContext,
-    flamechart,
-  })
+  } & FlamechartViewState): FlamechartViewProps => {
+    const flamechart = chronoViewFlamechart({profile, getColorBucketForFrame})
+    const flamechartRenderer = chronoViewFlamechartRenderer({
+      canvasContext,
+      flamechart,
+    })
 
-  return {
-    id: FlamechartID.CHRONO,
-    flamechart,
-    flamechartRenderer,
-    ...args,
-  }
-})
-
-export const leftHeavyFlamechart = memoizeByShallowEquality<
-  {
-    profile: Profile
-    frameToColorBucket: Map<string | number, number>
+    return {
+      id: FlamechartID.CHRONO,
+      renderInverted: false,
+      flamechart,
+      flamechartRenderer,
+      canvasContext,
+      dispatch,
+      getCSSColorForFrame,
+      hover,
+      selectedNode,
+      configSpaceViewportRect,
+    }
   },
-  Flamechart
->(({profile, frameToColorBucket}) => {
-  function getColorBucketForFrame(frame: Frame) {
-    return frameToColorBucket.get(frame.key) || 0
-  }
+)
 
-  return new Flamechart({
-    getTotalWeight: profile.getTotalNonIdleWeight.bind(profile),
-    forEachCall: profile.forEachCallGrouped.bind(profile),
-    formatValue: profile.formatValue.bind(profile),
+export const leftHeavyFlamechart = memoizeByShallowEquality(
+  ({
+    profile,
     getColorBucketForFrame,
-  })
-})
+  }: {
+    profile: Profile
+    getColorBucketForFrame: (frame: Frame) => number
+  }): Flamechart => {
+    return new Flamechart({
+      getTotalWeight: profile.getTotalNonIdleWeight.bind(profile),
+      forEachCall: profile.forEachCallGrouped.bind(profile),
+      formatValue: profile.formatValue.bind(profile),
+      getColorBucketForFrame,
+    })
+  },
+)
 
 const leftHeavyFlamechartRenderer = createMemoizedFlamechartRenderer()
 
-export const leftHeavyViewProps = memoizeByShallowEquality<
-  {
+export const leftHeavyViewProps = memoizeByShallowEquality(
+  ({
+    profile,
+    getColorBucketForFrame,
+    canvasContext,
+    dispatch,
+    getCSSColorForFrame,
+    hover,
+    selectedNode,
+    configSpaceViewportRect,
+  }: {
     profile: Profile
     canvasContext: CanvasContext
     getCSSColorForFrame: (frame: Frame) => string
-    frameToColorBucket: Map<number | string, number>
+    getColorBucketForFrame: (frame: Frame) => number
     dispatch: Dispatch
-  } & FlamechartViewState,
-  FlamechartViewProps
->(args => {
-  const {profile, frameToColorBucket, canvasContext} = args
-  const flamechart = leftHeavyFlamechart({profile, frameToColorBucket})
-  const flamechartRenderer = leftHeavyFlamechartRenderer({
-    canvasContext,
-    flamechart,
-  })
+  } & FlamechartViewState): FlamechartViewProps => {
+    const flamechart = leftHeavyFlamechart({profile, getColorBucketForFrame})
+    const flamechartRenderer = leftHeavyFlamechartRenderer({
+      canvasContext,
+      flamechart,
+    })
 
-  return {
-    id: FlamechartID.LEFT_HEAVY,
-    flamechart,
-    flamechartRenderer,
-    ...args,
-  }
-})
+    return {
+      id: FlamechartID.LEFT_HEAVY,
+      renderInverted: false,
+      flamechart,
+      flamechartRenderer,
+      canvasContext,
+      dispatch,
+      getCSSColorForFrame,
+      hover,
+      selectedNode,
+      configSpaceViewportRect,
+    }
+  },
+)

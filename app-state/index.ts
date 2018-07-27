@@ -8,7 +8,6 @@ import {actions} from './actions'
 import * as redux from 'redux'
 import {setter, Reducer} from '../typed-redux'
 import {Profile} from '../profile'
-import {SortMethod, SortField, SortDirection} from '../profile-table-view'
 import {RowAtlas} from '../row-atlas'
 import {FlamechartRowAtlasKey} from '../flamechart-renderer'
 import {CanvasContext} from '../canvas-context'
@@ -18,15 +17,12 @@ import {
   FlamechartID,
   FlamechartViewState,
 } from './flamechart-view-state'
+import {SandwichViewState, sandwichView} from './sandwich-view-state'
 
 export const enum ViewMode {
   CHRONO_FLAME_CHART,
   LEFT_HEAVY_FLAME_GRAPH,
   SANDWICH_VIEW,
-}
-
-export interface SandwichViewState {
-  tableSortMethod: SortMethod
 }
 
 export interface ApplicationState {
@@ -46,22 +42,6 @@ export interface ApplicationState {
   chronoView: FlamechartViewState
   leftHeavyView: FlamechartViewState
   sandwichView: SandwichViewState
-}
-
-const defaultSortMethod = {
-  field: SortField.SELF,
-  direction: SortDirection.DESCENDING,
-}
-
-const sandwichView: Reducer<SandwichViewState> = (
-  state = {tableSortMethod: defaultSortMethod},
-  action,
-) => {
-  if (actions.setTableSortMethod.matches(action)) {
-    return {tableSortMethod: action.payload}
-  }
-
-  return state
 }
 
 export const canvasContext = memoizeByReference<HTMLCanvasElement, CanvasContext>(canvas => {
