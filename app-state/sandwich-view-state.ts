@@ -6,6 +6,7 @@ import {
   createMemoizedFlamechartRenderer,
   FlamechartViewProps,
   FlamechartID,
+  createFlamechartViewStateReducer,
 } from './flamechart-view-state'
 import {memoizeByShallowEquality} from '../utils'
 import {Flamechart} from '../flamechart'
@@ -179,7 +180,7 @@ const invertedCallerFlamegraphProps = memoizeByShallowEquality(
       flamechartRenderer,
       dispatch,
       getCSSColorForFrame,
-      renderInverted: false,
+      renderInverted: true,
     }
   },
 )
@@ -234,7 +235,7 @@ const calleeFlamegraphProps = memoizeByShallowEquality<
   const flamechartRenderer = calleeFlamegraphRenderer({canvasContext, flamechart})
 
   return {
-    id: FlamechartID.SANDWICH_INVERTED_CALLERS,
+    id: FlamechartID.SANDWICH_CALLEES,
     flamechart,
     flamechartRenderer,
     renderInverted: false,
@@ -247,10 +248,36 @@ const defaultSortMethod = {
   direction: SortDirection.DESCENDING,
 }
 
+const calleesReducer = createFlamechartViewStateReducer(FlamechartID.SANDWICH_CALLEES)
+const invertedCallersReducer = createFlamechartViewStateReducer(
+  FlamechartID.SANDWICH_INVERTED_CALLERS,
+)
+
 export const sandwichView: Reducer<SandwichViewState> = (
   state = {tableSortMethod: defaultSortMethod, callerCallee: null},
   action,
 ) => {
+  const {callerCallee} = state
+  if (callerCallee) {
+    const {calleeFlamegraph, invertedCallerFlamegraph} = callerCallee
+    const nextCalleeFlamegraph = calleesReducer(calleeFlamegraph, action)
+    const nextInvertedCallerFlamegraph = invertedCallersReducer(invertedCallerFlamegraph, action)
+
+    if (
+      nextCalleeFlamegraph !== calleeFlamegraph ||
+      nextInvertedCallerFlamegraph !== invertedCallerFlamegraph
+    ) {
+      return {
+        ...state,
+        callerCallee: {
+          ...callerCallee,
+          calleeFlamegraph: nextCalleeFlamegraph,
+          invertedCallerFlamegraph: nextInvertedCallerFlamegraph,
+        },
+      }
+    }
+  }
+
   if (actions.sandwichView.setTableSortMethod.matches(action)) {
     return {...state, tableSortMethod: action.payload}
   }
@@ -264,6 +291,11 @@ export const sandwichView: Reducer<SandwichViewState> = (
     } else {
       return {
         ...state,
+        callerCallee: {
+          selectedFrame: action.payload,
+          calleeFlamegraph: calleesReducer(undefined, action),
+          invertedCallerFlamegraph: invertedCallersReducer(undefined, action),
+        },
       }
     }
   }

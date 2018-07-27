@@ -9,10 +9,10 @@ import {Dispatch, Reducer} from '../typed-redux'
 import {actions} from './actions'
 
 export enum FlamechartID {
-  LEFT_HEAVY,
-  CHRONO,
-  SANDWICH_INVERTED_CALLERS,
-  SANDWICH_CALLEES,
+  LEFT_HEAVY = 'LEFT_HEAVY',
+  CHRONO = 'CHRONO',
+  SANDWICH_INVERTED_CALLERS = 'SANDWICH_INVERTED_CALLERS',
+  SANDWICH_CALLEES = 'SANDWICH_CALLEES',
 }
 
 export interface FlamechartViewState {
