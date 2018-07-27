@@ -257,6 +257,12 @@ export const sandwichView: Reducer<SandwichViewState> = (
   state = {tableSortMethod: defaultSortMethod, callerCallee: null},
   action,
 ) => {
+  if (actions.setProfile.matches(action)) {
+    // When a new profile is dropped in, none of the selection state is going to make
+    // sense any more.
+    return {...state, callerCallee: null}
+  }
+
   const {callerCallee} = state
   if (callerCallee) {
     const {calleeFlamegraph, invertedCallerFlamegraph} = callerCallee
