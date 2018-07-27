@@ -1,7 +1,7 @@
-import {actionCreator} from '../typed-redux'
+import {actionCreator} from './typed-redux'
 import {Profile, CallTreeNode, Frame} from '../profile'
 import {SortMethod} from '../profile-table-view'
-import {ViewMode} from './index'
+import {ViewMode} from '.'
 import {FlamechartID} from './flamechart-view-state'
 import {Rect} from '../math'
 

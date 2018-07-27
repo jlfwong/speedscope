@@ -5,7 +5,7 @@ import {
   FlamechartID,
   createFlamechartViewStateReducer,
 } from './flamechart-view-state'
-import {Reducer} from '../typed-redux'
+import {Reducer} from './typed-redux'
 import {actions} from './actions'
 
 export interface SandwichViewState {

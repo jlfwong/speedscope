@@ -2,7 +2,7 @@ import {FlamechartID, FlamechartViewState} from './app-state/flamechart-view-sta
 import {CanvasContext} from './canvas-context'
 import {Flamechart} from './flamechart'
 import {FlamechartRenderer, FlamechartRendererOptions} from './flamechart-renderer'
-import {Dispatch} from './typed-redux'
+import {Dispatch} from './app-state/typed-redux'
 import {Frame, Profile} from './profile'
 import {memoizeByShallowEquality} from './utils'
 import {rowAtlas} from './app-state'

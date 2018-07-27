@@ -6,7 +6,7 @@ import {actions} from './actions'
  */
 
 import * as redux from 'redux'
-import {setter, Reducer} from '../typed-redux'
+import {setter, Reducer} from './typed-redux'
 import {Profile} from '../profile'
 import {RowAtlas} from '../row-atlas'
 import {FlamechartRowAtlasKey} from '../flamechart-renderer'

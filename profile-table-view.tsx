@@ -6,7 +6,7 @@ import {FontSize, Colors, Sizes, commonStyle} from './style'
 import {ColorChit} from './color-chit'
 import {ScrollableListView, ListItem} from './scrollable-list-view'
 import {actions} from './app-state/actions'
-import {Dispatch} from './typed-redux'
+import {Dispatch} from './app-state/typed-redux'
 
 export enum SortField {
   SYMBOL_NAME,

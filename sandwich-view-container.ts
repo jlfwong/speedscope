@@ -5,7 +5,7 @@ import {Profile, Frame} from './profile'
 import {CanvasContext} from './canvas-context'
 import {Flamechart} from './flamechart'
 import {FlamechartViewState, FlamechartID} from './app-state/flamechart-view-state'
-import {Dispatch} from './typed-redux'
+import {Dispatch} from './app-state/typed-redux'
 import {FlamechartViewProps, createMemoizedFlamechartRenderer} from './flamechart-view-container'
 
 export type CallerCalleeProps = {

@@ -13,7 +13,7 @@ import {SandwichView} from './sandwich-view'
 import {saveToFile} from './file-format'
 import {ApplicationState, ViewMode, canvasContext} from './app-state'
 import {actions} from './app-state/actions'
-import {Dispatch} from './typed-redux'
+import {Dispatch} from './app-state/typed-redux'
 import {chronoViewProps, leftHeavyViewProps} from './flamechart-view-container'
 import {sandwichViewProps} from './sandwich-view-container'
 

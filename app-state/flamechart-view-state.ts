@@ -1,6 +1,6 @@
 import {CallTreeNode} from '../profile'
 import {Rect} from '../math'
-import {Reducer} from '../typed-redux'
+import {Reducer} from './typed-redux'
 import {actions} from './actions'
 
 export enum FlamechartID {
