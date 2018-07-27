@@ -14,7 +14,7 @@ import {saveToFile} from './file-format'
 import {ApplicationState, ViewMode, canvasContext} from './app-state'
 import {actions} from './app-state/actions'
 import {Dispatch} from './typed-redux'
-import {chronoViewProps, leftHeavyViewProps} from './app-state/flamechart-view-state'
+import {chronoViewProps, leftHeavyViewProps} from './flamechart-view-container'
 import {sandwichViewProps} from './sandwich-view-container'
 
 const importModule = import('./import')

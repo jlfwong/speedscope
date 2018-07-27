@@ -12,8 +12,8 @@ import {Sizes, commonStyle} from './style'
 import {FlamechartDetailView} from './flamechart-detail-view'
 import {FlamechartPanZoomView} from './flamechart-pan-zoom-view'
 import {Hovertip} from './hovertip'
-import {FlamechartViewProps} from './app-state/flamechart-view-state'
 import {actions} from './app-state/actions'
+import {FlamechartViewProps} from './flamechart-view-container'
 
 interface EmptyState {
   __dummy: 1

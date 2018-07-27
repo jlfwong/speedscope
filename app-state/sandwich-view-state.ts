@@ -2,7 +2,6 @@ import {SortMethod, SortField, SortDirection} from '../profile-table-view'
 import {Frame} from '../profile'
 import {
   FlamechartViewState,
-  FlamechartViewProps,
   FlamechartID,
   createFlamechartViewStateReducer,
 } from './flamechart-view-state'
@@ -18,12 +17,6 @@ export interface CallerCalleeState {
   selectedFrame: Frame
   invertedCallerFlamegraph: FlamechartViewState
   calleeFlamegraph: FlamechartViewState
-}
-
-export type CallerCalleeProps = {
-  selectedFrame: Frame
-  invertedCallerFlamegraph: FlamechartViewProps
-  calleeFlamegraph: FlamechartViewProps
 }
 
 const defaultSortMethod = {

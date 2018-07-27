@@ -1,16 +1,18 @@
 import {SortMethod} from './profile-table-view'
-import {CallerCalleeProps, SandwichViewState} from './app-state/sandwich-view-state'
+import {SandwichViewState} from './app-state/sandwich-view-state'
 import {memoizeByShallowEquality} from './utils'
 import {Profile, Frame} from './profile'
 import {CanvasContext} from './canvas-context'
 import {Flamechart} from './flamechart'
-import {
-  createMemoizedFlamechartRenderer,
-  FlamechartViewState,
-  FlamechartViewProps,
-  FlamechartID,
-} from './app-state/flamechart-view-state'
+import {FlamechartViewState, FlamechartID} from './app-state/flamechart-view-state'
 import {Dispatch} from './typed-redux'
+import {FlamechartViewProps, createMemoizedFlamechartRenderer} from './flamechart-view-container'
+
+export type CallerCalleeProps = {
+  selectedFrame: Frame
+  invertedCallerFlamegraph: FlamechartViewProps
+  calleeFlamegraph: FlamechartViewProps
+}
 
 export type SandwichViewProps = {
   profile: Profile

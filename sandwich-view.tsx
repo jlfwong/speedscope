@@ -9,7 +9,7 @@ import {noop, formatPercent} from './utils'
 import {Hovertip} from './hovertip'
 import {SandwichViewProps} from './sandwich-view-container'
 import {actions} from './app-state/actions'
-import {FlamechartViewProps} from './app-state/flamechart-view-state'
+import {FlamechartViewProps} from './flamechart-view-container'
 
 export class FlamechartWrapper extends Component<FlamechartViewProps, EmptyState> {
   private clampViewportToFlamegraph(viewportRect: Rect) {
