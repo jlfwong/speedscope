@@ -19,11 +19,7 @@ const lastStore: any = (window as any)['store']
 const store = createApplicationStore(lastStore ? lastStore.getState() : {})
 ;(window as any)['store'] = store
 
-const ApplicationContainer = createContainer(
-  (state: ApplicationState) => state,
-  (dispatch: Dispatch) => ({dispatch}),
-  Application,
-)
+const ApplicationContainer = createContainer(Application, (state: ApplicationState) => state)
 
 render(
   <Provider store={store}>

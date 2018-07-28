@@ -55,14 +55,13 @@ export type WithDispatch<T> = T & {dispatch: Dispatch}
 
 // We make this into a single function invocation instead of the connect(map, map)(Component)
 // syntax to make better use of type inference.
-export function createContainer<OwnProps, State, PropsFromState, PropsFromDispatch, ComponentType>(
-  mapStateToProps: (state: State, ownProps?: OwnProps) => PropsFromState,
-  mapDispatchToProps: (dispatch: Dispatch, ownProps?: OwnProps) => PropsFromDispatch,
+export function createContainer<OwnProps, State, PropsFromState, ComponentType>(
   component: {
-    new (props: OwnProps & PropsFromState & PropsFromDispatch): ComponentType
+    new (props: OwnProps & PropsFromState & {dispatch: Dispatch}): ComponentType
   },
+  mapStateToProps: (state: State, ownProps?: OwnProps) => PropsFromState,
 ): ComponentConstructor<OwnProps, {}> {
-  return connect(mapStateToProps, mapDispatchToProps)(component)
+  return connect(mapStateToProps, (dispatch: Dispatch) => ({dispatch}))(component)
 }
 
 export type VoidState = {
