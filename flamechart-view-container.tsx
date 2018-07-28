@@ -104,7 +104,7 @@ const getLeftHeavyFlamechartRenderer = createMemoizedFlamechartRenderer()
 export const LeftHeavyFlamechartView = createContainer(
   FlamechartView,
   (state: ApplicationState) => {
-    const {profile, glCanvas, frameToColorBucket, chronoView} = state
+    const {profile, glCanvas, frameToColorBucket, leftHeavyView} = state
     if (!profile) throw new Error('profile missing')
     if (!glCanvas) throw new Error('glCanvas missing')
 
@@ -125,7 +125,7 @@ export const LeftHeavyFlamechartView = createContainer(
       flamechartRenderer,
       canvasContext,
       getCSSColorForFrame,
-      ...chronoView,
+      ...leftHeavyView,
     }
   },
 )

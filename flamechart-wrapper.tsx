@@ -3,7 +3,7 @@ import {StyleSheet, css} from 'aphrodite'
 import {h} from 'preact'
 import {commonStyle, Colors} from './style'
 import {Rect, AffineTransform, Vec2, clamp} from './math'
-import {FlamechartPanZoomView, FlamechartPanZoomViewProps} from './flamechart-pan-zoom-view'
+import {FlamechartPanZoomView} from './flamechart-pan-zoom-view'
 import {noop, formatPercent} from './utils'
 import {Hovertip} from './hovertip'
 import {actions} from './app-state/actions'
@@ -35,6 +35,12 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
       }),
     )
   }
+  private setLogicalSpaceViewportSize = (logicalSpaceViewportSize: Vec2): void => {
+    this.props.dispatch(
+      actions.flamechart.setLogicalSpaceViewportSize({id: this.props.id, logicalSpaceViewportSize}),
+    )
+  }
+
   private transformViewport = (transform: AffineTransform) => {
     this.setConfigSpaceViewportRect(transform.transformRect(this.props.configSpaceViewportRect))
   }
@@ -72,24 +78,25 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
     this.props.dispatch(actions.flamechart.setHoveredNode({id: this.props.id, hover}))
   }
   render() {
-    const props: FlamechartPanZoomViewProps = {
-      selectedNode: null,
-      onNodeHover: this.setNodeHover,
-      onNodeSelect: noop,
-      configSpaceViewportRect: this.props.configSpaceViewportRect,
-      setConfigSpaceViewportRect: this.setConfigSpaceViewportRect,
-      transformViewport: this.transformViewport,
-      flamechart: this.props.flamechart,
-      flamechartRenderer: this.props.flamechartRenderer,
-      canvasContext: this.props.canvasContext,
-      renderInverted: this.props.renderInverted,
-    }
     return (
       <div
         className={css(commonStyle.fillY, commonStyle.fillX, commonStyle.vbox)}
         ref={this.containerRef}
       >
-        <FlamechartPanZoomView {...props} />
+        <FlamechartPanZoomView
+          selectedNode={null}
+          onNodeHover={this.setNodeHover}
+          onNodeSelect={noop}
+          configSpaceViewportRect={this.props.configSpaceViewportRect}
+          setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
+          transformViewport={this.transformViewport}
+          flamechart={this.props.flamechart}
+          flamechartRenderer={this.props.flamechartRenderer}
+          canvasContext={this.props.canvasContext}
+          renderInverted={this.props.renderInverted}
+          logicalSpaceViewportSize={this.props.logicalSpaceViewportSize}
+          setLogicalSpaceViewportBounds={this.setLogicalSpaceViewportSize}
+        />
         {this.renderTooltip()}
       </div>
     )

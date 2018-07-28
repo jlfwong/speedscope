@@ -3,7 +3,7 @@ import {Profile, CallTreeNode, Frame} from '../profile'
 import {SortMethod} from '../profile-table-view'
 import {ViewMode} from '.'
 import {FlamechartID} from './flamechart-view-state'
-import {Rect} from '../math'
+import {Rect, Vec2} from '../math'
 import {HashParams} from '../hash-params'
 
 export namespace actions {
@@ -61,5 +61,10 @@ export namespace actions {
       id: FlamechartID
       configSpaceViewportRect: Rect
     }>('flamechart.setConfigSpaceViewportRect')
+
+    export const setLogicalSpaceViewportSize = actionCreator<{
+      id: FlamechartID
+      logicalSpaceViewportSize: Vec2
+    }>('flamechart.setLogicalSpaceViewportSpace')
   }
 }

@@ -57,6 +57,12 @@ export class FlamechartView extends Component<FlamechartViewProps, EmptyState> {
     )
   }
 
+  private setLogicalSpaceViewportSize = (logicalSpaceViewportSize: Vec2): void => {
+    this.props.dispatch(
+      actions.flamechart.setLogicalSpaceViewportSize({id: this.props.id, logicalSpaceViewportSize}),
+    )
+  }
+
   private transformViewport = (transform: AffineTransform): void => {
     const viewportRect = transform.transformRect(this.props.configSpaceViewportRect)
     this.setConfigSpaceViewportRect(viewportRect)
@@ -127,6 +133,8 @@ export class FlamechartView extends Component<FlamechartViewProps, EmptyState> {
           transformViewport={this.transformViewport}
           configSpaceViewportRect={this.props.configSpaceViewportRect}
           setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
+          logicalSpaceViewportSize={this.props.logicalSpaceViewportSize}
+          setLogicalSpaceViewportBounds={this.setLogicalSpaceViewportSize}
         />
         {this.renderTooltip()}
         {this.props.selectedNode && (

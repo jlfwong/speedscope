@@ -74,13 +74,13 @@ export const InvertedCallerFlamegraphView = createContainer(
     const flamechartRenderer = getInvertedCallerFlamegraphRenderer({canvasContext, flamechart})
 
     return {
-      id: FlamechartID.SANDWICH_CALLEES,
-      renderInverted: false,
+      id: FlamechartID.SANDWICH_INVERTED_CALLERS,
+      renderInverted: true,
       flamechart,
       flamechartRenderer,
       canvasContext,
       getCSSColorForFrame,
-      ...callerCallee.calleeFlamegraph,
+      ...callerCallee.invertedCallerFlamegraph,
     }
   },
 )

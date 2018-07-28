@@ -41,9 +41,13 @@ export interface FlamechartPanZoomViewProps {
 
   onNodeHover: (hover: {node: CallTreeNode; event: MouseEvent} | null) => void
   onNodeSelect: (node: CallTreeNode | null) => void
+
   configSpaceViewportRect: Rect
   transformViewport: (transform: AffineTransform) => void
   setConfigSpaceViewportRect: (rect: Rect) => void
+
+  logicalSpaceViewportSize: Vec2
+  setLogicalSpaceViewportBounds: (size: Vec2) => void
 }
 
 export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps, {}> {
@@ -356,9 +360,9 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     }
   }
 
-  private lastBounds: ClientRect | null = null
   private updateConfigSpaceViewport() {
     if (!this.container) return
+    const {logicalSpaceViewportSize} = this.props
     const bounds = this.container.getBoundingClientRect()
     const {width, height} = bounds
 
@@ -380,20 +384,20 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
         )
       }
     } else if (
-      this.lastBounds != null &&
-      (this.lastBounds.width !== width || this.lastBounds.height !== height)
+      !logicalSpaceViewportSize.equals(Vec2.zero) &&
+      (logicalSpaceViewportSize.x !== width || logicalSpaceViewportSize.y !== height)
     ) {
       // Resize the viewport rectangle to match the window size aspect
       // ratio.
       this.setConfigSpaceViewportRect(
         this.props.configSpaceViewportRect.withSize(
           this.props.configSpaceViewportRect.size.timesPointwise(
-            new Vec2(width / this.lastBounds.width, height / this.lastBounds.height),
+            new Vec2(width / logicalSpaceViewportSize.x, height / logicalSpaceViewportSize.y),
           ),
         ),
       )
     }
-    this.lastBounds = bounds
+    this.props.setLogicalSpaceViewportBounds(new Vec2(width, height))
   }
 
   onWindowResize = () => {
