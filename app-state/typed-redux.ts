@@ -1,4 +1,6 @@
+import {connect} from 'preact-redux'
 import * as redux from 'redux'
+import {ComponentConstructor, Component} from 'preact'
 
 export interface Action<TPayload> extends redux.Action<string> {
   payload: TPayload
@@ -49,3 +51,22 @@ export function setter<T>(
 }
 
 export type Dispatch = redux.Dispatch<Action<any>>
+export type WithDispatch<T> = T & {dispatch: Dispatch}
+
+// We make this into a single function invocation instead of the connect(map, map)(Component)
+// syntax to make better use of type inference.
+export function createContainer<OwnProps, State, PropsFromState, PropsFromDispatch, ComponentType>(
+  mapStateToProps: (state: State, ownProps?: OwnProps) => PropsFromState,
+  mapDispatchToProps: (dispatch: Dispatch, ownProps?: OwnProps) => PropsFromDispatch,
+  component: {
+    new (props: OwnProps & PropsFromState & PropsFromDispatch): ComponentType
+  },
+): ComponentConstructor<OwnProps, {}> {
+  return connect(mapStateToProps, mapDispatchToProps)(component)
+}
+
+export type VoidState = {
+  __dummyField: void
+}
+
+export abstract class StatelessComponent<P> extends Component<P, VoidState> {}

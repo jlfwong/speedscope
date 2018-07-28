@@ -18,6 +18,7 @@ import {
   FlamechartViewState,
 } from './flamechart-view-state'
 import {SandwichViewState, sandwichView} from './sandwich-view-state'
+import {HashParams, getHashParams} from '../hash-params'
 
 export const enum ViewMode {
   CHRONO_FLAME_CHART,
@@ -28,6 +29,8 @@ export const enum ViewMode {
 export interface ApplicationState {
   profile: Profile | null
   frameToColorBucket: Map<string | number, number>
+
+  hashParams: HashParams
 
   glCanvas: HTMLCanvasElement | null
 
@@ -63,6 +66,8 @@ export function createApplicationStore(
       actions.setFrameToColorBucket,
       new Map(),
     ),
+
+    hashParams: setter<HashParams>(actions.setHashParams, getHashParams()),
 
     activeProfile: setter<Profile | null>(actions.setActiveProfile, null),
     flattenRecursion: setter<boolean>(actions.setFlattenRecursion, false),

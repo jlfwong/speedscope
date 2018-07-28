@@ -5,7 +5,6 @@ import {FileSystemDirectoryEntry} from './import/file-system-entry'
 import {Profile, Frame} from './profile'
 import {FlamechartView} from './flamechart-view'
 import {FontFamily, FontSize, Colors, Sizes, Duration} from './style'
-import {getHashParams, HashParams} from './hash-params'
 import {triangle} from './utils'
 import {Color} from './color'
 import {importEmscriptenSymbolMap} from './emscripten'
@@ -13,7 +12,7 @@ import {SandwichView} from './sandwich-view'
 import {saveToFile} from './file-format'
 import {ApplicationState, ViewMode, canvasContext} from './app-state'
 import {actions} from './app-state/actions'
-import {Dispatch} from './app-state/typed-redux'
+import {Dispatch, StatelessComponent, WithDispatch} from './app-state/typed-redux'
 import {chronoViewProps, leftHeavyViewProps} from './flamechart-view-container'
 import {sandwichViewProps} from './sandwich-view-container'
 
@@ -39,7 +38,7 @@ interface ToolbarProps extends ApplicationState {
   saveFile(): void
 }
 
-export class Toolbar extends Component<ToolbarProps, void> {
+export class Toolbar extends StatelessComponent<ToolbarProps> {
   setTimeOrder = () => {
     this.props.setViewMode(ViewMode.CHRONO_FLAME_CHART)
   }
@@ -175,36 +174,23 @@ export class GLCanvas extends Component<GLCanvasProps, void> {
   }
 }
 
-interface EmptyState {
-  __dummy: void
+// TODO(jlfwong): Reimplement this bit
+/*
+this.state = {
+  // Start out at a loading state if we know that we'll immediately be fetching a profile to
+  // view.
+  loading:
+    (canUseXHR && this.hashParams.profileURL != null) ||
+    this.hashParams.localProfilePath != null,
 }
+*/
 
-export class Application extends Component<
-  {app: ApplicationState; dispatch: Dispatch},
-  EmptyState
-> {
-  hashParams: HashParams
-
-  constructor() {
-    super()
-    this.hashParams = getHashParams()
-    /*
-    // TODO(jlfwong): Reimplement this bit
-    this.state = {
-      // Start out at a loading state if we know that we'll immediately be fetching a profile to
-      // view.
-      loading:
-        (canUseXHR && this.hashParams.profileURL != null) ||
-        this.hashParams.localProfilePath != null,
-    }
-    */
-  }
-
+export class Application extends StatelessComponent<WithDispatch<ApplicationState>> {
   async loadProfile(loader: () => Promise<Profile | null>) {
     this.props.dispatch(actions.setLoading(true))
     await new Promise(resolve => setTimeout(resolve, 0))
 
-    if (!this.props.app.glCanvas) return
+    if (!this.props.glCanvas) return
 
     console.time('import')
 
@@ -226,7 +212,7 @@ export class Application extends Component<
 
     await profile.demangle()
 
-    const title = this.hashParams.title || profile.getName()
+    const title = this.props.hashParams.title || profile.getName()
     profile.setName(title)
 
     await this.setActiveProfile(profile)
@@ -237,7 +223,7 @@ export class Application extends Component<
   }
 
   async setActiveProfile(profile: Profile) {
-    if (!this.props.app.glCanvas) return
+    if (!this.props.glCanvas) return
 
     document.title = `${profile.getName()} - speedscope`
 
@@ -274,7 +260,7 @@ export class Application extends Component<
         return profile
       }
 
-      if (this.props.app.profile) {
+      if (this.props.profile) {
         // If a profile is already loaded, it's possible the file being imported is
         // a symbol map. If that's the case, we want to parse it, and apply the symbol
         // mapping to the already loaded profile. This can be use to take an opaque
@@ -282,7 +268,7 @@ export class Application extends Component<
         const map = importEmscriptenSymbolMap(reader.result)
         if (map) {
           console.log('Importing as emscripten symbol map')
-          let profile = this.props.app.profile
+          let profile = this.props.profile
           profile.remapNames(name => map.get(name) || name)
           return profile
         }
@@ -344,7 +330,7 @@ export class Application extends Component<
     } else if (ev.key === '3') {
       this.props.dispatch(actions.setViewMode(ViewMode.SANDWICH_VIEW))
     } else if (ev.key === 'r') {
-      const {flattenRecursion, profile} = this.props.app
+      const {flattenRecursion, profile} = this.props
       if (!profile) return
       if (flattenRecursion) {
         await this.setActiveProfile(profile)
@@ -357,8 +343,8 @@ export class Application extends Component<
   }
 
   private saveFile = () => {
-    if (this.props.app.profile) {
-      saveToFile(this.props.app.profile)
+    if (this.props.profile) {
+      saveToFile(this.props.profile)
     }
   }
 
@@ -403,20 +389,20 @@ export class Application extends Component<
   }
 
   async maybeLoadHashParamProfile() {
-    if (this.hashParams.profileURL) {
+    if (this.props.hashParams.profileURL) {
       if (!canUseXHR) {
         alert(`Cannot load a profile URL when loading from "${protocol}" URL protocol`)
         return
       }
       this.loadProfile(async () => {
-        const response = await fetch(this.hashParams.profileURL!)
-        let filename = new URL(this.hashParams.profileURL!).pathname
+        const response = await fetch(this.props.hashParams.profileURL!)
+        let filename = new URL(this.props.hashParams.profileURL!).pathname
         if (filename.includes('/')) {
           filename = filename.slice(filename.lastIndexOf('/') + 1)
         }
         return await importProfile(filename, await response.text())
       })
-    } else if (this.hashParams.localProfilePath) {
+    } else if (this.props.hashParams.localProfilePath) {
       // There isn't good cross-browser support for XHR of local files, even from
       // other local files. To work around this restriction, we load the local profile
       // as a JavaScript file which will invoke a global function.
@@ -428,7 +414,7 @@ export class Application extends Component<
       }
 
       const script = document.createElement('script')
-      script.src = `file:///${this.hashParams.localProfilePath}`
+      script.src = `file:///${this.props.hashParams.localProfilePath}`
       document.head.appendChild(script)
     }
   }
@@ -528,7 +514,7 @@ export class Application extends Component<
   }
 
   getColorBucketForFrame = (frame: Frame): number => {
-    const {frameToColorBucket} = this.props.app
+    const {frameToColorBucket} = this.props
     return frameToColorBucket.get(frame.key) || 0
   }
 
@@ -543,7 +529,7 @@ export class Application extends Component<
   }
 
   renderContent() {
-    const {viewMode, error, loading, activeProfile, glCanvas} = this.props.app
+    const {viewMode, error, loading, activeProfile, glCanvas} = this.props
 
     if (error) {
       return this.renderError()
@@ -562,7 +548,7 @@ export class Application extends Component<
         return (
           <FlamechartView
             {...chronoViewProps({
-              ...this.props.app.chronoView,
+              ...this.props.chronoView,
               profile: activeProfile,
               canvasContext: canvasContext(glCanvas),
               getCSSColorForFrame: this.getCSSColorForFrame,
@@ -576,7 +562,7 @@ export class Application extends Component<
         return (
           <FlamechartView
             {...leftHeavyViewProps({
-              ...this.props.app.leftHeavyView,
+              ...this.props.leftHeavyView,
               profile: activeProfile,
               canvasContext: canvasContext(glCanvas),
               getCSSColorForFrame: this.getCSSColorForFrame,
@@ -587,16 +573,16 @@ export class Application extends Component<
         )
       }
       case ViewMode.SANDWICH_VIEW: {
-        if (!this.props.app.profile) return null
+        if (!this.props.profile) return null
         return (
           <SandwichView
             {...sandwichViewProps({
-              profile: this.props.app.profile,
-              flattenRecursion: this.props.app.flattenRecursion,
+              profile: this.props.profile,
+              flattenRecursion: this.props.flattenRecursion,
               getColorBucketForFrame: this.getColorBucketForFrame,
               getCSSColorForFrame: this.getCSSColorForFrame,
-              tableSortMethod: this.props.app.sandwichView.tableSortMethod,
-              callerCallee: this.props.app.sandwichView.callerCallee,
+              tableSortMethod: this.props.sandwichView.tableSortMethod,
+              callerCallee: this.props.sandwichView.callerCallee,
               canvasContext: canvasContext(glCanvas),
               dispatch: this.props.dispatch,
             })}
@@ -612,17 +598,17 @@ export class Application extends Component<
         onDrop={this.onDrop}
         onDragOver={this.onDragOver}
         onDragLeave={this.onDragLeave}
-        className={css(style.root, this.props.app.dragActive && style.dragTargetRoot)}
+        className={css(style.root, this.props.dragActive && style.dragTargetRoot)}
       >
         <GLCanvas dispatch={this.props.dispatch} />
         <Toolbar
           setViewMode={this.setViewMode}
           saveFile={this.saveFile}
           browseForFile={this.browseForFile}
-          {...this.props.app}
+          {...this.props as ApplicationState}
         />
         <div className={css(style.contentContainer)}>{this.renderContent()}</div>
-        {this.props.app.dragActive && <div className={css(style.dragTarget)} />}
+        {this.props.dragActive && <div className={css(style.dragTarget)} />}
       </div>
     )
   }

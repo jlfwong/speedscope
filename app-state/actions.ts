@@ -4,6 +4,7 @@ import {SortMethod} from '../profile-table-view'
 import {ViewMode} from '.'
 import {FlamechartID} from './flamechart-view-state'
 import {Rect} from '../math'
+import {HashParams} from '../hash-params'
 
 export namespace actions {
   // Set the top-level profile from which other data will be derived
@@ -34,6 +35,9 @@ export namespace actions {
 
   // Set whether the application is in an errored state.
   export const setError = actionCreator<boolean>('setError')
+
+  // Set whether parameters defined by the URL encoded k=v pairs after the # in the URL
+  export const setHashParams = actionCreator<HashParams>('setHashParams')
 
   export namespace sandwichView {
     // Set the table sorting method used for the sandwich view.

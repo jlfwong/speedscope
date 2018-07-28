@@ -42,6 +42,7 @@
     "pako": "1.0.6",
     "parcel-bundler": "1.9.2",
     "preact": "8.2.7",
+    "preact-redux": "jlfwong/preact-redux#061ab7",
     "prettier": "1.12.0",
     "quicktype": "15.0.45",
     "redux": "^4.0.0",
