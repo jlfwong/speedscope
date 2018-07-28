@@ -1,116 +1,20 @@
-import {Frame, CallTreeNode} from './profile'
+import {Frame} from './profile'
 import {StyleSheet, css} from 'aphrodite'
-import {ProfileTableView} from './profile-table-view'
-import {h, Component} from 'preact'
+import {ProfileTableViewContainer} from './profile-table-view'
+import {h} from 'preact'
 import {commonStyle, Sizes, Colors, FontSize} from './style'
-import {Rect, AffineTransform, Vec2, clamp} from './math'
-import {FlamechartPanZoomView, FlamechartPanZoomViewProps} from './flamechart-pan-zoom-view'
-import {noop, formatPercent} from './utils'
-import {Hovertip} from './hovertip'
-import {SandwichViewProps} from './sandwich-view-container'
 import {actions} from './app-state/actions'
-import {FlamechartViewProps} from './flamechart-view-container'
+import {createContainer, Dispatch, StatelessComponent} from './app-state/typed-redux'
+import {ApplicationState} from './app-state'
+import {InvertedCallerFlamegraphView} from './inverted-caller-flamegraph-view'
+import {CalleeFlamegraphView} from './callee-flamegraph-view'
 
-export class FlamechartWrapper extends Component<FlamechartViewProps, EmptyState> {
-  private clampViewportToFlamegraph(viewportRect: Rect) {
-    const {flamechart, renderInverted} = this.props
-
-    const configSpaceSize = new Vec2(flamechart.getTotalWeight(), flamechart.getLayers().length)
-
-    const width = clamp(
-      viewportRect.size.x,
-      Math.min(configSpaceSize.x, 3 * flamechart.getMinFrameWidth()),
-      configSpaceSize.x,
-    )
-
-    const size = viewportRect.size.withX(width)
-
-    const origin = Vec2.clamp(
-      viewportRect.origin,
-      new Vec2(0, renderInverted ? 0 : -1),
-      Vec2.max(Vec2.zero, configSpaceSize.minus(size).plus(new Vec2(0, 1))),
-    )
-
-    return new Rect(origin, viewportRect.size.withX(width))
-  }
-
-  private setConfigSpaceViewportRect = (configSpaceViewportRect: Rect) => {
-    this.props.dispatch(
-      actions.flamechart.setConfigSpaceViewportRect({
-        id: this.props.id,
-        configSpaceViewportRect: this.clampViewportToFlamegraph(configSpaceViewportRect),
-      }),
-    )
-  }
-
-  private transformViewport = (transform: AffineTransform) => {
-    this.setConfigSpaceViewportRect(transform.transformRect(this.props.configSpaceViewportRect))
-  }
-
-  private formatValue(weight: number) {
-    const totalWeight = this.props.flamechart.getTotalWeight()
-    const percent = 100 * weight / totalWeight
-    const formattedPercent = formatPercent(percent)
-    return `${this.props.flamechart.formatValue(weight)} (${formattedPercent})`
-  }
-
-  private renderTooltip() {
-    if (!this.container) return null
-
-    const {hover} = this.props
-    if (!hover) return null
-    const {width, height, left, top} = this.container.getBoundingClientRect()
-    const offset = new Vec2(hover.event.clientX - left, hover.event.clientY - top)
-
-    return (
-      <Hovertip containerSize={new Vec2(width, height)} offset={offset}>
-        <span className={css(style.hoverCount)}>
-          {this.formatValue(hover.node.getTotalWeight())}
-        </span>{' '}
-        {hover.node.frame.name}
-      </Hovertip>
-    )
-  }
-
-  container: HTMLDivElement | null = null
-  containerRef = (container?: Element) => {
-    this.container = (container as HTMLDivElement) || null
-  }
-
-  private setNodeHover = (hover: {node: CallTreeNode; event: MouseEvent} | null) => {
-    this.props.dispatch(actions.flamechart.setHoveredNode({id: this.props.id, hover}))
-  }
-
-  render() {
-    const props: FlamechartPanZoomViewProps = {
-      selectedNode: null,
-      onNodeHover: this.setNodeHover,
-      onNodeSelect: noop,
-      configSpaceViewportRect: this.props.configSpaceViewportRect,
-      setConfigSpaceViewportRect: this.setConfigSpaceViewportRect,
-      transformViewport: this.transformViewport,
-      flamechart: this.props.flamechart,
-      flamechartRenderer: this.props.flamechartRenderer,
-      canvasContext: this.props.canvasContext,
-      renderInverted: this.props.renderInverted,
-    }
-    return (
-      <div
-        className={css(commonStyle.fillY, commonStyle.fillX, commonStyle.vbox)}
-        ref={this.containerRef}
-      >
-        <FlamechartPanZoomView {...props} />
-        {this.renderTooltip()}
-      </div>
-    )
-  }
+interface SandwichViewProps {
+  selectedFrame: Frame | null
+  dispatch: Dispatch
 }
 
-interface EmptyState {
-  __dummy: 1
-}
-
-export class SandwichView extends Component<SandwichViewProps, EmptyState> {
+class SandwichView extends StatelessComponent<SandwichViewProps> {
   private setSelectedFrame = (selectedFrame: Frame | null) => {
     this.props.dispatch(actions.sandwichView.setSelectedFrame(selectedFrame))
   }
@@ -129,27 +33,24 @@ export class SandwichView extends Component<SandwichViewProps, EmptyState> {
   }
 
   render() {
-    const {callerCallee} = this.props
-
-    let selectedFrame: Frame | null = null
+    const {selectedFrame} = this.props
     let flamegraphViews: JSX.Element | null = null
 
-    if (callerCallee) {
-      selectedFrame = callerCallee.selectedFrame
+    if (selectedFrame) {
       flamegraphViews = (
         <div className={css(commonStyle.fillY, style.callersAndCallees, commonStyle.vbox)}>
           <div className={css(commonStyle.hbox, style.panZoomViewWraper)}>
             <div className={css(style.flamechartLabelParent)}>
               <div className={css(style.flamechartLabel)}>Callers</div>
             </div>
-            <FlamechartWrapper {...callerCallee.invertedCallerFlamegraph} />
+            <InvertedCallerFlamegraphView />
           </div>
           <div className={css(style.divider)} />
           <div className={css(commonStyle.hbox, style.panZoomViewWraper)}>
             <div className={css(style.flamechartLabelParent, style.flamechartLabelParentBottom)}>
               <div className={css(style.flamechartLabel, style.flamechartLabelBottom)}>Callees</div>
             </div>
-            <FlamechartWrapper {...callerCallee.calleeFlamegraph} />
+            <CalleeFlamegraphView />
           </div>
         </div>
       )
@@ -158,13 +59,7 @@ export class SandwichView extends Component<SandwichViewProps, EmptyState> {
     return (
       <div className={css(commonStyle.hbox, commonStyle.fillY)}>
         <div className={css(style.tableView)}>
-          <ProfileTableView
-            selectedFrame={selectedFrame}
-            profile={this.props.profile}
-            getCSSColorForFrame={this.props.getCSSColorForFrame}
-            sortMethod={this.props.tableSortMethod}
-            dispatch={this.props.dispatch}
-          />
+          <ProfileTableViewContainer />
         </div>
         {flamegraphViews}
       </div>
@@ -210,7 +105,9 @@ const style = StyleSheet.create({
     height: 2,
     background: Colors.LIGHT_GRAY,
   },
-  hoverCount: {
-    color: Colors.GREEN,
-  },
+})
+
+export const SandwichViewContainer = createContainer(SandwichView, (state: ApplicationState) => {
+  const {callerCallee} = state.sandwichView
+  return {selectedFrame: callerCallee ? callerCallee.selectedFrame : null}
 })

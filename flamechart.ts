@@ -48,6 +48,8 @@ export class Flamechart {
   }
 
   constructor(private source: FlamechartDataSource) {
+    console.trace('created flamechart')
+
     const stack: FlamechartFrame[] = []
     const openFrame = (node: CallTreeNode, value: number) => {
       const parent = lastOf(stack)

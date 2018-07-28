@@ -2,10 +2,17 @@ import {FlamechartID, FlamechartViewState} from './app-state/flamechart-view-sta
 import {CanvasContext} from './canvas-context'
 import {Flamechart} from './flamechart'
 import {FlamechartRenderer, FlamechartRendererOptions} from './flamechart-renderer'
-import {Dispatch} from './app-state/typed-redux'
+import {Dispatch, createContainer} from './app-state/typed-redux'
 import {Frame, Profile} from './profile'
 import {memoizeByShallowEquality} from './utils'
-import {rowAtlas} from './app-state'
+import {ApplicationState} from './app-state'
+import {FlamechartView} from './flamechart-view'
+import {
+  getRowAtlas,
+  createGetColorBucketForFrame,
+  getCanvasContext,
+  createGetCSSColorForFrame,
+} from './app-state/getters'
 
 export type FlamechartViewProps = {
   id: FlamechartID
@@ -17,7 +24,7 @@ export type FlamechartViewProps = {
   getCSSColorForFrame: (frame: Frame) => string
 } & FlamechartViewState
 
-export const chronoViewFlamechart = memoizeByShallowEquality(
+export const getChronoViewFlamechart = memoizeByShallowEquality(
   ({
     profile,
     getColorBucketForFrame,
@@ -43,51 +50,39 @@ export const createMemoizedFlamechartRenderer = (options?: FlamechartRendererOpt
       canvasContext: CanvasContext
       flamechart: Flamechart
     }): FlamechartRenderer => {
-      return new FlamechartRenderer(canvasContext, rowAtlas(canvasContext), flamechart, options)
+      return new FlamechartRenderer(canvasContext, getRowAtlas(canvasContext), flamechart, options)
     },
   )
 
-const chronoViewFlamechartRenderer = createMemoizedFlamechartRenderer()
+const getChronoViewFlamechartRenderer = createMemoizedFlamechartRenderer()
 
-export const chronoViewProps = memoizeByShallowEquality(
-  ({
-    profile,
-    getColorBucketForFrame,
+export const ChronoFlamechartView = createContainer(FlamechartView, (state: ApplicationState) => {
+  const {profile, glCanvas, frameToColorBucket, chronoView} = state
+  if (!profile) throw new Error('profile missing')
+  if (!glCanvas) throw new Error('glCanvas missing')
+
+  const canvasContext = getCanvasContext(glCanvas)
+  const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
+  const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
+
+  const flamechart = getChronoViewFlamechart({profile, getColorBucketForFrame})
+  const flamechartRenderer = getChronoViewFlamechartRenderer({
     canvasContext,
-    dispatch,
+    flamechart,
+  })
+
+  return {
+    id: FlamechartID.CHRONO,
+    renderInverted: false,
+    flamechart,
+    flamechartRenderer,
+    canvasContext,
     getCSSColorForFrame,
-    hover,
-    selectedNode,
-    configSpaceViewportRect,
-  }: {
-    profile: Profile
-    canvasContext: CanvasContext
-    getCSSColorForFrame: (frame: Frame) => string
-    getColorBucketForFrame: (frame: Frame) => number
-    dispatch: Dispatch
-  } & FlamechartViewState): FlamechartViewProps => {
-    const flamechart = chronoViewFlamechart({profile, getColorBucketForFrame})
-    const flamechartRenderer = chronoViewFlamechartRenderer({
-      canvasContext,
-      flamechart,
-    })
+    ...chronoView,
+  }
+})
 
-    return {
-      id: FlamechartID.CHRONO,
-      renderInverted: false,
-      flamechart,
-      flamechartRenderer,
-      canvasContext,
-      dispatch,
-      getCSSColorForFrame,
-      hover,
-      selectedNode,
-      configSpaceViewportRect,
-    }
-  },
-)
-
-export const leftHeavyFlamechart = memoizeByShallowEquality(
+export const getLeftHeavyFlamechart = memoizeByShallowEquality(
   ({
     profile,
     getColorBucketForFrame,
@@ -104,27 +99,21 @@ export const leftHeavyFlamechart = memoizeByShallowEquality(
   },
 )
 
-const leftHeavyFlamechartRenderer = createMemoizedFlamechartRenderer()
+const getLeftHeavyFlamechartRenderer = createMemoizedFlamechartRenderer()
 
-export const leftHeavyViewProps = memoizeByShallowEquality(
-  ({
-    profile,
-    getColorBucketForFrame,
-    canvasContext,
-    dispatch,
-    getCSSColorForFrame,
-    hover,
-    selectedNode,
-    configSpaceViewportRect,
-  }: {
-    profile: Profile
-    canvasContext: CanvasContext
-    getCSSColorForFrame: (frame: Frame) => string
-    getColorBucketForFrame: (frame: Frame) => number
-    dispatch: Dispatch
-  } & FlamechartViewState): FlamechartViewProps => {
-    const flamechart = leftHeavyFlamechart({profile, getColorBucketForFrame})
-    const flamechartRenderer = leftHeavyFlamechartRenderer({
+export const LeftHeavyFlamechartView = createContainer(
+  FlamechartView,
+  (state: ApplicationState) => {
+    const {profile, glCanvas, frameToColorBucket, chronoView} = state
+    if (!profile) throw new Error('profile missing')
+    if (!glCanvas) throw new Error('glCanvas missing')
+
+    const canvasContext = getCanvasContext(glCanvas)
+    const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
+    const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
+
+    const flamechart = getLeftHeavyFlamechart({profile, getColorBucketForFrame})
+    const flamechartRenderer = getLeftHeavyFlamechartRenderer({
       canvasContext,
       flamechart,
     })
@@ -135,11 +124,8 @@ export const leftHeavyViewProps = memoizeByShallowEquality(
       flamechart,
       flamechartRenderer,
       canvasContext,
-      dispatch,
       getCSSColorForFrame,
-      hover,
-      selectedNode,
-      configSpaceViewportRect,
+      ...chronoView,
     }
   },
 )

@@ -136,6 +136,8 @@ export class FlamechartRenderer {
     private flamechart: Flamechart,
     private options: FlamechartRendererOptions = {inverted: false},
   ) {
+    console.trace('created flamechart renderer')
+
     const nLayers = flamechart.getLayers().length
     for (let stackDepth = 0; stackDepth < nLayers; stackDepth++) {
       const leafNodes: RangeTreeLeafNode[] = []

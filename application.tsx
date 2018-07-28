@@ -3,18 +3,14 @@ import {StyleSheet, css} from 'aphrodite'
 import {FileSystemDirectoryEntry} from './import/file-system-entry'
 
 import {Profile, Frame} from './profile'
-import {FlamechartView} from './flamechart-view'
 import {FontFamily, FontSize, Colors, Sizes, Duration} from './style'
-import {triangle} from './utils'
-import {Color} from './color'
 import {importEmscriptenSymbolMap} from './emscripten'
-import {SandwichView} from './sandwich-view'
+import {SandwichViewContainer} from './sandwich-view'
 import {saveToFile} from './file-format'
-import {ApplicationState, ViewMode, canvasContext} from './app-state'
+import {ApplicationState, ViewMode} from './app-state'
 import {actions} from './app-state/actions'
 import {Dispatch, StatelessComponent, WithDispatch} from './app-state/typed-redux'
-import {chronoViewProps, leftHeavyViewProps} from './flamechart-view-container'
-import {sandwichViewProps} from './sandwich-view-container'
+import {LeftHeavyFlamechartView, ChronoFlamechartView} from './flamechart-view-container'
 
 const importModule = import('./import')
 // Force eager loading of the module
@@ -513,21 +509,6 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
     this.props.dispatch(actions.setViewMode(viewMode))
   }
 
-  getColorBucketForFrame = (frame: Frame): number => {
-    const {frameToColorBucket} = this.props
-    return frameToColorBucket.get(frame.key) || 0
-  }
-
-  getCSSColorForFrame = (frame: Frame): string => {
-    const t = this.getColorBucketForFrame(frame) / 255
-
-    const x = triangle(30.0 * t)
-    const H = 360.0 * (0.9 * t)
-    const C = 0.25 + 0.2 * x
-    const L = 0.8 - 0.15 * x
-    return Color.fromLumaChromaHue(L, C, H).toCSS()
-  }
-
   renderContent() {
     const {viewMode, error, loading, activeProfile, glCanvas} = this.props
 
@@ -545,49 +526,14 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
 
     switch (viewMode) {
       case ViewMode.CHRONO_FLAME_CHART: {
-        return (
-          <FlamechartView
-            {...chronoViewProps({
-              ...this.props.chronoView,
-              profile: activeProfile,
-              canvasContext: canvasContext(glCanvas),
-              getCSSColorForFrame: this.getCSSColorForFrame,
-              dispatch: this.props.dispatch,
-              getColorBucketForFrame: this.getColorBucketForFrame,
-            })}
-          />
-        )
+        return <ChronoFlamechartView />
       }
       case ViewMode.LEFT_HEAVY_FLAME_GRAPH: {
-        return (
-          <FlamechartView
-            {...leftHeavyViewProps({
-              ...this.props.leftHeavyView,
-              profile: activeProfile,
-              canvasContext: canvasContext(glCanvas),
-              getCSSColorForFrame: this.getCSSColorForFrame,
-              dispatch: this.props.dispatch,
-              getColorBucketForFrame: this.getColorBucketForFrame,
-            })}
-          />
-        )
+        return <LeftHeavyFlamechartView />
       }
       case ViewMode.SANDWICH_VIEW: {
         if (!this.props.profile) return null
-        return (
-          <SandwichView
-            {...sandwichViewProps({
-              profile: this.props.profile,
-              flattenRecursion: this.props.flattenRecursion,
-              getColorBucketForFrame: this.getColorBucketForFrame,
-              getCSSColorForFrame: this.getCSSColorForFrame,
-              tableSortMethod: this.props.sandwichView.tableSortMethod,
-              callerCallee: this.props.sandwichView.callerCallee,
-              canvasContext: canvasContext(glCanvas),
-              dispatch: this.props.dispatch,
-            })}
-          />
-        )
+        return <SandwichViewContainer />
       }
     }
   }

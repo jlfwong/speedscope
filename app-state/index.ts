@@ -8,10 +8,6 @@ import {actions} from './actions'
 import * as redux from 'redux'
 import {setter, Reducer} from './typed-redux'
 import {Profile} from '../profile'
-import {RowAtlas} from '../row-atlas'
-import {FlamechartRowAtlasKey} from '../flamechart-renderer'
-import {CanvasContext} from '../canvas-context'
-import {memoizeByReference} from '../utils'
 import {
   createFlamechartViewStateReducer,
   FlamechartID,
@@ -46,16 +42,6 @@ export interface ApplicationState {
   leftHeavyView: FlamechartViewState
   sandwichView: SandwichViewState
 }
-
-export const canvasContext = memoizeByReference<HTMLCanvasElement, CanvasContext>(canvas => {
-  return new CanvasContext(canvas)
-})
-
-export const rowAtlas = memoizeByReference<CanvasContext, RowAtlas<FlamechartRowAtlasKey>>(
-  canvasContext => {
-    return new RowAtlas(canvasContext)
-  },
-)
 
 export function createApplicationStore(
   initialState: Partial<ApplicationState>,

@@ -1,7 +1,7 @@
 import {h, render} from 'preact'
 import {createApplicationStore, ApplicationState} from './app-state'
 import {Provider} from 'preact-redux'
-import {Dispatch, createContainer} from './app-state/typed-redux'
+import {createContainer} from './app-state/typed-redux'
 import {Application} from './application'
 
 console.log(`speedscope v${require('./package.json').version}`)

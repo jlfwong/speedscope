@@ -6,7 +6,9 @@ import {FontSize, Colors, Sizes, commonStyle} from './style'
 import {ColorChit} from './color-chit'
 import {ScrollableListView, ListItem} from './scrollable-list-view'
 import {actions} from './app-state/actions'
-import {Dispatch} from './app-state/typed-redux'
+import {Dispatch, createContainer} from './app-state/typed-redux'
+import {ApplicationState} from './app-state'
+import {createGetCSSColorForFrame} from './app-state/getters'
 
 export enum SortField {
   SYMBOL_NAME,
@@ -309,3 +311,21 @@ const style = StyleSheet.create({
     right: 0,
   },
 })
+
+export const ProfileTableViewContainer = createContainer(
+  ProfileTableView,
+  (state: ApplicationState) => {
+    const {profile, sandwichView, frameToColorBucket} = state
+    if (!profile) throw new Error('profile missing')
+    const {tableSortMethod, callerCallee} = sandwichView
+    const selectedFrame = callerCallee ? callerCallee.selectedFrame : null
+    const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
+
+    return {
+      profile,
+      selectedFrame,
+      getCSSColorForFrame,
+      sortMethod: tableSortMethod,
+    }
+  },
+)
