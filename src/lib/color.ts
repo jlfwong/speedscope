@@ -1,3 +1,5 @@
+import {clamp} from './math'
+
 export class Color {
   constructor(
     readonly r: number = 0,
@@ -7,6 +9,9 @@ export class Color {
   ) {}
 
   static fromLumaChromaHue(L: number, C: number, H: number) {
+    // 0 <= L <= 1
+    // 0 <= C <= 1
+    // 0 <= H <= 360
     // https://en.wikipedia.org/wiki/HSL_and_HSV#From_luma/chroma/hue
 
     const hPrime = H / 60
@@ -26,7 +31,7 @@ export class Color {
 
     const m = L - (0.3 * R1 + 0.59 * G1 + 0.11 * B1)
 
-    return new Color(R1 + m, G1 + m, B1 + m, 1.0)
+    return new Color(clamp(R1 + m, 0, 1), clamp(G1 + m, 0, 1), clamp(B1 + m, 0, 1), 1.0)
   }
 
   toCSS(): string {
