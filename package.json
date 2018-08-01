@@ -14,7 +14,7 @@
     "lint": "eslint 'src/**/*.ts' 'src/**/*.tsx'",
     "jest": "./scripts/test-setup.sh && jest",
     "coverage": "npm run jest -- --coverage && coveralls < coverage/lcov.info",
-    "test": "tsc --noEmit && npm run lint && npm run coverage",
+    "test": "tsc --noEmit && npm run lint && npm run prepack && npm run coverage",
     "serve": "parcel assets/index.html --open --no-autoinstall"
   },
   "files": [
