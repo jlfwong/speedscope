@@ -52,6 +52,7 @@ export function setter<T>(
 
 export type Dispatch = redux.Dispatch<Action<any>>
 export type WithDispatch<T> = T & {dispatch: Dispatch}
+export type WithoutDispatch<T> = Pick<T, Exclude<keyof T, 'dispatch'>>
 
 // We make this into a single function invocation instead of the connect(map, map)(Component)
 // syntax to make better use of type inference.
@@ -59,7 +60,7 @@ export function createContainer<OwnProps, State, PropsFromState, ComponentType>(
   component: {
     new (props: OwnProps & PropsFromState & {dispatch: Dispatch}): ComponentType
   },
-  mapStateToProps: (state: State, ownProps?: OwnProps) => PropsFromState,
+  mapStateToProps: (state: State, ownProps: OwnProps) => PropsFromState,
 ): ComponentConstructor<OwnProps, {}> {
   return connect(mapStateToProps, (dispatch: Dispatch) => ({dispatch}))(component)
 }

@@ -1,5 +1,5 @@
 import {Frame, Profile} from '../profile'
-import {triangle, memoizeByReference} from '../utils'
+import {triangle, memoizeByReference, memoizeByShallowEquality} from '../utils'
 import {RowAtlas} from '../row-atlas'
 import {CanvasContext} from '../canvas-context'
 import {Color} from '../color'
@@ -38,4 +38,10 @@ export const getRowAtlas = memoizeByReference((canvasContext: CanvasContext) => 
 
 export const getProfileWithRecursionFlattened = memoizeByReference((profile: Profile) =>
   profile.getProfileWithRecursionFlattened(),
+)
+
+export const getProfileToView = memoizeByShallowEquality(
+  ({profile, flattenRecursion}: {profile: Profile; flattenRecursion: boolean}): Profile => {
+    return flattenRecursion ? profile.getProfileWithRecursionFlattened() : profile
+  },
 )

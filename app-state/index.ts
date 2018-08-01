@@ -30,7 +30,6 @@ export interface ApplicationState {
 
   glCanvas: HTMLCanvasElement | null
 
-  activeProfile: Profile | null
   flattenRecursion: boolean
 
   viewMode: ViewMode
@@ -55,7 +54,6 @@ export function createApplicationStore(
 
     hashParams: setter<HashParams>(actions.setHashParams, getHashParams()),
 
-    activeProfile: setter<Profile | null>(actions.setActiveProfile, null),
     flattenRecursion: setter<boolean>(actions.setFlattenRecursion, false),
 
     viewMode: setter<ViewMode>(actions.setViewMode, ViewMode.CHRONO_FLAME_CHART),

@@ -11,6 +11,7 @@ import {ApplicationState, ViewMode} from './app-state'
 import {actions} from './app-state/actions'
 import {Dispatch, StatelessComponent, WithDispatch} from './app-state/typed-redux'
 import {LeftHeavyFlamechartView, ChronoFlamechartView} from './flamechart-view-container'
+import {getProfileToView} from './app-state/getters'
 
 const importModule = import('./import')
 // Force eager loading of the module
@@ -326,15 +327,8 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
     } else if (ev.key === '3') {
       this.props.dispatch(actions.setViewMode(ViewMode.SANDWICH_VIEW))
     } else if (ev.key === 'r') {
-      const {flattenRecursion, profile} = this.props
-      if (!profile) return
-      if (flattenRecursion) {
-        await this.setActiveProfile(profile)
-        this.props.dispatch(actions.setFlattenRecursion(false))
-      } else {
-        await this.setActiveProfile(profile.getProfileWithRecursionFlattened())
-        this.props.dispatch(actions.setFlattenRecursion(true))
-      }
+      const {flattenRecursion} = this.props
+      this.props.dispatch(actions.setFlattenRecursion(!flattenRecursion))
     }
   }
 
@@ -510,7 +504,7 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
   }
 
   renderContent() {
-    const {viewMode, error, loading, activeProfile, glCanvas} = this.props
+    const {viewMode, flattenRecursion, profile, error, loading, glCanvas} = this.props
 
     if (error) {
       return this.renderError()
@@ -520,16 +514,18 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
       return this.renderLoadingBar()
     }
 
-    if (!activeProfile || !glCanvas) {
+    if (!profile || !glCanvas) {
       return this.renderLanding()
     }
 
+    const profileToView = getProfileToView({profile, flattenRecursion})
+
     switch (viewMode) {
       case ViewMode.CHRONO_FLAME_CHART: {
-        return <ChronoFlamechartView />
+        return <ChronoFlamechartView profile={profileToView} glCanvas={glCanvas} />
       }
       case ViewMode.LEFT_HEAVY_FLAME_GRAPH: {
-        return <LeftHeavyFlamechartView />
+        return <LeftHeavyFlamechartView profile={profileToView} glCanvas={glCanvas} />
       }
       case ViewMode.SANDWICH_VIEW: {
         if (!this.props.profile) return null
