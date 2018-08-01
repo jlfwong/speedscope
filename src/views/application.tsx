@@ -235,6 +235,10 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
       reader.readAsText(file)
       await loadPromise
 
+      if (typeof reader.result !== 'string') {
+        throw new Error('Expected ArrayBuffer')
+      }
+
       const profile = await importProfile(file.name, reader.result)
       if (profile) {
         if (!profile.getName()) {

@@ -184,6 +184,9 @@ class MaybeCompressedFileReader {
     this.fileData = new Promise(resolve => {
       const reader = new FileReader()
       reader.addEventListener('loadend', () => {
+        if (!(reader.result instanceof ArrayBuffer)) {
+          throw new Error('Expected reader.result to be an instance of ArrayBuffer')
+        }
         resolve(reader.result)
       })
       reader.readAsArrayBuffer(file)
@@ -410,11 +413,11 @@ async function readFormTemplate(tree: TraceDirectoryTree): Promise<FormTemplateD
   const addressToFrameMap = new Map<number, FrameInfo>()
 
   // TODO(jlfwong): Deal with profiles with conflicts addresses?
-  for (let [_pid, symbols] of symbolsByPid.entries()) {
+  for (let symbols of symbolsByPid.values()) {
     for (let symbol of symbols.symbols) {
       if (!symbol) continue
       const {sourcePath, symbolName, addressToLine} = symbol
-      for (let [address, _line] of addressToLine) {
+      for (let address of addressToLine.keys()) {
         getOrInsert(addressToFrameMap, address, () => {
           const name = symbolName || `0x${zeroPad(address.toString(16), 16)}`
           const frame: FrameInfo = {

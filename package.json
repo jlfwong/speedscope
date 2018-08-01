@@ -2,6 +2,7 @@
   "name": "speedscope",
   "version": "0.4.0",
   "description": "",
+  "repository": "jlfwong/speedscope",
   "main": "index.js",
   "bin": {
     "speedscope": "./bin/cli.js"
@@ -16,8 +17,15 @@
     "test": "tsc --noEmit && npm run lint && npm run coverage",
     "serve": "parcel assets/index.html --open --no-autoinstall"
   },
-  "files": ["bin/cli.js", "dist/release/**", "!*.map"],
-  "browserslist": ["last 2 Chrome versions", "last 2 Firefox versions"],
+  "files": [
+    "bin/cli.js",
+    "dist/release/**",
+    "!*.map"
+  ],
+  "browserslist": [
+    "last 2 Chrome versions",
+    "last 2 Firefox versions"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
@@ -41,8 +49,8 @@
     "redux": "^4.0.0",
     "regl": "1.3.1",
     "ts-jest": "22.4.6",
-    "typescript": "2.8.1",
-    "typescript-eslint-parser": "14.0.0",
+    "typescript": "3.0.1",
+    "typescript-eslint-parser": "17.0.1",
     "uglify-es": "3.2.2"
   },
   "jest": {
@@ -50,8 +58,17 @@
       "^.+\\.tsx?$": "ts-jest"
     },
     "testRegex": "\\.test\\.tsx?$",
-    "collectCoverageFrom": ["**/*.{ts,tsx}", "!**/*.d.{ts,tsx}"],
-    "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json"]
+    "collectCoverageFrom": [
+      "**/*.{ts,tsx}",
+      "!**/*.d.{ts,tsx}"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json"
+    ]
   },
   "dependencies": {
     "opn": "5.3.0"
