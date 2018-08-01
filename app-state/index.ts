@@ -42,9 +42,20 @@ export interface ApplicationState {
   sandwichView: SandwichViewState
 }
 
+const protocol = window.location.protocol
+
+// Speedscope is usable both from a local HTML file being served
+// from a file:// URL, and via websites. In the case of file:// URLs,
+// however, XHR will be unavailable to fetching files in adjacent directories.
+export const canUseXHR = protocol === 'http:' || protocol === 'https:'
+
 export function createApplicationStore(
   initialState: Partial<ApplicationState>,
 ): redux.Store<ApplicationState> {
+  const hashParams = getHashParams()
+
+  const loading = canUseXHR && hashParams.profileURL != null
+
   const reducer: Reducer<ApplicationState> = redux.combineReducers({
     profile: setter<Profile | null>(actions.setProfile, null),
     frameToColorBucket: setter<Map<string | number, number>>(
@@ -52,7 +63,7 @@ export function createApplicationStore(
       new Map(),
     ),
 
-    hashParams: setter<HashParams>(actions.setHashParams, getHashParams()),
+    hashParams: setter<HashParams>(actions.setHashParams, hashParams),
 
     flattenRecursion: setter<boolean>(actions.setFlattenRecursion, false),
 
@@ -61,7 +72,7 @@ export function createApplicationStore(
     glCanvas: setter<HTMLCanvasElement | null>(actions.setGLCanvas, null),
 
     dragActive: setter<boolean>(actions.setDragActive, false),
-    loading: setter<boolean>(actions.setLoading, false),
+    loading: setter<boolean>(actions.setLoading, loading),
     error: setter<boolean>(actions.setError, false),
 
     chronoView: createFlamechartViewStateReducer(FlamechartID.CHRONO),

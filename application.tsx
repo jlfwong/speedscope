@@ -7,7 +7,7 @@ import {FontFamily, FontSize, Colors, Sizes, Duration} from './style'
 import {importEmscriptenSymbolMap} from './emscripten'
 import {SandwichViewContainer} from './sandwich-view'
 import {saveToFile} from './file-format'
-import {ApplicationState, ViewMode} from './app-state'
+import {ApplicationState, ViewMode, canUseXHR} from './app-state'
 import {actions} from './app-state/actions'
 import {Dispatch, StatelessComponent, WithDispatch} from './app-state/typed-redux'
 import {LeftHeavyFlamechartView, ChronoFlamechartView} from './flamechart-view-container'
@@ -22,9 +22,6 @@ async function importProfile(fileName: string, contents: string): Promise<Profil
 async function importFromFileSystemDirectoryEntry(entry: FileSystemDirectoryEntry) {
   return (await importModule).importFromFileSystemDirectoryEntry(entry)
 }
-
-const protocol = window.location.protocol
-const canUseXHR = protocol === 'http:' || protocol === 'https:'
 
 declare function require(x: string): any
 const exampleProfileURL = require('./sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt')
@@ -170,17 +167,6 @@ export class GLCanvas extends Component<GLCanvasProps, void> {
     return <canvas className={css(style.glCanvasView)} ref={this.ref} width={1} height={1} />
   }
 }
-
-// TODO(jlfwong): Reimplement this bit
-/*
-this.state = {
-  // Start out at a loading state if we know that we'll immediately be fetching a profile to
-  // view.
-  loading:
-    (canUseXHR && this.hashParams.profileURL != null) ||
-    this.hashParams.localProfilePath != null,
-}
-*/
 
 export class Application extends StatelessComponent<WithDispatch<ApplicationState>> {
   async loadProfile(loader: () => Promise<Profile | null>) {
@@ -381,7 +367,9 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
   async maybeLoadHashParamProfile() {
     if (this.props.hashParams.profileURL) {
       if (!canUseXHR) {
-        alert(`Cannot load a profile URL when loading from "${protocol}" URL protocol`)
+        alert(
+          `Cannot load a profile URL when loading from "${window.location.protocol}" URL protocol`,
+        )
         return
       }
       this.loadProfile(async () => {
