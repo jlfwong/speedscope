@@ -16,7 +16,7 @@
     "test": "tsc --noEmit && npm run lint && npm run coverage",
     "serve": "parcel assets/index.html --open --no-autoinstall"
   },
-  "files": ["cli.js", "dist/release/**", "!*.map"],
+  "files": ["bin/cli.js", "dist/release/**", "!*.map"],
   "browserslist": ["last 2 Chrome versions", "last 2 Firefox versions"],
   "author": "",
   "license": "MIT",
