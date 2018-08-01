@@ -52,7 +52,7 @@ async function main() {
   }
 
   if (process.argv.includes('--version') || process.argv.includes('-v')) {
-    console.log('v' + require('./package.json').version)
+    console.log('v' + require('../package.json').version)
     return
   }
 
