@@ -4,27 +4,20 @@
   "description": "",
   "main": "index.js",
   "bin": {
-    "speedscope": "./cli.js"
+    "speedscope": "./bin/cli.js"
   },
   "scripts": {
-    "deploy": "./deploy.sh",
-    "prepack": "./build-release.sh",
-    "prettier": "prettier --write './**/*.ts' './**/*.tsx'",
-    "lint": "eslint './**/*.ts' './**/*.tsx'",
-    "jest": "./test-setup.sh && jest",
+    "deploy": "./scripts/deploy.sh",
+    "prepack": "./scripts/build-release.sh",
+    "prettier": "prettier --write 'src/**/*.ts' 'src/**/*.tsx'",
+    "lint": "eslint 'src/**/*.ts' 'src/**/*.tsx'",
+    "jest": "./scripts/test-setup.sh && jest",
     "coverage": "npm run jest -- --coverage && coveralls < coverage/lcov.info",
     "test": "tsc --noEmit && npm run lint && npm run coverage",
-    "serve": "parcel index.html --open --no-autoinstall"
+    "serve": "parcel assets/index.html --open --no-autoinstall"
   },
-  "files": [
-    "cli.js",
-    "dist/release/**",
-    "!*.map"
-  ],
-  "browserslist": [
-    "last 2 Chrome versions",
-    "last 2 Firefox versions"
-  ],
+  "files": ["cli.js", "dist/release/**", "!*.map"],
+  "browserslist": ["last 2 Chrome versions", "last 2 Firefox versions"],
   "author": "",
   "license": "MIT",
   "devDependencies": {
@@ -57,17 +50,8 @@
       "^.+\\.tsx?$": "ts-jest"
     },
     "testRegex": "\\.test\\.tsx?$",
-    "collectCoverageFrom": [
-      "**/*.{ts,tsx}",
-      "!**/*.d.{ts,tsx}"
-    ],
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "jsx",
-      "json"
-    ]
+    "collectCoverageFrom": ["**/*.{ts,tsx}", "!**/*.d.{ts,tsx}"],
+    "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json"]
   },
   "dependencies": {
     "opn": "5.3.0"
