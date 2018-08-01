@@ -6,4 +6,8 @@ test('demangleCpp', () => {
   expect(demangleCpp('__ZNK7Support6ColorFeqERKS0_')).toBe(
     'Support::ColorF::operator==(Support::ColorF const&) const',
   )
+  // Running a second time to test the cache
+  expect(demangleCpp('__ZNK7Support6ColorFeqERKS0_')).toBe(
+    'Support::ColorF::operator==(Support::ColorF const&) const',
+  )
 })
