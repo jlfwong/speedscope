@@ -1,11 +1,14 @@
 import {h, Component} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
-import {ReloadableComponent} from './reloadable'
 import {Profile, Frame} from './profile'
 import {sortBy, formatPercent} from './utils'
 import {FontSize, Colors, Sizes, commonStyle} from './style'
 import {ColorChit} from './color-chit'
 import {ScrollableListView, ListItem} from './scrollable-list-view'
+import {actions} from './app-state/actions'
+import {Dispatch, createContainer} from './app-state/typed-redux'
+import {ApplicationState} from './app-state'
+import {createGetCSSColorForFrame} from './app-state/getters'
 
 export enum SortField {
   SYMBOL_NAME,
@@ -66,15 +69,18 @@ class SortIcon extends Component<SortIconProps, {}> {
 interface ProfileTableViewProps {
   profile: Profile
   selectedFrame: Frame | null
-  setSelectedFrame: (frame: Frame | null) => void
   getCSSColorForFrame: (frame: Frame) => string
   sortMethod: SortMethod
-  setSortMethod: (sortMethod: SortMethod) => void
+  dispatch: Dispatch
 }
 
-export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps, void> {
+export class ProfileTableView extends Component<ProfileTableViewProps, void> {
   setSelectedFrame = (frame: Frame | null) => {
-    this.props.setSelectedFrame(frame)
+    this.props.dispatch(actions.sandwichView.setSelectedFrame(frame))
+  }
+
+  setSortMethod = (method: SortMethod) => {
+    this.props.dispatch(actions.sandwichView.setTableSortMethod(method))
   }
 
   renderRow(frame: Frame, index: number) {
@@ -122,7 +128,7 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
 
     if (sortMethod.field == field) {
       // Toggle
-      this.props.setSortMethod({
+      this.setSortMethod({
         field,
         direction:
           sortMethod.direction === SortDirection.ASCENDING
@@ -133,15 +139,15 @@ export class ProfileTableView extends ReloadableComponent<ProfileTableViewProps,
       // Set a sane default
       switch (field) {
         case SortField.SYMBOL_NAME: {
-          this.props.setSortMethod({field, direction: SortDirection.ASCENDING})
+          this.setSortMethod({field, direction: SortDirection.ASCENDING})
           break
         }
         case SortField.SELF: {
-          this.props.setSortMethod({field, direction: SortDirection.DESCENDING})
+          this.setSortMethod({field, direction: SortDirection.DESCENDING})
           break
         }
         case SortField.TOTAL: {
-          this.props.setSortMethod({field, direction: SortDirection.DESCENDING})
+          this.setSortMethod({field, direction: SortDirection.DESCENDING})
           break
         }
       }
@@ -305,3 +311,21 @@ const style = StyleSheet.create({
     right: 0,
   },
 })
+
+export const ProfileTableViewContainer = createContainer(
+  ProfileTableView,
+  (state: ApplicationState) => {
+    const {profile, sandwichView, frameToColorBucket} = state
+    if (!profile) throw new Error('profile missing')
+    const {tableSortMethod, callerCallee} = sandwichView
+    const selectedFrame = callerCallee ? callerCallee.selectedFrame : null
+    const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
+
+    return {
+      profile,
+      selectedFrame,
+      getCSSColorForFrame,
+      sortMethod: tableSortMethod,
+    }
+  },
+)

@@ -1,26 +1,30 @@
 import {h, render} from 'preact'
+import {createApplicationStore, ApplicationState} from './app-state'
+import {Provider} from 'preact-redux'
+import {createContainer} from './app-state/typed-redux'
 import {Application} from './application'
 
 console.log(`speedscope v${require('./package.json').version}`)
 
-let app: Application | null = null
-const retained = (window as any)['__retained__'] as any
 declare const module: any
 if (module.hot) {
   module.hot.dispose(() => {
-    if (app) {
-      ;(window as any)['__retained__'] = app.serialize()
-    }
+    // Force the old component go through teardown steps
+    render(<div />, document.body, document.body.lastElementChild || undefined)
   })
   module.hot.accept()
 }
 
-function ref(instance: Application | null) {
-  app = instance
-  if (instance && retained) {
-    console.log('rehydrating: ', retained)
-    instance.rehydrate(retained)
-  }
-}
+const lastStore: any = (window as any)['store']
+const store = createApplicationStore(lastStore ? lastStore.getState() : {})
+;(window as any)['store'] = store
 
-render(<Application ref={ref} />, document.body, document.body.lastElementChild || undefined)
+const ApplicationContainer = createContainer(Application, (state: ApplicationState) => state)
+
+render(
+  <Provider store={store}>
+    <ApplicationContainer />
+  </Provider>,
+  document.body,
+  document.body.lastElementChild || undefined,
+)

@@ -3,11 +3,10 @@ import {CallTreeNode} from './profile'
 import {Flamechart, FlamechartFrame} from './flamechart'
 import {CanvasContext} from './canvas-context'
 import {FlamechartRenderer} from './flamechart-renderer'
-import {ReloadableComponent} from './reloadable'
 import {Sizes, FontSize, Colors, FontFamily, commonStyle} from './style'
 import {cachedMeasureTextWidth, ELLIPSIS, trimTextMid} from './text-utils'
 import {style} from './flamechart-style'
-import {h} from 'preact'
+import {h, Component} from 'preact'
 import {css} from 'aphrodite'
 
 interface FlamechartFrameLabel {
@@ -42,12 +41,16 @@ export interface FlamechartPanZoomViewProps {
 
   onNodeHover: (hover: {node: CallTreeNode; event: MouseEvent} | null) => void
   onNodeSelect: (node: CallTreeNode | null) => void
+
   configSpaceViewportRect: Rect
   transformViewport: (transform: AffineTransform) => void
   setConfigSpaceViewportRect: (rect: Rect) => void
+
+  logicalSpaceViewportSize: Vec2
+  setLogicalSpaceViewportBounds: (size: Vec2) => void
 }
 
-export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoomViewProps, {}> {
+export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps, {}> {
   private container: Element | null = null
   private containerRef = (element?: Element) => {
     this.container = element || null
@@ -357,16 +360,16 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
     }
   }
 
-  private lastBounds: ClientRect | null = null
   private updateConfigSpaceViewport() {
     if (!this.container) return
+    const {logicalSpaceViewportSize} = this.props
     const bounds = this.container.getBoundingClientRect()
     const {width, height} = bounds
 
     // Still initializing: don't resize yet
     if (width < 2 || height < 2) return
 
-    if (this.lastBounds == null) {
+    if (this.props.configSpaceViewportRect.isEmpty()) {
       const configSpaceViewportHeight = height / this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT
       if (this.props.renderInverted) {
         this.setConfigSpaceViewportRect(
@@ -380,18 +383,21 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
           new Rect(new Vec2(0, -1), new Vec2(this.configSpaceSize().x, configSpaceViewportHeight)),
         )
       }
-    } else if (this.lastBounds.width !== width || this.lastBounds.height !== height) {
+    } else if (
+      !logicalSpaceViewportSize.equals(Vec2.zero) &&
+      (logicalSpaceViewportSize.x !== width || logicalSpaceViewportSize.y !== height)
+    ) {
       // Resize the viewport rectangle to match the window size aspect
       // ratio.
       this.setConfigSpaceViewportRect(
         this.props.configSpaceViewportRect.withSize(
           this.props.configSpaceViewportRect.size.timesPointwise(
-            new Vec2(width / this.lastBounds.width, height / this.lastBounds.height),
+            new Vec2(width / logicalSpaceViewportSize.x, height / logicalSpaceViewportSize.y),
           ),
         ),
       )
     }
-    this.lastBounds = bounds
+    this.props.setLogicalSpaceViewportBounds(new Vec2(width, height))
   }
 
   onWindowResize = () => {
@@ -663,7 +669,6 @@ export class FlamechartPanZoomView extends ReloadableComponent<FlamechartPanZoom
   componentWillReceiveProps(nextProps: FlamechartPanZoomViewProps) {
     if (this.props.flamechart !== nextProps.flamechart) {
       this.hoveredLabel = null
-      this.lastBounds = null
       this.renderCanvas()
     } else if (this.props.selectedNode !== nextProps.selectedNode) {
       this.renderCanvas()

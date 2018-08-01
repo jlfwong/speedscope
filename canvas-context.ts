@@ -53,6 +53,7 @@ export class CanvasContext {
       }, version: ${this.gl.limits.version}`,
     )
     ;(window as any)['CanvasContext'] = this
+
     this.rectangleBatchRenderer = new RectangleBatchRenderer(this.gl)
     this.viewportRectangleRenderer = new ViewportRectangleRenderer(this.gl)
     this.textureRenderer = new TextureRenderer(this.gl)

@@ -121,7 +121,7 @@ export class FlamechartRowAtlasKey {
   }
 }
 
-interface RendererOptions {
+export interface FlamechartRendererOptions {
   inverted: boolean
 }
 
@@ -134,7 +134,7 @@ export class FlamechartRenderer {
     private canvasContext: CanvasContext,
     private rowAtlas: RowAtlas<FlamechartRowAtlasKey>,
     private flamechart: Flamechart,
-    private options: RendererOptions = {inverted: false},
+    private options: FlamechartRendererOptions = {inverted: false},
   ) {
     const nLayers = flamechart.getLayers().length
     for (let stackDepth = 0; stackDepth < nLayers; stackDepth++) {

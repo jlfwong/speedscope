@@ -1,6 +1,5 @@
 import {StyleDeclarationValue, css} from 'aphrodite'
-import {ReloadableComponent} from './reloadable'
-import {h} from 'preact'
+import {h, Component} from 'preact'
 import {style} from './flamechart-style'
 import {formatPercent} from './utils'
 import {Frame, CallTreeNode} from './profile'
@@ -16,7 +15,7 @@ interface StatisticsTableProps {
   formatter: (v: number) => string
 }
 
-class StatisticsTable extends ReloadableComponent<StatisticsTableProps, {}> {
+class StatisticsTable extends Component<StatisticsTableProps, {}> {
   render() {
     const total = this.props.formatter(this.props.selectedTotal)
     const self = this.props.formatter(this.props.selectedSelf)
@@ -52,7 +51,7 @@ interface StackTraceViewProps {
   getFrameColor: (frame: Frame) => string
   node: CallTreeNode
 }
-class StackTraceView extends ReloadableComponent<StackTraceViewProps, {}> {
+class StackTraceView extends Component<StackTraceViewProps, {}> {
   render() {
     const rows: JSX.Element[] = []
     let node: CallTreeNode | null = this.props.node
@@ -93,7 +92,7 @@ interface FlamechartDetailViewProps {
   selectedNode: CallTreeNode
 }
 
-export class FlamechartDetailView extends ReloadableComponent<FlamechartDetailViewProps, {}> {
+export class FlamechartDetailView extends Component<FlamechartDetailViewProps, {}> {
   render() {
     const {flamechart, selectedNode} = this.props
     const {frame} = selectedNode

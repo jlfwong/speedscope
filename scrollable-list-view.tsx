@@ -1,8 +1,7 @@
 // A simple implementation of an efficient scrolling list view which
 // renders only items within the viewport + a couple extra items.
 
-import {h} from 'preact'
-import {ReloadableComponent} from './reloadable'
+import {h, Component} from 'preact'
 
 export interface ListItem {
   size: number
@@ -22,7 +21,7 @@ interface ScrollableListViewState {
   cachedTotalSize: number
 }
 
-export class ScrollableListView extends ReloadableComponent<
+export class ScrollableListView extends Component<
   ScrollableListViewProps,
   ScrollableListViewState
 > {
