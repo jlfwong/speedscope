@@ -10,7 +10,7 @@ set -e
 OUTDIR=`pwd`/dist/release
 echo $OUTDIR
 
-./build-release.sh
+./scripts/build-release.sh
 
 # Create a shallow clone of the repository
 TMPDIR=`mktemp -d -t speedscope-release`
