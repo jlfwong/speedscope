@@ -18,4 +18,12 @@ describe('Color', () => {
     expect(Color.fromLumaChromaHue(0.5, 1.0, 300).toCSS()).toEqual('rgba(255, 23, 255, 1.00)')
     expect(Color.fromLumaChromaHue(0.5, 1.0, 360).toCSS()).toEqual('rgba(255, 51, 51, 1.00)')
   })
+
+  test('toCSS', () => {
+    expect(new Color().toCSS()).toEqual('rgba(0, 0, 0, 1.00)')
+    expect(new Color(1, 0, 0, 1).toCSS()).toEqual('rgba(255, 0, 0, 1.00)')
+    expect(new Color(0, 1, 0, 1).toCSS()).toEqual('rgba(0, 255, 0, 1.00)')
+    expect(new Color(0, 0, 1, 1).toCSS()).toEqual('rgba(0, 0, 255, 1.00)')
+    expect(new Color(0, 0, 1, 0.599).toCSS()).toEqual('rgba(0, 0, 255, 0.60)')
+  })
 })

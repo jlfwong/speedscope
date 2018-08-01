@@ -23,4 +23,5 @@ test('getHashParams', () => {
     title: 'hello world',
   })
   expect(getHashParams('#abc=bcd')).toEqual({})
+  expect(getHashParams('garbage')).toEqual({})
 })
