@@ -4,22 +4,22 @@ export interface HashParams {
   localProfilePath?: string
 }
 
-export function getHashParams(): HashParams {
+export function getHashParams(hashContents = window.location.hash): HashParams {
   try {
-    const hashContents = window.location.hash
     if (!hashContents.startsWith('#')) {
       return {}
     }
     const components = hashContents.substr(1).split('&')
     const result: HashParams = {}
     for (const component of components) {
-      const [key, value] = component.split('=')
+      let [key, value] = component.split('=')
+      value = decodeURIComponent(value)
       if (key === 'profileURL') {
-        result.profileURL = decodeURIComponent(value)
+        result.profileURL = value
       } else if (key === 'title') {
-        result.title = decodeURIComponent(value)
+        result.title = value
       } else if (key === 'localProfilePath') {
-        result.localProfilePath = decodeURIComponent(value)
+        result.localProfilePath = value
       }
     }
     return result
