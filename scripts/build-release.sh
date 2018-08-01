@@ -19,4 +19,4 @@ git rev-parse HEAD >> "$OUTDIR"/release.txt
 node scripts/generate-file-format-schema-json.js > "$OUTDIR"/file-format-schema.json
 
 # Build the compiled assets
-node_modules/.bin/parcel build assets/index.html --no-cache --out-dir "$OUTDIR" --public-url "./" --detailed-report
+node_modules/.bin/parcel build assets/index.html --no-cache --out-dir "$OUTDIR" --public-url "./" --detailed-report | cat
