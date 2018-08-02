@@ -6,6 +6,9 @@
 
 set -euxo pipefail
 
+# Print every command
+set -x
+
 OUTDIR=`pwd`/dist/release
 echo $OUTDIR
 
