@@ -2,6 +2,10 @@
 
 # Fail on first error
 set -e
+
+# Print every command
+set -x
+
 OUTDIR=`pwd`/dist/release
 
 # Typecheck
