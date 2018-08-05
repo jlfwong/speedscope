@@ -1,5 +1,14 @@
 ## [Unreleased]
 
+### Added
+
+
+### Fixed
+
+* Preserve view state when switching tabs [#100]
+* Clamp zoom to prevent floating point issues [#121]
+* Prevent dragging from changing selection [#122]
+
 ## [0.4.0] - 2018-07-21
 
 ### Added
