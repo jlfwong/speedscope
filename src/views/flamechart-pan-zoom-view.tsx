@@ -492,8 +492,9 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
   }
 
   private lastDragPos: Vec2 | null = null
+  private mouseDownPos: Vec2 | null = null
   private onMouseDown = (ev: MouseEvent) => {
-    this.lastDragPos = new Vec2(ev.offsetX, ev.offsetY)
+    this.mouseDownPos = this.lastDragPos = new Vec2(ev.offsetX, ev.offsetY)
     this.updateCursor()
     window.addEventListener('mouseup', this.onWindowMouseUp)
   }
@@ -523,6 +524,16 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
   }
 
   private onClick = (ev: MouseEvent) => {
+    const logicalMousePos = new Vec2(ev.offsetX, ev.offsetY)
+    const mouseDownPos = this.mouseDownPos
+    this.mouseDownPos = null
+
+    if (mouseDownPos && logicalMousePos.minus(mouseDownPos).length() > 5) {
+      // If the cursor is more than 5 logical space pixels away from the mouse
+      // down location, then don't interpret this event as a click.
+      return
+    }
+
     if (this.hoveredLabel) {
       this.props.onNodeSelect(this.hoveredLabel.node)
       this.renderCanvas()
