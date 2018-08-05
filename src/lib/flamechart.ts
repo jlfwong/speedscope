@@ -1,6 +1,7 @@
 import {Frame, CallTreeNode} from './profile'
 
 import {lastOf} from './utils'
+import {clamp} from './math'
 
 export interface FlamechartFrame {
   node: CallTreeNode
@@ -45,6 +46,48 @@ export class Flamechart {
   }
   formatValue(v: number) {
     return this.source.formatValue(v)
+  }
+
+  getClampedViewportWidth(viewportWidth: number) {
+    const maxWidth = this.getTotalWeight()
+
+    // In order to avoid floating point error, we cap the maximum zoom. In
+    // particular, it's important that at the maximum zoom level, the total
+    // trace size + a viewport width is not equal to the trace size due to
+    // floating point rounding.
+    //
+    // For instance, if the profile's total weight is 2^60, and the viewport
+    // size is 1, trying to move one viewport width right will result in no
+    // change because 2^60 + 1 = 2^60 in floating point arithmetic. JavaScript
+    // numbers are 64 bit floats, and therefore have 53 mantissa bits. You can
+    // see this for yourself in the console. Try:
+    //
+    //   > Math.pow(2, 60) + 1 === Math.pow(2, 60)
+    //   true
+    //   > Math.pow(2, 53) + 1 === Math.pow(2, 53)
+    //   true
+    //   > Math.pow(2, 52) + 1 === Math.pow(2, 52)
+    //   false
+    //
+    // We use 2^40 as a cap instead, since we want to be able to make small
+    // adjustments within a viewport width.
+    //
+    // For reference, this will still allow you to zoom until 1 nanosecond fills
+    // the screen in a profile with a duration of over 18 minutes.
+    //
+    //   > Math.pow(2, 40) / (60 * Math.pow(10, 9))
+    //   18.325193796266667
+    //
+    const maxZoom = Math.pow(2, 40)
+
+    // In addition to capping zoom to avoid floating point error, we further cap
+    // zoom to avoid letting you zoom in so that the smallest element more than
+    // fills the screen, since that probably isn't useful. The final zoom cap is
+    // determined by the minimum zoom of either 2^40x zoom or the necessary zoom
+    // for the smallest frame to fill the screen three times.
+    const minWidth = clamp(3 * this.getMinFrameWidth(), maxWidth / maxZoom, maxWidth)
+
+    return clamp(viewportWidth, minWidth, maxWidth)
   }
 
   constructor(private source: FlamechartDataSource) {

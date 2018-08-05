@@ -2,7 +2,7 @@ import {CallTreeNode} from '../lib/profile'
 import {StyleSheet, css} from 'aphrodite'
 import {h} from 'preact'
 import {commonStyle, Colors} from './style'
-import {Rect, AffineTransform, Vec2, clamp} from '../lib/math'
+import {Rect, AffineTransform, Vec2} from '../lib/math'
 import {FlamechartPanZoomView} from './flamechart-pan-zoom-view'
 import {noop, formatPercent} from '../lib/utils'
 import {Hovertip} from './hovertip'
@@ -14,11 +14,7 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
   private clampViewportToFlamegraph(viewportRect: Rect) {
     const {flamechart, renderInverted} = this.props
     const configSpaceSize = new Vec2(flamechart.getTotalWeight(), flamechart.getLayers().length)
-    const width = clamp(
-      viewportRect.size.x,
-      Math.min(configSpaceSize.x, 3 * flamechart.getMinFrameWidth()),
-      configSpaceSize.x,
-    )
+    const width = this.props.flamechart.getClampedViewportWidth(viewportRect.size.x)
     const size = viewportRect.size.withX(width)
     const origin = Vec2.clamp(
       viewportRect.origin,
