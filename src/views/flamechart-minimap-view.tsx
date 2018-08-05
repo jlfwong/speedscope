@@ -131,8 +131,6 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     const physicalViewSize = this.physicalViewSize()
     ctx.clearRect(0, 0, physicalViewSize.x, physicalViewSize.y)
 
-    this.resizeOverlayCanvasIfNeeded()
-
     const configToPhysical = this.configSpaceToPhysicalViewSpace()
 
     const left = 0
@@ -239,6 +237,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
 
   private onBeforeFrame = () => {
     this.maybeClearInteractionLock()
+    this.resizeOverlayCanvasIfNeeded()
     this.renderRects()
     this.renderOverlays()
   }

@@ -1,4 +1,4 @@
-import {h, Component} from 'preact'
+import {h} from 'preact'
 import {css} from 'aphrodite'
 
 import {CallTreeNode} from '../lib/profile'
@@ -14,12 +14,9 @@ import {FlamechartPanZoomView} from './flamechart-pan-zoom-view'
 import {Hovertip} from './hovertip'
 import {actions} from '../store/actions'
 import {FlamechartViewProps} from './flamechart-view-container'
+import {StatelessComponent} from '../lib/typed-redux'
 
-interface EmptyState {
-  __dummy: 1
-}
-
-export class FlamechartView extends Component<FlamechartViewProps, EmptyState> {
+export class FlamechartView extends StatelessComponent<FlamechartViewProps> {
   private configSpaceSize() {
     return new Vec2(
       this.props.flamechart.getTotalWeight(),
@@ -124,6 +121,7 @@ export class FlamechartView extends Component<FlamechartViewProps, EmptyState> {
         />
         <FlamechartPanZoomView
           canvasContext={this.props.canvasContext}
+          id={this.props.id}
           flamechart={this.props.flamechart}
           flamechartRenderer={this.props.flamechartRenderer}
           renderInverted={false}
