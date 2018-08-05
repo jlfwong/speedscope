@@ -3,7 +3,7 @@ import {css} from 'aphrodite'
 
 import {CallTreeNode} from '../lib/profile'
 
-import {Rect, Vec2, AffineTransform, clamp} from '../lib/math'
+import {Rect, Vec2, AffineTransform} from '../lib/math'
 import {formatPercent} from '../lib/utils'
 import {FlamechartMinimapView} from './flamechart-minimap-view'
 
@@ -29,12 +29,7 @@ export class FlamechartView extends StatelessComponent<FlamechartViewProps> {
 
     const configSpaceSize = this.configSpaceSize()
 
-    const width = clamp(
-      viewportRect.size.x,
-      Math.min(configSpaceSize.x, 3 * this.props.flamechart.getMinFrameWidth()),
-      configSpaceSize.x,
-    )
-
+    const width = this.props.flamechart.getClampedViewportWidth(viewportRect.size.x)
     const size = viewportRect.size.withX(width)
 
     const origin = Vec2.clamp(
