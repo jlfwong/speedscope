@@ -84,6 +84,7 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
         ref={this.containerRef}
       >
         <FlamechartPanZoomView
+          id={this.props.id}
           selectedNode={null}
           onNodeHover={this.setNodeHover}
           onNodeSelect={noop}
