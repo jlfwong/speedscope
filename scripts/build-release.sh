@@ -20,7 +20,7 @@ date > "$OUTDIR"/release.txt
 git rev-parse HEAD >> "$OUTDIR"/release.txt
 
 # Place a json schema for the file format into the build directory too
-node scripts/generate-file-format-schema-json.js > "$OUTDIR"/file-format-schema.json
+# node scripts/generate-file-format-schema-json.js > "$OUTDIR"/file-format-schema.json
 
 # Build the compiled assets
 node_modules/.bin/parcel build assets/index.html --no-cache --out-dir "$OUTDIR" --public-url "./" --detailed-report | cat
