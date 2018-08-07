@@ -1,0 +1,47 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CallTreeProfileBuilder separates non-contiguous: append order 1`] = `
+"((speedscope root):0:5
+  (a:1:5
+    (b:1:2
+      (c:1:1)
+    )
+    (b:1:2
+      (c:1:1)
+    )
+  )
+)"
+`;
+
+exports[`CallTreeProfileBuilder separates non-contiguous: grouped 1`] = `
+"((speedscope root):0:5
+  (a:1:5
+    (b:2:4
+      (c:2:2)
+    )
+  )
+)"
+`;
+
+exports[`StackListProfileBuilder separates non-contiguous: append order 1`] = `
+"((speedscope root):4:0
+  (a:1:5
+    (b:1:2
+      (c:1:1)
+    )
+    (b:1:2
+      (c:1:1)
+    )
+  )
+)"
+`;
+
+exports[`StackListProfileBuilder separates non-contiguous: grouped 1`] = `
+"((speedscope root):4:0
+  (a:1:5
+    (b:2:4
+      (c:2:2)
+    )
+  )
+)"
+`;

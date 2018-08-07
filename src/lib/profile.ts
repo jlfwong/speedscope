@@ -100,8 +100,16 @@ export class Profile {
   protected totalWeight: number
 
   protected frames = new KeyedSet<Frame>()
+
   protected appendOrderCalltreeRoot = new CallTreeNode(Frame.root, null)
   protected groupedCalltreeRoot = new CallTreeNode(Frame.root, null)
+
+  public getAppendOrderCalltreeRoot() {
+    return this.appendOrderCalltreeRoot
+  }
+  public getGroupedCalltreeRoot() {
+    return this.groupedCalltreeRoot
+  }
 
   // List of references to CallTreeNodes at the top of the
   // stack at the time of the sample.
