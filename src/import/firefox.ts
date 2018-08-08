@@ -1,5 +1,5 @@
 import {Profile, FrameInfo, CallTreeProfileBuilder} from '../lib/profile'
-import {getOrInsert, lastOf} from '../lib/utils'
+import {getOrInsert} from '../lib/utils'
 import {TimeFormatter} from '../lib/value-formatters'
 
 interface Allocations {
