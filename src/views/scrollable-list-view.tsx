@@ -9,6 +9,7 @@ export interface ListItem {
 
 interface ScrollableListViewProps {
   items: ListItem[]
+  axis: 'x' | 'y'
   renderItems: (firstVisibleIndex: number, lastVisibleIndex: number) => JSX.Element | JSX.Element[]
   className?: string
 }
@@ -79,6 +80,22 @@ export class ScrollableListView extends Component<
     this.setState({invisiblePrefixSize, firstVisibleIndex, lastVisibleIndex})
   }
 
+  private pendingScroll = 0
+  public scrollIndexIntoView(index: number) {
+    this.pendingScroll = this.props.items.reduce((sum, cur, i) => {
+      if (i >= index) return sum
+      return sum + cur.size
+    }, 0)
+  }
+  private applyPendingScroll() {
+    if (!this.viewport) return
+
+    const leftOrTop = this.props.axis === 'y' ? 'top' : 'left'
+    this.viewport.scrollTo({
+      [leftOrTop]: this.pendingScroll,
+    })
+  }
+
   componentWillReceiveProps(nextProps: ScrollableListViewProps) {
     if (this.props.items !== nextProps.items) {
       this.recomputeVisibleIndices(nextProps)
@@ -86,6 +103,7 @@ export class ScrollableListView extends Component<
   }
 
   componentDidMount() {
+    this.applyPendingScroll()
     this.recomputeVisibleIndices(this.props)
     window.addEventListener('resize', this.onWindowResize)
   }
