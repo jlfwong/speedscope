@@ -50,6 +50,30 @@ function toStackList(profile: Profile, grouped: boolean): string[] {
   return stackList
 }
 
+function flatten<T>(ts: T[][]): T[] {
+  let ret: T[] = []
+  return ret.concat(...ts)
+}
+
+function toTreeString(profile: Profile, grouped: boolean): string {
+  function visit(node: CallTreeNode): string[] {
+    const childLines = flatten(node.children.map(child => visit(child))).map(l => `  ${l}`)
+    const nodeStr = `${node.frame.key}:${node.getSelfWeight()}:${node.getTotalWeight()}`
+
+    if (childLines.length > 0) {
+      return [`(${nodeStr}`].concat(childLines).concat(')')
+    } else {
+      return [`(${nodeStr})`]
+    }
+  }
+
+  if (grouped) {
+    return visit(profile.getGroupedCalltreeRoot()).join('\n')
+  } else {
+    return visit(profile.getAppendOrderCalltreeRoot()).join('\n')
+  }
+}
+
 function verifyProfile(profile: Profile) {
   const allFrameKeys = new Set([fa, fb, fc, fd, fe].map(f => f.key))
   const framesInProfile = new Set<string | number>()
@@ -133,6 +157,28 @@ test('StackListProfileBuilder', () => {
   verifyProfile(profile)
 })
 
+test('StackListProfileBuilder separates non-contiguous', () => {
+  const b = new StackListProfileBuilder()
+
+  const samples = [
+    // prettier-ignore
+    [fa, fb, fc],
+    [fa, fb],
+    [fa],
+    [fa, fb],
+    [fa, fb, fc],
+  ]
+
+  samples.forEach(stack => {
+    b.appendSample(stack, 1)
+  })
+  b.appendSample([], 4)
+  const profile = b.build()
+
+  expect(toTreeString(profile, true)).toMatchSnapshot('grouped')
+  expect(toTreeString(profile, false)).toMatchSnapshot('append order')
+})
+
 test('CallTreeProfileBuilder', () => {
   const b = new CallTreeProfileBuilder()
 
@@ -165,6 +211,30 @@ test('CallTreeProfileBuilder', () => {
 
   const profile = b.build()
   verifyProfile(profile)
+})
+
+test('CallTreeProfileBuilder separates non-contiguous', () => {
+  const b = new CallTreeProfileBuilder()
+
+  b.enterFrame(fa, 0)
+  b.enterFrame(fb, 0)
+  b.enterFrame(fc, 0)
+
+  b.leaveFrame(fc, 1)
+
+  b.leaveFrame(fb, 2)
+
+  b.enterFrame(fb, 3)
+
+  b.enterFrame(fc, 4)
+
+  b.leaveFrame(fc, 5)
+  b.leaveFrame(fb, 5)
+  b.leaveFrame(fa, 5)
+
+  const profile = b.build()
+  expect(toTreeString(profile, true)).toMatchSnapshot('grouped')
+  expect(toTreeString(profile, false)).toMatchSnapshot('append order')
 })
 
 test('getInvertedProfileForCallersOf', () => {

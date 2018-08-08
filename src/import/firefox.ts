@@ -158,7 +158,7 @@ export function importFromFirefox(firefoxProfile: FirefoxProfile): Profile {
       ? cpuProfile.threads[0]
       : cpuProfile.threads.filter(t => t.name === 'GeckoMain')[0]
 
-  const frameIdToFrameInfo = new Map<number, FrameInfo>()
+  const frameKeyToFrameInfo = new Map<string, FrameInfo>()
 
   function extractStack(sample: Sample): FrameInfo[] {
     let stackFrameId: number | null = sample[0]
@@ -185,7 +185,7 @@ export function importFromFirefox(firefoxProfile: FirefoxProfile): Profile {
           return null
         }
 
-        return getOrInsert(frameIdToFrameInfo, f, () => ({
+        return getOrInsert(frameKeyToFrameInfo, location, () => ({
           key: location,
           name: match[1]!,
           file: match[2]!,
@@ -205,24 +205,22 @@ export function importFromFirefox(firefoxProfile: FirefoxProfile): Profile {
     // Find lowest common ancestor of the current stack and the previous one
     let lca: FrameInfo | null = null
 
-    // This is O(n^2), but n should be relatively small here (stack height),
-    // so hopefully this isn't much of a problem
-    for (let i = stack.length - 1; i >= 0 && prevStack.indexOf(stack[i]) === -1; i--) {}
+    for (let i = 0; i < Math.min(stack.length, prevStack.length); i++) {
+      if (prevStack[i] !== stack[i]) {
+        break
+      }
+      lca = stack[i]
+    }
 
     // Close frames that are no longer open
-    while (prevStack.length > 0 && lastOf(prevStack) != lca) {
+    while (prevStack.length > 0 && (!lca || lastOf(prevStack) !== lca)) {
       const closingFrame = prevStack.pop()!
       profile.leaveFrame(closingFrame, value)
     }
 
     // Open frames that are now becoming open
-    const toOpen: FrameInfo[] = []
-    for (let i = stack.length - 1; i >= 0 && stack[i] != lca; i--) {
-      toOpen.push(stack[i])
-    }
-    toOpen.reverse()
-
-    for (let frame of toOpen) {
+    for (let i = lca ? stack.indexOf(lca) + 1 : 0; i < stack.length; i++) {
+      const frame = stack[i]
       profile.enterFrame(frame, value)
     }
 

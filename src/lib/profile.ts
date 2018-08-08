@@ -89,6 +89,15 @@ export class CallTreeNode extends HasWeights {
     return this.frame === Frame.root
   }
 
+  // If a node is "frozen", it means it should no longer be mutated.
+  private frozen = false
+  isFrozen() {
+    return this.frozen
+  }
+  freeze() {
+    this.frozen = true
+  }
+
   constructor(readonly frame: Frame, readonly parent: CallTreeNode | null) {
     super()
   }
@@ -100,8 +109,16 @@ export class Profile {
   protected totalWeight: number
 
   protected frames = new KeyedSet<Frame>()
+
   protected appendOrderCalltreeRoot = new CallTreeNode(Frame.root, null)
   protected groupedCalltreeRoot = new CallTreeNode(Frame.root, null)
+
+  public getAppendOrderCalltreeRoot() {
+    return this.appendOrderCalltreeRoot
+  }
+  public getGroupedCalltreeRoot() {
+    return this.groupedCalltreeRoot
+  }
 
   // List of references to CallTreeNodes at the top of the
   // stack at the time of the sample.
@@ -395,7 +412,7 @@ export class StackListProfileBuilder extends Profile {
       const last = useAppendOrder
         ? lastOf(node.children)
         : node.children.find(c => c.frame === frame)
-      if (last && last.frame == frame) {
+      if (last && !last.isFrozen() && last.frame == frame) {
         node = last
       } else {
         const parent = node
@@ -413,6 +430,12 @@ export class StackListProfileBuilder extends Profile {
       framesInStack.add(node.frame)
     }
     node.addToSelfWeight(weight)
+
+    if (useAppendOrder) {
+      for (let child of node.children) {
+        child.freeze()
+      }
+    }
 
     if (useAppendOrder) {
       node.frame.addToSelfWeight(weight)
@@ -493,7 +516,7 @@ export class CallTreeProfileBuilder extends Profile {
         ? lastOf(prevTop.children)
         : prevTop.children.find(c => c.frame === frame)
       let node: CallTreeNode
-      if (last && last.frame == frame) {
+      if (last && !last.isFrozen() && last.frame == frame) {
         node = last
       } else {
         node = new CallTreeNode(frame, prevTop)
@@ -520,10 +543,17 @@ export class CallTreeProfileBuilder extends Profile {
 
     if (useAppendOrder) {
       const leavingStackTop = this.appendOrderStack.pop()
-      const delta = value - this.lastValue!
+      if (leavingStackTop == null) {
+        throw new Error(`Trying to leave ${frame.key} when stack is empty`)
+      }
+      if (this.lastValue == null) {
+        throw new Error(`Trying to leave a ${frame.key} before any have been entered`)
+      }
+      leavingStackTop.freeze()
+      const delta = value - this.lastValue
       if (delta > 0) {
-        this.samples.push(leavingStackTop!)
-        this.weights.push(value - this.lastValue!)
+        this.samples.push(leavingStackTop)
+        this.weights.push(value - this.lastValue)
       } else if (delta < 0) {
         throw new Error(
           `Samples must be provided in increasing order of cumulative value. Last sample was ${this
