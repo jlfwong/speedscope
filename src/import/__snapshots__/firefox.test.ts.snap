@@ -57,3 +57,66 @@ Object {
   ],
 }
 `;
+
+exports[`importFromFirefox recursion 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": "file:///Users/jlfwong/code/speedscope/sample/programs/javascript/recursion.js",
+      "key": "main (file:///Users/jlfwong/code/speedscope/sample/programs/javascript/recursion.js:31)",
+      "line": 31,
+      "name": "main",
+      "selfWeight": 1.1944820000207983,
+      "totalWeight": 11.149112000013702,
+    },
+    Frame {
+      "col": undefined,
+      "file": "file:///Users/jlfwong/code/speedscope/sample/programs/javascript/recursion.js",
+      "key": "alpha (file:///Users/jlfwong/code/speedscope/sample/programs/javascript/recursion.js:1)",
+      "line": 1,
+      "name": "alpha",
+      "selfWeight": 0,
+      "totalWeight": 9.954629999992903,
+    },
+    Frame {
+      "col": undefined,
+      "file": "file:///Users/jlfwong/code/speedscope/sample/programs/javascript/recursion.js",
+      "key": "beta (file:///Users/jlfwong/code/speedscope/sample/programs/javascript/recursion.js:10)",
+      "line": 10,
+      "name": "beta",
+      "selfWeight": 0,
+      "totalWeight": 8.962158999987878,
+    },
+    Frame {
+      "col": undefined,
+      "file": "file:///Users/jlfwong/code/speedscope/sample/programs/javascript/recursion.js",
+      "key": "delta (file:///Users/jlfwong/code/speedscope/sample/programs/javascript/recursion.js:17)",
+      "line": 17,
+      "name": "delta",
+      "selfWeight": 0,
+      "totalWeight": 6.859736999962479,
+    },
+    Frame {
+      "col": undefined,
+      "file": "file:///Users/jlfwong/code/speedscope/sample/programs/javascript/recursion.js",
+      "key": "gamma (file:///Users/jlfwong/code/speedscope/sample/programs/javascript/recursion.js:23)",
+      "line": 23,
+      "name": "gamma",
+      "selfWeight": 9.954629999992903,
+      "totalWeight": 9.954629999992903,
+    },
+  ],
+  "stacks": Array [
+    "main;alpha;beta;alpha;beta;alpha;beta;alpha;delta;gamma 998.89µs",
+    "main 1.19ms",
+    "main;alpha;beta;alpha;delta;gamma 1.83ms",
+    "main;alpha;beta;alpha;beta;alpha;beta;gamma 1.16ms",
+    "main;alpha;beta;alpha;delta;gamma 1.84ms",
+    "main;alpha;beta;alpha;beta;alpha;beta;alpha;gamma 964.81µs",
+    "main;alpha;beta;alpha;beta;alpha;beta;alpha;delta;gamma 1.19ms",
+    "main;alpha;beta;gamma 965.25µs",
+    "main;alpha;delta;gamma 992.47µs",
+  ],
+}
+`;
