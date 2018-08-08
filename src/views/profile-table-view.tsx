@@ -154,7 +154,7 @@ export class ProfileTableView extends Component<ProfileTableViewProps, void> {
     }
   }
 
-  render() {
+  private getFrameList = (): Frame[] => {
     const {profile, sortMethod} = this.props
 
     const frameList: Frame[] = []
@@ -180,6 +180,26 @@ export class ProfileTableView extends Component<ProfileTableViewProps, void> {
     if (sortMethod.direction === SortDirection.DESCENDING) {
       frameList.reverse()
     }
+
+    return frameList
+  }
+
+  private listView: ScrollableListView | null = null
+  private listViewRef = (listView: ScrollableListView | null) => {
+    if (listView === this.listView) return
+    this.listView = listView
+
+    const {selectedFrame} = this.props
+    if (!selectedFrame || !listView) return
+    const index = this.getFrameList().indexOf(selectedFrame)
+    if (index === -1) return
+    listView.scrollIndexIntoView(index)
+  }
+
+  render() {
+    const {sortMethod} = this.props
+
+    const frameList = this.getFrameList()
 
     const renderItems = (firstIndex: number, lastIndex: number) => {
       const rows: JSX.Element[] = []
@@ -235,6 +255,8 @@ export class ProfileTableView extends Component<ProfileTableViewProps, void> {
           </thead>
         </table>
         <ScrollableListView
+          ref={this.listViewRef}
+          axis={'y'}
           items={listItems}
           className={css(style.scrollView)}
           renderItems={renderItems}
