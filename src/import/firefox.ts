@@ -213,19 +213,14 @@ export function importFromFirefox(firefoxProfile: FirefoxProfile): Profile {
     }
 
     // Close frames that are no longer open
-    while (prevStack.length > 0 && lastOf(prevStack) !== lca) {
+    while (prevStack.length > 0 && (!lca || lastOf(prevStack) !== lca)) {
       const closingFrame = prevStack.pop()!
       profile.leaveFrame(closingFrame, value)
     }
 
     // Open frames that are now becoming open
-    const toOpen: FrameInfo[] = []
-    for (let i = stack.length - 1; i >= 0 && stack[i] !== lca; i--) {
-      toOpen.push(stack[i])
-    }
-    toOpen.reverse()
-
-    for (let frame of toOpen) {
+    for (let i = lca ? stack.indexOf(lca) + 1 : 0; i < stack.length; i++) {
+      const frame = stack[i]
       profile.enterFrame(frame, value)
     }
 

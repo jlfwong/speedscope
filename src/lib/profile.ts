@@ -543,11 +543,17 @@ export class CallTreeProfileBuilder extends Profile {
 
     if (useAppendOrder) {
       const leavingStackTop = this.appendOrderStack.pop()
-      leavingStackTop!.freeze()
-      const delta = value - this.lastValue!
+      if (leavingStackTop == null) {
+        throw new Error(`Trying to leave ${frame.key} when stack is empty`)
+      }
+      if (this.lastValue == null) {
+        throw new Error(`Trying to leave a ${frame.key} before any have been entered`)
+      }
+      leavingStackTop.freeze()
+      const delta = value - this.lastValue
       if (delta > 0) {
-        this.samples.push(leavingStackTop!)
-        this.weights.push(value - this.lastValue!)
+        this.samples.push(leavingStackTop)
+        this.weights.push(value - this.lastValue)
       } else if (delta < 0) {
         throw new Error(
           `Samples must be provided in increasing order of cumulative value. Last sample was ${this
