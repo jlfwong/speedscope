@@ -1,7 +1,13 @@
 // This file contains methods to import data from OS X Instruments.app
 // https://developer.apple.com/library/content/documentation/DeveloperTools/Conceptual/InstrumentsUserGuide/index.html
 
-import {Profile, FrameInfo, CallTreeProfileBuilder, StackListProfileBuilder} from '../lib/profile'
+import {
+  Profile,
+  FrameInfo,
+  CallTreeProfileBuilder,
+  StackListProfileBuilder,
+  ProfileGroup,
+} from '../lib/profile'
 import {sortBy, getOrThrow, getOrInsert, lastOf, getOrElse, zeroPad} from '../lib/utils'
 import * as pako from 'pako'
 import {ByteFormatter, TimeFormatter} from '../lib/value-formatters'
@@ -444,7 +450,7 @@ async function readFormTemplate(tree: TraceDirectoryTree): Promise<FormTemplateD
 // Import from a .trace file saved from Mac Instruments.app
 export async function importFromInstrumentsTrace(
   entry: FileSystemDirectoryEntry,
-): Promise<Profile> {
+): Promise<ProfileGroup> {
   const tree = await extractDirectoryTree(entry)
 
   const {version, selectedRun, instrument, addressToFrameMap} = await readFormTemplate(tree)
@@ -469,16 +475,14 @@ export async function importRunFromInstrumentsTrace(args: {
   tree: TraceDirectoryTree
   addressToFrameMap: Map<number, FrameInfo>
   runNumber: number
-}): Promise<Profile> {
+}): Promise<ProfileGroup> {
   const {fileName, tree, addressToFrameMap, runNumber} = args
   const core = getCoreDirForRun(tree, runNumber)
   let samples = await getRawSampleList(core)
   const arrays = await getIntegerArrays(samples, core)
 
-  // For now, we can only display the flamechart for a single thread of execution,
-  // So let's choose whichever thread had the most sample hits.
-  //
-  // TODO(jlfwong): Support displaying flamecharts for multiple threads.
+  // We'll try to guess which thread is the main thread by assuming
+  // it's the one with the most samples.
   const sampleCountByThreadID = new Map<number, number>()
   for (let sample of samples) {
     sampleCountByThreadID.set(
@@ -488,15 +492,20 @@ export async function importRunFromInstrumentsTrace(args: {
   }
   const counts = Array.from(sampleCountByThreadID.entries())
   sortBy(counts, c => c[1])
-  const mainThreadID = lastOf(counts)![0]
+  const threadIDs = counts.map(c => c[0])
 
-  return importThreadFromInstrumentsTrace({
-    threadID: mainThreadID,
-    fileName,
-    arrays,
-    addressToFrameMap,
-    samples,
-  })
+  return {
+    indexToView: 0,
+    profiles: threadIDs.map(threadID =>
+      importThreadFromInstrumentsTrace({
+        threadID,
+        fileName,
+        arrays,
+        addressToFrameMap,
+        samples,
+      }),
+    ),
+  }
 }
 
 export function importThreadFromInstrumentsTrace(args: {

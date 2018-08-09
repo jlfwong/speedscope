@@ -288,7 +288,10 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
       // Instrument.app file format is actually a directory.
       if (webkitEntry.isDirectory && webkitEntry.name.endsWith('.trace')) {
         console.log('Importing as Instruments.app .trace file')
-        this.loadProfile(async () => await importFromFileSystemDirectoryEntry(webkitEntry))
+        this.loadProfile(async () => {
+          const profileGroup = await importFromFileSystemDirectoryEntry(webkitEntry)
+          return profileGroup.profiles[profileGroup.indexToView]
+        })
         return
       }
     }
