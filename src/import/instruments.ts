@@ -410,15 +410,11 @@ async function readFormTemplate(tree: TraceDirectoryTree): Promise<FormTemplateD
   if ('stubInfoByUUID' in archive) {
     instrument = Array.from(archive['stubInfoByUUID'].keys())[0]
   }
-  let allRunData = archive['com.apple.xray.run.data']
+  const allRunData = archive['com.apple.xray.run.data']
 
   const runs: FormTemplateRunData[] = []
-
   for (let runNumber of allRunData.runNumbers) {
-    const runData = getOrThrow<number, Map<any, any>>(
-      allRunData.runData,
-      allRunData.runNumbers.pop()!,
-    )
+    const runData = getOrThrow<number, Map<any, any>>(allRunData.runData, runNumber)
 
     const symbolsByPid = getOrThrow<string, Map<number, {symbols: SymbolInfo[]}>>(
       runData,
@@ -520,7 +516,7 @@ export async function importRunFromInstrumentsTrace(args: {
     )
   }
   const counts = Array.from(sampleCountByThreadID.entries())
-  sortBy(counts, c => c[1])
+  sortBy(counts, c => -c[1])
   const threadIDs = counts.map(c => c[0])
 
   return {
@@ -550,7 +546,7 @@ export function importThreadFromInstrumentsTrace(args: {
   samples = samples.filter(s => s.threadID === threadID)
 
   const profile = new StackListProfileBuilder(lastOf(samples)!.timestamp)
-  profile.setName(fileName)
+  profile.setName(`${fileName} - thread ${threadID}`)
 
   function appendRecursive(k: number, stack: FrameInfo[]) {
     const frame = addressToFrameMap.get(k)
