@@ -1,5 +1,5 @@
 import {Profile, FrameInfo, CallTreeProfileBuilder} from '../lib/profile'
-import {getOrInsert, lastOf} from '../lib/utils'
+import {getOrInsert} from '../lib/utils'
 import {TimeFormatter} from '../lib/value-formatters'
 
 interface Allocations {
@@ -203,25 +203,22 @@ export function importFromFirefox(firefoxProfile: FirefoxProfile): Profile {
     const value = sample[1]
 
     // Find lowest common ancestor of the current stack and the previous one
-    let lca: FrameInfo | null = null
+    let lcaIndex = -1
 
     for (let i = 0; i < Math.min(stack.length, prevStack.length); i++) {
       if (prevStack[i] !== stack[i]) {
         break
       }
-      lca = stack[i]
+      lcaIndex = i
     }
 
     // Close frames that are no longer open
-    while (prevStack.length > 0 && (!lca || lastOf(prevStack) !== lca)) {
-      const closingFrame = prevStack.pop()!
-      profile.leaveFrame(closingFrame, value)
+    for (let i = prevStack.length - 1; i > lcaIndex; i--) {
+      profile.leaveFrame(prevStack[i], value)
     }
 
-    // Open frames that are now becoming open
-    for (let i = lca ? stack.indexOf(lca) + 1 : 0; i < stack.length; i++) {
-      const frame = stack[i]
-      profile.enterFrame(frame, value)
+    for (let i = lcaIndex + 1; i < stack.length; i++) {
+      profile.enterFrame(stack[i], value)
     }
 
     prevStack = stack

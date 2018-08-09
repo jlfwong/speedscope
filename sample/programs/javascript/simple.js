@@ -1,23 +1,23 @@
-function a() {
+function alpha() {
   for (let i = 0; i < 1000; i++) {
-    b()
-    c()
+    beta()
+    delta()
   }
 }
 
-function b() {
+function beta() {
   for (let i = 0; i < 10; i++) {
-    d()
+    gamma()
   }
 }
 
-function c() {
+function delta() {
   for (let i = 0; i < 10; i++) {
-    d()
+    gamma()
   }
 }
 
-function d() {
+function gamma() {
   let prod = 1
   for (let i = 1; i < 1000; i++) {
     prod *= i
@@ -25,10 +25,8 @@ function d() {
   return prod
 }
 
-console.profile('a')
-a()
+console.profile('simple')
+alpha()
 setTimeout(() => {
-  console.profileEnd('a')
+  console.profileEnd('simple')
 }, 0)
-
-window.addEventListener('click', a)

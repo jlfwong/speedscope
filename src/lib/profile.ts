@@ -586,6 +586,11 @@ export class CallTreeProfileBuilder extends Profile {
   }
 
   build(): Profile {
+    // Each stack is expected to contain a single node which we initialize to be
+    // the root node.
+    if (this.appendOrderStack.length > 1 || this.groupedOrderStack.length > 1) {
+      throw new Error('Tried to complete profile construction with a non-empty stack')
+    }
     return this
   }
 }
