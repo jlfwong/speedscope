@@ -388,11 +388,16 @@ interface SymbolInfo {
   addressToLine: Map<number, number>
 }
 
-interface FormTemplateData {
-  selectedRun: number
-  instrument: string
-  version: number
+interface FormTemplateRunData {
+  number: number
   addressToFrameMap: Map<number, FrameInfo>
+}
+
+interface FormTemplateData {
+  version: number
+  selectedRunNumber: number
+  instrument: string
+  runs: FormTemplateRunData[]
 }
 
 async function readFormTemplate(tree: TraceDirectoryTree): Promise<FormTemplateData> {
@@ -400,50 +405,60 @@ async function readFormTemplate(tree: TraceDirectoryTree): Promise<FormTemplateD
   const archive = readInstrumentsKeyedArchive(await readAsArrayBuffer(formTemplate))
 
   const version = archive['com.apple.xray.owner.template.version']
-  const selectedRun = archive['com.apple.xray.owner.template'].get('_selectedRunNumber')
+  const selectedRunNumber = archive['com.apple.xray.owner.template'].get('_selectedRunNumber')
   let instrument = archive['$1']
   if ('stubInfoByUUID' in archive) {
     instrument = Array.from(archive['stubInfoByUUID'].keys())[0]
   }
   let allRunData = archive['com.apple.xray.run.data']
-  const runData = getOrThrow<number, Map<any, any>>(
-    allRunData.runData,
-    allRunData.runNumbers.pop()!,
-  )
 
-  const symbolsByPid = getOrThrow<string, Map<number, {symbols: SymbolInfo[]}>>(
-    runData,
-    'symbolsByPid',
-  )
+  const runs: FormTemplateRunData[] = []
 
-  const addressToFrameMap = new Map<number, FrameInfo>()
+  for (let runNumber of allRunData.runNumbers) {
+    const runData = getOrThrow<number, Map<any, any>>(
+      allRunData.runData,
+      allRunData.runNumbers.pop()!,
+    )
 
-  // TODO(jlfwong): Deal with profiles with conflicts addresses?
-  for (let symbols of symbolsByPid.values()) {
-    for (let symbol of symbols.symbols) {
-      if (!symbol) continue
-      const {sourcePath, symbolName, addressToLine} = symbol
-      for (let address of addressToLine.keys()) {
-        getOrInsert(addressToFrameMap, address, () => {
-          const name = symbolName || `0x${zeroPad(address.toString(16), 16)}`
-          const frame: FrameInfo = {
-            key: `${sourcePath}:${name}`,
-            name: name,
-          }
-          if (sourcePath) {
-            frame.file = sourcePath
-          }
-          return frame
-        })
+    const symbolsByPid = getOrThrow<string, Map<number, {symbols: SymbolInfo[]}>>(
+      runData,
+      'symbolsByPid',
+    )
+
+    const addressToFrameMap = new Map<number, FrameInfo>()
+
+    // TODO(jlfwong): Deal with profiles with conflicting addresses?
+    for (let symbols of symbolsByPid.values()) {
+      for (let symbol of symbols.symbols) {
+        if (!symbol) continue
+        const {sourcePath, symbolName, addressToLine} = symbol
+        for (let address of addressToLine.keys()) {
+          getOrInsert(addressToFrameMap, address, () => {
+            const name = symbolName || `0x${zeroPad(address.toString(16), 16)}`
+            const frame: FrameInfo = {
+              key: `${sourcePath}:${name}`,
+              name: name,
+            }
+            if (sourcePath) {
+              frame.file = sourcePath
+            }
+            return frame
+          })
+        }
       }
+
+      runs.push({
+        number: runNumber,
+        addressToFrameMap,
+      })
     }
   }
 
   return {
     version,
     instrument,
-    selectedRun,
-    addressToFrameMap,
+    selectedRunNumber,
+    runs,
   }
 }
 
@@ -453,21 +468,35 @@ export async function importFromInstrumentsTrace(
 ): Promise<ProfileGroup> {
   const tree = await extractDirectoryTree(entry)
 
-  const {version, selectedRun, instrument, addressToFrameMap} = await readFormTemplate(tree)
+  const {version, runs, instrument, selectedRunNumber} = await readFormTemplate(tree)
   if (instrument !== 'com.apple.xray.instrument-type.coresampler2') {
     throw new Error(
       `The only supported instrument from .trace import is "com.apple.xray.instrument-type.coresampler2". Got ${instrument}`,
     )
   }
   console.log('version: ', version)
-  console.log(`Importing time profile from run ${selectedRun}`)
+  console.log(`Importing time profile`)
 
-  return await importRunFromInstrumentsTrace({
-    fileName: entry.name,
-    tree,
-    addressToFrameMap,
-    runNumber: selectedRun,
-  })
+  const profiles: Profile[] = []
+  let indexToView = 0
+
+  for (let run of runs) {
+    const {addressToFrameMap, number} = run
+    const group = await importRunFromInstrumentsTrace({
+      fileName: entry.name,
+      tree,
+      addressToFrameMap,
+      runNumber: number,
+    })
+
+    if (run.number === selectedRunNumber) {
+      indexToView = profiles.length + group.indexToView
+    }
+
+    profiles.push(...group.profiles)
+  }
+
+  return {indexToView, profiles}
 }
 
 export async function importRunFromInstrumentsTrace(args: {
