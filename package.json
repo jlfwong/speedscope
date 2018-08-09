@@ -1,6 +1,6 @@
 {
   "name": "speedscope",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "",
   "repository": "jlfwong/speedscope",
   "main": "index.js",
