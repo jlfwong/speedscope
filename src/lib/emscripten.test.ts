@@ -21,10 +21,11 @@ test('importEmscriptenSymbolMap', () => {
         'a:A',
         'b:B',
         'c:C',
+        'd:D-D',
         '',
       ].join('\n'),
     ),
-  ).toEqual(new Map([['a', 'A'], ['b', 'B'], ['c', 'C']]))
+  ).toEqual(new Map([['a', 'A'], ['b', 'B'], ['c', 'C'], ['d', 'D-D']]))
 
   // Valid symbol map with non-alpha characters
   expect(importEmscriptenSymbolMap('u6:__ZN8tinyxml210XMLCommentD0Ev\n')).toEqual(
@@ -39,10 +40,16 @@ test('importEmscriptenSymbolMap', () => {
         '0:A',
         '1:B',
         '2:C',
+        '3:D-D',
       ].join('\n'),
     ),
   ).toEqual(
-    new Map([['wasm-function[0]', 'A'], ['wasm-function[1]', 'B'], ['wasm-function[2]', 'C']]),
+    new Map([
+      ['wasm-function[0]', 'A'],
+      ['wasm-function[1]', 'B'],
+      ['wasm-function[2]', 'C'],
+      ['wasm-function[3]', 'D-D'],
+    ]),
   )
 
   // Invalid symbol map
