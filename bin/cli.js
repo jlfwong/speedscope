@@ -60,7 +60,7 @@ async function main() {
     throw new Error('At most one argument expected')
   }
 
-  let urlToOpen = 'file://' + path.resolve(__dirname, './dist/release/index.html')
+  let urlToOpen = 'file://' + path.resolve(__dirname, '../dist/release/index.html')
 
   if (process.argv.length === 3) {
     const relPath = process.argv[2]
