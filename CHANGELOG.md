@@ -3,6 +3,7 @@
 ### Added
 
 ### Fixed
+* Fix emscripten remapping when symbols contain dashes, like `527:i32s-div` [#129]
 * Improved firefox import speed and fixed bugs in it [#128]
 * Preserve view state when switching tabs [#100]
 * Clamp zoom to prevent floating point issues [#121]
