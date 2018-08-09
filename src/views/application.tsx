@@ -313,6 +313,16 @@ export class Application extends StatelessComponent<ApplicationProps> {
     } else if (ev.key === 'r') {
       const {flattenRecursion} = this.props
       this.props.dispatch(actions.setFlattenRecursion(!flattenRecursion))
+    } else if (ev.key === 'n') {
+      const {activeProfileState} = this.props
+      if (activeProfileState) {
+        this.props.dispatch(actions.setProfileIndexToView(activeProfileState.index + 1))
+      }
+    } else if (ev.key === 'p') {
+      const {activeProfileState} = this.props
+      if (activeProfileState) {
+        this.props.dispatch(actions.setProfileIndexToView(activeProfileState.index - 1))
+      }
     }
   }
 

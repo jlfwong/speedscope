@@ -7,6 +7,7 @@ import {
 import {SandwichViewState, createSandwichView} from './sandwich-view-state'
 import {Reducer, Action, actionCreator, setter} from '../lib/typed-redux'
 import {actions} from './actions'
+import {clamp} from '../lib/math'
 
 export type ProfileGroupState = {
   indexToView: number
@@ -64,7 +65,11 @@ export const profiles: Reducer<ProfileGroupState> = (state = null, action) => {
   if (state != null) {
     const {indexToView, profiles} = state
 
-    const nextIndexToView = setter(actions.setProfileIndexToView, 0)(indexToView, action)
+    const nextIndexToView = clamp(
+      setter(actions.setProfileIndexToView, 0)(indexToView, action),
+      0,
+      profiles.length - 1,
+    )
     let nextProfiles = profiles
 
     const profileIndexFromAction = actionProfileIndex(action)
