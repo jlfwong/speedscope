@@ -9,20 +9,18 @@ export const ApplicationContainer = createContainer<
   WithoutDispatch<ApplicationProps>,
   Application
 >(Application, (state: ApplicationState) => {
+  const {flattenRecursion, profiles} = state
+
   let activeProfileState: ActiveProfileState | null = null
-  if (state.profiles) {
-    if (state.profiles.profiles.length > state.profiles.indexToView) {
+  if (profiles) {
+    if (profiles.profiles.length > profiles.indexToView) {
+      const index = profiles.indexToView
+      const profileState = profiles.profiles[index]
       activeProfileState = {
-        ...state.profiles.profiles[state.profiles.indexToView],
-        index: state.profiles.indexToView,
+        ...profiles.profiles[profiles.indexToView],
+        profile: getProfileToView({profile: profileState.profile, flattenRecursion}),
+        index: profiles.indexToView,
       }
-    }
-  }
-  if (activeProfileState && state.flattenRecursion) {
-    const {flattenRecursion} = state
-    activeProfileState = {
-      profile: getProfileToView({profile: activeProfileState.profile, flattenRecursion}),
-      ...activeProfileState,
     }
   }
 

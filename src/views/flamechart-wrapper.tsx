@@ -26,7 +26,7 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
   private setConfigSpaceViewportRect = (configSpaceViewportRect: Rect) => {
     this.props.dispatch(
       actions.flamechart.setConfigSpaceViewportRect({
-        profileIndex: this.props.profileIndex,
+        profileIndex: this.props.activeProfileState.index,
         args: {
           id: this.props.id,
           configSpaceViewportRect: this.clampViewportToFlamegraph(configSpaceViewportRect),
@@ -37,7 +37,7 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
   private setLogicalSpaceViewportSize = (logicalSpaceViewportSize: Vec2): void => {
     this.props.dispatch(
       actions.flamechart.setLogicalSpaceViewportSize({
-        profileIndex: this.props.profileIndex,
+        profileIndex: this.props.activeProfileState.index,
         args: {id: this.props.id, logicalSpaceViewportSize},
       }),
     )
@@ -82,7 +82,7 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
     // use of mapDispatchToProps + mergeProps
     this.props.dispatch(
       actions.flamechart.setHoveredNode({
-        profileIndex: this.props.profileIndex,
+        profileIndex: this.props.activeProfileState.index,
         args: {id: this.props.id, hover},
       }),
     )

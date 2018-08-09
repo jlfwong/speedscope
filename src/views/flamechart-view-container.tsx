@@ -17,8 +17,8 @@ import {
 import {ActiveProfileState} from './application'
 
 export type FlamechartViewProps = {
-  profileIndex: number
   id: FlamechartID
+  activeProfileState: ActiveProfileState
   canvasContext: CanvasContext
   flamechart: Flamechart
   flamechartRenderer: FlamechartRenderer
@@ -84,7 +84,7 @@ export const ChronoFlamechartView = createContainer<
 
   return {
     id: FlamechartID.CHRONO,
-    profileIndex: activeProfileState.index,
+    activeProfileState,
     renderInverted: false,
     flamechart,
     flamechartRenderer,
@@ -142,7 +142,7 @@ export const LeftHeavyFlamechartView = createContainer<
 
   return {
     id: FlamechartID.LEFT_HEAVY,
-    profileIndex: activeProfileState.index,
+    activeProfileState,
     renderInverted: false,
     flamechart,
     flamechartRenderer,

@@ -1,4 +1,4 @@
-import {Profile} from '../lib/profile'
+import {Profile, ProfileGroup} from '../lib/profile'
 import {FileSystemDirectoryEntry} from './file-system-entry'
 
 import {importFromChromeCPUProfile, importFromChromeTimeline} from './chrome'
@@ -10,12 +10,15 @@ import {importSpeedscopeProfiles} from '../lib/file-format'
 import {FileFormat} from '../lib/file-format-spec'
 import {importFromV8ProfLog} from './v8proflog'
 
-export async function importProfile(fileName: string, contents: string): Promise<Profile | null> {
+export async function importProfiles(
+  fileName: string,
+  contents: string,
+): Promise<ProfileGroup | null> {
   const profile = await _importProfile(fileName, contents)
   if (profile && !profile.getName()) {
     profile.setName(fileName)
   }
-  return profile
+  return profile ? {indexToView: 0, profiles: [profile]} : null
 }
 
 function importSingleSpeedscopeProfile(serialized: FileFormat.File) {

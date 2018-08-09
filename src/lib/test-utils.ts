@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import {Profile, CallTreeNode, Frame} from './profile'
-import {importProfile} from '../import'
+import {importProfiles} from '../import'
 import {exportProfile, importSpeedscopeProfiles} from './file-format'
 
 interface DumpedProfile {
@@ -47,7 +47,7 @@ export function dumpProfile(profile: Profile): any {
 export async function checkProfileSnapshot(filepath: string) {
   const input = fs.readFileSync(filepath, 'utf8')
 
-  const profile = await importProfile(path.basename(filepath), input)
+  const profile = await importProfiles(path.basename(filepath), input)
   if (profile) {
     expect(dumpProfile(profile)).toMatchSnapshot()
   } else {
@@ -55,7 +55,7 @@ export async function checkProfileSnapshot(filepath: string) {
     return
   }
 
-  const profileWithoutFilename = await importProfile('unknown', input)
+  const profileWithoutFilename = await importProfiles('unknown', input)
   if (profileWithoutFilename) {
     profileWithoutFilename.setName(profile.getName())
     expect(exportProfile(profileWithoutFilename)).toEqual(exportProfile(profile))

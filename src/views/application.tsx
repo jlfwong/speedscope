@@ -2,7 +2,7 @@ import {h, Component} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 import {FileSystemDirectoryEntry} from '../import/file-system-entry'
 
-import {Profile} from '../lib/profile'
+import {Profile, ProfileGroup} from '../lib/profile'
 import {FontFamily, FontSize, Colors, Sizes, Duration} from './style'
 import {importEmscriptenSymbolMap} from '../lib/emscripten'
 import {SandwichViewContainer} from './sandwich-view'
@@ -17,8 +17,8 @@ import {FlamechartViewState} from '../store/flamechart-view-state'
 const importModule = import('../import')
 // Force eager loading of the module
 importModule.then(() => {})
-async function importProfile(fileName: string, contents: string): Promise<Profile | null> {
-  return (await importModule).importProfile(fileName, contents)
+async function importProfiles(fileName: string, contents: string): Promise<ProfileGroup | null> {
+  return (await importModule).importProfiles(fileName, contents)
 }
 async function importFromFileSystemDirectoryEntry(entry: FileSystemDirectoryEntry) {
   return (await importModule).importFromFileSystemDirectoryEntry(entry)
@@ -183,7 +183,7 @@ export type ApplicationProps = ApplicationState &
   }>
 
 export class Application extends StatelessComponent<ApplicationProps> {
-  async loadProfile(loader: () => Promise<Profile | null>) {
+  private async loadProfile(loader: () => Promise<ProfileGroup | null>) {
     this.props.dispatch(actions.setLoading(true))
     await new Promise(resolve => setTimeout(resolve, 0))
 
@@ -191,29 +191,34 @@ export class Application extends StatelessComponent<ApplicationProps> {
 
     console.time('import')
 
-    let profile: Profile | null = null
+    let profileGroup: ProfileGroup | null = null
     try {
-      profile = await loader()
+      profileGroup = await loader()
     } catch (e) {
       console.log('Failed to load format', e)
       this.props.dispatch(actions.setError(true))
       return
     }
 
-    if (profile == null) {
+    if (profileGroup == null) {
       // TODO(jlfwong): Make this a nicer overlay
       alert('Unrecognized format! See documentation about supported formats.')
       this.props.dispatch(actions.setLoading(false))
       return
     }
 
-    await profile.demangle()
+    for (let profile of profileGroup.profiles) {
+      await profile.demangle()
+    }
 
-    const title = this.props.hashParams.title || profile.getName()
-    profile.setName(title)
+    for (let profile of profileGroup.profiles) {
+      // TODO(jlfwong): Profile names vs. profile group names needs some thought
+      const title = this.props.hashParams.title || profile.getName()
+      profile.setName(title)
+    }
 
     console.timeEnd('import')
-    this.props.dispatch(actions.setProfileGroup({indexToView: 0, profiles: [profile]}))
+    this.props.dispatch(actions.setProfileGroup(profileGroup))
     this.props.dispatch(actions.setLoading(false))
   }
 
@@ -228,12 +233,14 @@ export class Application extends StatelessComponent<ApplicationProps> {
         throw new Error('Expected ArrayBuffer')
       }
 
-      const profile = await importProfile(file.name, reader.result)
-      if (profile) {
-        if (!profile.getName()) {
-          profile.setName(file.name)
+      const profiles = await importProfiles(file.name, reader.result)
+      if (profiles) {
+        for (let profile of profiles.profiles) {
+          if (!profile.getName()) {
+            profile.setName(file.name)
+          }
         }
-        return profile
+        return profiles
       }
 
       if (this.props.activeProfileState) {
@@ -246,7 +253,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
           console.log('Importing as emscripten symbol map')
           let profile = this.props.activeProfileState.profile
           profile.remapNames(name => map.get(name) || name)
-          return profile
+          return {indexToView: 0, profiles: [profile]}
         }
       }
 
@@ -258,11 +265,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
     this.loadProfile(async () => {
       const filename = 'perf-vertx-stacks-01-collapsed-all.txt'
       const data = await fetch(exampleProfileURL).then(resp => resp.text())
-      const profile = await importProfile(filename, data)
-      if (profile && !profile.getName()) {
-        profile.setName(filename)
-      }
-      return profile
+      return await importProfiles(filename, data)
     })
   }
 
@@ -278,8 +281,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
       if (webkitEntry.isDirectory && webkitEntry.name.endsWith('.trace')) {
         console.log('Importing as Instruments.app .trace file')
         this.loadProfile(async () => {
-          const profileGroup = await importFromFileSystemDirectoryEntry(webkitEntry)
-          return profileGroup.profiles[profileGroup.indexToView]
+          return await importFromFileSystemDirectoryEntry(webkitEntry)
         })
         return
       }
@@ -345,7 +347,9 @@ export class Application extends StatelessComponent<ApplicationProps> {
     ev.stopPropagation()
 
     const pasted = (ev as ClipboardEvent).clipboardData.getData('text')
-    this.loadProfile(async () => importProfile('From Clipboard', pasted))
+    this.loadProfile(async () => {
+      return await importProfiles('From Clipboard', pasted)
+    })
   }
 
   componentDidMount() {
@@ -375,7 +379,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
         if (filename.includes('/')) {
           filename = filename.slice(filename.lastIndexOf('/') + 1)
         }
-        return await importProfile(filename, await response.text())
+        return await importProfiles(filename, await response.text())
       })
     } else if (this.props.hashParams.localProfilePath) {
       // There isn't good cross-browser support for XHR of local files, even from
@@ -384,7 +388,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
       ;(window as any)['speedscope'] = {
         loadFileFromBase64: (filename: string, base64source: string) => {
           const source = atob(base64source)
-          this.loadProfile(() => importProfile(filename, source))
+          this.loadProfile(() => importProfiles(filename, source))
         },
       }
 

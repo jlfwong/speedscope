@@ -31,7 +31,7 @@ export function actionCreatorWithIndex<T>(name: string) {
 
 export function actionProfileIndex(action: Action<any>): number | null {
   const {payload} = action
-  if ('profileIndex' in payload) {
+  if (payload != null && typeof payload === 'object' && 'profileIndex' in payload) {
     return parseInt(payload.profileIndex, 0)
   } else {
     return null

@@ -51,14 +51,14 @@ class SandwichView extends StatelessComponent<SandwichViewProps> {
             <div className={css(style.flamechartLabelParent)}>
               <div className={css(style.flamechartLabel)}>Callers</div>
             </div>
-            <InvertedCallerFlamegraphView />
+            <InvertedCallerFlamegraphView activeProfileState={this.props.activeProfileState} />
           </div>
           <div className={css(style.divider)} />
           <div className={css(commonStyle.hbox, style.panZoomViewWraper)}>
             <div className={css(style.flamechartLabelParent, style.flamechartLabelParentBottom)}>
               <div className={css(style.flamechartLabel, style.flamechartLabelBottom)}>Callees</div>
             </div>
-            <CalleeFlamegraphView />
+            <CalleeFlamegraphView activeProfileState={this.props.activeProfileState} />
           </div>
         </div>
       )

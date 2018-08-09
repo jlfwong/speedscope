@@ -43,7 +43,7 @@ export class FlamechartView extends StatelessComponent<FlamechartViewProps> {
 
     this.props.dispatch(
       actions.flamechart.setConfigSpaceViewportRect({
-        profileIndex: this.props.profileIndex,
+        profileIndex: this.props.activeProfileState.index,
         args: {
           id: this.props.id,
           configSpaceViewportRect: new Rect(origin, viewportRect.size.withX(width)),
@@ -55,7 +55,7 @@ export class FlamechartView extends StatelessComponent<FlamechartViewProps> {
   private setLogicalSpaceViewportSize = (logicalSpaceViewportSize: Vec2): void => {
     this.props.dispatch(
       actions.flamechart.setLogicalSpaceViewportSize({
-        profileIndex: this.props.profileIndex,
+        profileIndex: this.props.activeProfileState.index,
         args: {
           id: this.props.id,
           logicalSpaceViewportSize,
@@ -72,7 +72,7 @@ export class FlamechartView extends StatelessComponent<FlamechartViewProps> {
   onNodeHover = (hover: {node: CallTreeNode; event: MouseEvent} | null) => {
     this.props.dispatch(
       actions.flamechart.setHoveredNode({
-        profileIndex: this.props.profileIndex,
+        profileIndex: this.props.activeProfileState.index,
         args: {
           id: this.props.id,
           hover,
@@ -84,7 +84,7 @@ export class FlamechartView extends StatelessComponent<FlamechartViewProps> {
   onNodeClick = (node: CallTreeNode | null) => {
     this.props.dispatch(
       actions.flamechart.setSelectedNode({
-        profileIndex: this.props.profileIndex,
+        profileIndex: this.props.activeProfileState.index,
         args: {id: this.props.id, selectedNode: node},
       }),
     )
