@@ -32,8 +32,6 @@ export function importEmscriptenSymbolMap(contents: string): EmscriptenSymbolMap
       continue
     }
 
-    console.log('Unmatched line', line)
-
     return null
   }
 
