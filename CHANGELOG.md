@@ -3,12 +3,13 @@
 ### Added
 
 ### Fixed
+
 * Fix emscripten remapping when symbols contain dashes, like `527:i32s-div` [#129]
 * Improved firefox import speed and fixed bugs in it [#128]
-* Preserve view state when switching tabs [#100]
-* Clamp zoom to prevent floating point issues [#121]
-* Prevent dragging from changing selection [#122]
 * Prevent non-contiguous blocks in the time ordered flamechart from appearing as a single node for selection [#123]
+* Prevent dragging from changing selection [#122]
+* Clamp zoom to prevent floating point issues [#121]
+* Preserve view state when switching tabs [#100]
 
 ## [0.4.0] - 2018-07-21
 
