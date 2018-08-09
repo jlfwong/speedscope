@@ -456,13 +456,24 @@ export async function importFromInstrumentsTrace(
   console.log('version: ', version)
   console.log(`Importing time profile from run ${selectedRun}`)
 
-  const core = getCoreDirForRun(tree, selectedRun)
+  return await importRunFromInstrumentsTrace({
+    fileName: entry.name,
+    tree,
+    addressToFrameMap,
+    runNumber: selectedRun,
+  })
+}
+
+export async function importRunFromInstrumentsTrace(args: {
+  fileName: string
+  tree: TraceDirectoryTree
+  addressToFrameMap: Map<number, FrameInfo>
+  runNumber: number
+}): Promise<Profile> {
+  const {fileName, tree, addressToFrameMap, runNumber} = args
+  const core = getCoreDirForRun(tree, runNumber)
   let samples = await getRawSampleList(core)
   const arrays = await getIntegerArrays(samples, core)
-  const backtraceIDtoStack = new Map<number, FrameInfo[]>()
-
-  const profile = new StackListProfileBuilder(lastOf(samples)!.timestamp)
-  profile.setName(entry.name)
 
   // For now, we can only display the flamechart for a single thread of execution,
   // So let's choose whichever thread had the most sample hits.
@@ -478,7 +489,30 @@ export async function importFromInstrumentsTrace(
   const counts = Array.from(sampleCountByThreadID.entries())
   sortBy(counts, c => c[1])
   const mainThreadID = lastOf(counts)![0]
-  samples = samples.filter(s => s.threadID === mainThreadID)
+
+  return importThreadFromInstrumentsTrace({
+    threadID: mainThreadID,
+    fileName,
+    arrays,
+    addressToFrameMap,
+    samples,
+  })
+}
+
+export function importThreadFromInstrumentsTrace(args: {
+  fileName: string
+  addressToFrameMap: Map<number, FrameInfo>
+  threadID: number
+  arrays: number[][]
+  samples: Sample[]
+}): Profile {
+  let {fileName, addressToFrameMap, arrays, threadID, samples} = args
+
+  const backtraceIDtoStack = new Map<number, FrameInfo[]>()
+  samples = samples.filter(s => s.threadID === threadID)
+
+  const profile = new StackListProfileBuilder(lastOf(samples)!.timestamp)
+  profile.setName(fileName)
 
   function appendRecursive(k: number, stack: FrameInfo[]) {
     const frame = addressToFrameMap.get(k)
