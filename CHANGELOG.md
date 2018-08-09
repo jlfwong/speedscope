@@ -2,9 +2,8 @@
 
 ### Added
 
-
 ### Fixed
-
+* Improved firefox import speed and fixed bugs in it [#128]
 * Preserve view state when switching tabs [#100]
 * Clamp zoom to prevent floating point issues [#121]
 * Prevent dragging from changing selection [#122]
