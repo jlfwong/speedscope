@@ -4,6 +4,10 @@
 
 ### Fixed
 
+## [0.5.0] - 2018-08-09
+
+### Fixed
+
 * Fix emscripten remapping when symbols contain dashes, like `527:i32s-div` [#129]
 * Improved firefox import speed and fixed bugs in it [#128]
 * Prevent non-contiguous blocks in the time ordered flamechart from appearing as a single node for selection [#123]
