@@ -14,8 +14,8 @@ export function importEmscriptenSymbolMap(contents: string): EmscriptenSymbolMap
   if (!lines.length) return null
 
   const map: EmscriptenSymbolMap = new Map()
-  const intRegex = /^(\d+):([\$\w]+)$/
-  const idRegex = /^([\$\w]+):([\$\w]+)$/
+  const intRegex = /^(\d+):([\$\w-]+)$/
+  const idRegex = /^([\$\w]+):([\$\w-]+)$/
 
   for (const line of lines) {
     // Match lines like "103:__ZN8tinyxml210XMLCommentD0Ev"
@@ -31,6 +31,8 @@ export function importEmscriptenSymbolMap(contents: string): EmscriptenSymbolMap
       map.set(idMatch[1], idMatch[2])
       continue
     }
+
+    console.log('Unmatched line', line)
 
     return null
   }
