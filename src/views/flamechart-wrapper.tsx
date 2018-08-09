@@ -26,14 +26,20 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
   private setConfigSpaceViewportRect = (configSpaceViewportRect: Rect) => {
     this.props.dispatch(
       actions.flamechart.setConfigSpaceViewportRect({
-        id: this.props.id,
-        configSpaceViewportRect: this.clampViewportToFlamegraph(configSpaceViewportRect),
+        profileIndex: this.props.profileIndex,
+        args: {
+          id: this.props.id,
+          configSpaceViewportRect: this.clampViewportToFlamegraph(configSpaceViewportRect),
+        },
       }),
     )
   }
   private setLogicalSpaceViewportSize = (logicalSpaceViewportSize: Vec2): void => {
     this.props.dispatch(
-      actions.flamechart.setLogicalSpaceViewportSize({id: this.props.id, logicalSpaceViewportSize}),
+      actions.flamechart.setLogicalSpaceViewportSize({
+        profileIndex: this.props.profileIndex,
+        args: {id: this.props.id, logicalSpaceViewportSize},
+      }),
     )
   }
 
@@ -71,7 +77,15 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
       event: MouseEvent
     } | null,
   ) => {
-    this.props.dispatch(actions.flamechart.setHoveredNode({id: this.props.id, hover}))
+    // TODO(jlfwong): It's crummy that these classes need to know about their
+    // profile indices just for the sake of dispatch. I think this is the intended
+    // use of mapDispatchToProps + mergeProps
+    this.props.dispatch(
+      actions.flamechart.setHoveredNode({
+        profileIndex: this.props.profileIndex,
+        args: {id: this.props.id, hover},
+      }),
+    )
   }
   render() {
     return (

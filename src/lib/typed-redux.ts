@@ -37,6 +37,7 @@ export function actionCreator(type: string) {
 }
 
 export type Reducer<T> = (state: T | undefined, action: Action<any>) => T
+export type ReducerWithActionType<T, A> = (state: T | undefined, action: Action<A>) => T
 
 export function setter<T>(
   setterAction: ActionCreator<T>,

@@ -1,21 +1,18 @@
 import {actionCreator} from '../lib/typed-redux'
-import {Profile, CallTreeNode, Frame} from '../lib/profile'
+import {CallTreeNode, Frame, ProfileGroup} from '../lib/profile'
 import {SortMethod} from '../views/profile-table-view'
 import {ViewMode} from '.'
 import {FlamechartID} from './flamechart-view-state'
 import {Rect, Vec2} from '../lib/math'
 import {HashParams} from '../lib/hash-params'
+import {actionCreatorWithIndex} from './profiles-state'
 
 export namespace actions {
-  // Set the top-level profile from which other data will be derived
-  export const setProfile = actionCreator<Profile>('setProfile')
+  // Set the top-level profile group from which other data will be derived
+  export const setProfileGroup = actionCreator<ProfileGroup>('setProfileGroup')
 
-  // Set the profile currently being viewed
-  export const setActiveProfile = actionCreator<Profile>('setActiveProfile')
-
-  export const setFrameToColorBucket = actionCreator<Map<string | number, number>>(
-    'setFrameToColorBucket',
-  )
+  // Set the index into the profile group to view
+  export const setProfileIndexToView = actionCreator<number>('setProfileIndexToView')
 
   export const setGLCanvas = actionCreator<HTMLCanvasElement | null>('setGLCanvas')
 
@@ -41,28 +38,32 @@ export namespace actions {
 
   export namespace sandwichView {
     // Set the table sorting method used for the sandwich view.
-    export const setTableSortMethod = actionCreator<SortMethod>('sandwichView.setTableSortMethod')
+    export const setTableSortMethod = actionCreatorWithIndex<SortMethod>(
+      'sandwichView.setTableSortMethod',
+    )
 
-    export const setSelectedFrame = actionCreator<Frame | null>('sandwichView.setSelectedFarmr')
+    export const setSelectedFrame = actionCreatorWithIndex<Frame | null>(
+      'sandwichView.setSelectedFarmr',
+    )
   }
 
   export namespace flamechart {
-    export const setHoveredNode = actionCreator<{
+    export const setHoveredNode = actionCreatorWithIndex<{
       id: FlamechartID
       hover: {node: CallTreeNode; event: MouseEvent} | null
     }>('flamechart.setHoveredNode')
 
-    export const setSelectedNode = actionCreator<{
+    export const setSelectedNode = actionCreatorWithIndex<{
       id: FlamechartID
       selectedNode: CallTreeNode | null
     }>('flamechart.setSelectedNode')
 
-    export const setConfigSpaceViewportRect = actionCreator<{
+    export const setConfigSpaceViewportRect = actionCreatorWithIndex<{
       id: FlamechartID
       configSpaceViewportRect: Rect
     }>('flamechart.setConfigSpaceViewportRect')
 
-    export const setLogicalSpaceViewportSize = actionCreator<{
+    export const setLogicalSpaceViewportSize = actionCreatorWithIndex<{
       id: FlamechartID
       logicalSpaceViewportSize: Vec2
     }>('flamechart.setLogicalSpaceViewportSpace')

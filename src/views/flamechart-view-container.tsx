@@ -12,9 +12,12 @@ import {
   createGetColorBucketForFrame,
   getCanvasContext,
   createGetCSSColorForFrame,
+  getFrameToColorBucket,
 } from '../store/getters'
+import {ActiveProfileState} from './application'
 
 export type FlamechartViewProps = {
+  profileIndex: number
   id: FlamechartID
   canvasContext: CanvasContext
   flamechart: Flamechart
@@ -57,15 +60,19 @@ export const createMemoizedFlamechartRenderer = (options?: FlamechartRendererOpt
 const getChronoViewFlamechartRenderer = createMemoizedFlamechartRenderer()
 
 export const ChronoFlamechartView = createContainer<
-  {profile: Profile; glCanvas: HTMLCanvasElement},
+  {
+    activeProfileState: ActiveProfileState
+    glCanvas: HTMLCanvasElement
+  },
   ApplicationState,
   WithoutDispatch<FlamechartViewProps>,
   FlamechartView
 >(FlamechartView, (state, ownProps) => {
-  const {profile, glCanvas} = ownProps
-  const {frameToColorBucket, chronoView} = state
+  const {activeProfileState, glCanvas} = ownProps
+  const {profile, chronoViewState} = activeProfileState
 
   const canvasContext = getCanvasContext(glCanvas)
+  const frameToColorBucket = getFrameToColorBucket(profile)
   const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
   const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
 
@@ -77,12 +84,13 @@ export const ChronoFlamechartView = createContainer<
 
   return {
     id: FlamechartID.CHRONO,
+    profileIndex: activeProfileState.index,
     renderInverted: false,
     flamechart,
     flamechartRenderer,
     canvasContext,
     getCSSColorForFrame,
-    ...chronoView,
+    ...chronoViewState,
   }
 })
 
@@ -106,19 +114,27 @@ export const getLeftHeavyFlamechart = memoizeByShallowEquality(
 const getLeftHeavyFlamechartRenderer = createMemoizedFlamechartRenderer()
 
 export const LeftHeavyFlamechartView = createContainer<
-  {profile: Profile; glCanvas: HTMLCanvasElement},
+  {
+    activeProfileState: ActiveProfileState
+    glCanvas: HTMLCanvasElement
+  },
   ApplicationState,
   WithoutDispatch<FlamechartViewProps>,
   FlamechartView
 >(FlamechartView, (state, ownProps) => {
-  const {profile, glCanvas} = ownProps
-  const {frameToColorBucket, leftHeavyView} = state
+  const {activeProfileState, glCanvas} = ownProps
+
+  const {profile, leftHeavyViewState} = activeProfileState
 
   const canvasContext = getCanvasContext(glCanvas)
+  const frameToColorBucket = getFrameToColorBucket(profile)
   const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
   const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
 
-  const flamechart = getLeftHeavyFlamechart({profile, getColorBucketForFrame})
+  const flamechart = getLeftHeavyFlamechart({
+    profile,
+    getColorBucketForFrame,
+  })
   const flamechartRenderer = getLeftHeavyFlamechartRenderer({
     canvasContext,
     flamechart,
@@ -126,11 +142,12 @@ export const LeftHeavyFlamechartView = createContainer<
 
   return {
     id: FlamechartID.LEFT_HEAVY,
+    profileIndex: activeProfileState.index,
     renderInverted: false,
     flamechart,
     flamechartRenderer,
     canvasContext,
     getCSSColorForFrame,
-    ...leftHeavyView,
+    ...leftHeavyViewState,
   }
 })

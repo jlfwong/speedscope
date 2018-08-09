@@ -7,14 +7,8 @@ import {actions} from './actions'
 
 import * as redux from 'redux'
 import {setter, Reducer} from '../lib/typed-redux'
-import {Profile} from '../lib/profile'
-import {
-  createFlamechartViewStateReducer,
-  FlamechartID,
-  FlamechartViewState,
-} from './flamechart-view-state'
-import {SandwichViewState, sandwichView} from './sandwich-view-state'
 import {HashParams, getHashParams} from '../lib/hash-params'
+import {ProfileGroupState, profiles} from './profiles-state'
 
 export const enum ViewMode {
   CHRONO_FLAME_CHART,
@@ -23,9 +17,6 @@ export const enum ViewMode {
 }
 
 export interface ApplicationState {
-  profile: Profile | null
-  frameToColorBucket: Map<string | number, number>
-
   hashParams: HashParams
 
   glCanvas: HTMLCanvasElement | null
@@ -37,9 +28,7 @@ export interface ApplicationState {
   loading: boolean
   error: boolean
 
-  chronoView: FlamechartViewState
-  leftHeavyView: FlamechartViewState
-  sandwichView: SandwichViewState
+  profiles: ProfileGroupState
 }
 
 const protocol = window.location.protocol
@@ -57,11 +46,7 @@ export function createApplicationStore(
   const loading = canUseXHR && hashParams.profileURL != null
 
   const reducer: Reducer<ApplicationState> = redux.combineReducers({
-    profile: setter<Profile | null>(actions.setProfile, null),
-    frameToColorBucket: setter<Map<string | number, number>>(
-      actions.setFrameToColorBucket,
-      new Map(),
-    ),
+    profiles,
 
     hashParams: setter<HashParams>(actions.setHashParams, hashParams),
 
@@ -74,11 +59,6 @@ export function createApplicationStore(
     dragActive: setter<boolean>(actions.setDragActive, false),
     loading: setter<boolean>(actions.setLoading, loading),
     error: setter<boolean>(actions.setError, false),
-
-    chronoView: createFlamechartViewStateReducer(FlamechartID.CHRONO),
-    leftHeavyView: createFlamechartViewStateReducer(FlamechartID.LEFT_HEAVY),
-
-    sandwichView,
   })
 
   return redux.createStore(reducer, initialState)

@@ -2,16 +2,17 @@ import {h, Component} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 import {FileSystemDirectoryEntry} from '../import/file-system-entry'
 
-import {Profile, Frame} from '../lib/profile'
+import {Profile} from '../lib/profile'
 import {FontFamily, FontSize, Colors, Sizes, Duration} from './style'
 import {importEmscriptenSymbolMap} from '../lib/emscripten'
 import {SandwichViewContainer} from './sandwich-view'
 import {saveToFile} from '../lib/file-format'
 import {ApplicationState, ViewMode, canUseXHR} from '../store'
 import {actions} from '../store/actions'
-import {Dispatch, StatelessComponent, WithDispatch} from '../lib/typed-redux'
+import {Dispatch, StatelessComponent, WithDispatch, WithoutDispatch} from '../lib/typed-redux'
 import {LeftHeavyFlamechartView, ChronoFlamechartView} from './flamechart-view-container'
-import {getProfileToView} from '../store/getters'
+import {SandwichViewState} from '../store/sandwich-view-state'
+import {FlamechartViewState} from '../store/flamechart-view-state'
 
 const importModule = import('../import')
 // Force eager loading of the module
@@ -26,7 +27,7 @@ async function importFromFileSystemDirectoryEntry(entry: FileSystemDirectoryEntr
 declare function require(x: string): any
 const exampleProfileURL = require('../../sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt')
 
-interface ToolbarProps extends ApplicationState {
+interface ToolbarProps extends WithoutDispatch<ApplicationProps> {
   setViewMode(order: ViewMode): void
   browseForFile(): void
   saveFile(): void
@@ -63,7 +64,7 @@ export class Toolbar extends StatelessComponent<ToolbarProps> {
       </div>
     )
 
-    if (!this.props.profile) {
+    if (!this.props.activeProfileState) {
       return (
         <div className={css(style.toolbar)}>
           🔬speedscope
@@ -105,7 +106,7 @@ export class Toolbar extends StatelessComponent<ToolbarProps> {
             <span className={css(style.emoji)}>🥪</span>Sandwich
           </div>
         </div>
-        {this.props.profile.getName()}
+        {this.props.activeProfileState.profile.getName()}
         <div className={css(style.toolbarRight)}>
           <div className={css(style.toolbarTab)} onClick={this.props.saveFile}>
             <span className={css(style.emoji)}>⤴️</span>Export
@@ -168,7 +169,20 @@ export class GLCanvas extends Component<GLCanvasProps, void> {
   }
 }
 
-export class Application extends StatelessComponent<WithDispatch<ApplicationState>> {
+export interface ActiveProfileState {
+  profile: Profile
+  index: number
+  chronoViewState: FlamechartViewState
+  leftHeavyViewState: FlamechartViewState
+  sandwichViewState: SandwichViewState
+}
+
+export type ApplicationProps = ApplicationState &
+  WithDispatch<{
+    activeProfileState: ActiveProfileState | null
+  }>
+
+export class Application extends StatelessComponent<ApplicationProps> {
   async loadProfile(loader: () => Promise<Profile | null>) {
     this.props.dispatch(actions.setLoading(true))
     await new Promise(resolve => setTimeout(resolve, 0))
@@ -198,34 +212,9 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
     const title = this.props.hashParams.title || profile.getName()
     profile.setName(title)
 
-    await this.setActiveProfile(profile)
-
     console.timeEnd('import')
-    this.props.dispatch(actions.setProfile(profile))
+    this.props.dispatch(actions.setProfileGroup({indexToView: 0, profiles: [profile]}))
     this.props.dispatch(actions.setLoading(false))
-  }
-
-  async setActiveProfile(profile: Profile) {
-    if (!this.props.glCanvas) return
-
-    document.title = `${profile.getName()} - speedscope`
-
-    const frames: Frame[] = []
-    profile.forEachFrame(f => frames.push(f))
-    function key(f: Frame) {
-      return (f.file || '') + f.name
-    }
-    function compare(a: Frame, b: Frame) {
-      return key(a) > key(b) ? 1 : -1
-    }
-    frames.sort(compare)
-    const frameToColorBucket = new Map<string | number, number>()
-    for (let i = 0; i < frames.length; i++) {
-      frameToColorBucket.set(frames[i].key, Math.floor(255 * i / frames.length))
-    }
-
-    this.props.dispatch(actions.setActiveProfile(profile))
-    this.props.dispatch(actions.setFrameToColorBucket(frameToColorBucket))
   }
 
   loadFromFile(file: File) {
@@ -247,7 +236,7 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
         return profile
       }
 
-      if (this.props.profile) {
+      if (this.props.activeProfileState) {
         // If a profile is already loaded, it's possible the file being imported is
         // a symbol map. If that's the case, we want to parse it, and apply the symbol
         // mapping to the already loaded profile. This can be use to take an opaque
@@ -255,7 +244,7 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
         const map = importEmscriptenSymbolMap(reader.result)
         if (map) {
           console.log('Importing as emscripten symbol map')
-          let profile = this.props.profile
+          let profile = this.props.activeProfileState.profile
           profile.remapNames(name => map.get(name) || name)
           return profile
         }
@@ -326,8 +315,9 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
   }
 
   private saveFile = () => {
-    if (this.props.profile) {
-      saveToFile(this.props.profile)
+    // TODO(jlfwong): Serialize all profiles into a single file
+    if (this.props.activeProfileState) {
+      saveToFile(this.props.activeProfileState.profile)
     }
   }
 
@@ -499,7 +489,7 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
   }
 
   renderContent() {
-    const {viewMode, flattenRecursion, profile, error, loading, glCanvas} = this.props
+    const {viewMode, activeProfileState, error, loading, glCanvas} = this.props
 
     if (error) {
       return this.renderError()
@@ -509,22 +499,21 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
       return this.renderLoadingBar()
     }
 
-    if (!profile || !glCanvas) {
+    if (!activeProfileState || !glCanvas) {
       return this.renderLanding()
     }
 
-    const profileToView = getProfileToView({profile, flattenRecursion})
-
     switch (viewMode) {
       case ViewMode.CHRONO_FLAME_CHART: {
-        return <ChronoFlamechartView profile={profileToView} glCanvas={glCanvas} />
+        return <ChronoFlamechartView activeProfileState={activeProfileState} glCanvas={glCanvas} />
       }
       case ViewMode.LEFT_HEAVY_FLAME_GRAPH: {
-        return <LeftHeavyFlamechartView profile={profileToView} glCanvas={glCanvas} />
+        return (
+          <LeftHeavyFlamechartView activeProfileState={activeProfileState} glCanvas={glCanvas} />
+        )
       }
       case ViewMode.SANDWICH_VIEW: {
-        if (!this.props.profile) return null
-        return <SandwichViewContainer />
+        return <SandwichViewContainer activeProfileState={activeProfileState} />
       }
     }
   }
@@ -542,6 +531,7 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
           setViewMode={this.setViewMode}
           saveFile={this.saveFile}
           browseForFile={this.browseForFile}
+          activeProfileState={this.props.activeProfileState}
           {...this.props as ApplicationState}
         />
         <div className={css(style.contentContainer)}>{this.renderContent()}</div>

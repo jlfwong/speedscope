@@ -4,19 +4,27 @@ import {ProfileTableViewContainer} from './profile-table-view'
 import {h} from 'preact'
 import {commonStyle, Sizes, Colors, FontSize} from './style'
 import {actions} from '../store/actions'
-import {createContainer, Dispatch, StatelessComponent} from '../lib/typed-redux'
+import {createContainer, Dispatch, StatelessComponent, WithoutDispatch} from '../lib/typed-redux'
 import {ApplicationState} from '../store'
 import {InvertedCallerFlamegraphView} from './inverted-caller-flamegraph-view'
 import {CalleeFlamegraphView} from './callee-flamegraph-view'
+import {ActiveProfileState} from './application'
 
 interface SandwichViewProps {
   selectedFrame: Frame | null
+  profileIndex: number
+  activeProfileState: ActiveProfileState
   dispatch: Dispatch
 }
 
 class SandwichView extends StatelessComponent<SandwichViewProps> {
   private setSelectedFrame = (selectedFrame: Frame | null) => {
-    this.props.dispatch(actions.sandwichView.setSelectedFrame(selectedFrame))
+    this.props.dispatch(
+      actions.sandwichView.setSelectedFrame({
+        profileIndex: this.props.profileIndex,
+        args: selectedFrame,
+      }),
+    )
   }
 
   onWindowKeyPress = (ev: KeyboardEvent) => {
@@ -59,7 +67,7 @@ class SandwichView extends StatelessComponent<SandwichViewProps> {
     return (
       <div className={css(commonStyle.hbox, commonStyle.fillY)}>
         <div className={css(style.tableView)}>
-          <ProfileTableViewContainer />
+          <ProfileTableViewContainer activeProfileState={this.props.activeProfileState} />
         </div>
         {flamegraphViews}
       </div>
@@ -107,7 +115,18 @@ const style = StyleSheet.create({
   },
 })
 
-export const SandwichViewContainer = createContainer(SandwichView, (state: ApplicationState) => {
-  const {callerCallee} = state.sandwichView
-  return {selectedFrame: callerCallee ? callerCallee.selectedFrame : null}
+export const SandwichViewContainer = createContainer<
+  {activeProfileState: ActiveProfileState},
+  ApplicationState,
+  WithoutDispatch<SandwichViewProps>,
+  SandwichView
+>(SandwichView, (state, ownProps) => {
+  const {activeProfileState} = ownProps
+  const {sandwichViewState, index} = activeProfileState
+  const {callerCallee} = sandwichViewState
+  return {
+    activeProfileState: activeProfileState,
+    selectedFrame: callerCallee ? callerCallee.selectedFrame : null,
+    profileIndex: index,
+  }
 })

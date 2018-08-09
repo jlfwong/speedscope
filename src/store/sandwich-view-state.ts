@@ -24,63 +24,64 @@ const defaultSortMethod = {
   direction: SortDirection.DESCENDING,
 }
 
-const calleesReducer = createFlamechartViewStateReducer(FlamechartID.SANDWICH_CALLEES)
-const invertedCallersReducer = createFlamechartViewStateReducer(
-  FlamechartID.SANDWICH_INVERTED_CALLERS,
-)
-
-export const sandwichView: Reducer<SandwichViewState> = (
-  state = {tableSortMethod: defaultSortMethod, callerCallee: null},
-  action,
-) => {
-  if (actions.setProfile.matches(action)) {
-    // When a new profile is dropped in, none of the selection state is going to make
-    // sense any more.
-    return {...state, callerCallee: null}
+export function createSandwichView(profileIndex: number): Reducer<SandwichViewState> {
+  const calleesReducer = createFlamechartViewStateReducer(
+    FlamechartID.SANDWICH_CALLEES,
+    profileIndex,
+  )
+  const invertedCallersReducer = createFlamechartViewStateReducer(
+    FlamechartID.SANDWICH_INVERTED_CALLERS,
+    profileIndex,
+  )
+  function applies(action: {payload: {profileIndex: number}}) {
+    const {payload} = action
+    return payload.profileIndex === profileIndex
   }
 
-  const {callerCallee} = state
-  if (callerCallee) {
-    const {calleeFlamegraph, invertedCallerFlamegraph} = callerCallee
-    const nextCalleeFlamegraph = calleesReducer(calleeFlamegraph, action)
-    const nextInvertedCallerFlamegraph = invertedCallersReducer(invertedCallerFlamegraph, action)
+  return (state = {tableSortMethod: defaultSortMethod, callerCallee: null}, action) => {
+    const {callerCallee} = state
+    if (callerCallee) {
+      const {calleeFlamegraph, invertedCallerFlamegraph} = callerCallee
+      const nextCalleeFlamegraph = calleesReducer(calleeFlamegraph, action)
+      const nextInvertedCallerFlamegraph = invertedCallersReducer(invertedCallerFlamegraph, action)
 
-    if (
-      nextCalleeFlamegraph !== calleeFlamegraph ||
-      nextInvertedCallerFlamegraph !== invertedCallerFlamegraph
-    ) {
-      return {
-        ...state,
-        callerCallee: {
-          ...callerCallee,
-          calleeFlamegraph: nextCalleeFlamegraph,
-          invertedCallerFlamegraph: nextInvertedCallerFlamegraph,
-        },
+      if (
+        nextCalleeFlamegraph !== calleeFlamegraph ||
+        nextInvertedCallerFlamegraph !== invertedCallerFlamegraph
+      ) {
+        return {
+          ...state,
+          callerCallee: {
+            ...callerCallee,
+            calleeFlamegraph: nextCalleeFlamegraph,
+            invertedCallerFlamegraph: nextInvertedCallerFlamegraph,
+          },
+        }
       }
     }
-  }
 
-  if (actions.sandwichView.setTableSortMethod.matches(action)) {
-    return {...state, tableSortMethod: action.payload}
-  }
+    if (actions.sandwichView.setTableSortMethod.matches(action) && applies(action)) {
+      return {...state, tableSortMethod: action.payload.args}
+    }
 
-  if (actions.sandwichView.setSelectedFrame.matches(action)) {
-    if (action.payload == null) {
-      return {
-        ...state,
-        callerCallee: null,
-      }
-    } else {
-      return {
-        ...state,
-        callerCallee: {
-          selectedFrame: action.payload,
-          calleeFlamegraph: calleesReducer(undefined, action),
-          invertedCallerFlamegraph: invertedCallersReducer(undefined, action),
-        },
+    if (actions.sandwichView.setSelectedFrame.matches(action) && applies(action)) {
+      if (action.payload.args == null) {
+        return {
+          ...state,
+          callerCallee: null,
+        }
+      } else {
+        return {
+          ...state,
+          callerCallee: {
+            selectedFrame: action.payload.args,
+            calleeFlamegraph: calleesReducer(undefined, action),
+            invertedCallerFlamegraph: invertedCallersReducer(undefined, action),
+          },
+        }
       }
     }
-  }
 
-  return state
+    return state
+  }
 }
