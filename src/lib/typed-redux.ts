@@ -57,13 +57,22 @@ export type WithoutDispatch<T> = Pick<T, Exclude<keyof T, 'dispatch'>>
 
 // We make this into a single function invocation instead of the connect(map, map)(Component)
 // syntax to make better use of type inference.
-export function createContainer<OwnProps, State, PropsFromState, ComponentType>(
+export function createContainer<OwnProps, State, ComponentProps, ComponentType>(
   component: {
-    new (props: OwnProps & PropsFromState & {dispatch: Dispatch}): ComponentType
+    new (props: ComponentProps): ComponentType
   },
-  mapStateToProps: (state: State, ownProps: OwnProps) => PropsFromState,
+  map: (state: State, dispatch: Dispatch, ownProps: OwnProps) => ComponentProps,
 ): ComponentConstructor<OwnProps, {}> {
-  return connect(mapStateToProps, (dispatch: Dispatch) => ({dispatch}))(component)
+  const mapStateToProps = (state: State) => state
+  const mapDispatchToProps = (dispatch: Dispatch) => ({dispatch})
+  const mergeProps = (
+    stateProps: State,
+    dispatchProps: {dispatch: Dispatch},
+    ownProps: OwnProps,
+  ) => {
+    return map(stateProps, dispatchProps.dispatch, ownProps)
+  }
+  return connect(mapStateToProps, mapDispatchToProps, mergeProps)(component)
 }
 
 export type VoidState = {

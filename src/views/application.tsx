@@ -527,7 +527,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
         )
       }
       case ViewMode.SANDWICH_VIEW: {
-        return <SandwichViewContainer activeProfileState={activeProfileState} />
+        return <SandwichViewContainer activeProfileState={activeProfileState} glCanvas={glCanvas} />
       }
     }
   }

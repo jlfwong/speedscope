@@ -1,8 +1,11 @@
 import {memoizeByShallowEquality} from '../lib/utils'
 import {Profile, Frame} from '../lib/profile'
 import {Flamechart} from '../lib/flamechart'
-import {createMemoizedFlamechartRenderer, FlamechartViewProps} from './flamechart-view-container'
-import {createContainer, WithoutDispatch} from '../lib/typed-redux'
+import {
+  createMemoizedFlamechartRenderer,
+  FlamechartViewContainerProps,
+} from './flamechart-view-container'
+import {createContainer, Dispatch} from '../lib/typed-redux'
 import {ApplicationState} from '../store'
 import {
   getCanvasContext,
@@ -13,7 +16,6 @@ import {
 } from '../store/getters'
 import {FlamechartID} from '../store/flamechart-view-state'
 import {FlamechartWrapper} from './flamechart-wrapper'
-import {ActiveProfileState} from './application'
 
 const getInvertedCallerProfile = memoizeByShallowEquality(
   ({
@@ -49,46 +51,45 @@ const getInvertedCallerFlamegraph = memoizeByShallowEquality(
 
 const getInvertedCallerFlamegraphRenderer = createMemoizedFlamechartRenderer({inverted: true})
 
-export const InvertedCallerFlamegraphView = createContainer<
-  {activeProfileState: ActiveProfileState},
-  ApplicationState,
-  WithoutDispatch<FlamechartViewProps>,
-  FlamechartWrapper
->(FlamechartWrapper, (state, ownProps) => {
-  const {activeProfileState} = ownProps
-  let {profile, sandwichViewState} = activeProfileState
-  let {flattenRecursion, glCanvas} = state
-  if (!profile) throw new Error('profile missing')
-  if (!glCanvas) throw new Error('glCanvas missing')
-  const {callerCallee} = sandwichViewState
-  if (!callerCallee) throw new Error('callerCallee missing')
-  const {selectedFrame} = callerCallee
+export const InvertedCallerFlamegraphView = createContainer(
+  FlamechartWrapper,
+  (state: ApplicationState, dispatch: Dispatch, ownProps: FlamechartViewContainerProps) => {
+    const {activeProfileState} = ownProps
+    let {profile, sandwichViewState} = activeProfileState
+    let {flattenRecursion, glCanvas} = state
+    if (!profile) throw new Error('profile missing')
+    if (!glCanvas) throw new Error('glCanvas missing')
+    const {callerCallee} = sandwichViewState
+    if (!callerCallee) throw new Error('callerCallee missing')
+    const {selectedFrame} = callerCallee
 
-  profile = flattenRecursion ? getProfileWithRecursionFlattened(profile) : profile
+    profile = flattenRecursion ? getProfileWithRecursionFlattened(profile) : profile
 
-  const frameToColorBucket = getFrameToColorBucket(profile)
-  const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
-  const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
-  const canvasContext = getCanvasContext(glCanvas)
+    const frameToColorBucket = getFrameToColorBucket(profile)
+    const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
+    const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
+    const canvasContext = getCanvasContext(glCanvas)
 
-  const flamechart = getInvertedCallerFlamegraph({
-    invertedCallerProfile: getInvertedCallerProfile({
-      profile,
-      frame: selectedFrame,
-      flattenRecursion,
-    }),
-    getColorBucketForFrame,
-  })
-  const flamechartRenderer = getInvertedCallerFlamegraphRenderer({canvasContext, flamechart})
+    const flamechart = getInvertedCallerFlamegraph({
+      invertedCallerProfile: getInvertedCallerProfile({
+        profile,
+        frame: selectedFrame,
+        flattenRecursion,
+      }),
+      getColorBucketForFrame,
+    })
+    const flamechartRenderer = getInvertedCallerFlamegraphRenderer({canvasContext, flamechart})
 
-  return {
-    id: FlamechartID.SANDWICH_INVERTED_CALLERS,
-    activeProfileState,
-    renderInverted: true,
-    flamechart,
-    flamechartRenderer,
-    canvasContext,
-    getCSSColorForFrame,
-    ...callerCallee.invertedCallerFlamegraph,
-  }
-})
+    return {
+      id: FlamechartID.SANDWICH_INVERTED_CALLERS,
+      dispatch,
+      activeProfileState,
+      renderInverted: true,
+      flamechart,
+      flamechartRenderer,
+      canvasContext,
+      getCSSColorForFrame,
+      ...callerCallee.invertedCallerFlamegraph,
+    }
+  },
+)

@@ -6,7 +6,7 @@ import {FontSize, Colors, Sizes, commonStyle} from './style'
 import {ColorChit} from './color-chit'
 import {ScrollableListView, ListItem} from './scrollable-list-view'
 import {actions} from '../store/actions'
-import {Dispatch, createContainer, WithoutDispatch} from '../lib/typed-redux'
+import {Dispatch, createContainer} from '../lib/typed-redux'
 import {ApplicationState} from '../store'
 import {createGetCSSColorForFrame, getFrameToColorBucket} from '../store/getters'
 import {ActiveProfileState} from './application'
@@ -343,25 +343,28 @@ const style = StyleSheet.create({
   },
 })
 
-export const ProfileTableViewContainer = createContainer<
-  {activeProfileState: ActiveProfileState},
-  ApplicationState,
-  WithoutDispatch<ProfileTableViewProps>,
-  ProfileTableView
->(ProfileTableView, (state: ApplicationState, ownProps) => {
-  const {activeProfileState} = ownProps
-  const {profile, sandwichViewState} = activeProfileState
-  if (!profile) throw new Error('profile missing')
-  const {tableSortMethod, callerCallee} = sandwichViewState
-  const selectedFrame = callerCallee ? callerCallee.selectedFrame : null
-  const frameToColorBucket = getFrameToColorBucket(profile)
-  const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
+interface ProfileTableViewContainerProps {
+  activeProfileState: ActiveProfileState
+}
 
-  return {
-    profile,
-    profileIndex: activeProfileState.index,
-    selectedFrame,
-    getCSSColorForFrame,
-    sortMethod: tableSortMethod,
-  }
-})
+export const ProfileTableViewContainer = createContainer(
+  ProfileTableView,
+  (state: ApplicationState, dispatch: Dispatch, ownProps: ProfileTableViewContainerProps) => {
+    const {activeProfileState} = ownProps
+    const {profile, sandwichViewState} = activeProfileState
+    if (!profile) throw new Error('profile missing')
+    const {tableSortMethod, callerCallee} = sandwichViewState
+    const selectedFrame = callerCallee ? callerCallee.selectedFrame : null
+    const frameToColorBucket = getFrameToColorBucket(profile)
+    const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
+
+    return {
+      profile,
+      dispatch,
+      profileIndex: activeProfileState.index,
+      selectedFrame,
+      getCSSColorForFrame,
+      sortMethod: tableSortMethod,
+    }
+  },
+)

@@ -4,7 +4,7 @@ import {ProfileTableViewContainer} from './profile-table-view'
 import {h} from 'preact'
 import {commonStyle, Sizes, Colors, FontSize} from './style'
 import {actions} from '../store/actions'
-import {createContainer, Dispatch, StatelessComponent, WithoutDispatch} from '../lib/typed-redux'
+import {createContainer, Dispatch, StatelessComponent} from '../lib/typed-redux'
 import {ApplicationState} from '../store'
 import {InvertedCallerFlamegraphView} from './inverted-caller-flamegraph-view'
 import {CalleeFlamegraphView} from './callee-flamegraph-view'
@@ -14,6 +14,7 @@ interface SandwichViewProps {
   selectedFrame: Frame | null
   profileIndex: number
   activeProfileState: ActiveProfileState
+  glCanvas: HTMLCanvasElement
   dispatch: Dispatch
 }
 
@@ -51,14 +52,20 @@ class SandwichView extends StatelessComponent<SandwichViewProps> {
             <div className={css(style.flamechartLabelParent)}>
               <div className={css(style.flamechartLabel)}>Callers</div>
             </div>
-            <InvertedCallerFlamegraphView activeProfileState={this.props.activeProfileState} />
+            <InvertedCallerFlamegraphView
+              glCanvas={this.props.glCanvas}
+              activeProfileState={this.props.activeProfileState}
+            />
           </div>
           <div className={css(style.divider)} />
           <div className={css(commonStyle.hbox, style.panZoomViewWraper)}>
             <div className={css(style.flamechartLabelParent, style.flamechartLabelParentBottom)}>
               <div className={css(style.flamechartLabel, style.flamechartLabelBottom)}>Callees</div>
             </div>
-            <CalleeFlamegraphView activeProfileState={this.props.activeProfileState} />
+            <CalleeFlamegraphView
+              glCanvas={this.props.glCanvas}
+              activeProfileState={this.props.activeProfileState}
+            />
           </div>
         </div>
       )
@@ -115,18 +122,24 @@ const style = StyleSheet.create({
   },
 })
 
-export const SandwichViewContainer = createContainer<
-  {activeProfileState: ActiveProfileState},
-  ApplicationState,
-  WithoutDispatch<SandwichViewProps>,
-  SandwichView
->(SandwichView, (state, ownProps) => {
-  const {activeProfileState} = ownProps
-  const {sandwichViewState, index} = activeProfileState
-  const {callerCallee} = sandwichViewState
-  return {
-    activeProfileState: activeProfileState,
-    selectedFrame: callerCallee ? callerCallee.selectedFrame : null,
-    profileIndex: index,
-  }
-})
+interface SandwichViewContainerProps {
+  activeProfileState: ActiveProfileState
+  glCanvas: HTMLCanvasElement
+}
+
+export const SandwichViewContainer = createContainer(
+  SandwichView,
+  (state: ApplicationState, dispatch: Dispatch, ownProps: SandwichViewContainerProps) => {
+    const {activeProfileState, glCanvas} = ownProps
+    const {sandwichViewState, index} = activeProfileState
+    const {callerCallee} = sandwichViewState
+
+    return {
+      activeProfileState: activeProfileState,
+      glCanvas,
+      dispatch,
+      selectedFrame: callerCallee ? callerCallee.selectedFrame : null,
+      profileIndex: index,
+    }
+  },
+)
