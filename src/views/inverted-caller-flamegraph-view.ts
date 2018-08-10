@@ -4,6 +4,7 @@ import {Flamechart} from '../lib/flamechart'
 import {
   createMemoizedFlamechartRenderer,
   FlamechartViewContainerProps,
+  createFlamechartSetters,
 } from './flamechart-view-container'
 import {createContainer, Dispatch} from '../lib/typed-redux'
 import {ApplicationState} from '../store'
@@ -55,7 +56,7 @@ export const InvertedCallerFlamegraphView = createContainer(
   FlamechartWrapper,
   (state: ApplicationState, dispatch: Dispatch, ownProps: FlamechartViewContainerProps) => {
     const {activeProfileState} = ownProps
-    let {profile, sandwichViewState} = activeProfileState
+    let {profile, sandwichViewState, index} = activeProfileState
     let {flattenRecursion, glCanvas} = state
     if (!profile) throw new Error('profile missing')
     if (!glCanvas) throw new Error('glCanvas missing')
@@ -81,14 +82,14 @@ export const InvertedCallerFlamegraphView = createContainer(
     const flamechartRenderer = getInvertedCallerFlamegraphRenderer({canvasContext, flamechart})
 
     return {
-      id: FlamechartID.SANDWICH_INVERTED_CALLERS,
-      dispatch,
-      activeProfileState,
       renderInverted: true,
       flamechart,
       flamechartRenderer,
       canvasContext,
       getCSSColorForFrame,
+      ...createFlamechartSetters(dispatch, FlamechartID.CHRONO, index),
+      // This overrides the setSelectedNode specified in createFlamechartSettesr
+      setSelectedNode: () => {},
       ...callerCallee.invertedCallerFlamegraph,
     }
   },

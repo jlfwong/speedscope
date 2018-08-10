@@ -6,7 +6,6 @@ import {Rect, AffineTransform, Vec2} from '../lib/math'
 import {FlamechartPanZoomView} from './flamechart-pan-zoom-view'
 import {noop, formatPercent} from '../lib/utils'
 import {Hovertip} from './hovertip'
-import {actions} from '../store/actions'
 import {FlamechartViewProps} from './flamechart-view-container'
 import {StatelessComponent} from '../lib/typed-redux'
 
@@ -24,23 +23,10 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
     return new Rect(origin, viewportRect.size.withX(width))
   }
   private setConfigSpaceViewportRect = (configSpaceViewportRect: Rect) => {
-    this.props.dispatch(
-      actions.flamechart.setConfigSpaceViewportRect({
-        profileIndex: this.props.activeProfileState.index,
-        args: {
-          id: this.props.id,
-          configSpaceViewportRect: this.clampViewportToFlamegraph(configSpaceViewportRect),
-        },
-      }),
-    )
+    this.props.setConfigSpaceViewportRect(this.clampViewportToFlamegraph(configSpaceViewportRect))
   }
   private setLogicalSpaceViewportSize = (logicalSpaceViewportSize: Vec2): void => {
-    this.props.dispatch(
-      actions.flamechart.setLogicalSpaceViewportSize({
-        profileIndex: this.props.activeProfileState.index,
-        args: {id: this.props.id, logicalSpaceViewportSize},
-      }),
-    )
+    this.props.setLogicalSpaceViewportSize(logicalSpaceViewportSize)
   }
 
   private transformViewport = (transform: AffineTransform) => {
@@ -77,15 +63,7 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
       event: MouseEvent
     } | null,
   ) => {
-    // TODO(jlfwong): It's crummy that these classes need to know about their
-    // profile indices just for the sake of dispatch. I think this is the intended
-    // use of mapDispatchToProps + mergeProps
-    this.props.dispatch(
-      actions.flamechart.setHoveredNode({
-        profileIndex: this.props.activeProfileState.index,
-        args: {id: this.props.id, hover},
-      }),
-    )
+    this.props.setNodeHover(hover)
   }
   render() {
     return (
@@ -94,7 +72,6 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
         ref={this.containerRef}
       >
         <FlamechartPanZoomView
-          id={this.props.id}
           selectedNode={null}
           onNodeHover={this.setNodeHover}
           onNodeSelect={noop}
