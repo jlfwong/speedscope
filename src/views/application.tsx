@@ -81,8 +81,48 @@ export class Toolbar extends StatelessComponent<ToolbarProps> {
   }
 
   renderCenterContent() {
-    const {activeProfileState} = this.props
-    return activeProfileState ? activeProfileState.profile.getName() : '🔬speedscope'
+    const {activeProfileState, profiles} = this.props
+    if (activeProfileState && profiles) {
+      const {index} = activeProfileState
+      if (profiles.profiles.length === 1) {
+        return activeProfileState.profile.getName()
+      } else {
+        function makeNavButton(content: string, disabled: boolean, onClick: () => void) {
+          return (
+            <button
+              disabled={disabled}
+              onClick={onClick}
+              className={css(
+                style.emoji,
+                style.toolbarProfileNavButton,
+                disabled && style.toolbarProfileNavButtonDisabled,
+              )}
+            >
+              {content}
+            </button>
+          )
+        }
+
+        const prevButton = makeNavButton('⬅️', index === 0, () =>
+          this.props.setProfileIndexToView(index - 1),
+        )
+        const nextButton = makeNavButton('➡️', index >= profiles.profiles.length - 1, () =>
+          this.props.setProfileIndexToView(index + 1),
+        )
+
+        return (
+          <div className={css(style.toolbarCenter)}>
+            {prevButton}
+            {activeProfileState.profile.getName()}{' '}
+            <span className={css(style.toolbarProfileIndex)}>
+              ({activeProfileState.index + 1}/{profiles.profiles.length})
+            </span>
+            {nextButton}
+          </div>
+        )
+      }
+    }
+    return '🔬speedscope'
   }
 
   renderRightContent() {
@@ -688,6 +728,10 @@ const style = StyleSheet.create({
     marginRight: 2,
     textAlign: 'left',
   },
+  toolbarCenter: {
+    paddingTop: 1,
+    height: Sizes.TOOLBAR_HEIGHT,
+  },
   toolbarRight: {
     height: Sizes.TOOLBAR_HEIGHT,
     overflow: 'hidden',
@@ -696,6 +740,29 @@ const style = StyleSheet.create({
     right: 0,
     marginRight: 2,
     textAlign: 'right',
+  },
+  toolbarProfileIndex: {
+    color: Colors.LIGHT_GRAY,
+  },
+  toolbarProfileNavButton: {
+    opacity: 0.8,
+    fontSize: FontSize.TITLE,
+    lineHeight: `${Sizes.TOOLBAR_TAB_HEIGHT}px`,
+    ':hover': {
+      opacity: 1.0,
+    },
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    marginLeft: '0.3em',
+    marginRight: '0.3em',
+    transition: `all ${Duration.HOVER_CHANGE} ease-in`,
+  },
+  toolbarProfileNavButtonDisabled: {
+    opacity: 0.5,
+    ':hover': {
+      opacity: 0.5,
+    },
   },
   toolbarTab: {
     background: Colors.DARK_GRAY,
