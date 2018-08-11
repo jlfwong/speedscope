@@ -492,7 +492,7 @@ export async function importFromInstrumentsTrace(
     profiles.push(...group.profiles)
   }
 
-  return {indexToView, profiles}
+  return {name: entry.name, indexToView, profiles}
 }
 
 export async function importRunFromInstrumentsTrace(args: {
@@ -520,6 +520,7 @@ export async function importRunFromInstrumentsTrace(args: {
   const threadIDs = counts.map(c => c[0])
 
   return {
+    name: fileName,
     indexToView: 0,
     profiles: threadIDs.map(threadID =>
       importThreadFromInstrumentsTrace({

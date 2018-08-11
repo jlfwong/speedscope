@@ -104,6 +104,7 @@ export class CallTreeNode extends HasWeights {
 }
 
 export interface ProfileGroup {
+  name: string
   indexToView: number
   profiles: Profile[]
 }

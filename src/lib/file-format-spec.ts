@@ -10,6 +10,10 @@ export namespace FileFormat {
       frames: Frame[]
     }
     profiles: Profile[]
+
+    // Added in 0.6.0
+    name?: string
+    activeProfileIndex?: number
   }
 
   export interface Frame {

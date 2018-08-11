@@ -10,6 +10,7 @@ import {actions} from './actions'
 import {clamp} from '../lib/math'
 
 export type ProfileGroupState = {
+  name: string
   indexToView: number
   profiles: ProfileState[]
 } | null
@@ -41,9 +42,10 @@ export function actionProfileIndex(action: Action<any>): number | null {
 
 export const profiles: Reducer<ProfileGroupState> = (state = null, action) => {
   if (actions.setProfileGroup.matches(action)) {
-    const {indexToView, profiles} = action.payload
+    const {indexToView, profiles, name} = action.payload
     return {
       indexToView,
+      name,
       profiles: profiles.map((p, i) => {
         return {
           profile: p,
@@ -95,6 +97,7 @@ export const profiles: Reducer<ProfileGroupState> = (state = null, action) => {
 
     if (indexToView !== nextIndexToView || profiles !== nextProfiles) {
       return {
+        ...state,
         indexToView: nextIndexToView,
         profiles: nextProfiles,
       }

@@ -17,7 +17,7 @@ const importModule = import('../import')
 // Force eager loading of the module
 importModule.then(() => {})
 async function importProfiles(fileName: string, contents: string): Promise<ProfileGroup | null> {
-  return (await importModule).importProfiles(fileName, contents)
+  return (await importModule).importProfileGroup(fileName, contents)
 }
 async function importFromFileSystemDirectoryEntry(entry: FileSystemDirectoryEntry) {
   return (await importModule).importFromFileSystemDirectoryEntry(entry)
@@ -299,17 +299,21 @@ export class Application extends StatelessComponent<ApplicationProps> {
         return profiles
       }
 
-      if (this.props.activeProfileState) {
+      if (this.props.profiles && this.props.activeProfileState) {
         // If a profile is already loaded, it's possible the file being imported is
         // a symbol map. If that's the case, we want to parse it, and apply the symbol
         // mapping to the already loaded profile. This can be use to take an opaque
         // profile and make it readable.
         const map = importEmscriptenSymbolMap(reader.result)
         if (map) {
+          const {profile, index} = this.props.activeProfileState
           console.log('Importing as emscripten symbol map')
-          let profile = this.props.activeProfileState.profile
           profile.remapNames(name => map.get(name) || name)
-          return {indexToView: 0, profiles: [profile]}
+          return {
+            name: this.props.profiles.name || 'profile',
+            indexToView: index,
+            profiles: [profile],
+          }
         }
       }
 
@@ -383,9 +387,14 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   private saveFile = () => {
-    // TODO(jlfwong): Serialize all profiles into a single file
-    if (this.props.activeProfileState) {
-      saveToFile(this.props.activeProfileState.profile)
+    if (this.props.profiles) {
+      const {name, indexToView, profiles} = this.props.profiles
+      const profileGroup: ProfileGroup = {
+        name,
+        indexToView,
+        profiles: profiles.map(p => p.profile),
+      }
+      saveToFile(profileGroup)
     }
   }
 

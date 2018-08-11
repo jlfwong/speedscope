@@ -1,8 +1,8 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import {Profile, CallTreeNode, Frame} from './profile'
-import {importProfiles} from '../import'
-import {exportProfile, importSpeedscopeProfiles} from './file-format'
+import {importProfileGroup} from '../import'
+import {exportProfileGroup, importSpeedscopeProfiles} from './file-format'
 
 interface DumpedProfile {
   stacks: string[]
@@ -47,9 +47,9 @@ export function dumpProfile(profile: Profile): any {
 export async function checkProfileSnapshot(filepath: string) {
   const input = fs.readFileSync(filepath, 'utf8')
 
-  const profiles = await importProfiles(path.basename(filepath), input)
-  if (profiles) {
-    for (let profile of profiles.profiles) {
+  const profileGroup = await importProfileGroup(path.basename(filepath), input)
+  if (profileGroup) {
+    for (let profile of profileGroup.profiles) {
       expect(dumpProfile(profile)).toMatchSnapshot()
     }
   } else {
@@ -57,31 +57,37 @@ export async function checkProfileSnapshot(filepath: string) {
     return
   }
 
-  const profilesWithoutFilename = await importProfiles('unknown', input)
+  const profilesWithoutFilename = await importProfileGroup('unknown', input)
   if (profilesWithoutFilename) {
-    expect(profilesWithoutFilename.profiles.length).toEqual(profiles.profiles.length)
-    for (let i = 0; i < profiles.profiles.length; i++) {
-      const a = profiles.profiles[i]
+    expect(profilesWithoutFilename.profiles.length).toEqual(profileGroup.profiles.length)
+    profilesWithoutFilename.name = profileGroup.name
+    for (let i = 0; i < profileGroup.profiles.length; i++) {
+      const a = profileGroup.profiles[i]
       const b = profilesWithoutFilename.profiles[i]
       b.setName(a.getName())
-      expect(exportProfile(a)).toEqual(exportProfile(b))
     }
+    expect(exportProfileGroup(profileGroup)).toEqual(exportProfileGroup(profilesWithoutFilename))
   } else {
     fail('Failed to extract profile when filename was "unknown"')
     return
   }
 
-  for (let profile of profiles.profiles) {
-    const exported = exportProfile(profile)
-    const reimported = importSpeedscopeProfiles(exported)[0]
+  const exported = exportProfileGroup(profileGroup)
+  const reimportedGroup = importSpeedscopeProfiles(exported)
 
-    expect(reimported.getName()).toEqual(profile.getName())
+  expect(reimportedGroup.name).toEqual(profileGroup.name)
+  expect(reimportedGroup.profiles.length).toEqual(profileGroup.profiles.length)
+
+  for (let i = 0; i < profileGroup.profiles.length; i++) {
+    const profile = profileGroup.profiles[i]
+    const reimported = reimportedGroup.profiles[i]
+
     expect(reimported.getTotalWeight()).toEqual(profile.getTotalWeight())
     expect(dumpProfile(reimported).stacks.join('\n')).toEqual(
       dumpProfile(profile).stacks.join('\n'),
     )
-
-    const reexported = exportProfile(reimported)
-    expect(exported).toEqual(reexported)
   }
+
+  const reexported = exportProfileGroup(reimportedGroup)
+  expect(exported).toEqual(reexported)
 }
