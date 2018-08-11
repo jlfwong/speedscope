@@ -52,11 +52,14 @@ export function setter<T>(
 }
 
 export type Dispatch = redux.Dispatch<Action<any>>
-export type WithDispatch<T> = T & {dispatch: Dispatch}
-export type WithoutDispatch<T> = Pick<T, Exclude<keyof T, 'dispatch'>>
 
 // We make this into a single function invocation instead of the connect(map, map)(Component)
 // syntax to make better use of type inference.
+//
+// NOTE: The way this works right now is going to regenerate new setters on every
+// store update. To make this not the case, we'd have to have mapStateToProps actually
+// specified. This may be a performance issue in the future, but we're going to eat
+// this cost for now in exchange for simpler type inference.
 export function createContainer<OwnProps, State, ComponentProps, ComponentType>(
   component: {
     new (props: ComponentProps): ComponentType
@@ -80,3 +83,12 @@ export type VoidState = {
 }
 
 export abstract class StatelessComponent<P> extends Component<P, VoidState> {}
+
+export function bindActionCreator<T>(
+  dispatch: Dispatch,
+  actionCreator: (payload: T) => Action<T>,
+): (t: T) => void {
+  return (t: T) => {
+    dispatch(actionCreator(t))
+  }
+}

@@ -2,7 +2,7 @@ import {FlamechartID, FlamechartViewState} from '../store/flamechart-view-state'
 import {CanvasContext} from '../gl/canvas-context'
 import {Flamechart} from '../lib/flamechart'
 import {FlamechartRenderer, FlamechartRendererOptions} from '../gl/flamechart-renderer'
-import {Dispatch, createContainer} from '../lib/typed-redux'
+import {Dispatch, createContainer, ActionCreator} from '../lib/typed-redux'
 import {Frame, Profile, CallTreeNode} from '../lib/profile'
 import {memoizeByShallowEquality} from '../lib/utils'
 import {ApplicationState} from '../store'
@@ -25,35 +25,47 @@ interface FlamechartSetters {
   setSelectedNode: (node: CallTreeNode | null) => void
 }
 
+interface WithFlamechartContext<T> {
+  profileIndex: number
+  args: {
+    id: FlamechartID
+  } & T
+}
+
 export function createFlamechartSetters(
   dispatch: Dispatch,
   id: FlamechartID,
   profileIndex: number,
 ): FlamechartSetters {
-  function wrapPayload<T>(t: T): {profileIndex: number; args: {id: FlamechartID} & T} {
-    const args = Object.assign({}, t, {id})
-    return {profileIndex, args}
+  function wrapActionCreator<T, U>(
+    actionCreator: ActionCreator<WithFlamechartContext<U>>,
+    map: (t: T) => U,
+  ): (t: T) => void {
+    return (t: T) => {
+      const args = Object.assign({}, map(t), {id})
+      dispatch(actionCreator({profileIndex, args}))
+    }
   }
 
-  function setNodeHover(hover: {node: CallTreeNode; event: MouseEvent} | null) {
-    dispatch(actions.flamechart.setHoveredNode(wrapPayload({hover})))
-  }
+  const {
+    setHoveredNode,
+    setLogicalSpaceViewportSize,
+    setConfigSpaceViewportRect,
+    setSelectedNode,
+  } = actions.flamechart
 
-  function setLogicalSpaceViewportSize(logicalSpaceViewportSize: Vec2) {
-    dispatch(
-      actions.flamechart.setLogicalSpaceViewportSize(wrapPayload({logicalSpaceViewportSize})),
-    )
+  return {
+    setNodeHover: wrapActionCreator(setHoveredNode, hover => ({hover})),
+    setLogicalSpaceViewportSize: wrapActionCreator(
+      setLogicalSpaceViewportSize,
+      logicalSpaceViewportSize => ({logicalSpaceViewportSize}),
+    ),
+    setConfigSpaceViewportRect: wrapActionCreator(
+      setConfigSpaceViewportRect,
+      configSpaceViewportRect => ({configSpaceViewportRect}),
+    ),
+    setSelectedNode: wrapActionCreator(setSelectedNode, selectedNode => ({selectedNode})),
   }
-
-  function setConfigSpaceViewportRect(configSpaceViewportRect: Rect) {
-    dispatch(actions.flamechart.setConfigSpaceViewportRect(wrapPayload({configSpaceViewportRect})))
-  }
-
-  function setSelectedNode(selectedNode: CallTreeNode | null) {
-    dispatch(actions.flamechart.setSelectedNode(wrapPayload({selectedNode})))
-  }
-
-  return {setNodeHover, setLogicalSpaceViewportSize, setConfigSpaceViewportRect, setSelectedNode}
 }
 
 export type FlamechartViewProps = {

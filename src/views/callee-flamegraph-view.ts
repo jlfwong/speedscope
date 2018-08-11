@@ -75,7 +75,7 @@ export const CalleeFlamegraphView = createContainer(
       flamechartRenderer,
       canvasContext,
       getCSSColorForFrame,
-      ...createFlamechartSetters(dispatch, FlamechartID.CHRONO, index),
+      ...createFlamechartSetters(dispatch, FlamechartID.SANDWICH_CALLEES, index),
       // This overrides the setSelectedNode specified in createFlamechartSettesr
       setSelectedNode: () => {},
       ...callerCallee.calleeFlamegraph,

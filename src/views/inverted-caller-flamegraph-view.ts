@@ -87,7 +87,7 @@ export const InvertedCallerFlamegraphView = createContainer(
       flamechartRenderer,
       canvasContext,
       getCSSColorForFrame,
-      ...createFlamechartSetters(dispatch, FlamechartID.CHRONO, index),
+      ...createFlamechartSetters(dispatch, FlamechartID.SANDWICH_INVERTED_CALLERS, index),
       // This overrides the setSelectedNode specified in createFlamechartSettesr
       setSelectedNode: () => {},
       ...callerCallee.invertedCallerFlamegraph,

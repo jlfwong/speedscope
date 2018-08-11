@@ -8,8 +8,7 @@ import {importEmscriptenSymbolMap} from '../lib/emscripten'
 import {SandwichViewContainer} from './sandwich-view'
 import {saveToFile} from '../lib/file-format'
 import {ApplicationState, ViewMode, canUseXHR} from '../store'
-import {actions} from '../store/actions'
-import {Dispatch, StatelessComponent, WithDispatch, WithoutDispatch} from '../lib/typed-redux'
+import {StatelessComponent} from '../lib/typed-redux'
 import {LeftHeavyFlamechartView, ChronoFlamechartView} from './flamechart-view-container'
 import {SandwichViewState} from '../store/sandwich-view-state'
 import {FlamechartViewState} from '../store/flamechart-view-state'
@@ -27,8 +26,7 @@ async function importFromFileSystemDirectoryEntry(entry: FileSystemDirectoryEntr
 declare function require(x: string): any
 const exampleProfileURL = require('../../sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt')
 
-interface ToolbarProps extends WithoutDispatch<ApplicationProps> {
-  setViewMode(order: ViewMode): void
+interface ToolbarProps extends ApplicationProps {
   browseForFile(): void
   saveFile(): void
 }
@@ -120,7 +118,7 @@ export class Toolbar extends StatelessComponent<ToolbarProps> {
 }
 
 interface GLCanvasProps {
-  dispatch: Dispatch
+  setGLCanvas: (canvas: HTMLCanvasElement | null) => void
 }
 export class GLCanvas extends Component<GLCanvasProps, void> {
   private canvas: HTMLCanvasElement | null = null
@@ -132,7 +130,7 @@ export class GLCanvas extends Component<GLCanvasProps, void> {
       this.canvas = null
     }
 
-    this.props.dispatch(actions.setGLCanvas(this.canvas))
+    this.props.setGLCanvas(this.canvas)
   }
 
   private maybeResize() {
@@ -177,14 +175,21 @@ export interface ActiveProfileState {
   sandwichViewState: SandwichViewState
 }
 
-export type ApplicationProps = ApplicationState &
-  WithDispatch<{
-    activeProfileState: ActiveProfileState | null
-  }>
+export type ApplicationProps = ApplicationState & {
+  setGLCanvas: (canvas: HTMLCanvasElement | null) => void
+  setLoading: (loading: boolean) => void
+  setError: (error: boolean) => void
+  setProfileGroup: (profileGroup: ProfileGroup) => void
+  setDragActive: (dragActive: boolean) => void
+  setViewMode: (viewMode: ViewMode) => void
+  setFlattenRecursion: (flattenRecursion: boolean) => void
+  setProfileIndexToView: (profileIndex: number) => void
+  activeProfileState: ActiveProfileState | null
+}
 
 export class Application extends StatelessComponent<ApplicationProps> {
   private async loadProfile(loader: () => Promise<ProfileGroup | null>) {
-    this.props.dispatch(actions.setLoading(true))
+    this.props.setLoading(true)
     await new Promise(resolve => setTimeout(resolve, 0))
 
     if (!this.props.glCanvas) return
@@ -196,14 +201,14 @@ export class Application extends StatelessComponent<ApplicationProps> {
       profileGroup = await loader()
     } catch (e) {
       console.log('Failed to load format', e)
-      this.props.dispatch(actions.setError(true))
+      this.props.setError(true)
       return
     }
 
     if (profileGroup == null) {
       // TODO(jlfwong): Make this a nicer overlay
       alert('Unrecognized format! See documentation about supported formats.')
-      this.props.dispatch(actions.setLoading(false))
+      this.props.setLoading(false)
       return
     }
 
@@ -218,8 +223,9 @@ export class Application extends StatelessComponent<ApplicationProps> {
     }
 
     console.timeEnd('import')
-    this.props.dispatch(actions.setProfileGroup(profileGroup))
-    this.props.dispatch(actions.setLoading(false))
+
+    this.props.setProfileGroup(profileGroup)
+    this.props.setLoading(false)
   }
 
   loadFromFile(file: File) {
@@ -270,7 +276,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   onDrop = (ev: DragEvent) => {
-    this.props.dispatch(actions.setDragActive(false))
+    this.props.setDragActive(false)
     ev.preventDefault()
 
     const firstItem = ev.dataTransfer.items[0]
@@ -294,34 +300,34 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   onDragOver = (ev: DragEvent) => {
-    this.props.dispatch(actions.setDragActive(true))
+    this.props.setDragActive(true)
     ev.preventDefault()
   }
 
   onDragLeave = (ev: DragEvent) => {
-    this.props.dispatch(actions.setDragActive(false))
+    this.props.setDragActive(false)
     ev.preventDefault()
   }
 
   onWindowKeyPress = async (ev: KeyboardEvent) => {
     if (ev.key === '1') {
-      this.props.dispatch(actions.setViewMode(ViewMode.CHRONO_FLAME_CHART))
+      this.props.setViewMode(ViewMode.CHRONO_FLAME_CHART)
     } else if (ev.key === '2') {
-      this.props.dispatch(actions.setViewMode(ViewMode.LEFT_HEAVY_FLAME_GRAPH))
+      this.props.setViewMode(ViewMode.LEFT_HEAVY_FLAME_GRAPH)
     } else if (ev.key === '3') {
-      this.props.dispatch(actions.setViewMode(ViewMode.SANDWICH_VIEW))
+      this.props.setViewMode(ViewMode.SANDWICH_VIEW)
     } else if (ev.key === 'r') {
       const {flattenRecursion} = this.props
-      this.props.dispatch(actions.setFlattenRecursion(!flattenRecursion))
+      this.props.setFlattenRecursion(!flattenRecursion)
     } else if (ev.key === 'n') {
       const {activeProfileState} = this.props
       if (activeProfileState) {
-        this.props.dispatch(actions.setProfileIndexToView(activeProfileState.index + 1))
+        this.props.setProfileIndexToView(activeProfileState.index + 1)
       }
     } else if (ev.key === 'p') {
       const {activeProfileState} = this.props
       if (activeProfileState) {
-        this.props.dispatch(actions.setProfileIndexToView(activeProfileState.index - 1))
+        this.props.setProfileIndexToView(activeProfileState.index - 1)
       }
     }
   }
@@ -498,10 +504,6 @@ export class Application extends StatelessComponent<ApplicationProps> {
     return <div className={css(style.loading)} />
   }
 
-  setViewMode = (viewMode: ViewMode) => {
-    this.props.dispatch(actions.setViewMode(viewMode))
-  }
-
   renderContent() {
     const {viewMode, activeProfileState, error, loading, glCanvas} = this.props
 
@@ -540,13 +542,11 @@ export class Application extends StatelessComponent<ApplicationProps> {
         onDragLeave={this.onDragLeave}
         className={css(style.root, this.props.dragActive && style.dragTargetRoot)}
       >
-        <GLCanvas dispatch={this.props.dispatch} />
+        <GLCanvas setGLCanvas={this.props.setGLCanvas} />
         <Toolbar
-          setViewMode={this.setViewMode}
           saveFile={this.saveFile}
           browseForFile={this.browseForFile}
-          activeProfileState={this.props.activeProfileState}
-          {...this.props as ApplicationState}
+          {...this.props as ApplicationProps}
         />
         <div className={css(style.contentContainer)}>{this.renderContent()}</div>
         {this.props.dragActive && <div className={css(style.dragTarget)} />}

@@ -14,18 +14,13 @@ interface SandwichViewProps {
   selectedFrame: Frame | null
   profileIndex: number
   activeProfileState: ActiveProfileState
+  setSelectedFrame: (selectedFrame: Frame | null) => void
   glCanvas: HTMLCanvasElement
-  dispatch: Dispatch
 }
 
 class SandwichView extends StatelessComponent<SandwichViewProps> {
   private setSelectedFrame = (selectedFrame: Frame | null) => {
-    this.props.dispatch(
-      actions.sandwichView.setSelectedFrame({
-        profileIndex: this.props.profileIndex,
-        args: selectedFrame,
-      }),
-    )
+    this.props.setSelectedFrame(selectedFrame)
   }
 
   onWindowKeyPress = (ev: KeyboardEvent) => {
@@ -134,10 +129,19 @@ export const SandwichViewContainer = createContainer(
     const {sandwichViewState, index} = activeProfileState
     const {callerCallee} = sandwichViewState
 
+    const setSelectedFrame = (selectedFrame: Frame | null) => {
+      dispatch(
+        actions.sandwichView.setSelectedFrame({
+          profileIndex: index,
+          args: selectedFrame,
+        }),
+      )
+    }
+
     return {
       activeProfileState: activeProfileState,
       glCanvas,
-      dispatch,
+      setSelectedFrame,
       selectedFrame: callerCallee ? callerCallee.selectedFrame : null,
       profileIndex: index,
     }
