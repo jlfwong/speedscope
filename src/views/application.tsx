@@ -44,7 +44,48 @@ export class Toolbar extends StatelessComponent<ToolbarProps> {
     this.props.setViewMode(ViewMode.SANDWICH_VIEW)
   }
 
-  render() {
+  renderLeftContent() {
+    if (!this.props.activeProfileState) return null
+
+    return (
+      <div className={css(style.toolbarLeft)}>
+        <div
+          className={css(
+            style.toolbarTab,
+            this.props.viewMode === ViewMode.CHRONO_FLAME_CHART && style.toolbarTabActive,
+          )}
+          onClick={this.setTimeOrder}
+        >
+          <span className={css(style.emoji)}>🕰</span>Time Order
+        </div>
+        <div
+          className={css(
+            style.toolbarTab,
+            this.props.viewMode === ViewMode.LEFT_HEAVY_FLAME_GRAPH && style.toolbarTabActive,
+          )}
+          onClick={this.setLeftHeavyOrder}
+        >
+          <span className={css(style.emoji)}>⬅️</span>Left Heavy
+        </div>
+        <div
+          className={css(
+            style.toolbarTab,
+            this.props.viewMode === ViewMode.SANDWICH_VIEW && style.toolbarTabActive,
+          )}
+          onClick={this.setSandwichView}
+        >
+          <span className={css(style.emoji)}>🥪</span>Sandwich
+        </div>
+      </div>
+    )
+  }
+
+  renderCenterContent() {
+    const {activeProfileState} = this.props
+    return activeProfileState ? activeProfileState.profile.getName() : '🔬speedscope'
+  }
+
+  renderRightContent() {
     const importFile = (
       <div className={css(style.toolbarTab)} onClick={this.props.browseForFile}>
         <span className={css(style.emoji)}>⤵️</span>Import
@@ -62,56 +103,25 @@ export class Toolbar extends StatelessComponent<ToolbarProps> {
       </div>
     )
 
-    if (!this.props.activeProfileState) {
-      return (
-        <div className={css(style.toolbar)}>
-          🔬speedscope
-          <div className={css(style.toolbarRight)}>
-            {importFile}
-            {help}
-          </div>
-        </div>
-      )
-    }
     return (
-      <div className={css(style.toolbar)}>
-        <div className={css(style.toolbarLeft)}>
-          <div
-            className={css(
-              style.toolbarTab,
-              this.props.viewMode === ViewMode.CHRONO_FLAME_CHART && style.toolbarTabActive,
-            )}
-            onClick={this.setTimeOrder}
-          >
-            <span className={css(style.emoji)}>🕰</span>Time Order
-          </div>
-          <div
-            className={css(
-              style.toolbarTab,
-              this.props.viewMode === ViewMode.LEFT_HEAVY_FLAME_GRAPH && style.toolbarTabActive,
-            )}
-            onClick={this.setLeftHeavyOrder}
-          >
-            <span className={css(style.emoji)}>⬅️</span>Left Heavy
-          </div>
-          <div
-            className={css(
-              style.toolbarTab,
-              this.props.viewMode === ViewMode.SANDWICH_VIEW && style.toolbarTabActive,
-            )}
-            onClick={this.setSandwichView}
-          >
-            <span className={css(style.emoji)}>🥪</span>Sandwich
-          </div>
-        </div>
-        {this.props.activeProfileState.profile.getName()}
-        <div className={css(style.toolbarRight)}>
+      <div className={css(style.toolbarRight)}>
+        {this.props.activeProfileState && (
           <div className={css(style.toolbarTab)} onClick={this.props.saveFile}>
             <span className={css(style.emoji)}>⤴️</span>Export
           </div>
-          {importFile}
-          {help}
-        </div>
+        )}
+        {importFile}
+        {help}
+      </div>
+    )
+  }
+
+  render() {
+    return (
+      <div className={css(style.toolbar)}>
+        {this.renderLeftContent()}
+        {this.renderCenterContent()}
+        {this.renderRightContent()}
       </div>
     )
   }
