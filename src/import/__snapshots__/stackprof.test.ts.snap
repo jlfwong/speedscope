@@ -76,6 +76,7 @@ Object {
       "totalWeight": 774706,
     },
   ],
+  "name": "simple-stackprof.json",
   "stacks": Array [
     "<main>;<main>;block in <main>;Object#a;Object#a;Object#b;Object#b;Object#d;Object#d 6.11ms",
     "<main>;<main>;block in <main>;Object#a;Object#a;Object#b;Object#b;Object#d;Object#d;(garbage collection) 1.02ms",
@@ -849,3 +850,7 @@ Object {
   ],
 }
 `;
+
+exports[`importFromStackprof: indexToView 1`] = `0`;
+
+exports[`importFromStackprof: profileGroup.name 1`] = `"simple-stackprof.json"`;

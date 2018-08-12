@@ -40,6 +40,7 @@ Object {
       "totalWeight": 4,
     },
   ],
+  "name": "simple.txt",
   "stacks": Array [
     "a;b;c 2",
     "a;b;d 4",
@@ -48,3 +49,7 @@ Object {
   ],
 }
 `;
+
+exports[`importFromBGFlameGraph: indexToView 1`] = `0`;
+
+exports[`importFromBGFlameGraph: profileGroup.name 1`] = `"simple.txt"`;

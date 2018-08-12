@@ -40,6 +40,7 @@ Object {
       "totalWeight": 11.021373999974458,
     },
   ],
+  "name": "simple-firefox.json",
   "stacks": Array [
     "a;b;d 989.53µs",
     "a;c;d 1.02ms",
@@ -107,6 +108,7 @@ Object {
       "totalWeight": 9.954629999992903,
     },
   ],
+  "name": "recursion.json",
   "stacks": Array [
     "main;alpha;beta;alpha;beta;alpha;beta;alpha;delta;gamma 998.89µs",
     "main 1.19ms",
@@ -120,3 +122,11 @@ Object {
   ],
 }
 `;
+
+exports[`importFromFirefox recursion: indexToView 1`] = `0`;
+
+exports[`importFromFirefox recursion: profileGroup.name 1`] = `"recursion.json"`;
+
+exports[`importFromFirefox: indexToView 1`] = `0`;
+
+exports[`importFromFirefox: profileGroup.name 1`] = `"simple-firefox.json"`;

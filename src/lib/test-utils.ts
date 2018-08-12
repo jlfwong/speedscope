@@ -5,12 +5,14 @@ import {importProfileGroup} from '../import'
 import {exportProfileGroup, importSpeedscopeProfiles} from './file-format'
 
 interface DumpedProfile {
+  name: string
   stacks: string[]
   frames: Frame[]
 }
 
 export function dumpProfile(profile: Profile): any {
   const dump: DumpedProfile = {
+    name: profile.getName(),
     stacks: [],
     frames: [],
   }
@@ -49,6 +51,9 @@ export async function checkProfileSnapshot(filepath: string) {
 
   const profileGroup = await importProfileGroup(path.basename(filepath), input)
   if (profileGroup) {
+    expect(profileGroup.name).toMatchSnapshot('profileGroup.name')
+    expect(profileGroup.indexToView).toMatchSnapshot('indexToView')
+
     for (let profile of profileGroup.profiles) {
       expect(dumpProfile(profile)).toMatchSnapshot()
     }
