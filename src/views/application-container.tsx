@@ -7,17 +7,17 @@ import {actions} from '../store/actions'
 export const ApplicationContainer = createContainer(
   Application,
   (state: ApplicationState, dispatch: Dispatch) => {
-    const {flattenRecursion, profiles} = state
+    const {flattenRecursion, profileGroup} = state
 
     let activeProfileState: ActiveProfileState | null = null
-    if (profiles) {
-      if (profiles.profiles.length > profiles.indexToView) {
-        const index = profiles.indexToView
-        const profileState = profiles.profiles[index]
+    if (profileGroup) {
+      if (profileGroup.profiles.length > profileGroup.indexToView) {
+        const index = profileGroup.indexToView
+        const profileState = profileGroup.profiles[index]
         activeProfileState = {
-          ...profiles.profiles[profiles.indexToView],
+          ...profileGroup.profiles[profileGroup.indexToView],
           profile: getProfileToView({profile: profileState.profile, flattenRecursion}),
-          index: profiles.indexToView,
+          index: profileGroup.indexToView,
         }
       }
     }

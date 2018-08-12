@@ -8,7 +8,7 @@ import {actions} from './actions'
 import * as redux from 'redux'
 import {setter, Reducer} from '../lib/typed-redux'
 import {HashParams, getHashParams} from '../lib/hash-params'
-import {ProfileGroupState, profiles} from './profiles-state'
+import {ProfileGroupState, profileGroup} from './profiles-state'
 
 export const enum ViewMode {
   CHRONO_FLAME_CHART,
@@ -28,7 +28,7 @@ export interface ApplicationState {
   loading: boolean
   error: boolean
 
-  profiles: ProfileGroupState
+  profileGroup: ProfileGroupState
 }
 
 const protocol = window.location.protocol
@@ -46,7 +46,7 @@ export function createApplicationStore(
   const loading = canUseXHR && hashParams.profileURL != null
 
   const reducer: Reducer<ApplicationState> = redux.combineReducers({
-    profiles,
+    profileGroup,
 
     hashParams: setter<HashParams>(actions.setHashParams, hashParams),
 

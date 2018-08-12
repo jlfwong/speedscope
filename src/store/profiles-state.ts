@@ -40,7 +40,7 @@ export function actionProfileIndex(action: Action<any>): number | null {
   }
 }
 
-export const profiles: Reducer<ProfileGroupState> = (state = null, action) => {
+export const profileGroup: Reducer<ProfileGroupState> = (state = null, action) => {
   if (actions.setProfileGroup.matches(action)) {
     const {indexToView, profiles, name} = action.payload
     return {

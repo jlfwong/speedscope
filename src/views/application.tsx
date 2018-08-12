@@ -81,10 +81,10 @@ export class Toolbar extends StatelessComponent<ToolbarProps> {
   }
 
   renderCenterContent() {
-    const {activeProfileState, profiles} = this.props
-    if (activeProfileState && profiles) {
+    const {activeProfileState, profileGroup} = this.props
+    if (activeProfileState && profileGroup) {
       const {index} = activeProfileState
-      if (profiles.profiles.length === 1) {
+      if (profileGroup.profiles.length === 1) {
         return activeProfileState.profile.getName()
       } else {
         function makeNavButton(content: string, disabled: boolean, onClick: () => void) {
@@ -106,7 +106,7 @@ export class Toolbar extends StatelessComponent<ToolbarProps> {
         const prevButton = makeNavButton('⬅️', index === 0, () =>
           this.props.setProfileIndexToView(index - 1),
         )
-        const nextButton = makeNavButton('➡️', index >= profiles.profiles.length - 1, () =>
+        const nextButton = makeNavButton('➡️', index >= profileGroup.profiles.length - 1, () =>
           this.props.setProfileIndexToView(index + 1),
         )
 
@@ -115,7 +115,7 @@ export class Toolbar extends StatelessComponent<ToolbarProps> {
             {prevButton}
             {activeProfileState.profile.getName()}{' '}
             <span className={css(style.toolbarProfileIndex)}>
-              ({activeProfileState.index + 1}/{profiles.profiles.length})
+              ({activeProfileState.index + 1}/{profileGroup.profiles.length})
             </span>
             {nextButton}
           </div>
@@ -299,7 +299,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
         return profiles
       }
 
-      if (this.props.profiles && this.props.activeProfileState) {
+      if (this.props.profileGroup && this.props.activeProfileState) {
         // If a profile is already loaded, it's possible the file being imported is
         // a symbol map. If that's the case, we want to parse it, and apply the symbol
         // mapping to the already loaded profile. This can be use to take an opaque
@@ -310,7 +310,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
           console.log('Importing as emscripten symbol map')
           profile.remapNames(name => map.get(name) || name)
           return {
-            name: this.props.profiles.name || 'profile',
+            name: this.props.profileGroup.name || 'profile',
             indexToView: index,
             profiles: [profile],
           }
@@ -387,8 +387,8 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   private saveFile = () => {
-    if (this.props.profiles) {
-      const {name, indexToView, profiles} = this.props.profiles
+    if (this.props.profileGroup) {
+      const {name, indexToView, profiles} = this.props.profileGroup
       const profileGroup: ProfileGroup = {
         name,
         indexToView,
