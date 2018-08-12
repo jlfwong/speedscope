@@ -118,3 +118,5 @@ Once a profile has loaded, the main view is split into two: the top area is the 
 * `r`: Collapse recursion in the flamegraphs
 * `Cmd+S`/`Ctrl+S` to save the current profile
 * `Cmd+O`/`Ctrl+O` to open a new profile
+* `n`: Go to next profile/thread if one is available
+* `p`: Go to previous profile/thread if one is available
