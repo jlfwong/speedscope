@@ -1,5 +1,5 @@
 {
-  "version": "0.6.0",
+  "exporter": "speedscope@0.6.0",
   "$schema": "https://www.speedscope.app/file-format-schema.json",
   "name": "Two Samples",
   "activeProfileIndex": 1,

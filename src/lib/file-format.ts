@@ -31,7 +31,7 @@ export function exportProfileGroup(profileGroup: ProfileGroup): FileFormat.File 
   }
 
   const file: FileFormat.File = {
-    version: require('../../package.json').version,
+    exporter: `speedscope@${require('../../package.json').version}`,
     name: profileGroup.name,
     activeProfileIndex: profileGroup.indexToView,
     $schema: 'https://www.speedscope.app/file-format-schema.json',
