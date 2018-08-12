@@ -49,7 +49,6 @@ export const profileGroup: Reducer<ProfileGroupState> = (state = null, action) =
       profiles: profiles.map((p, i) => {
         return {
           profile: p,
-          frameToColorBucket: new Map(),
           chronoViewState: createFlamechartViewStateReducer(FlamechartID.CHRONO, i)(
             undefined,
             action,

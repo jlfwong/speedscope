@@ -13,12 +13,22 @@ describe('profileGroup', () => {
     expect(getState().profileGroup).toBe(null)
     dispatch(actions.setProfileGroup(initialProfileGroup))
     const {profileGroup} = getState()
-    if (!profileGroup) throw new Error('No profile found')
-    expect(profileGroup.name).toBe(initialProfileGroup.name)
-    expect(profileGroup.indexToView).toBe(initialProfileGroup.indexToView)
+    expect(profileGroup!.name).toBe(initialProfileGroup.name)
+    expect(profileGroup!.indexToView).toBe(initialProfileGroup.indexToView)
 
     for (let i = 0; i < initialProfileGroup.profiles.length; i++) {
-      expect(profileGroup.profiles[i].profile).toEqual(initialProfileGroup.profiles[i])
+      expect(profileGroup!.profiles[i].profile).toEqual(initialProfileGroup.profiles[i])
     }
+  })
+
+  storeTest('setProfileIndexToView', ({getState, dispatch}) => {
+    dispatch(actions.setProfileGroup(initialProfileGroup))
+    expect(getState().profileGroup!.indexToView).toBe(1)
+    dispatch(actions.setProfileIndexToView(0))
+    expect(getState()!.profileGroup!.indexToView).toBe(0)
+    dispatch(actions.setProfileIndexToView(-1))
+    expect(getState()!.profileGroup!.indexToView).toBe(0)
+    dispatch(actions.setProfileIndexToView(2))
+    expect(getState().profileGroup!.indexToView).toBe(1)
   })
 })
