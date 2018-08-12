@@ -85,6 +85,7 @@ Object {
       "totalWeight": 74448896,
     },
   ],
+  "name": "random-allocations-deep-copy.txt",
   "stacks": Array [
     "start;main;delta();alpha();leakMemory();malloc;malloc_zone_malloc 73.00 MB",
     "start;main;delta();beta();leakMemory();malloc;malloc_zone_malloc 72.00 MB",
@@ -97,6 +98,10 @@ Object {
   ],
 }
 `;
+
+exports[`importFromInstrumentsDeepCopy allocations profile: indexToView 1`] = `0`;
+
+exports[`importFromInstrumentsDeepCopy allocations profile: profileGroup.name 1`] = `"random-allocations-deep-copy.txt"`;
 
 exports[`importFromInstrumentsDeepCopy time profile 1`] = `
 Object {
@@ -282,6 +287,7 @@ Object {
       "totalWeight": 1,
     },
   ],
+  "name": "simple-time-profile-deep-copy.txt",
   "stacks": Array [
     "start;main;delta();alpha();leakMemory();malloc;malloc_zone_malloc;szone_malloc_should_clear;small_malloc_from_free_list 4.00ms",
     "start;main;delta();alpha();leakMemory();malloc;malloc_zone_malloc;szone_malloc_should_clear;allocate_pages_securely;mach_vm_map;_kernelrpc_mach_vm_map_trap 1.00ms",
@@ -325,6 +331,10 @@ Object {
   ],
 }
 `;
+
+exports[`importFromInstrumentsDeepCopy time profile: indexToView 1`] = `0`;
+
+exports[`importFromInstrumentsDeepCopy time profile: profileGroup.name 1`] = `"simple-time-profile-deep-copy.txt"`;
 
 exports[`importFromInstrumentsTrace Instruments 8.3.3 1`] = `
 Object {
@@ -681,6 +691,7 @@ Object {
       "totalWeight": 1016403,
     },
   ],
+  "name": "simple-time-profile.trace - thread 4",
   "stacks": Array [
     " 730.82ms",
     "_dyld_start;dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*);dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*);dyld::link(ImageLoader*, bool, bool, ImageLoader::RPathChain const&, unsigned int);ImageLoader::link(ImageLoader::LinkContext const&, bool, bool, bool, ImageLoader::RPathChain const&, char const*);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoaderMachOCompressed::doBind(ImageLoader::LinkContext const&, bool);ImageLoaderMachO::setupLazyPointerHandler(ImageLoader::LinkContext const&) 5.06ms",
@@ -4108,6 +4119,7 @@ Object {
       "totalWeight": 1012057,
     },
   ],
+  "name": "simple-time-profile.trace - thread 4",
   "stacks": Array [
     " 7.15ms",
     "_dyld_start;dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*);dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*);dyld::initializeMainExecutable();ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&);ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&);ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&);ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&);ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&);ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&);ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&);0x0000000110c55a79;libSystem_initializer;_libc_initializer;__chk_init;_dyld_register_func_for_add_image;_dyld_func_lookup 9.02ms",

@@ -2,6 +2,13 @@
 
 ### Added
 
+### Fixed
+
+* Added support for multiple threads/processes [#130]
+* Import all runs & threads from Instruments .trace files instead of just main thread from selected run [#130]
+
+### Fixed
+
 ## [0.5.1] - 2018-08-09
 
 ### Fixed

@@ -87,7 +87,8 @@ describe('importFromInstrumentsTrace', () => {
       })
     })
     const root = new ZipBackedFileSystemEntry(zip, 'simple-time-profile.trace')
-    const profile = await importFromFileSystemDirectoryEntry(root)
+    const profileGroup = await importFromFileSystemDirectoryEntry(root)
+    const profile = profileGroup.profiles[profileGroup.indexToView]
     expect(dumpProfile(profile)).toMatchSnapshot()
   }
 

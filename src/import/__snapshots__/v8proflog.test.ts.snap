@@ -238,6 +238,7 @@ Object {
       "totalWeight": 10154,
     },
   ],
+  "name": "simple.v8log.json",
   "stacks": Array [
     "(anonymous);startup;setupGlobalVariables;NativeModule.require;NativeModule.compile;(anonymous);NativeModule.require;NativeModule.compile;(anonymous);(c++) v8::internal::Runtime_CreateArrayLiteral;(c++) v8::internal::JSFunction::EnsureHasInitialMap 29.38ms",
     "(anonymous);startup;setupGlobalConsole;setupInspectorCommandLineAPI;NativeModule.require;NativeModule.compile;(anonymous);NativeModule.require;NativeModule.compile;(anonymous);(c++) v8::internal::Runtime_StoreIC_Miss;(c++) v8::internal::Map::RawCopy 22.89ms",
@@ -258,3 +259,7 @@ Object {
   ],
 }
 `;
+
+exports[`importFromV8ProfLog: indexToView 1`] = `0`;
+
+exports[`importFromV8ProfLog: profileGroup.name 1`] = `"simple.v8log.json"`;

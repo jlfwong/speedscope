@@ -4,12 +4,36 @@ export namespace FileFormat {
   export type Profile = EventedProfile | SampledProfile
 
   export interface File {
-    version: string
     $schema: 'https://www.speedscope.app/file-format-schema.json'
+
+    // Data shared between profiles
     shared: {
       frames: Frame[]
     }
+
+    // List of profile definitions
     profiles: Profile[]
+
+    // The name of the contained profile group. If omitted, will use the name of
+    // the file itself.
+    // Added in 0.6.0
+    name?: string
+
+    // The index into the `profiles` array that should be displayed upon file
+    // load. If omitted, will default to displaying the first profile in the
+    // file.
+    //
+    // Added in 0.6.0
+    activeProfileIndex?: number
+
+    // The name of the the program which exported this profile. This isn't
+    // consumed but can be helpful for debugging generated data by seeing what
+    // was generating it! Recommended format is "name@version". e.g. when the
+    // file was exported by speedscope v0.6.0 itself, it will be
+    // "speedscope@0.6.0"
+    //
+    // Added in 0.6.0
+    exporter?: string
   }
 
   export interface Frame {

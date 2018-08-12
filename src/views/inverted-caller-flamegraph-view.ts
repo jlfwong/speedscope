@@ -1,14 +1,19 @@
 import {memoizeByShallowEquality} from '../lib/utils'
 import {Profile, Frame} from '../lib/profile'
 import {Flamechart} from '../lib/flamechart'
-import {createMemoizedFlamechartRenderer} from './flamechart-view-container'
-import {createContainer} from '../lib/typed-redux'
+import {
+  createMemoizedFlamechartRenderer,
+  FlamechartViewContainerProps,
+  createFlamechartSetters,
+} from './flamechart-view-container'
+import {createContainer, Dispatch} from '../lib/typed-redux'
 import {ApplicationState} from '../store'
 import {
   getCanvasContext,
   createGetColorBucketForFrame,
   createGetCSSColorForFrame,
   getProfileWithRecursionFlattened,
+  getFrameToColorBucket,
 } from '../store/getters'
 import {FlamechartID} from '../store/flamechart-view-state'
 import {FlamechartWrapper} from './flamechart-wrapper'
@@ -49,16 +54,19 @@ const getInvertedCallerFlamegraphRenderer = createMemoizedFlamechartRenderer({in
 
 export const InvertedCallerFlamegraphView = createContainer(
   FlamechartWrapper,
-  (state: ApplicationState) => {
-    let {profile, flattenRecursion, glCanvas, frameToColorBucket, sandwichView} = state
+  (state: ApplicationState, dispatch: Dispatch, ownProps: FlamechartViewContainerProps) => {
+    const {activeProfileState} = ownProps
+    let {profile, sandwichViewState, index} = activeProfileState
+    let {flattenRecursion, glCanvas} = state
     if (!profile) throw new Error('profile missing')
     if (!glCanvas) throw new Error('glCanvas missing')
-    const {callerCallee} = sandwichView
+    const {callerCallee} = sandwichViewState
     if (!callerCallee) throw new Error('callerCallee missing')
     const {selectedFrame} = callerCallee
 
     profile = flattenRecursion ? getProfileWithRecursionFlattened(profile) : profile
 
+    const frameToColorBucket = getFrameToColorBucket(profile)
     const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
     const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
     const canvasContext = getCanvasContext(glCanvas)
@@ -74,12 +82,14 @@ export const InvertedCallerFlamegraphView = createContainer(
     const flamechartRenderer = getInvertedCallerFlamegraphRenderer({canvasContext, flamechart})
 
     return {
-      id: FlamechartID.SANDWICH_INVERTED_CALLERS,
       renderInverted: true,
       flamechart,
       flamechartRenderer,
       canvasContext,
       getCSSColorForFrame,
+      ...createFlamechartSetters(dispatch, FlamechartID.SANDWICH_INVERTED_CALLERS, index),
+      // This overrides the setSelectedNode specified in createFlamechartSettesr
+      setSelectedNode: () => {},
       ...callerCallee.invertedCallerFlamegraph,
     }
   },

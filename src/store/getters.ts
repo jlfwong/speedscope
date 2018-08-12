@@ -45,3 +45,25 @@ export const getProfileToView = memoizeByShallowEquality(
     return flattenRecursion ? profile.getProfileWithRecursionFlattened() : profile
   },
 )
+export const getFrameToColorBucket = memoizeByReference((profile: Profile): Map<
+  string | number,
+  number
+> => {
+  document.title = `${profile.getName()} - speedscope`
+
+  const frames: Frame[] = []
+  profile.forEachFrame(f => frames.push(f))
+  function key(f: Frame) {
+    return (f.file || '') + f.name
+  }
+  function compare(a: Frame, b: Frame) {
+    return key(a) > key(b) ? 1 : -1
+  }
+  frames.sort(compare)
+  const frameToColorBucket = new Map<string | number, number>()
+  for (let i = 0; i < frames.length; i++) {
+    frameToColorBucket.set(frames[i].key, Math.floor(255 * i / frames.length))
+  }
+
+  return frameToColorBucket
+})

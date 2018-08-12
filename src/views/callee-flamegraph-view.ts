@@ -1,13 +1,18 @@
 import {memoizeByShallowEquality} from '../lib/utils'
 import {Profile, Frame} from '../lib/profile'
 import {Flamechart} from '../lib/flamechart'
-import {createMemoizedFlamechartRenderer} from './flamechart-view-container'
-import {createContainer} from '../lib/typed-redux'
+import {
+  createMemoizedFlamechartRenderer,
+  FlamechartViewContainerProps,
+  createFlamechartSetters,
+} from './flamechart-view-container'
+import {createContainer, Dispatch} from '../lib/typed-redux'
 import {ApplicationState} from '../store'
 import {
   getCanvasContext,
   createGetColorBucketForFrame,
   createGetCSSColorForFrame,
+  getFrameToColorBucket,
 } from '../store/getters'
 import {FlamechartID} from '../store/flamechart-view-state'
 import {FlamechartWrapper} from './flamechart-wrapper'
@@ -43,14 +48,17 @@ const getCalleeFlamegraphRenderer = createMemoizedFlamechartRenderer()
 
 export const CalleeFlamegraphView = createContainer(
   FlamechartWrapper,
-  (state: ApplicationState) => {
-    const {profile, flattenRecursion, glCanvas, frameToColorBucket, sandwichView} = state
+  (state: ApplicationState, dispatch: Dispatch, ownProps: FlamechartViewContainerProps) => {
+    const {activeProfileState} = ownProps
+    const {index, profile, sandwichViewState} = activeProfileState
+    const {flattenRecursion, glCanvas} = state
     if (!profile) throw new Error('profile missing')
     if (!glCanvas) throw new Error('glCanvas missing')
-    const {callerCallee} = sandwichView
+    const {callerCallee} = sandwichViewState
     if (!callerCallee) throw new Error('callerCallee missing')
     const {selectedFrame} = callerCallee
 
+    const frameToColorBucket = getFrameToColorBucket(profile)
     const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
     const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
     const canvasContext = getCanvasContext(glCanvas)
@@ -62,12 +70,14 @@ export const CalleeFlamegraphView = createContainer(
     const flamechartRenderer = getCalleeFlamegraphRenderer({canvasContext, flamechart})
 
     return {
-      id: FlamechartID.SANDWICH_CALLEES,
       renderInverted: false,
       flamechart,
       flamechartRenderer,
       canvasContext,
       getCSSColorForFrame,
+      ...createFlamechartSetters(dispatch, FlamechartID.SANDWICH_CALLEES, index),
+      // This overrides the setSelectedNode specified in createFlamechartSettesr
+      setSelectedNode: () => {},
       ...callerCallee.calleeFlamegraph,
     }
   },

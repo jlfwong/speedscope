@@ -5,28 +5,13 @@ import {
   CallTreeProfileBuilder,
   FrameInfo,
   StackListProfileBuilder,
+  ProfileGroup,
 } from './profile'
 import {TimeFormatter, ByteFormatter, RawValueFormatter} from './value-formatters'
 import {FileFormat} from './file-format-spec'
 
-export function exportProfile(profile: Profile): FileFormat.File {
+export function exportProfileGroup(profileGroup: ProfileGroup): FileFormat.File {
   const frames: FileFormat.Frame[] = []
-
-  const eventedProfile: FileFormat.EventedProfile = {
-    type: FileFormat.ProfileType.EVENTED,
-    name: profile.getName(),
-    unit: profile.getWeightUnit(),
-    startValue: 0,
-    endValue: profile.getTotalWeight(),
-    events: [],
-  }
-
-  const file: FileFormat.File = {
-    version: require('../../package.json').version,
-    $schema: 'https://www.speedscope.app/file-format-schema.json',
-    shared: {frames},
-    profiles: [eventedProfile],
-  }
 
   const indexForFrame = new Map<Frame, number>()
   function getIndexForFrame(frame: Frame): number {
@@ -38,7 +23,6 @@ export function exportProfile(profile: Profile): FileFormat.File {
       if (frame.file != null) serializedFrame.file = frame.file
       if (frame.line != null) serializedFrame.line = frame.line
       if (frame.col != null) serializedFrame.col = frame.col
-
       index = frames.length
       indexForFrame.set(frame, index)
       frames.push(serializedFrame)
@@ -46,6 +30,31 @@ export function exportProfile(profile: Profile): FileFormat.File {
     return index
   }
 
+  const file: FileFormat.File = {
+    exporter: `speedscope@${require('../../package.json').version}`,
+    name: profileGroup.name,
+    activeProfileIndex: profileGroup.indexToView,
+    $schema: 'https://www.speedscope.app/file-format-schema.json',
+    shared: {frames},
+    profiles: [],
+  }
+
+  for (let profile of profileGroup.profiles) {
+    file.profiles.push(exportProfile(profile, getIndexForFrame))
+  }
+
+  return file
+}
+
+function exportProfile(profile: Profile, getIndexForFrame: (frame: Frame) => number) {
+  const eventedProfile: FileFormat.EventedProfile = {
+    type: FileFormat.ProfileType.EVENTED,
+    name: profile.getName(),
+    unit: profile.getWeightUnit(),
+    startValue: 0,
+    endValue: profile.getTotalWeight(),
+    events: [],
+  }
   const openFrame = (node: CallTreeNode, value: number) => {
     eventedProfile.events.push({
       type: FileFormat.EventType.OPEN_FRAME,
@@ -61,8 +70,7 @@ export function exportProfile(profile: Profile): FileFormat.File {
     })
   }
   profile.forEachCall(openFrame, closeFrame)
-
-  return file
+  return eventedProfile
 }
 
 function importSpeedscopeProfile(
@@ -144,14 +152,19 @@ function importSpeedscopeProfile(
   }
 }
 
-export function importSpeedscopeProfiles(serialized: FileFormat.File): Profile[] {
-  return serialized.profiles.map(p => importSpeedscopeProfile(p, serialized.shared.frames))
+export function importSpeedscopeProfiles(serialized: FileFormat.File): ProfileGroup {
+  return {
+    name: serialized.name || serialized.profiles[0].name || 'profile',
+    indexToView: serialized.activeProfileIndex || 0,
+    profiles: serialized.profiles.map(p => importSpeedscopeProfile(p, serialized.shared.frames)),
+  }
 }
 
-export function saveToFile(profile: Profile): void {
-  const blob = new Blob([JSON.stringify(exportProfile(profile))], {type: 'text/json'})
+export function saveToFile(profileGroup: ProfileGroup): void {
+  const file = exportProfileGroup(profileGroup)
+  const blob = new Blob([JSON.stringify(file)], {type: 'text/json'})
 
-  const nameWithoutExt = profile.getName().split('.')[0]!
+  const nameWithoutExt = file.name ? file.name.split('.')[0]! : 'profile'
   const filename = `${nameWithoutExt.replace(/\W+/g, '_')}.speedscope.json`
 
   console.log('Saving', filename)

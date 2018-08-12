@@ -49,6 +49,7 @@ Object {
       "totalWeight": 17557,
     },
   ],
+  "name": "simple.cpuprofile",
   "stacks": Array [
     "(anonymous) 11.57ms",
     "(anonymous);a;b;d 16.79ms",
@@ -56,6 +57,10 @@ Object {
   ],
 }
 `;
+
+exports[`importFromChromeCPUProfile: indexToView 1`] = `0`;
+
+exports[`importFromChromeCPUProfile: profileGroup.name 1`] = `"simple.cpuprofile"`;
 
 exports[`importFromChromeTimeline 1`] = `
 Object {
@@ -97,6 +102,7 @@ Object {
       "totalWeight": 16987,
     },
   ],
+  "name": "simple-timeline.json",
   "stacks": Array [
     "(program) 10.16ms",
     " 1.99ms",
@@ -255,3 +261,7 @@ Object {
   ],
 }
 `;
+
+exports[`importFromChromeTimeline: indexToView 1`] = `0`;
+
+exports[`importFromChromeTimeline: profileGroup.name 1`] = `"simple-timeline.json"`;

@@ -2,22 +2,22 @@ import {h, Component} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 import {FileSystemDirectoryEntry} from '../import/file-system-entry'
 
-import {Profile, Frame} from '../lib/profile'
+import {Profile, ProfileGroup} from '../lib/profile'
 import {FontFamily, FontSize, Colors, Sizes, Duration} from './style'
 import {importEmscriptenSymbolMap} from '../lib/emscripten'
 import {SandwichViewContainer} from './sandwich-view'
 import {saveToFile} from '../lib/file-format'
 import {ApplicationState, ViewMode, canUseXHR} from '../store'
-import {actions} from '../store/actions'
-import {Dispatch, StatelessComponent, WithDispatch} from '../lib/typed-redux'
+import {StatelessComponent} from '../lib/typed-redux'
 import {LeftHeavyFlamechartView, ChronoFlamechartView} from './flamechart-view-container'
-import {getProfileToView} from '../store/getters'
+import {SandwichViewState} from '../store/sandwich-view-state'
+import {FlamechartViewState} from '../store/flamechart-view-state'
 
 const importModule = import('../import')
 // Force eager loading of the module
 importModule.then(() => {})
-async function importProfile(fileName: string, contents: string): Promise<Profile | null> {
-  return (await importModule).importProfile(fileName, contents)
+async function importProfiles(fileName: string, contents: string): Promise<ProfileGroup | null> {
+  return (await importModule).importProfileGroup(fileName, contents)
 }
 async function importFromFileSystemDirectoryEntry(entry: FileSystemDirectoryEntry) {
   return (await importModule).importFromFileSystemDirectoryEntry(entry)
@@ -26,8 +26,7 @@ async function importFromFileSystemDirectoryEntry(entry: FileSystemDirectoryEntr
 declare function require(x: string): any
 const exampleProfileURL = require('../../sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt')
 
-interface ToolbarProps extends ApplicationState {
-  setViewMode(order: ViewMode): void
+interface ToolbarProps extends ApplicationProps {
   browseForFile(): void
   saveFile(): void
 }
@@ -45,7 +44,88 @@ export class Toolbar extends StatelessComponent<ToolbarProps> {
     this.props.setViewMode(ViewMode.SANDWICH_VIEW)
   }
 
-  render() {
+  renderLeftContent() {
+    if (!this.props.activeProfileState) return null
+
+    return (
+      <div className={css(style.toolbarLeft)}>
+        <div
+          className={css(
+            style.toolbarTab,
+            this.props.viewMode === ViewMode.CHRONO_FLAME_CHART && style.toolbarTabActive,
+          )}
+          onClick={this.setTimeOrder}
+        >
+          <span className={css(style.emoji)}>🕰</span>Time Order
+        </div>
+        <div
+          className={css(
+            style.toolbarTab,
+            this.props.viewMode === ViewMode.LEFT_HEAVY_FLAME_GRAPH && style.toolbarTabActive,
+          )}
+          onClick={this.setLeftHeavyOrder}
+        >
+          <span className={css(style.emoji)}>⬅️</span>Left Heavy
+        </div>
+        <div
+          className={css(
+            style.toolbarTab,
+            this.props.viewMode === ViewMode.SANDWICH_VIEW && style.toolbarTabActive,
+          )}
+          onClick={this.setSandwichView}
+        >
+          <span className={css(style.emoji)}>🥪</span>Sandwich
+        </div>
+      </div>
+    )
+  }
+
+  renderCenterContent() {
+    const {activeProfileState, profileGroup} = this.props
+    if (activeProfileState && profileGroup) {
+      const {index} = activeProfileState
+      if (profileGroup.profiles.length === 1) {
+        return activeProfileState.profile.getName()
+      } else {
+        function makeNavButton(content: string, disabled: boolean, onClick: () => void) {
+          return (
+            <button
+              disabled={disabled}
+              onClick={onClick}
+              className={css(
+                style.emoji,
+                style.toolbarProfileNavButton,
+                disabled && style.toolbarProfileNavButtonDisabled,
+              )}
+            >
+              {content}
+            </button>
+          )
+        }
+
+        const prevButton = makeNavButton('⬅️', index === 0, () =>
+          this.props.setProfileIndexToView(index - 1),
+        )
+        const nextButton = makeNavButton('➡️', index >= profileGroup.profiles.length - 1, () =>
+          this.props.setProfileIndexToView(index + 1),
+        )
+
+        return (
+          <div className={css(style.toolbarCenter)}>
+            {prevButton}
+            {activeProfileState.profile.getName()}{' '}
+            <span className={css(style.toolbarProfileIndex)}>
+              ({activeProfileState.index + 1}/{profileGroup.profiles.length})
+            </span>
+            {nextButton}
+          </div>
+        )
+      }
+    }
+    return '🔬speedscope'
+  }
+
+  renderRightContent() {
     const importFile = (
       <div className={css(style.toolbarTab)} onClick={this.props.browseForFile}>
         <span className={css(style.emoji)}>⤵️</span>Import
@@ -63,63 +143,32 @@ export class Toolbar extends StatelessComponent<ToolbarProps> {
       </div>
     )
 
-    if (!this.props.profile) {
-      return (
-        <div className={css(style.toolbar)}>
-          🔬speedscope
-          <div className={css(style.toolbarRight)}>
-            {importFile}
-            {help}
-          </div>
-        </div>
-      )
-    }
     return (
-      <div className={css(style.toolbar)}>
-        <div className={css(style.toolbarLeft)}>
-          <div
-            className={css(
-              style.toolbarTab,
-              this.props.viewMode === ViewMode.CHRONO_FLAME_CHART && style.toolbarTabActive,
-            )}
-            onClick={this.setTimeOrder}
-          >
-            <span className={css(style.emoji)}>🕰</span>Time Order
-          </div>
-          <div
-            className={css(
-              style.toolbarTab,
-              this.props.viewMode === ViewMode.LEFT_HEAVY_FLAME_GRAPH && style.toolbarTabActive,
-            )}
-            onClick={this.setLeftHeavyOrder}
-          >
-            <span className={css(style.emoji)}>⬅️</span>Left Heavy
-          </div>
-          <div
-            className={css(
-              style.toolbarTab,
-              this.props.viewMode === ViewMode.SANDWICH_VIEW && style.toolbarTabActive,
-            )}
-            onClick={this.setSandwichView}
-          >
-            <span className={css(style.emoji)}>🥪</span>Sandwich
-          </div>
-        </div>
-        {this.props.profile.getName()}
-        <div className={css(style.toolbarRight)}>
+      <div className={css(style.toolbarRight)}>
+        {this.props.activeProfileState && (
           <div className={css(style.toolbarTab)} onClick={this.props.saveFile}>
             <span className={css(style.emoji)}>⤴️</span>Export
           </div>
-          {importFile}
-          {help}
-        </div>
+        )}
+        {importFile}
+        {help}
+      </div>
+    )
+  }
+
+  render() {
+    return (
+      <div className={css(style.toolbar)}>
+        {this.renderLeftContent()}
+        {this.renderCenterContent()}
+        {this.renderRightContent()}
       </div>
     )
   }
 }
 
 interface GLCanvasProps {
-  dispatch: Dispatch
+  setGLCanvas: (canvas: HTMLCanvasElement | null) => void
 }
 export class GLCanvas extends Component<GLCanvasProps, void> {
   private canvas: HTMLCanvasElement | null = null
@@ -131,7 +180,7 @@ export class GLCanvas extends Component<GLCanvasProps, void> {
       this.canvas = null
     }
 
-    this.props.dispatch(actions.setGLCanvas(this.canvas))
+    this.props.setGLCanvas(this.canvas)
   }
 
   private maybeResize() {
@@ -168,64 +217,65 @@ export class GLCanvas extends Component<GLCanvasProps, void> {
   }
 }
 
-export class Application extends StatelessComponent<WithDispatch<ApplicationState>> {
-  async loadProfile(loader: () => Promise<Profile | null>) {
-    this.props.dispatch(actions.setLoading(true))
+export interface ActiveProfileState {
+  profile: Profile
+  index: number
+  chronoViewState: FlamechartViewState
+  leftHeavyViewState: FlamechartViewState
+  sandwichViewState: SandwichViewState
+}
+
+export type ApplicationProps = ApplicationState & {
+  setGLCanvas: (canvas: HTMLCanvasElement | null) => void
+  setLoading: (loading: boolean) => void
+  setError: (error: boolean) => void
+  setProfileGroup: (profileGroup: ProfileGroup) => void
+  setDragActive: (dragActive: boolean) => void
+  setViewMode: (viewMode: ViewMode) => void
+  setFlattenRecursion: (flattenRecursion: boolean) => void
+  setProfileIndexToView: (profileIndex: number) => void
+  activeProfileState: ActiveProfileState | null
+}
+
+export class Application extends StatelessComponent<ApplicationProps> {
+  private async loadProfile(loader: () => Promise<ProfileGroup | null>) {
+    this.props.setLoading(true)
     await new Promise(resolve => setTimeout(resolve, 0))
 
     if (!this.props.glCanvas) return
 
     console.time('import')
 
-    let profile: Profile | null = null
+    let profileGroup: ProfileGroup | null = null
     try {
-      profile = await loader()
+      profileGroup = await loader()
     } catch (e) {
       console.log('Failed to load format', e)
-      this.props.dispatch(actions.setError(true))
+      this.props.setError(true)
       return
     }
 
-    if (profile == null) {
+    if (profileGroup == null) {
       // TODO(jlfwong): Make this a nicer overlay
       alert('Unrecognized format! See documentation about supported formats.')
-      this.props.dispatch(actions.setLoading(false))
+      this.props.setLoading(false)
       return
     }
 
-    await profile.demangle()
+    for (let profile of profileGroup.profiles) {
+      await profile.demangle()
+    }
 
-    const title = this.props.hashParams.title || profile.getName()
-    profile.setName(title)
-
-    await this.setActiveProfile(profile)
+    for (let profile of profileGroup.profiles) {
+      // TODO(jlfwong): Profile names vs. profile group names needs some thought
+      const title = this.props.hashParams.title || profile.getName()
+      profile.setName(title)
+    }
 
     console.timeEnd('import')
-    this.props.dispatch(actions.setProfile(profile))
-    this.props.dispatch(actions.setLoading(false))
-  }
 
-  async setActiveProfile(profile: Profile) {
-    if (!this.props.glCanvas) return
-
-    document.title = `${profile.getName()} - speedscope`
-
-    const frames: Frame[] = []
-    profile.forEachFrame(f => frames.push(f))
-    function key(f: Frame) {
-      return (f.file || '') + f.name
-    }
-    function compare(a: Frame, b: Frame) {
-      return key(a) > key(b) ? 1 : -1
-    }
-    frames.sort(compare)
-    const frameToColorBucket = new Map<string | number, number>()
-    for (let i = 0; i < frames.length; i++) {
-      frameToColorBucket.set(frames[i].key, Math.floor(255 * i / frames.length))
-    }
-
-    this.props.dispatch(actions.setActiveProfile(profile))
-    this.props.dispatch(actions.setFrameToColorBucket(frameToColorBucket))
+    this.props.setProfileGroup(profileGroup)
+    this.props.setLoading(false)
   }
 
   loadFromFile(file: File) {
@@ -239,25 +289,31 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
         throw new Error('Expected ArrayBuffer')
       }
 
-      const profile = await importProfile(file.name, reader.result)
-      if (profile) {
-        if (!profile.getName()) {
-          profile.setName(file.name)
+      const profiles = await importProfiles(file.name, reader.result)
+      if (profiles) {
+        for (let profile of profiles.profiles) {
+          if (!profile.getName()) {
+            profile.setName(file.name)
+          }
         }
-        return profile
+        return profiles
       }
 
-      if (this.props.profile) {
+      if (this.props.profileGroup && this.props.activeProfileState) {
         // If a profile is already loaded, it's possible the file being imported is
         // a symbol map. If that's the case, we want to parse it, and apply the symbol
         // mapping to the already loaded profile. This can be use to take an opaque
         // profile and make it readable.
         const map = importEmscriptenSymbolMap(reader.result)
         if (map) {
+          const {profile, index} = this.props.activeProfileState
           console.log('Importing as emscripten symbol map')
-          let profile = this.props.profile
           profile.remapNames(name => map.get(name) || name)
-          return profile
+          return {
+            name: this.props.profileGroup.name || 'profile',
+            indexToView: index,
+            profiles: [profile],
+          }
         }
       }
 
@@ -269,16 +325,12 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
     this.loadProfile(async () => {
       const filename = 'perf-vertx-stacks-01-collapsed-all.txt'
       const data = await fetch(exampleProfileURL).then(resp => resp.text())
-      const profile = await importProfile(filename, data)
-      if (profile && !profile.getName()) {
-        profile.setName(filename)
-      }
-      return profile
+      return await importProfiles(filename, data)
     })
   }
 
   onDrop = (ev: DragEvent) => {
-    this.props.dispatch(actions.setDragActive(false))
+    this.props.setDragActive(false)
     ev.preventDefault()
 
     const firstItem = ev.dataTransfer.items[0]
@@ -288,7 +340,9 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
       // Instrument.app file format is actually a directory.
       if (webkitEntry.isDirectory && webkitEntry.name.endsWith('.trace')) {
         console.log('Importing as Instruments.app .trace file')
-        this.loadProfile(async () => await importFromFileSystemDirectoryEntry(webkitEntry))
+        this.loadProfile(async () => {
+          return await importFromFileSystemDirectoryEntry(webkitEntry)
+        })
         return
       }
     }
@@ -300,31 +354,47 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
   }
 
   onDragOver = (ev: DragEvent) => {
-    this.props.dispatch(actions.setDragActive(true))
+    this.props.setDragActive(true)
     ev.preventDefault()
   }
 
   onDragLeave = (ev: DragEvent) => {
-    this.props.dispatch(actions.setDragActive(false))
+    this.props.setDragActive(false)
     ev.preventDefault()
   }
 
   onWindowKeyPress = async (ev: KeyboardEvent) => {
     if (ev.key === '1') {
-      this.props.dispatch(actions.setViewMode(ViewMode.CHRONO_FLAME_CHART))
+      this.props.setViewMode(ViewMode.CHRONO_FLAME_CHART)
     } else if (ev.key === '2') {
-      this.props.dispatch(actions.setViewMode(ViewMode.LEFT_HEAVY_FLAME_GRAPH))
+      this.props.setViewMode(ViewMode.LEFT_HEAVY_FLAME_GRAPH)
     } else if (ev.key === '3') {
-      this.props.dispatch(actions.setViewMode(ViewMode.SANDWICH_VIEW))
+      this.props.setViewMode(ViewMode.SANDWICH_VIEW)
     } else if (ev.key === 'r') {
       const {flattenRecursion} = this.props
-      this.props.dispatch(actions.setFlattenRecursion(!flattenRecursion))
+      this.props.setFlattenRecursion(!flattenRecursion)
+    } else if (ev.key === 'n') {
+      const {activeProfileState} = this.props
+      if (activeProfileState) {
+        this.props.setProfileIndexToView(activeProfileState.index + 1)
+      }
+    } else if (ev.key === 'p') {
+      const {activeProfileState} = this.props
+      if (activeProfileState) {
+        this.props.setProfileIndexToView(activeProfileState.index - 1)
+      }
     }
   }
 
   private saveFile = () => {
-    if (this.props.profile) {
-      saveToFile(this.props.profile)
+    if (this.props.profileGroup) {
+      const {name, indexToView, profiles} = this.props.profileGroup
+      const profileGroup: ProfileGroup = {
+        name,
+        indexToView,
+        profiles: profiles.map(p => p.profile),
+      }
+      saveToFile(profileGroup)
     }
   }
 
@@ -352,7 +422,9 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
     ev.stopPropagation()
 
     const pasted = (ev as ClipboardEvent).clipboardData.getData('text')
-    this.loadProfile(async () => importProfile('From Clipboard', pasted))
+    this.loadProfile(async () => {
+      return await importProfiles('From Clipboard', pasted)
+    })
   }
 
   componentDidMount() {
@@ -382,7 +454,7 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
         if (filename.includes('/')) {
           filename = filename.slice(filename.lastIndexOf('/') + 1)
         }
-        return await importProfile(filename, await response.text())
+        return await importProfiles(filename, await response.text())
       })
     } else if (this.props.hashParams.localProfilePath) {
       // There isn't good cross-browser support for XHR of local files, even from
@@ -391,7 +463,7 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
       ;(window as any)['speedscope'] = {
         loadFileFromBase64: (filename: string, base64source: string) => {
           const source = atob(base64source)
-          this.loadProfile(() => importProfile(filename, source))
+          this.loadProfile(() => importProfiles(filename, source))
         },
       }
 
@@ -491,12 +563,8 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
     return <div className={css(style.loading)} />
   }
 
-  setViewMode = (viewMode: ViewMode) => {
-    this.props.dispatch(actions.setViewMode(viewMode))
-  }
-
   renderContent() {
-    const {viewMode, flattenRecursion, profile, error, loading, glCanvas} = this.props
+    const {viewMode, activeProfileState, error, loading, glCanvas} = this.props
 
     if (error) {
       return this.renderError()
@@ -506,22 +574,21 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
       return this.renderLoadingBar()
     }
 
-    if (!profile || !glCanvas) {
+    if (!activeProfileState || !glCanvas) {
       return this.renderLanding()
     }
 
-    const profileToView = getProfileToView({profile, flattenRecursion})
-
     switch (viewMode) {
       case ViewMode.CHRONO_FLAME_CHART: {
-        return <ChronoFlamechartView profile={profileToView} glCanvas={glCanvas} />
+        return <ChronoFlamechartView activeProfileState={activeProfileState} glCanvas={glCanvas} />
       }
       case ViewMode.LEFT_HEAVY_FLAME_GRAPH: {
-        return <LeftHeavyFlamechartView profile={profileToView} glCanvas={glCanvas} />
+        return (
+          <LeftHeavyFlamechartView activeProfileState={activeProfileState} glCanvas={glCanvas} />
+        )
       }
       case ViewMode.SANDWICH_VIEW: {
-        if (!this.props.profile) return null
-        return <SandwichViewContainer />
+        return <SandwichViewContainer activeProfileState={activeProfileState} glCanvas={glCanvas} />
       }
     }
   }
@@ -534,12 +601,11 @@ export class Application extends StatelessComponent<WithDispatch<ApplicationStat
         onDragLeave={this.onDragLeave}
         className={css(style.root, this.props.dragActive && style.dragTargetRoot)}
       >
-        <GLCanvas dispatch={this.props.dispatch} />
+        <GLCanvas setGLCanvas={this.props.setGLCanvas} />
         <Toolbar
-          setViewMode={this.setViewMode}
           saveFile={this.saveFile}
           browseForFile={this.browseForFile}
-          {...this.props as ApplicationState}
+          {...this.props as ApplicationProps}
         />
         <div className={css(style.contentContainer)}>{this.renderContent()}</div>
         {this.props.dragActive && <div className={css(style.dragTarget)} />}
@@ -671,6 +737,10 @@ const style = StyleSheet.create({
     marginRight: 2,
     textAlign: 'left',
   },
+  toolbarCenter: {
+    paddingTop: 1,
+    height: Sizes.TOOLBAR_HEIGHT,
+  },
   toolbarRight: {
     height: Sizes.TOOLBAR_HEIGHT,
     overflow: 'hidden',
@@ -679,6 +749,29 @@ const style = StyleSheet.create({
     right: 0,
     marginRight: 2,
     textAlign: 'right',
+  },
+  toolbarProfileIndex: {
+    color: Colors.LIGHT_GRAY,
+  },
+  toolbarProfileNavButton: {
+    opacity: 0.8,
+    fontSize: FontSize.TITLE,
+    lineHeight: `${Sizes.TOOLBAR_TAB_HEIGHT}px`,
+    ':hover': {
+      opacity: 1.0,
+    },
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    marginLeft: '0.3em',
+    marginRight: '0.3em',
+    transition: `all ${Duration.HOVER_CHANGE} ease-in`,
+  },
+  toolbarProfileNavButtonDisabled: {
+    opacity: 0.5,
+    ':hover': {
+      opacity: 0.5,
+    },
   },
   toolbarTab: {
     background: Colors.DARK_GRAY,

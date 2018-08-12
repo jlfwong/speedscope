@@ -12,7 +12,6 @@ import {Sizes, commonStyle} from './style'
 import {FlamechartDetailView} from './flamechart-detail-view'
 import {FlamechartPanZoomView} from './flamechart-pan-zoom-view'
 import {Hovertip} from './hovertip'
-import {actions} from '../store/actions'
 import {FlamechartViewProps} from './flamechart-view-container'
 import {StatelessComponent} from '../lib/typed-redux'
 
@@ -41,18 +40,11 @@ export class FlamechartView extends StatelessComponent<FlamechartViewProps> {
       ),
     )
 
-    this.props.dispatch(
-      actions.flamechart.setConfigSpaceViewportRect({
-        id: this.props.id,
-        configSpaceViewportRect: new Rect(origin, viewportRect.size.withX(width)),
-      }),
-    )
+    this.props.setConfigSpaceViewportRect(new Rect(origin, viewportRect.size.withX(width)))
   }
 
   private setLogicalSpaceViewportSize = (logicalSpaceViewportSize: Vec2): void => {
-    this.props.dispatch(
-      actions.flamechart.setLogicalSpaceViewportSize({id: this.props.id, logicalSpaceViewportSize}),
-    )
+    this.props.setLogicalSpaceViewportSize(logicalSpaceViewportSize)
   }
 
   private transformViewport = (transform: AffineTransform): void => {
@@ -60,17 +52,12 @@ export class FlamechartView extends StatelessComponent<FlamechartViewProps> {
     this.setConfigSpaceViewportRect(viewportRect)
   }
 
-  onNodeHover = (hover: {node: CallTreeNode; event: MouseEvent} | null) => {
-    this.props.dispatch(
-      actions.flamechart.setHoveredNode({
-        id: this.props.id,
-        hover,
-      }),
-    )
+  private onNodeHover = (hover: {node: CallTreeNode; event: MouseEvent} | null) => {
+    this.props.setNodeHover(hover)
   }
 
   onNodeClick = (node: CallTreeNode | null) => {
-    this.props.dispatch(actions.flamechart.setSelectedNode({id: this.props.id, selectedNode: node}))
+    this.props.setSelectedNode(node)
   }
 
   formatValue(weight: number) {
@@ -116,7 +103,6 @@ export class FlamechartView extends StatelessComponent<FlamechartViewProps> {
         />
         <FlamechartPanZoomView
           canvasContext={this.props.canvasContext}
-          id={this.props.id}
           flamechart={this.props.flamechart}
           flamechartRenderer={this.props.flamechartRenderer}
           renderInverted={false}

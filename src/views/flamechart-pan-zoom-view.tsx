@@ -8,7 +8,6 @@ import {cachedMeasureTextWidth, ELLIPSIS, trimTextMid} from '../lib/text-utils'
 import {style} from './flamechart-style'
 import {h, Component} from 'preact'
 import {css} from 'aphrodite'
-import {FlamechartID} from '../store/flamechart-view-state'
 
 interface FlamechartFrameLabel {
   configSpaceBounds: Rect
@@ -34,7 +33,6 @@ interface FlamechartFrameLabel {
  * canvas primitives.
  */
 export interface FlamechartPanZoomViewProps {
-  id: FlamechartID
   flamechart: Flamechart
   canvasContext: CanvasContext
   flamechartRenderer: FlamechartRenderer

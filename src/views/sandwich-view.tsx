@@ -8,15 +8,19 @@ import {createContainer, Dispatch, StatelessComponent} from '../lib/typed-redux'
 import {ApplicationState} from '../store'
 import {InvertedCallerFlamegraphView} from './inverted-caller-flamegraph-view'
 import {CalleeFlamegraphView} from './callee-flamegraph-view'
+import {ActiveProfileState} from './application'
 
 interface SandwichViewProps {
   selectedFrame: Frame | null
-  dispatch: Dispatch
+  profileIndex: number
+  activeProfileState: ActiveProfileState
+  setSelectedFrame: (selectedFrame: Frame | null) => void
+  glCanvas: HTMLCanvasElement
 }
 
 class SandwichView extends StatelessComponent<SandwichViewProps> {
   private setSelectedFrame = (selectedFrame: Frame | null) => {
-    this.props.dispatch(actions.sandwichView.setSelectedFrame(selectedFrame))
+    this.props.setSelectedFrame(selectedFrame)
   }
 
   onWindowKeyPress = (ev: KeyboardEvent) => {
@@ -43,14 +47,20 @@ class SandwichView extends StatelessComponent<SandwichViewProps> {
             <div className={css(style.flamechartLabelParent)}>
               <div className={css(style.flamechartLabel)}>Callers</div>
             </div>
-            <InvertedCallerFlamegraphView />
+            <InvertedCallerFlamegraphView
+              glCanvas={this.props.glCanvas}
+              activeProfileState={this.props.activeProfileState}
+            />
           </div>
           <div className={css(style.divider)} />
           <div className={css(commonStyle.hbox, style.panZoomViewWraper)}>
             <div className={css(style.flamechartLabelParent, style.flamechartLabelParentBottom)}>
               <div className={css(style.flamechartLabel, style.flamechartLabelBottom)}>Callees</div>
             </div>
-            <CalleeFlamegraphView />
+            <CalleeFlamegraphView
+              glCanvas={this.props.glCanvas}
+              activeProfileState={this.props.activeProfileState}
+            />
           </div>
         </div>
       )
@@ -59,7 +69,7 @@ class SandwichView extends StatelessComponent<SandwichViewProps> {
     return (
       <div className={css(commonStyle.hbox, commonStyle.fillY)}>
         <div className={css(style.tableView)}>
-          <ProfileTableViewContainer />
+          <ProfileTableViewContainer activeProfileState={this.props.activeProfileState} />
         </div>
         {flamegraphViews}
       </div>
@@ -107,7 +117,33 @@ const style = StyleSheet.create({
   },
 })
 
-export const SandwichViewContainer = createContainer(SandwichView, (state: ApplicationState) => {
-  const {callerCallee} = state.sandwichView
-  return {selectedFrame: callerCallee ? callerCallee.selectedFrame : null}
-})
+interface SandwichViewContainerProps {
+  activeProfileState: ActiveProfileState
+  glCanvas: HTMLCanvasElement
+}
+
+export const SandwichViewContainer = createContainer(
+  SandwichView,
+  (state: ApplicationState, dispatch: Dispatch, ownProps: SandwichViewContainerProps) => {
+    const {activeProfileState, glCanvas} = ownProps
+    const {sandwichViewState, index} = activeProfileState
+    const {callerCallee} = sandwichViewState
+
+    const setSelectedFrame = (selectedFrame: Frame | null) => {
+      dispatch(
+        actions.sandwichView.setSelectedFrame({
+          profileIndex: index,
+          args: selectedFrame,
+        }),
+      )
+    }
+
+    return {
+      activeProfileState: activeProfileState,
+      glCanvas,
+      setSelectedFrame,
+      selectedFrame: callerCallee ? callerCallee.selectedFrame : null,
+      profileIndex: index,
+    }
+  },
+)
