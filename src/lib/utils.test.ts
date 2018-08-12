@@ -10,6 +10,8 @@ import {
   formatPercent,
   KeyedSet,
   binarySearch,
+  memoizeByReference,
+  memoizeByShallowEquality,
 } from './utils'
 
 test('sortBy', () => {
@@ -108,4 +110,49 @@ test('binarySearch', () => {
   expect(lo).toBeCloseTo(Math.E, 4)
   expect(lo).toBeLessThan(Math.E)
   expect(hi).toBeGreaterThan(Math.E)
+})
+
+test('memoizeByReference', () => {
+  let hitCount = 0
+  const identity = memoizeByReference((arg: number) => {
+    hitCount++
+    return arg
+  })
+
+  expect(identity(3)).toBe(3)
+  expect(hitCount).toBe(1)
+  expect(identity(3)).toBe(3)
+  expect(hitCount).toBe(1)
+
+  expect(identity(5)).toBe(5)
+  expect(hitCount).toBe(2)
+
+  expect(identity(3)).toBe(3)
+  expect(hitCount).toBe(3)
+})
+
+test('memoizeByShallowEquality', () => {
+  let hitCount = 0
+  const identity = memoizeByShallowEquality((arg: {a: number; b: number}) => {
+    hitCount++
+    return arg
+  })
+
+  expect(identity({a: 1, b: 2})).toEqual({a: 1, b: 2})
+  expect(hitCount).toBe(1)
+  expect(identity({a: 1, b: 2})).toEqual({a: 1, b: 2})
+  expect(hitCount).toBe(1)
+
+  expect(identity({a: 2, b: 2})).toEqual({a: 2, b: 2})
+  expect(hitCount).toBe(2)
+  expect(identity({a: 2, b: 2})).toEqual({a: 2, b: 2})
+  expect(hitCount).toBe(2)
+
+  expect(identity({a: 2, b: 1})).toEqual({a: 2, b: 1})
+  expect(hitCount).toBe(3)
+  expect(identity({a: 2, b: 1})).toEqual({a: 2, b: 1})
+  expect(hitCount).toBe(3)
+
+  expect(identity({a: 1, b: 2})).toEqual({a: 1, b: 2})
+  expect(hitCount).toBe(4)
 })
