@@ -5,7 +5,7 @@ import {
   FlamechartID,
 } from './flamechart-view-state'
 import {SandwichViewState, createSandwichView} from './sandwich-view-state'
-import {Reducer, Action, actionCreator, setter} from '../lib/typed-redux'
+import {Reducer, actionCreator, setter} from '../lib/typed-redux'
 import {actions} from './actions'
 import {clamp} from '../lib/math'
 import {objectsHaveShallowEquality} from '../lib/utils'
