@@ -8,7 +8,7 @@ import {SandwichViewState, createSandwichView} from './sandwich-view-state'
 import {Reducer, Action, actionCreator, setter} from '../lib/typed-redux'
 import {actions} from './actions'
 import {clamp} from '../lib/math'
-import {objectsHaveShallowEquality, arraysHaveShallowEquality} from '../lib/utils'
+import {objectsHaveShallowEquality} from '../lib/utils'
 
 export type ProfileGroupState = {
   name: string
