@@ -32,15 +32,6 @@ export function actionCreatorWithIndex<T>(name: string) {
   return actionCreator<{profileIndex: number; args: T}>(name)
 }
 
-export function actionProfileIndex(action: Action<any>): number | null {
-  const {payload} = action
-  if (payload != null && typeof payload === 'object' && 'profileIndex' in payload) {
-    return parseInt(payload.profileIndex, 0)
-  } else {
-    return null
-  }
-}
-
 function createProfileReducer(profile: Profile, index: number): Reducer<ProfileState> {
   const chronoViewStateReducer = createFlamechartViewStateReducer(FlamechartID.CHRONO, index)
   const leftHeavyViewStateReducer = createFlamechartViewStateReducer(FlamechartID.LEFT_HEAVY, index)
