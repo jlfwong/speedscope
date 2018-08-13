@@ -122,7 +122,7 @@ export function binarySearch(
 
 export function noop(...args: any[]) {}
 
-function shallowEquals<T extends object>(a: T, b: T): boolean {
+export function objectsHaveShallowEquality<T extends object>(a: T, b: T): boolean {
   for (let key in a) {
     if (a[key] !== b[key]) return false
   }
@@ -132,7 +132,6 @@ function shallowEquals<T extends object>(a: T, b: T): boolean {
   return true
 }
 
-// TODO(jlfwong): Write tests for this
 export function memoizeByShallowEquality<T extends object, U>(cb: (t: T) => U): (t: T) => U {
   let last: {args: T; result: U} | null = null
   return (args: T) => {
@@ -141,7 +140,7 @@ export function memoizeByShallowEquality<T extends object, U>(cb: (t: T) => U): 
       result = cb(args)
       last = {args, result}
       return result
-    } else if (shallowEquals(last.args, args)) {
+    } else if (objectsHaveShallowEquality(last.args, args)) {
       return last.result
     } else {
       last.args = args

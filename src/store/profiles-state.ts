@@ -5,9 +5,10 @@ import {
   FlamechartID,
 } from './flamechart-view-state'
 import {SandwichViewState, createSandwichView} from './sandwich-view-state'
-import {Reducer, Action, actionCreator, setter} from '../lib/typed-redux'
+import {Reducer, actionCreator, setter} from '../lib/typed-redux'
 import {actions} from './actions'
 import {clamp} from '../lib/math'
+import {objectsHaveShallowEquality} from '../lib/utils'
 
 export type ProfileGroupState = {
   name: string
@@ -31,12 +32,33 @@ export function actionCreatorWithIndex<T>(name: string) {
   return actionCreator<{profileIndex: number; args: T}>(name)
 }
 
-export function actionProfileIndex(action: Action<any>): number | null {
-  const {payload} = action
-  if (payload != null && typeof payload === 'object' && 'profileIndex' in payload) {
-    return parseInt(payload.profileIndex, 0)
-  } else {
-    return null
+function createProfileReducer(profile: Profile, index: number): Reducer<ProfileState> {
+  const chronoViewStateReducer = createFlamechartViewStateReducer(FlamechartID.CHRONO, index)
+  const leftHeavyViewStateReducer = createFlamechartViewStateReducer(FlamechartID.LEFT_HEAVY, index)
+  const sandwichViewStateReducer = createSandwichView(index)
+
+  return (state = undefined, action) => {
+    if (state === undefined) {
+      return {
+        profile,
+        chronoViewState: chronoViewStateReducer(undefined, action),
+        leftHeavyViewState: leftHeavyViewStateReducer(undefined, action),
+        sandwichViewState: sandwichViewStateReducer(undefined, action),
+      }
+    }
+
+    const nextState = {
+      profile,
+      chronoViewState: chronoViewStateReducer(state.chronoViewState, action),
+      leftHeavyViewState: leftHeavyViewStateReducer(state.leftHeavyViewState, action),
+      sandwichViewState: sandwichViewStateReducer(state.sandwichViewState, action),
+    }
+
+    if (objectsHaveShallowEquality(state, nextState)) {
+      return state
+    }
+
+    return nextState
   }
 }
 
@@ -47,19 +69,7 @@ export const profileGroup: Reducer<ProfileGroupState> = (state = null, action) =
       indexToView,
       name,
       profiles: profiles.map((p, i) => {
-        return {
-          profile: p,
-          frameToColorBucket: new Map(),
-          chronoViewState: createFlamechartViewStateReducer(FlamechartID.CHRONO, i)(
-            undefined,
-            action,
-          ),
-          leftHeavyViewState: createFlamechartViewStateReducer(FlamechartID.LEFT_HEAVY, i)(
-            undefined,
-            action,
-          ),
-          sandwichViewState: createSandwichView(i)(undefined, action),
-        }
+        return createProfileReducer(p, i)(undefined, action)
       }),
     }
   }
@@ -72,35 +82,18 @@ export const profileGroup: Reducer<ProfileGroupState> = (state = null, action) =
       0,
       profiles.length - 1,
     )
-    let nextProfiles = profiles
+    const nextProfiles = profiles.map((profileState, profileIndex) => {
+      return createProfileReducer(profileState.profile, profileIndex)(profileState, action)
+    })
 
-    const profileIndexFromAction = actionProfileIndex(action)
-    if (profileIndexFromAction != null) {
-      nextProfiles = profiles.map((profileState, profileIndex) => {
-        return {
-          profile: profileState.profile,
-          chronoViewState: createFlamechartViewStateReducer(FlamechartID.CHRONO, profileIndex)(
-            profileState.chronoViewState,
-            action,
-          ),
-          leftHeavyViewState: createFlamechartViewStateReducer(
-            FlamechartID.LEFT_HEAVY,
-            profileIndex,
-          )(profileState.leftHeavyViewState, action),
-          sandwichViewState: createSandwichView(profileIndex)(
-            profileState.sandwichViewState,
-            action,
-          ),
-        }
-      })
+    if (indexToView === nextIndexToView && objectsHaveShallowEquality(profiles, nextProfiles)) {
+      return state
     }
 
-    if (indexToView !== nextIndexToView || profiles !== nextProfiles) {
-      return {
-        ...state,
-        indexToView: nextIndexToView,
-        profiles: nextProfiles,
-      }
+    return {
+      ...state,
+      indexToView: nextIndexToView,
+      profiles: nextProfiles,
     }
   }
   return state

@@ -262,12 +262,19 @@ export class Application extends StatelessComponent<ApplicationProps> {
       return
     }
 
+    if (this.props.hashParams.title) {
+      profileGroup = {
+        name: this.props.hashParams.title,
+        ...profileGroup,
+      }
+    }
+    document.title = `${profileGroup.name} - speedscope`
+
     for (let profile of profileGroup.profiles) {
       await profile.demangle()
     }
 
     for (let profile of profileGroup.profiles) {
-      // TODO(jlfwong): Profile names vs. profile group names needs some thought
       const title = this.props.hashParams.title || profile.getName()
       profile.setName(title)
     }

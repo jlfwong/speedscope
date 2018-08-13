@@ -1,4 +1,3 @@
-import {SortMethod, SortField, SortDirection} from '../views/profile-table-view'
 import {Frame} from '../lib/profile'
 import {
   FlamechartViewState,
@@ -9,7 +8,6 @@ import {Reducer} from '../lib/typed-redux'
 import {actions} from './actions'
 
 export interface SandwichViewState {
-  tableSortMethod: SortMethod
   callerCallee: CallerCalleeState | null
 }
 
@@ -17,11 +15,6 @@ export interface CallerCalleeState {
   selectedFrame: Frame
   invertedCallerFlamegraph: FlamechartViewState
   calleeFlamegraph: FlamechartViewState
-}
-
-const defaultSortMethod = {
-  field: SortField.SELF,
-  direction: SortDirection.DESCENDING,
 }
 
 export function createSandwichView(profileIndex: number): Reducer<SandwichViewState> {
@@ -38,32 +31,7 @@ export function createSandwichView(profileIndex: number): Reducer<SandwichViewSt
     return payload.profileIndex === profileIndex
   }
 
-  return (state = {tableSortMethod: defaultSortMethod, callerCallee: null}, action) => {
-    const {callerCallee} = state
-    if (callerCallee) {
-      const {calleeFlamegraph, invertedCallerFlamegraph} = callerCallee
-      const nextCalleeFlamegraph = calleesReducer(calleeFlamegraph, action)
-      const nextInvertedCallerFlamegraph = invertedCallersReducer(invertedCallerFlamegraph, action)
-
-      if (
-        nextCalleeFlamegraph !== calleeFlamegraph ||
-        nextInvertedCallerFlamegraph !== invertedCallerFlamegraph
-      ) {
-        return {
-          ...state,
-          callerCallee: {
-            ...callerCallee,
-            calleeFlamegraph: nextCalleeFlamegraph,
-            invertedCallerFlamegraph: nextInvertedCallerFlamegraph,
-          },
-        }
-      }
-    }
-
-    if (actions.sandwichView.setTableSortMethod.matches(action) && applies(action)) {
-      return {...state, tableSortMethod: action.payload.args}
-    }
-
+  return (state = {callerCallee: null}, action) => {
     if (actions.sandwichView.setSelectedFrame.matches(action) && applies(action)) {
       if (action.payload.args == null) {
         return {
@@ -79,6 +47,29 @@ export function createSandwichView(profileIndex: number): Reducer<SandwichViewSt
             invertedCallerFlamegraph: invertedCallersReducer(undefined, action),
           },
         }
+      }
+    }
+
+    const {callerCallee} = state
+    if (callerCallee) {
+      const {calleeFlamegraph, invertedCallerFlamegraph} = callerCallee
+      const nextCalleeFlamegraph = calleesReducer(calleeFlamegraph, action)
+      const nextInvertedCallerFlamegraph = invertedCallersReducer(invertedCallerFlamegraph, action)
+
+      if (
+        nextCalleeFlamegraph === calleeFlamegraph &&
+        nextInvertedCallerFlamegraph === invertedCallerFlamegraph
+      ) {
+        return state
+      }
+
+      return {
+        ...state,
+        callerCallee: {
+          ...callerCallee,
+          calleeFlamegraph: nextCalleeFlamegraph,
+          invertedCallerFlamegraph: nextInvertedCallerFlamegraph,
+        },
       }
     }
 
