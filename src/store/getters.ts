@@ -49,8 +49,6 @@ export const getFrameToColorBucket = memoizeByReference((profile: Profile): Map<
   string | number,
   number
 > => {
-  document.title = `${profile.getName()} - speedscope`
-
   const frames: Frame[] = []
   profile.forEachFrame(f => frames.push(f))
   function key(f: Frame) {
