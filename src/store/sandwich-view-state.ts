@@ -9,7 +9,10 @@ import {Reducer} from '../lib/typed-redux'
 import {actions} from './actions'
 
 export interface SandwichViewState {
+  // TODO(jlfwong): This should probably not be specific to the profile,
+  // so it should be closer to the root of the state atom
   tableSortMethod: SortMethod
+
   callerCallee: CallerCalleeState | null
 }
 
@@ -39,6 +42,28 @@ export function createSandwichView(profileIndex: number): Reducer<SandwichViewSt
   }
 
   return (state = {tableSortMethod: defaultSortMethod, callerCallee: null}, action) => {
+    if (actions.sandwichView.setTableSortMethod.matches(action) && applies(action)) {
+      return {...state, tableSortMethod: action.payload.args}
+    }
+
+    if (actions.sandwichView.setSelectedFrame.matches(action) && applies(action)) {
+      if (action.payload.args == null) {
+        return {
+          ...state,
+          callerCallee: null,
+        }
+      } else {
+        return {
+          ...state,
+          callerCallee: {
+            selectedFrame: action.payload.args,
+            calleeFlamegraph: calleesReducer(undefined, action),
+            invertedCallerFlamegraph: invertedCallersReducer(undefined, action),
+          },
+        }
+      }
+    }
+
     const {callerCallee} = state
     if (callerCallee) {
       const {calleeFlamegraph, invertedCallerFlamegraph} = callerCallee
@@ -59,28 +84,6 @@ export function createSandwichView(profileIndex: number): Reducer<SandwichViewSt
           calleeFlamegraph: nextCalleeFlamegraph,
           invertedCallerFlamegraph: nextInvertedCallerFlamegraph,
         },
-      }
-    }
-
-    if (actions.sandwichView.setTableSortMethod.matches(action) && applies(action)) {
-      return {...state, tableSortMethod: action.payload.args}
-    }
-
-    if (actions.sandwichView.setSelectedFrame.matches(action) && applies(action)) {
-      if (action.payload.args == null) {
-        return {
-          ...state,
-          callerCallee: null,
-        }
-      } else {
-        return {
-          ...state,
-          callerCallee: {
-            selectedFrame: action.payload.args,
-            calleeFlamegraph: calleesReducer(undefined, action),
-            invertedCallerFlamegraph: invertedCallersReducer(undefined, action),
-          },
-        }
       }
     }
 

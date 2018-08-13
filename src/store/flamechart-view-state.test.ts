@@ -4,7 +4,7 @@ import {Rect, Vec2} from '../lib/math'
 import {FlamechartID} from './flamechart-view-state'
 import {ViewMode} from '.'
 
-describe('profileGroup', () => {
+describe('flamechart view state', () => {
   storeTest('setHoveredNode', ({getState, dispatch}) => {
     dispatch(actions.setProfileGroup(profileGroupTwoSampled))
     expect(getState().profileGroup!.profiles[0].chronoViewState.hover).toEqual(null)
