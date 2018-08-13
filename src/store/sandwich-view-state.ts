@@ -46,17 +46,19 @@ export function createSandwichView(profileIndex: number): Reducer<SandwichViewSt
       const nextInvertedCallerFlamegraph = invertedCallersReducer(invertedCallerFlamegraph, action)
 
       if (
-        nextCalleeFlamegraph !== calleeFlamegraph ||
-        nextInvertedCallerFlamegraph !== invertedCallerFlamegraph
+        nextCalleeFlamegraph === calleeFlamegraph &&
+        nextInvertedCallerFlamegraph === invertedCallerFlamegraph
       ) {
-        return {
-          ...state,
-          callerCallee: {
-            ...callerCallee,
-            calleeFlamegraph: nextCalleeFlamegraph,
-            invertedCallerFlamegraph: nextInvertedCallerFlamegraph,
-          },
-        }
+        return state
+      }
+
+      return {
+        ...state,
+        callerCallee: {
+          ...callerCallee,
+          calleeFlamegraph: nextCalleeFlamegraph,
+          invertedCallerFlamegraph: nextInvertedCallerFlamegraph,
+        },
       }
     }
 

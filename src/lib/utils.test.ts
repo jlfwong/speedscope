@@ -12,6 +12,7 @@ import {
   binarySearch,
   memoizeByReference,
   memoizeByShallowEquality,
+  objectsHaveShallowEquality,
 } from './utils'
 
 test('sortBy', () => {
@@ -155,4 +156,20 @@ test('memoizeByShallowEquality', () => {
 
   expect(identity({a: 1, b: 2})).toEqual({a: 1, b: 2})
   expect(hitCount).toBe(4)
+})
+
+test('objectsHaveShallowEquality', () => {
+  expect(objectsHaveShallowEquality({}, {})).toBe(true)
+  expect(objectsHaveShallowEquality({a: 1, b: 2}, {a: 1, b: 2})).toBe(true)
+
+  expect(objectsHaveShallowEquality({a: 1, b: 2}, {a: 1, b: 3})).toBe(false)
+  expect(objectsHaveShallowEquality({a: 1, b: 2}, {a: 2, b: 2})).toBe(false)
+  expect(objectsHaveShallowEquality({a: 1}, {a: 1, b: 2})).toBe(false)
+  expect(objectsHaveShallowEquality({a: 1, b: 2}, {b: 2})).toBe(false)
+
+  expect(objectsHaveShallowEquality([], [])).toBe(true)
+  expect(objectsHaveShallowEquality([1, 2], [1, 2])).toBe(true)
+
+  expect(objectsHaveShallowEquality([1], [1, 2])).toBe(false)
+  expect(objectsHaveShallowEquality([1, 2], [1])).toBe(false)
 })

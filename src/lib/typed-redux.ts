@@ -56,10 +56,10 @@ export type Dispatch = redux.Dispatch<Action<any>>
 // We make this into a single function invocation instead of the connect(map, map)(Component)
 // syntax to make better use of type inference.
 //
-// NOTE: The way this works right now is going to regenerate new setters on every
-// store update. To make this not the case, we'd have to have mapStateToProps actually
-// specified. This may be a performance issue in the future, but we're going to eat
-// this cost for now in exchange for simpler type inference.
+// NOTE: To avoid this returning objects which do not compare shallow equal, it's the
+// responsibility of the caller to ensure that the props returned by map compare shallow
+// equal. This most importantly mean memoizing functions which wrap dispatch to avoid
+// all callback props from being regenerated on every call.
 export function createContainer<OwnProps, State, ComponentProps, ComponentType>(
   component: {
     new (props: ComponentProps): ComponentType

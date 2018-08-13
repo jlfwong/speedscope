@@ -1,28 +1,21 @@
-import * as fs from 'fs'
-
-import {storeTest} from './store-test-utils'
+import {storeTest, profileGroupTwoSampled} from './store-test-utils'
 import {actions} from './actions'
-import {importSpeedscopeProfiles} from '../lib/file-format'
-
-const filepath = './sample/profiles/speedscope/0.6.0/two-sampled.speedscope.json'
-const input = fs.readFileSync(filepath, 'utf8')
-const initialProfileGroup = importSpeedscopeProfiles(JSON.parse(input))
 
 describe('profileGroup', () => {
   storeTest('setProfileGroup', ({getState, dispatch}) => {
     expect(getState().profileGroup).toBe(null)
-    dispatch(actions.setProfileGroup(initialProfileGroup))
+    dispatch(actions.setProfileGroup(profileGroupTwoSampled))
     const {profileGroup} = getState()
-    expect(profileGroup!.name).toBe(initialProfileGroup.name)
-    expect(profileGroup!.indexToView).toBe(initialProfileGroup.indexToView)
+    expect(profileGroup!.name).toBe(profileGroupTwoSampled.name)
+    expect(profileGroup!.indexToView).toBe(profileGroupTwoSampled.indexToView)
 
-    for (let i = 0; i < initialProfileGroup.profiles.length; i++) {
-      expect(profileGroup!.profiles[i].profile).toEqual(initialProfileGroup.profiles[i])
+    for (let i = 0; i < profileGroupTwoSampled.profiles.length; i++) {
+      expect(profileGroup!.profiles[i].profile).toEqual(profileGroupTwoSampled.profiles[i])
     }
   })
 
   storeTest('setProfileIndexToView', ({getState, dispatch}) => {
-    dispatch(actions.setProfileGroup(initialProfileGroup))
+    dispatch(actions.setProfileGroup(profileGroupTwoSampled))
     expect(getState().profileGroup!.indexToView).toBe(1)
     dispatch(actions.setProfileIndexToView(0))
     expect(getState()!.profileGroup!.indexToView).toBe(0)
@@ -30,5 +23,14 @@ describe('profileGroup', () => {
     expect(getState()!.profileGroup!.indexToView).toBe(0)
     dispatch(actions.setProfileIndexToView(2))
     expect(getState().profileGroup!.indexToView).toBe(1)
+  })
+
+  storeTest('preserve state', ({getState, dispatch}) => {
+    // When an unrelated action occurs, we should not change the identiy of the profileGroup
+    // property
+    dispatch(actions.setProfileGroup(profileGroupTwoSampled))
+    const profileGroup = getState().profileGroup
+    dispatch(actions.setDragActive(true))
+    expect(getState().profileGroup).toBe(profileGroup)
   })
 })
