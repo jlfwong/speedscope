@@ -26,6 +26,10 @@ describe('sandwich view state', () => {
     expect(getState().profileGroup!.profiles[0].sandwichViewState.callerCallee!.selectedFrame).toBe(
       selectedFrame2,
     )
+
+    // Clear selection
+    dispatch(actions.sandwichView.setSelectedFrame({profileIndex: 0, args: null}))
+    expect(getState().profileGroup!.profiles[0].sandwichViewState.callerCallee).toBe(null)
   })
 
   storeTest('contained flamegraphs receive updates', ({getState, dispatch}) => {
