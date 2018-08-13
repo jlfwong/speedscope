@@ -1,6 +1,7 @@
 import {ViewMode} from '.'
 import {actions} from './actions'
 import {storeTest} from './store-test-utils'
+import {SortField, SortDirection} from '../views/profile-table-view'
 
 storeTest('flattenRecursion', ({getState, dispatch}) => {
   expect(getState().flattenRecursion).toBe(false)
@@ -30,4 +31,21 @@ storeTest('error', ({getState, dispatch}) => {
   expect(getState().error).toBe(false)
   dispatch(actions.setError(true))
   expect(getState().error).toBe(true)
+})
+
+storeTest('setTableSortMethod', ({getState, dispatch}) => {
+  expect(getState().tableSortMethod).toEqual({
+    field: SortField.SELF,
+    direction: SortDirection.DESCENDING,
+  })
+  dispatch(
+    actions.sandwichView.setTableSortMethod({
+      field: SortField.SYMBOL_NAME,
+      direction: SortDirection.ASCENDING,
+    }),
+  )
+  expect(getState().tableSortMethod).toEqual({
+    field: SortField.SYMBOL_NAME,
+    direction: SortDirection.ASCENDING,
+  })
 })

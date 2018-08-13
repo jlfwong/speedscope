@@ -38,9 +38,7 @@ export namespace actions {
 
   export namespace sandwichView {
     // Set the table sorting method used for the sandwich view.
-    export const setTableSortMethod = actionCreatorWithIndex<SortMethod>(
-      'sandwichView.setTableSortMethod',
-    )
+    export const setTableSortMethod = actionCreator<SortMethod>('sandwichView.setTableSortMethod')
 
     export const setSelectedFrame = actionCreatorWithIndex<Frame | null>(
       'sandwichView.setSelectedFarmr',

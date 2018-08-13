@@ -339,7 +339,8 @@ export const ProfileTableViewContainer = createContainer(
     const {activeProfileState} = ownProps
     const {profile, sandwichViewState, index} = activeProfileState
     if (!profile) throw new Error('profile missing')
-    const {tableSortMethod, callerCallee} = sandwichViewState
+    const {tableSortMethod} = state
+    const {callerCallee} = sandwichViewState
     const selectedFrame = callerCallee ? callerCallee.selectedFrame : null
     const frameToColorBucket = getFrameToColorBucket(profile)
     const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
@@ -349,7 +350,7 @@ export const ProfileTableViewContainer = createContainer(
     }
 
     const setSortMethod = (sortMethod: SortMethod) => {
-      dispatch(actions.sandwichView.setTableSortMethod({profileIndex: index, args: sortMethod}))
+      dispatch(actions.sandwichView.setTableSortMethod(sortMethod))
     }
 
     return {

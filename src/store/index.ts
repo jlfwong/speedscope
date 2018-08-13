@@ -9,6 +9,7 @@ import * as redux from 'redux'
 import {setter, Reducer} from '../lib/typed-redux'
 import {HashParams, getHashParams} from '../lib/hash-params'
 import {ProfileGroupState, profileGroup} from './profiles-state'
+import {SortMethod, SortField, SortDirection} from '../views/profile-table-view'
 
 export const enum ViewMode {
   CHRONO_FLAME_CHART,
@@ -27,6 +28,8 @@ export interface ApplicationState {
   dragActive: boolean
   loading: boolean
   error: boolean
+
+  tableSortMethod: SortMethod
 
   profileGroup: ProfileGroupState
 }
@@ -59,6 +62,11 @@ export function createApplicationStore(
     dragActive: setter<boolean>(actions.setDragActive, false),
     loading: setter<boolean>(actions.setLoading, loading),
     error: setter<boolean>(actions.setError, false),
+
+    tableSortMethod: setter<SortMethod>(actions.sandwichView.setTableSortMethod, {
+      field: SortField.SELF,
+      direction: SortDirection.DESCENDING,
+    }),
   })
 
   return redux.createStore(reducer, initialState)
