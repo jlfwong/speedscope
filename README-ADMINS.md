@@ -50,6 +50,12 @@ If everything looks good, proceed to "Prepare the release".
 Assuming everything went well in the previous two phases, publishing should just be
 a matter of running `npm publish`.
 
+### Verifying the publish
+
+To verify that the publish was successful, run `npm install -g speedscope`.
+Try `speedscope`, which should open speedscope in browser.
+Try `speedscope sample/profiles/stackcollapse/simple.txt`, which should immediately load the profile
+
 ## Deploying the website
 
 https://www.speedscope.app/ is hosted on GitHub pages, and is published via pushing
