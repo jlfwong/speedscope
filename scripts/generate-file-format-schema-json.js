@@ -12,6 +12,7 @@ jsonSchema = JSON.parse(jsonSchema)
 
 if (!jsonSchema.definitions['FileFormat.File']) {
   console.error('SCHEMA GENERATION FAILURE: Could not find FileFormat.File in the definitions list')
+  console.error(jsonSchema)
   process.exit(1)
 }
 
