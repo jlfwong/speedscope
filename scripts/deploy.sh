@@ -4,8 +4,7 @@
 # repository into a temporary directory and copy the release build
 # artifacts into there to commit & push to the gh-pages branch
 
-# Fail on first error
-set -e
+set -euxo pipefail
 
 OUTDIR=`pwd`/dist/release
 echo $OUTDIR
@@ -29,7 +28,10 @@ echo www.speedscope.app > CNAME
 # Set up a handler to run on Ctrl+C
 trap ctrl_c INT
 function ctrl_c() {
+  set +x
   read -p "Commit release? [yes/no]: "
+  set -x
+
   if [[ $REPLY =~ ^yes$ ]]
   then
     git add --all
@@ -39,7 +41,10 @@ function ctrl_c() {
     rm -rf "$TMPDIR"
     exit 0
   else
+    set +x
     echo "Aborting release."
+    set -x
+
     popd
     rm -rf "$TMPDIR"
     exit 1
@@ -47,6 +52,7 @@ function ctrl_c() {
 }
 
 # Start a local server for verification of the build
+set +x
 echo
 echo
 echo "Build complete. Starting server on http://localhost:4444/"
@@ -54,3 +60,4 @@ echo "Hit Ctrl+C to complete or cancel the release"
 echo
 echo
 python -m SimpleHTTPServer 4444 .
+set +x

@@ -4,10 +4,16 @@
 
 ### Fixed
 
+## [0.6.0]
+
+### Added
+
 * Added support for multiple threads/processes [#130]
 * Import all runs & threads from Instruments .trace files instead of just main thread from selected run [#130]
 
 ### Fixed
+
+* Ensure the JSON schema has actual contents [#133]
 
 ## [0.5.1] - 2018-08-09
 
