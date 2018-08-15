@@ -8,6 +8,12 @@ if [[ "$1" == "system-wide" ]]; then
   exit 0
 fi
 
+if [[ "$1" == "forks" ]]; then
+  perf record -a -F 999 -g ./forks > perf.data
+  perf script -i perf.data
+  exit 0
+fi
+
 perf record -F 999 -g ./simple-terminates > perf.data
 
 if [[ "$1" == "with-header" ]]; then

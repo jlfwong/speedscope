@@ -9,4 +9,4 @@ WORKDIR /workdir
 
 ADD . /workdir
 
-RUN make clean simple-terminates
+RUN make clean simple-terminates forks
