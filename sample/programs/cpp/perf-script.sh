@@ -1,5 +1,13 @@
 #!/bin/bash
 
+set -eoux pipefail
+
+if [[ "$1" == "system-wide" ]]; then
+  perf record -a -F 999 -g ./simple-terminates > perf.data
+  perf script -i perf.data
+  exit 0
+fi
+
 perf record -F 999 -g ./simple-terminates > perf.data
 
 if [[ "$1" == "with-header" ]]; then

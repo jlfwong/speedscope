@@ -1,0 +1,3431 @@
+simple-terminat     9 [000] 202513.231785:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.231817:    1001001 cpu-clock: 
+	ffffffffad135f6f [unknown] ([kernel.kallsyms])
+	ffffffffad110927 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.231851:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.231919:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.232788:    1001001 cpu-clock: 
+	             655 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.232799:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.232883:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.232929:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.233800:    1001001 cpu-clock: 
+	             670 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.233822:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.233850:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.233910:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.234809:    1001001 cpu-clock: 
+	             625 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.234818:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.234844:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.234902:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.235793:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.235820:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.235861:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.235933:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.236810:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.236822:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.236870:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.236904:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.237858:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.237866:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.237867:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.237928:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.238788:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.238794:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.238853:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.238902:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.239993:    1001001 cpu-clock: 
+	             64e _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.240008:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.240008:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.240048:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.240850:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.240850:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.240864:    1001001 cpu-clock: 
+	ffffffffad0e2f8a [unknown] ([kernel.kallsyms])
+	ffffffffad7fcf7f [unknown] ([kernel.kallsyms])
+	ffffffffad11b2eb [unknown] ([kernel.kallsyms])
+	ffffffffad11b34a [unknown] ([kernel.kallsyms])
+	ffffffffad0e387a [unknown] ([kernel.kallsyms])
+	ffffffffad7fc7d5 [unknown] ([kernel.kallsyms])
+	ffffffffad7fa996 [unknown] ([kernel.kallsyms])
+	             64e _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.240904:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.241860:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.241860:    1001001 cpu-clock: 
+	          433e5b [unknown] ([unknown])
+	          4341bc [unknown] ([unknown])
+	          459133 [unknown] ([unknown])
+	          42e200 [unknown] ([unknown])
+	          43febf [unknown] ([unknown])
+	          4624e2 [unknown] ([unknown])
+	          93063b [unknown] ([unknown])
+	          465f56 [unknown] ([unknown])
+	          465d84 [unknown] ([unknown])
+	          dc68c6 [unknown] ([unknown])
+	          ddc3b3 [unknown] ([unknown])
+	          ddc717 [unknown] ([unknown])
+	          dda5e9 [unknown] ([unknown])
+	          45bd01 [unknown] ([unknown])
+
+swapper     0 [002] 202513.241879:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.241928:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [000] 202513.242783:    1001001 cpu-clock: 
+	    7fdecaef52c7 [unknown] ([unknown])
+	    7fdecae7f8f1 [unknown] ([unknown])
+
+swapper     0 [001] 202513.242821:    1001001 cpu-clock: 
+	ffffffffad1145a5 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9dae [unknown] ([kernel.kallsyms])
+	ffffffffad7761e4 [unknown] ([kernel.kallsyms])
+	ffffffffad7762b4 [unknown] ([kernel.kallsyms])
+	ffffffffad647138 [unknown] ([kernel.kallsyms])
+	ffffffffad647198 [unknown] ([kernel.kallsyms])
+	ffffffffad1fa4b6 [unknown] ([kernel.kallsyms])
+	ffffffffad0f748b [unknown] ([kernel.kallsyms])
+	ffffffffad00327a [unknown] ([kernel.kallsyms])
+	ffffffffad7fa08e [unknown] ([kernel.kallsyms])
+	          4b6570 [unknown] ([unknown])
+	          4cc360 [unknown] ([unknown])
+	          4cb326 [unknown] ([unknown])
+	          4cc45b [unknown] ([unknown])
+	          529fd1 [unknown] ([unknown])
+	          53db0e [unknown] ([unknown])
+	         191789e [unknown] ([unknown])
+	          6de274 [unknown] ([unknown])
+	          6f99b0 [unknown] ([unknown])
+	          6df21f [unknown] ([unknown])
+	          45bd01 [unknown] ([unknown])
+
+swapper     0 [002] 202513.242852:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.242897:    1001001 cpu-clock: 
+	ffffffffad03f556 [unknown] ([kernel.kallsyms])
+	ffffffffad03ff3d [unknown] ([kernel.kallsyms])
+	ffffffffad12ea5f [unknown] ([kernel.kallsyms])
+	ffffffffad12ecf4 [unknown] ([kernel.kallsyms])
+	ffffffffad12b949 [unknown] ([kernel.kallsyms])
+	ffffffffad12c730 [unknown] ([kernel.kallsyms])
+	ffffffffad0033c0 [unknown] ([kernel.kallsyms])
+	ffffffffad7fa08e [unknown] ([kernel.kallsyms])
+	    7ffe943fcb22 [unknown] ([unknown])
+	          45ced5 [unknown] ([unknown])
+	    7f9fd1480208 [unknown] ([unknown])
+	8b481b7fc1394858 [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.243778:    1001001 cpu-clock: 
+	             64e _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.243810:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.243853:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.243906:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.244792:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.244805:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.244855:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.244914:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.245788:    1001001 cpu-clock: 
+	             645 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.245823:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.245853:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.245912:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.246787:    1001001 cpu-clock: 
+	             682 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.246811:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.246851:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.246906:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.247792:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.247804:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.247852:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.247908:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.248798:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.248805:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.248853:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.248909:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.249821:    1001001 cpu-clock: 
+	             615 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.249825:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.249852:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.249896:    1001001 cpu-clock: 
+	ffffffffad1145a5 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9dae [unknown] ([kernel.kallsyms])
+	ffffffffad10b614 [unknown] ([kernel.kallsyms])
+	ffffffffad129f4c [unknown] ([kernel.kallsyms])
+	ffffffffad7fd000 [unknown] ([kernel.kallsyms])
+	ffffffffad0e387a [unknown] ([kernel.kallsyms])
+	ffffffffad7fcbb7 [unknown] ([kernel.kallsyms])
+	ffffffffad7fbdd6 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.250878:    1001001 cpu-clock: 
+	             63c _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.250886:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.250891:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.250925:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.251948:    1001001 cpu-clock: 
+	             60c _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.251963:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.251963:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.251981:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.252808:    1001001 cpu-clock: 
+	             615 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.252812:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.252848:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.252912:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.254007:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.254013:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.254019:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.254023:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.254980:    1001001 cpu-clock: 
+	             645 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.254998:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.254998:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.255004:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.255857:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.255879:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.255879:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.255916:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.257026:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.257047:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.257048:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.257074:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.257990:    1001001 cpu-clock: 
+	             679 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.258011:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.258011:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.258037:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.259000:    1001001 cpu-clock: 
+	             615 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.259021:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.259021:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.259048:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.259999:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.260020:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.260027:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.260036:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.260995:    1001001 cpu-clock: 
+	             61e _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.261017:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.261017:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.261041:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.261999:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.262024:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.262025:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.262037:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.262990:    1001001 cpu-clock: 
+	             61e _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.263006:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.263006:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.263018:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.263993:    1001001 cpu-clock: 
+	             63c _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.264014:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.264014:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.264024:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.264993:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.265008:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.265016:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.265028:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.265996:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.266017:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.266017:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.266044:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.266999:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.267022:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.267023:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.267023:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.267995:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.268013:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.268019:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.268019:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.269003:    1001001 cpu-clock: 
+	             670 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.269021:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.269021:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.269044:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.270001:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.270029:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.270035:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.270038:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.271002:    1001001 cpu-clock: 
+	             63c _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.271021:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.271021:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.271048:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.272004:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.272026:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.272026:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.272032:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.273007:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.273025:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.273025:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.273048:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.274005:    1001001 cpu-clock: 
+	             61e _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.274022:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.274022:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.274042:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.275005:    1001001 cpu-clock: 
+	             63c _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.275023:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.275023:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.275029:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.276006:    1001001 cpu-clock: 
+	             60c _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.276023:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.276024:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.276029:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.277007:    1001001 cpu-clock: 
+	             63c _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.277024:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.277024:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.277030:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.278007:    1001001 cpu-clock: 
+	             615 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.278028:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.278029:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.278034:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.278849:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.278870:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.278896:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.278948:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.280033:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.280055:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.280060:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.280065:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.281002:    1001001 cpu-clock: 
+	             645 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.281025:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.281025:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.281031:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.282012:    1001001 cpu-clock: 
+	             6aa _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.282033:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.282033:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.282058:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.282951:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.282965:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.282972:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.282972:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.283938:    1001001 cpu-clock: 
+	             645 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.283953:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.283954:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.283961:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.285032:    1001001 cpu-clock: 
+	             61e _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.285053:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.285053:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.285058:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.286011:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.286027:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.286031:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.286038:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.287014:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.287036:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.287036:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.287041:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.288014:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.288028:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.288035:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.288035:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.289016:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.289033:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.289039:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.289048:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.289858:    1001001 cpu-clock: 
+	             625 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.289891:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.289893:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.289902:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.291056:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.291071:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.291071:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.291086:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.292001:    1001001 cpu-clock: 
+	             615 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.292017:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.292024:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.292031:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.293022:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.293040:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.293040:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.293060:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.294016:    1001001 cpu-clock: 
+	             61e _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.294028:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.294033:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.294039:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.295020:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.295045:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.295045:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.295045:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.296020:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.296042:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.296042:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.296043:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.297019:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.297040:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.297040:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.297064:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.298021:    1001001 cpu-clock: 
+	             61e _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.298053:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.298053:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.298067:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.299015:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.299037:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.299040:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.299054:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.300025:    1001001 cpu-clock: 
+	             6bc _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.300049:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.300050:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.300066:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.301012:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.301030:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.301037:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.301054:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.302025:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.302046:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.302046:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.302064:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.302961:    1001001 cpu-clock: 
+	             6bc _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.302975:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.302981:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.302988:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.304030:    1001001 cpu-clock: 
+	             64e _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.304050:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.304050:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.304056:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.305024:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.305042:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.305042:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.305049:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.306026:    1001001 cpu-clock: 
+	             63c _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.306043:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.306043:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.306049:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.307027:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.307045:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.307045:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.307068:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.308027:    1001001 cpu-clock: 
+	             64e _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.308044:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.308044:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.308050:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.309028:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.309062:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.309062:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.309062:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.310027:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.310044:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.310049:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.310049:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.311028:    1001001 cpu-clock: 
+	             61e _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.311046:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.311049:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.311069:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.312030:    1001001 cpu-clock: 
+	             63c _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.312047:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.312054:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.312054:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.313032:    1001001 cpu-clock: 
+	             682 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.313056:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.313056:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.313056:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.314031:    1001001 cpu-clock: 
+	             645 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.314054:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.314055:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.314055:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.315031:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.315054:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.315054:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.315054:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.316032:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.316053:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.316053:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.316078:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.317034:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.317051:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.317058:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.317065:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.318026:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.318044:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.318051:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.318051:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.319036:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.319060:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.319072:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.319076:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.320034:    1001001 cpu-clock: 
+	             645 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.320053:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.320058:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.320075:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.321034:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.321056:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.321056:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.321062:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.322038:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.322061:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.322061:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.322067:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.323036:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.323058:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.323058:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.323058:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.324037:    1001001 cpu-clock: 
+	             63c _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.324061:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.324061:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.324067:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.325038:    1001001 cpu-clock: 
+	             682 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.325060:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.325060:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.325060:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.326038:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.326059:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.326059:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.326084:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.327040:    1001001 cpu-clock: 
+	             6b3 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.327060:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.327061:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.327082:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.328040:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.328057:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.328057:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.328063:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.329042:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.329059:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.329062:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.329069:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.330045:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.330057:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.330057:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.330072:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.331043:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.331059:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.331064:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.331071:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.332044:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.332062:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.332062:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.332068:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.333044:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.333062:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.333062:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.333085:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.334045:    1001001 cpu-clock: 
+	             64e _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.334072:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.334090:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.334090:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.335039:    1001001 cpu-clock: 
+	             6b3 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.335062:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.335063:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.335087:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.335909:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.335925:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.335931:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.335998:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.337077:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.337100:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.337100:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.337100:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.338041:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.338062:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.338062:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.338068:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.339049:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.339071:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.339072:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.339078:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.340037:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.340050:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.340050:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.340056:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.341053:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.341075:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.341076:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.341097:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.341946:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.341959:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.341960:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.341975:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.343036:    1001001 cpu-clock: 
+	             645 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.343054:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.343054:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.343085:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.344055:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.344072:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.344075:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.344078:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.345050:    1001001 cpu-clock: 
+	             645 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.345075:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.345075:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.345075:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.346054:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.346071:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.346075:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.346078:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.347052:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.347077:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.347077:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.347077:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.348056:    1001001 cpu-clock: 
+	             682 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.348076:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.348076:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.348102:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.349052:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.349070:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.349070:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.349093:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.350034:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.350039:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.350039:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.350058:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.351062:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.351100:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.351100:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.351118:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.352048:    1001001 cpu-clock: 
+	             679 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.352067:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.352075:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.352096:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.353058:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.353079:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.353079:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.353104:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.354057:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.354078:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.354078:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.354105:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.355058:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.355078:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.355078:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.355106:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.356059:    1001001 cpu-clock: 
+	             670 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.356079:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.356079:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.356107:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.357060:    1001001 cpu-clock: 
+	             645 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.357081:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.357081:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.357081:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.358060:    1001001 cpu-clock: 
+	             6aa _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.358111:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.358111:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.358111:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.359062:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.359083:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.359083:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.359110:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.360023:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.360036:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.360036:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.360051:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.361073:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.361094:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.361094:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.361118:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.361865:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.361911:    1001001 cpu-clock: 
+	ffffffffad135f6f [unknown] ([kernel.kallsyms])
+	ffffffffad110a52 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.361917:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.362003:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.363054:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.363077:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.363077:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.363077:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.364066:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.364089:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.364089:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.364089:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.365076:    1001001 cpu-clock: 
+	             63c _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.365100:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.365100:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.365100:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.366065:    1001001 cpu-clock: 
+	             6b3 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.366082:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.366089:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.366089:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.367066:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [002] 202513.367091:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.367108:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.367108:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.368060:    1001001 cpu-clock: 
+	             670 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [003] 202513.368084:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.368084:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [001] 202513.368099:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.369068:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.369090:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.369090:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.369116:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+simple-terminat     9 [000] 202513.370020:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+swapper     0 [001] 202513.370034:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [003] 202513.370034:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
+swapper     0 [002] 202513.370040:    1001001 cpu-clock: 
+	ffffffffad7f9c04 [unknown] ([kernel.kallsyms])
+	ffffffffad7f9ab3 [unknown] ([kernel.kallsyms])
+	ffffffffad1109b3 [unknown] ([kernel.kallsyms])
+	ffffffffad0366fa [unknown] ([kernel.kallsyms])
+
