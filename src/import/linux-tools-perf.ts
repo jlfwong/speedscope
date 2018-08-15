@@ -22,7 +22,7 @@ interface PerfEvent {
 }
 
 function parseEvent(rawEvent: string): PerfEvent | null {
-  const lines = rawEvent.split('\n')
+  const lines = rawEvent.split('\n').filter(l => !/^\s*#/.exec(l))
 
   const event: PerfEvent = {
     command: null,
@@ -102,10 +102,10 @@ export function importFromLinuxPerf(contents: string): ProfileGroup {
       return p
     })
     profile.appendSample(
-      event.stack.map(({address, symbolName, file}) => {
+      event.stack.map(({symbolName, file}) => {
         return {
-          key: `${symbolName} [${address}] (${file})`,
-          name: symbolName === '[unknown]' ? address : symbolName,
+          key: `${symbolName} (${file})`,
+          name: symbolName === '[unknown]' ? `??? (${file})` : symbolName,
           file: file,
         }
       }),
