@@ -1,5 +1,6 @@
 import {StackListProfileBuilder, ProfileGroup} from '../lib/profile'
 import {itMap, getOrInsert} from '../lib/utils'
+import {TimeFormatter} from '../lib/value-formatters'
 
 // This imports the output of the "perf script" command on linux.
 //
@@ -79,8 +80,13 @@ function parseEvent(rawEvent: string): PerfEvent | null {
   return event
 }
 
+interface ProfileBuildState {
+  lastEventTime: number | null
+  builder: StackListProfileBuilder
+}
+
 export function importFromLinuxPerf(contents: string): ProfileGroup {
-  const profiles = new Map<string, StackListProfileBuilder>()
+  const profiles = new Map<string, ProfileBuildState>()
 
   let eventType: string | null = null
 
@@ -96,12 +102,21 @@ export function importFromLinuxPerf(contents: string): ProfileGroup {
     if (event.processID) profileNameParts.push(`pid: ${event.processID}`)
     if (event.threadID) profileNameParts.push(`tid: ${event.threadID}`)
     const profileName = profileNameParts.join(' ')
-    const profile = getOrInsert(profiles, profileName, () => {
-      const p = new StackListProfileBuilder()
-      p.setName(profileName)
-      return p
+    const builderState = getOrInsert(profiles, profileName, () => {
+      const builder = new StackListProfileBuilder()
+      builder.setName(profileName)
+      return {
+        lastEventTime: null,
+        builder,
+      }
     })
-    profile.appendSample(
+    const {builder, lastEventTime} = builderState
+
+    if (event.time) {
+      builder.setValueFormatter(new TimeFormatter('seconds'))
+    }
+
+    builder.appendSample(
       event.stack.map(({symbolName, file}) => {
         return {
           key: `${symbolName} (${file})`,
@@ -109,13 +124,14 @@ export function importFromLinuxPerf(contents: string): ProfileGroup {
           file: file,
         }
       }),
-      1,
+      event.time ? (lastEventTime == null ? 0 : event.time - lastEventTime) : 1,
     )
+    builderState.lastEventTime = event.time
   }
 
   return {
     name: profiles.size === 1 ? Array.from(profiles.keys())[0] : '',
     indexToView: 0,
-    profiles: Array.from(itMap(profiles.values(), profile => profile.build())),
+    profiles: Array.from(itMap(profiles.values(), state => state.builder.build())),
   }
 }
