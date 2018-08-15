@@ -74,8 +74,7 @@ function parseEvent(rawEvent: string): PerfEvent | null {
 
     event.stack.push({address: `0x${address}`, symbolName, file})
   }
-
-  console.log(event)
+  event.stack.reverse()
 
   return event
 }
@@ -106,7 +105,7 @@ export function importFromLinuxPerf(contents: string): ProfileGroup {
       event.stack.map(({address, symbolName, file}) => {
         return {
           key: `${symbolName} [${address}] (${file})`,
-          name: symbolName,
+          name: symbolName === '[unknown]' ? address : symbolName,
           file: file,
         }
       }),
