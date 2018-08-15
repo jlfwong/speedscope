@@ -10,5 +10,3 @@ WORKDIR /workdir
 ADD . /workdir
 
 RUN make clean simple-terminates
-
-CMD /bin/bash ./perf-script.sh
