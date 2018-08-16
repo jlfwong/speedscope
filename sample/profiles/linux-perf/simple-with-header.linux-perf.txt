@@ -1,0 +1,881 @@
+# ========
+# captured on: Wed Aug 15 16:01:24 2018
+# hostname : e2b5bab9a538
+# os release : 4.9.93-linuxkit-aufs
+# perf version : 4.15.18
+# arch : x86_64
+# nrcpus online : 4
+# nrcpus avail : 4
+# cpudesc : Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz
+# cpuid : GenuineIntel,6,70,1
+# total memory : 2046644 kB
+# cmdline : /usr/lib/linux-tools-4.15.0-30/perf record -F 999 -g ./simple-terminates 
+# event : name = cpu-clock, , type = 1, size = 112, { sample_period, sample_freq } = 999, sample_type = IP|TID|TIME|CALLCHAIN|PERIOD, disabled = 1, inherit = 1, mmap = 1, comm = 1, freq = 1, enable_on_exec = 1, task = 1, sample_id_all = 1, exclude_guest = 1, mmap2 = 1, comm_exec = 1
+# CPU_TOPOLOGY info available, use -I to display
+# pmu mappings: breakpoint = 5, power = 7, software = 1, tracepoint = 2, msr = 6
+# CACHE info available, use -I to display
+# missing features: TRACING_DATA NUMA_TOPOLOGY BRANCH_STACK GROUP_DESC AUXTRACE STAT 
+# ========
+#
+simple-terminat     9 198789.478194:    1001001 cpu-clock: 
+	             63c _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.479183:    1001001 cpu-clock: 
+	             64e _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.480175:    1001001 cpu-clock: 
+	             60c _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.481194:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.482189:    1001001 cpu-clock: 
+	             61e _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.482989:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.484239:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.485180:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.486198:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.487190:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.488202:    1001001 cpu-clock: 
+	             6aa _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.489329:    1001001 cpu-clock: 
+	             64e _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.490298:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.491297:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.492295:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.493164:    1001001 cpu-clock: 
+	             615 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.494212:    1001001 cpu-clock: 
+	             685 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.495431:    1001001 cpu-clock: 
+	             615 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.496316:    1001001 cpu-clock: 
+	             655 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.497329:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.498322:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.499325:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.500327:    1001001 cpu-clock: 
+	             61e _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.501320:    1001001 cpu-clock: 
+	             645 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.502265:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.503165:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.504336:    1001001 cpu-clock: 
+	             64e _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.505331:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.506328:    1001001 cpu-clock: 
+	             645 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.507324:    1001001 cpu-clock: 
+	             670 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.508328:    1001001 cpu-clock: 
+	             60c _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.509334:    1001001 cpu-clock: 
+	             63c _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.510272:    1001001 cpu-clock: 
+	             67c _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.511373:    1001001 cpu-clock: 
+	             64c _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.512319:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.513188:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.514391:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.515336:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.516359:    1001001 cpu-clock: 
+	             64e _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.517344:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.518263:    1001001 cpu-clock: 
+	             63c _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.519381:    1001001 cpu-clock: 
+	             6b3 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.520359:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.521293:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.522326:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.523217:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.524395:    1001001 cpu-clock: 
+	             615 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.525355:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.526189:    1001001 cpu-clock: 
+	             6b3 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.527412:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.528331:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.529367:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.530368:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.531369:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.532360:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.533218:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.534427:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.535372:    1001001 cpu-clock: 
+	             615 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.536386:    1001001 cpu-clock: 
+	             63c _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.537337:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.538397:    1001001 cpu-clock: 
+	             645 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.539383:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.540390:    1001001 cpu-clock: 
+	             64e _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.541389:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.542400:    1001001 cpu-clock: 
+	             64e _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.543268:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.544277:    1001001 cpu-clock: 
+	             63c _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.545289:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.546425:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.547283:    1001001 cpu-clock: 
+	             61e _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.548516:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.549479:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.550495:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.551493:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.552486:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.553398:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.554516:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.555493:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.556494:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.557354:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.558422:    1001001 cpu-clock: 
+	             679 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.559521:    1001001 cpu-clock: 
+	             645 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.560351:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.561388:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.562544:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.563411:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.564311:    1001001 cpu-clock: 
+	             64e _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.565551:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.566493:    1001001 cpu-clock: 
+	             679 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.567486:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.568508:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.569498:    1001001 cpu-clock: 
+	             61e _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.570501:    1001001 cpu-clock: 
+	             682 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.571502:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.572502:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.573415:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.574532:    1001001 cpu-clock: 
+	             679 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.575498:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.576507:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.577513:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.578510:    1001001 cpu-clock: 
+	             682 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.579516:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.580509:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.581511:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.582519:    1001001 cpu-clock: 
+	             655 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.583440:    1001001 cpu-clock: 
+	             6b3 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.584538:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.585513:    1001001 cpu-clock: 
+	             682 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.586522:    1001001 cpu-clock: 
+	             63c _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.587526:    1001001 cpu-clock: 
+	             60c _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.588513:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.589523:    1001001 cpu-clock: 
+	             613 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.590520:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.591524:    1001001 cpu-clock: 
+	             61e _Z5alphav (/workdir/simple-terminates)
+	             6e9 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.592527:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.593438:    1001001 cpu-clock: 
+	             679 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.594550:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.595513:    1001001 cpu-clock: 
+	             6bc _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.596531:    1001001 cpu-clock: 
+	             64e _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.597523:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.598527:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.599528:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.600528:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.601529:    1001001 cpu-clock: 
+	             682 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.602525:    1001001 cpu-clock: 
+	             64e _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.603449:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.604547:    1001001 cpu-clock: 
+	             64e _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.605522:    1001001 cpu-clock: 
+	             677 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.606529:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.607410:    1001001 cpu-clock: 
+	             645 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.608466:    1001001 cpu-clock: 
+	             618 _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.609472:    1001001 cpu-clock: 
+	             645 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.610646:    1001001 cpu-clock: 
+	             645 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.611607:    1001001 cpu-clock: 
+	             6b1 _Z5gammav (/workdir/simple-terminates)
+	             6f8 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.612623:    1001001 cpu-clock: 
+	             60c _Z5alphav (/workdir/simple-terminates)
+	             690 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+
+simple-terminat     9 198789.613576:    1001001 cpu-clock: 
+	             643 _Z4betav (/workdir/simple-terminates)
+	             6ee main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])
+

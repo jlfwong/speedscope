@@ -1,0 +1,6 @@
+simple-terminat    10 198792.736893:    1001001 cpu-clock:
+	             643 _Z4betav (/workdir/simple-terminates)
+	             695 _Z5deltav (/workdir/simple-terminates)
+	             6f3 main (/workdir/simple-terminates)
+	           21b97 __libc_start_main (/lib/x86_64-linux-gnu/libc-2.27.so)
+	 6ce258d4c544155 [unknown] ([unknown])

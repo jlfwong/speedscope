@@ -8,6 +8,7 @@ import {importFromBGFlameGraph} from './bg-flamegraph'
 import {importFromFirefox} from './firefox'
 import {importSpeedscopeProfiles} from '../lib/file-format'
 import {importFromV8ProfLog} from './v8proflog'
+import {importFromLinuxPerf} from './linux-tools-perf'
 
 export async function importProfileGroup(
   fileName: string,
@@ -53,6 +54,9 @@ async function _importProfileGroup(
   } else if (fileName.endsWith('.instruments.txt')) {
     console.log('Importing as Instruments.app deep copy')
     return toGroup(importFromInstrumentsDeepCopy(contents))
+  } else if (fileName.endsWith('.linux-perf.txt')) {
+    console.log('Importing as output of linux perf script')
+    return importFromLinuxPerf(contents)
   } else if (fileName.endsWith('.collapsedstack.txt')) {
     console.log('Importing as collapsed stack format')
     return toGroup(importFromBGFlameGraph(contents))
@@ -102,6 +106,12 @@ async function _importProfileGroup(
     if (lineCount >= 1 && lineCount === contents.split(/ \d+\n/).length) {
       console.log('Importing as collapsed stack format')
       return toGroup(importFromBGFlameGraph(contents))
+    }
+
+    const fromLinuxPerf = importFromLinuxPerf(contents)
+    if (fromLinuxPerf) {
+      console.log('Importing from linux perf script output')
+      return fromLinuxPerf
     }
   }
 

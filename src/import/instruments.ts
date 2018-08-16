@@ -579,7 +579,7 @@ export function importThreadFromInstrumentsTrace(args: {
     if (lastTimestamp === null) {
       // The first sample is sometimes fairly late in the profile for some reason.
       // We'll just say nothing was known to be on the stack in that time.
-      profile.appendSample([], sample.timestamp)
+      profile.appendSampleWithWeight([], sample.timestamp)
       lastTimestamp = sample.timestamp
     }
 
@@ -587,7 +587,7 @@ export function importThreadFromInstrumentsTrace(args: {
       throw new Error('Timestamps out of order!')
     }
 
-    profile.appendSample(stackForSample, sample.timestamp - lastTimestamp)
+    profile.appendSampleWithWeight(stackForSample, sample.timestamp - lastTimestamp)
     lastTimestamp = sample.timestamp
   }
 

@@ -45,7 +45,7 @@ export function importFromStackprof(stackprofProfile: StackprofProfile): Profile
       sampleDuration += raw_timestamp_deltas[sampleIndex++]
     }
 
-    profile.appendSample(stack, sampleDuration)
+    profile.appendSampleWithWeight(stack, sampleDuration)
     prevStack = stack
   }
 

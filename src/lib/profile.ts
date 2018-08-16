@@ -337,7 +337,7 @@ export class Profile {
       for (let n: CallTreeNode | null = node; n != null && n.frame !== Frame.root; n = n.parent) {
         stack.push(n.frame)
       }
-      builder.appendSample(stack, node.getTotalWeight())
+      builder.appendSampleWithWeight(stack, node.getTotalWeight())
     }
 
     const ret = builder.build()
@@ -355,7 +355,7 @@ export class Profile {
 
       function visit(node: CallTreeNode) {
         stack.push(node.frame)
-        builder.appendSample(stack, node.getSelfWeight())
+        builder.appendSampleWithWeight(stack, node.getSelfWeight())
         for (let child of node.children) {
           visit(child)
         }
@@ -450,17 +450,63 @@ export class StackListProfileBuilder extends Profile {
         frame.addToTotalWeight(weight)
       }
 
-      this.samples.push(node)
-      this.weights.push(weight)
+      if (node === lastOf(this.samples)) {
+        this.weights[this.weights.length - 1] += weight
+      } else {
+        this.samples.push(node)
+        this.weights.push(weight)
+      }
     }
   }
 
-  appendSample(stack: FrameInfo[], weight: number) {
+  appendSampleWithWeight(stack: FrameInfo[], weight: number) {
+    if (weight === 0) {
+      // Samples with zero weight have no effect, so let's ignore them
+      return
+    }
+    if (weight < 0) {
+      throw new Error('Samples must have positive weights')
+    }
+
     this._appendSample(stack, weight, true)
     this._appendSample(stack, weight, false)
   }
 
+  private pendingSample: {
+    stack: FrameInfo[]
+    startTimestamp: number
+    centralTimestamp: number
+  } | null = null
+  appendSampleWithTimestamp(stack: FrameInfo[], timestamp: number) {
+    if (this.pendingSample) {
+      if (timestamp < this.pendingSample.centralTimestamp) {
+        throw new Error('Timestamps received out of order')
+      }
+      const endTimestamp = (timestamp + this.pendingSample.centralTimestamp) / 2
+      this.appendSampleWithWeight(
+        this.pendingSample.stack,
+        endTimestamp - this.pendingSample.startTimestamp,
+      )
+      this.pendingSample = {stack, startTimestamp: endTimestamp, centralTimestamp: timestamp}
+    } else {
+      this.pendingSample = {stack, startTimestamp: timestamp, centralTimestamp: timestamp}
+    }
+  }
+
   build(): Profile {
+    if (this.pendingSample) {
+      if (this.samples.length > 0) {
+        this.appendSampleWithWeight(
+          this.pendingSample.stack,
+          this.pendingSample.centralTimestamp - this.pendingSample.startTimestamp,
+        )
+      } else {
+        // There is only a single sample. In this case, units will be meaningless,
+        // so we'll append with a weight of 1 and also clear any value formatter
+        this.appendSampleWithWeight(this.pendingSample.stack, 1)
+        this.setValueFormatter(new RawValueFormatter())
+      }
+    }
     this.totalWeight = Math.max(this.totalWeight, this.weights.reduce((a, b) => a + b, 0))
     return this
   }

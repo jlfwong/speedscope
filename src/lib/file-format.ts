@@ -138,7 +138,7 @@ function importSpeedscopeProfile(
     for (let i = 0; i < samples.length; i++) {
       const stack = samples[i]
       const weight = weights[i]
-      profile.appendSample(stack.map(n => frameInfos[n]), weight)
+      profile.appendSampleWithWeight(stack.map(n => frameInfos[n]), weight)
     }
 
     return profile.build()

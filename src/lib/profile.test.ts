@@ -147,9 +147,9 @@ test('StackListProfileBuilder', () => {
   ]
 
   samples.forEach(stack => {
-    b.appendSample(stack, 1)
+    b.appendSampleWithWeight(stack, 1)
   })
-  b.appendSample([], 4)
+  b.appendSampleWithWeight([], 4)
 
   const profile = b.build()
   expect(profile.getTotalWeight()).toBe(samples.length + 4)
@@ -170,9 +170,9 @@ test('StackListProfileBuilder separates non-contiguous', () => {
   ]
 
   samples.forEach(stack => {
-    b.appendSample(stack, 1)
+    b.appendSampleWithWeight(stack, 1)
   })
-  b.appendSample([], 4)
+  b.appendSampleWithWeight([], 4)
   const profile = b.build()
 
   expect(toTreeString(profile, true)).toMatchSnapshot('grouped')
@@ -251,7 +251,7 @@ test('getInvertedProfileForCallersOf', () => {
     [fd, fb],
   ]
   samples.forEach(stack => {
-    b.appendSample(stack, 1)
+    b.appendSampleWithWeight(stack, 1)
   })
 
   const profile = b.build()
@@ -279,7 +279,7 @@ test('getProfileForCalleesOf', () => {
     [fd, fb],
   ]
   samples.forEach(stack => {
-    b.appendSample(stack, 1)
+    b.appendSampleWithWeight(stack, 1)
   })
 
   const profile = b.build()
@@ -305,7 +305,7 @@ test('getProfileWithRecursionFlattened', () => {
     [fa, fb, fa],
   ]
   samples.forEach(stack => {
-    b.appendSample(stack, 1)
+    b.appendSampleWithWeight(stack, 1)
   })
 
   const profile = b.build()
