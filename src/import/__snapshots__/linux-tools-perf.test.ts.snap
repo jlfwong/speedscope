@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`importFromLinuxPerf forks.txt 1`] = `
+exports[`importFromLinuxPerf forks.linux-perf.txt 1`] = `
 Object {
   "frames": Array [
     Frame {
@@ -206,7 +206,7 @@ Object {
 }
 `;
 
-exports[`importFromLinuxPerf forks.txt 2`] = `
+exports[`importFromLinuxPerf forks.linux-perf.txt 2`] = `
 Object {
   "frames": Array [
     Frame {
@@ -399,7 +399,7 @@ Object {
 }
 `;
 
-exports[`importFromLinuxPerf forks.txt 3`] = `
+exports[`importFromLinuxPerf forks.linux-perf.txt 3`] = `
 Object {
   "frames": Array [
     Frame {
@@ -483,7 +483,7 @@ Object {
 }
 `;
 
-exports[`importFromLinuxPerf forks.txt 4`] = `
+exports[`importFromLinuxPerf forks.linux-perf.txt 4`] = `
 Object {
   "frames": Array [
     Frame {
@@ -567,11 +567,11 @@ Object {
 }
 `;
 
-exports[`importFromLinuxPerf forks.txt: indexToView 1`] = `0`;
+exports[`importFromLinuxPerf forks.linux-perf.txt: indexToView 1`] = `0`;
 
-exports[`importFromLinuxPerf forks.txt: profileGroup.name 1`] = `"forks.txt"`;
+exports[`importFromLinuxPerf forks.linux-perf.txt: profileGroup.name 1`] = `"forks.linux-perf.txt"`;
 
-exports[`importFromLinuxPerf one-sample.txt 1`] = `
+exports[`importFromLinuxPerf one-sample.linux-perf.txt 1`] = `
 Object {
   "frames": Array [
     Frame {
@@ -627,11 +627,11 @@ Object {
 }
 `;
 
-exports[`importFromLinuxPerf one-sample.txt: indexToView 1`] = `0`;
+exports[`importFromLinuxPerf one-sample.linux-perf.txt: indexToView 1`] = `0`;
 
-exports[`importFromLinuxPerf one-sample.txt: profileGroup.name 1`] = `"simple-terminat tid: 10"`;
+exports[`importFromLinuxPerf one-sample.linux-perf.txt: profileGroup.name 1`] = `"simple-terminat tid: 10"`;
 
-exports[`importFromLinuxPerf simple.txt 1`] = `
+exports[`importFromLinuxPerf simple.linux-perf.txt 1`] = `
 Object {
   "frames": Array [
     Frame {
@@ -687,11 +687,11 @@ Object {
 }
 `;
 
-exports[`importFromLinuxPerf simple.txt: indexToView 1`] = `0`;
+exports[`importFromLinuxPerf simple.linux-perf.txt: indexToView 1`] = `0`;
 
-exports[`importFromLinuxPerf simple.txt: profileGroup.name 1`] = `"simple-terminat tid: 10"`;
+exports[`importFromLinuxPerf simple.linux-perf.txt: profileGroup.name 1`] = `"simple-terminat tid: 10"`;
 
-exports[`importFromLinuxPerf simple-with-header.txt 1`] = `
+exports[`importFromLinuxPerf simple-with-header.linux-perf.txt 1`] = `
 Object {
   "frames": Array [
     Frame {
@@ -896,11 +896,11 @@ Object {
 }
 `;
 
-exports[`importFromLinuxPerf simple-with-header.txt: indexToView 1`] = `0`;
+exports[`importFromLinuxPerf simple-with-header.linux-perf.txt: indexToView 1`] = `0`;
 
-exports[`importFromLinuxPerf simple-with-header.txt: profileGroup.name 1`] = `"simple-terminat tid: 9"`;
+exports[`importFromLinuxPerf simple-with-header.linux-perf.txt: profileGroup.name 1`] = `"simple-terminat tid: 9"`;
 
-exports[`importFromLinuxPerf simple-with-pids.txt 1`] = `
+exports[`importFromLinuxPerf simple-with-pids.linux-perf.txt 1`] = `
 Object {
   "frames": Array [
     Frame {
@@ -1114,11 +1114,11 @@ Object {
 }
 `;
 
-exports[`importFromLinuxPerf simple-with-pids.txt: indexToView 1`] = `0`;
+exports[`importFromLinuxPerf simple-with-pids.linux-perf.txt: indexToView 1`] = `0`;
 
-exports[`importFromLinuxPerf simple-with-pids.txt: profileGroup.name 1`] = `"simple-terminat pid: 9 tid: 9"`;
+exports[`importFromLinuxPerf simple-with-pids.linux-perf.txt: profileGroup.name 1`] = `"simple-terminat pid: 9 tid: 9"`;
 
-exports[`importFromLinuxPerf system-wide.txt 1`] = `
+exports[`importFromLinuxPerf system-wide.linux-perf.txt 1`] = `
 Object {
   "frames": Array [
     Frame {
@@ -1335,7 +1335,7 @@ Object {
 }
 `;
 
-exports[`importFromLinuxPerf system-wide.txt 2`] = `
+exports[`importFromLinuxPerf system-wide.linux-perf.txt 2`] = `
 Object {
   "frames": Array [
     Frame {
@@ -1376,6 +1376,6 @@ Object {
 }
 `;
 
-exports[`importFromLinuxPerf system-wide.txt: indexToView 1`] = `0`;
+exports[`importFromLinuxPerf system-wide.linux-perf.txt: indexToView 1`] = `0`;
 
-exports[`importFromLinuxPerf system-wide.txt: profileGroup.name 1`] = `"system-wide.txt"`;
+exports[`importFromLinuxPerf system-wide.linux-perf.txt: profileGroup.name 1`] = `"system-wide.linux-perf.txt"`;

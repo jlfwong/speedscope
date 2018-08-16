@@ -108,9 +108,11 @@ async function _importProfileGroup(
       return toGroup(importFromBGFlameGraph(contents))
     }
 
-    // TODO(jlfwong): Determine heuristic for deciding whether to use
-    // this format or not
-    return importFromLinuxPerf(contents)
+    const fromLinuxPerf = importFromLinuxPerf(contents)
+    if (fromLinuxPerf) {
+      console.log('Importing from linux perf script output')
+      return fromLinuxPerf
+    }
   }
 
   // Unrecognized format

@@ -62,7 +62,7 @@ If the `raw: true` flag is set when recording a dump, the resulting json dump ca
 You can import profiles recorded using `perf record` and formatted using `perf script`.
 
     perf record -a -F 999 -g -p PID > perf.data
-    perf script -i perf.data > perf.txt
+    perf script -i perf.data > profile.linux-perf.txt
 
 Then drop the resulting `perf.txt` into speedscope, or if you have speedscope installed
 locally, you can run:

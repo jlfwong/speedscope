@@ -80,7 +80,7 @@ function parseEvent(rawEvent: string): PerfEvent | null {
   return event
 }
 
-export function importFromLinuxPerf(contents: string): ProfileGroup {
+export function importFromLinuxPerf(contents: string): ProfileGroup | null {
   const profiles = new Map<string, StackListProfileBuilder>()
 
   let eventType: string | null = null
@@ -116,6 +116,10 @@ export function importFromLinuxPerf(contents: string): ProfileGroup {
       }),
       event.time!,
     )
+  }
+
+  if (profiles.size === 0) {
+    return null
   }
 
   return {

@@ -19,10 +19,13 @@ function parseBGFoldedStacks(contents: string): BGSample[] {
   return samples
 }
 
-export function importFromBGFlameGraph(contents: string): Profile {
+export function importFromBGFlameGraph(contents: string): Profile | null {
   const parsed = parseBGFoldedStacks(contents)
   const duration = parsed.reduce((prev: number, cur: BGSample) => prev + cur.duration, 0)
   const profile = new StackListProfileBuilder(duration)
+  if (parsed.length === 0) {
+    return null
+  }
   for (let sample of parsed) {
     profile.appendSampleWithWeight(sample.stack, sample.duration)
   }

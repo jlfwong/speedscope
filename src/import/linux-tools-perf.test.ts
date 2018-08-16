@@ -1,22 +1,22 @@
 import {checkProfileSnapshot} from '../lib/test-utils'
 
 describe('importFromLinuxPerf', async () => {
-  test('simple.txt', async () => {
-    await checkProfileSnapshot('./sample/profiles/linux-perf/simple.txt')
+  test('simple.linux-perf.txt', async () => {
+    await checkProfileSnapshot('./sample/profiles/linux-perf/simple.linux-perf.txt')
   })
-  test('one-sample.txt', async () => {
-    await checkProfileSnapshot('./sample/profiles/linux-perf/one-sample.txt')
+  test('one-sample.linux-perf.txt', async () => {
+    await checkProfileSnapshot('./sample/profiles/linux-perf/one-sample.linux-perf.txt')
   })
-  test('forks.txt', async () => {
-    await checkProfileSnapshot('./sample/profiles/linux-perf/forks.txt')
+  test('forks.linux-perf.txt', async () => {
+    await checkProfileSnapshot('./sample/profiles/linux-perf/forks.linux-perf.txt')
   })
-  test('simple-with-header.txt', async () => {
-    await checkProfileSnapshot('./sample/profiles/linux-perf/simple-with-header.txt')
+  test('simple-with-header.linux-perf.txt', async () => {
+    await checkProfileSnapshot('./sample/profiles/linux-perf/simple-with-header.linux-perf.txt')
   })
-  test('simple-with-pids.txt', async () => {
-    await checkProfileSnapshot('./sample/profiles/linux-perf/simple-with-pid.txt')
+  test('simple-with-pids.linux-perf.txt', async () => {
+    await checkProfileSnapshot('./sample/profiles/linux-perf/simple-with-pid.linux-perf.txt')
   })
-  test('system-wide.txt', async () => {
-    await checkProfileSnapshot('./sample/profiles/linux-perf/system-wide.txt')
+  test('system-wide.linux-perf.txt', async () => {
+    await checkProfileSnapshot('./sample/profiles/linux-perf/system-wide.linux-perf.txt')
   })
 })
