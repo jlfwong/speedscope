@@ -1,10 +1,10 @@
 ## [Unreleased]
 
+## [0.7.0]
+
 ### Added
 
 * Added support to import from linux `perf script` [#135]
-
-### Fixed
 
 ## [0.6.0]
 
