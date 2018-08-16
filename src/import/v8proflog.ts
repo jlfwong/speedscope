@@ -173,7 +173,7 @@ export function importFromV8ProfLog(v8log: V8LogProfile): Profile {
       }
       stack.push(getFrameInfo(id))
     }
-    profile.appendSample(stack, tick.tm - lastTm)
+    profile.appendSampleWithWeight(stack, tick.tm - lastTm)
     lastTm = tick.tm
   }
 

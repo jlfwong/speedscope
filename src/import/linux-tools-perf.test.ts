@@ -4,6 +4,9 @@ describe('importFromLinuxPerf', async () => {
   test('simple.txt', async () => {
     await checkProfileSnapshot('./sample/profiles/linux-perf/simple.txt')
   })
+  test('one-sample.txt', async () => {
+    await checkProfileSnapshot('./sample/profiles/linux-perf/one-sample.txt')
+  })
   test('forks.txt', async () => {
     await checkProfileSnapshot('./sample/profiles/linux-perf/forks.txt')
   })

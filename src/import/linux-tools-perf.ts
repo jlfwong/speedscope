@@ -80,22 +80,23 @@ function parseEvent(rawEvent: string): PerfEvent | null {
   return event
 }
 
-interface ProfileBuildState {
-  lastEventTime: number | null
-  builder: StackListProfileBuilder
-}
-
 export function importFromLinuxPerf(contents: string): ProfileGroup {
-  const profiles = new Map<string, ProfileBuildState>()
+  const profiles = new Map<string, StackListProfileBuilder>()
 
   let eventType: string | null = null
-
   const events = contents.split('\n\n').map(parseEvent)
+  const filteredEvents: PerfEvent[] = []
 
   for (let event of events) {
     if (event == null) continue
     if (eventType != null && eventType != event.eventType) continue
+    if (event.time == null) continue
     eventType = event.eventType
+    filteredEvents.push(event)
+  }
+
+  for (let i = 0; i < filteredEvents.length; i++) {
+    const event = filteredEvents[i]
 
     let profileNameParts = []
     if (event.command) profileNameParts.push(event.command)
@@ -105,18 +106,13 @@ export function importFromLinuxPerf(contents: string): ProfileGroup {
     const builderState = getOrInsert(profiles, profileName, () => {
       const builder = new StackListProfileBuilder()
       builder.setName(profileName)
-      return {
-        lastEventTime: null,
-        builder,
-      }
-    })
-    const {builder, lastEventTime} = builderState
-
-    if (event.time) {
       builder.setValueFormatter(new TimeFormatter('seconds'))
-    }
+      return builder
+    })
 
-    builder.appendSample(
+    const builder = builderState
+
+    builder.appendSampleWithTimestamp(
       event.stack.map(({symbolName, file}) => {
         return {
           key: `${symbolName} (${file})`,
@@ -124,14 +120,13 @@ export function importFromLinuxPerf(contents: string): ProfileGroup {
           file: file,
         }
       }),
-      event.time ? (lastEventTime == null ? 0 : event.time - lastEventTime) : 1,
+      event.time!,
     )
-    builderState.lastEventTime = event.time
   }
 
   return {
     name: profiles.size === 1 ? Array.from(profiles.keys())[0] : '',
     indexToView: 0,
-    profiles: Array.from(itMap(profiles.values(), state => state.builder.build())),
+    profiles: Array.from(itMap(profiles.values(), builder => builder.build())),
   }
 }
