@@ -57,9 +57,22 @@ into the browser from Chrome.
 
 If the `raw: true` flag is set when recording a dump, the resulting json dump can be imported into speedscope.
 
-### `perf` and `DTrace`
+### Linux `perf`
 
-If you process the output of `perf` or `DTrace` first with Brendan Gregg's `stackcollapse-*.pl` scripts (https://github.com/brendangregg/FlameGraph#2-fold-stacks), the result can be imported into speedscope.
+You can import profiles recorded using `perf record` and formatted using `perf script`.
+
+    perf record -a -F 999 -g -p PID > perf.data
+    perf script -i perf.data > perf.txt
+
+Then drop the resulting `perf.txt` into speedscope, or if you have speedscope installed
+locally, you can run:
+
+    perf record -a -F 999 -g -p PID > perf.data
+    perf script -i perf.data | speedscope -
+
+### `DTrace`
+
+If you process the output of `DTrace` first with Brendan Gregg's `stackcollapse-*.pl` scripts (https://github.com/brendangregg/FlameGraph#2-fold-stacks), the result can be imported into speedscope.
 
 ## Importing via URL
 
