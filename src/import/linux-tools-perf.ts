@@ -85,18 +85,12 @@ export function importFromLinuxPerf(contents: string): ProfileGroup {
 
   let eventType: string | null = null
   const events = contents.split('\n\n').map(parseEvent)
-  const filteredEvents: PerfEvent[] = []
 
   for (let event of events) {
     if (event == null) continue
     if (eventType != null && eventType != event.eventType) continue
     if (event.time == null) continue
     eventType = event.eventType
-    filteredEvents.push(event)
-  }
-
-  for (let i = 0; i < filteredEvents.length; i++) {
-    const event = filteredEvents[i]
 
     let profileNameParts = []
     if (event.command) profileNameParts.push(event.command)

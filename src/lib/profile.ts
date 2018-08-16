@@ -450,12 +450,24 @@ export class StackListProfileBuilder extends Profile {
         frame.addToTotalWeight(weight)
       }
 
-      this.samples.push(node)
-      this.weights.push(weight)
+      if (node === lastOf(this.samples)) {
+        this.weights[this.weights.length - 1] += weight
+      } else {
+        this.samples.push(node)
+        this.weights.push(weight)
+      }
     }
   }
 
   appendSampleWithWeight(stack: FrameInfo[], weight: number) {
+    if (weight === 0) {
+      // Samples with zero weight have no effect, so let's ignore them
+      return
+    }
+    if (weight < 0) {
+      throw new Error('Samples must have positive weights')
+    }
+
     this._appendSample(stack, weight, true)
     this._appendSample(stack, weight, false)
   }
