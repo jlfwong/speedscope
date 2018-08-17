@@ -1,10 +1,30 @@
-// Dependencies & polyfills
+// This is a port of the GPU APIs from https://github.com/evanw/sky from Skew to TypeScript.
+// This file intentionally has no dependencies.
+//
+// The MIT License (MIT)
+// Copyright (c) 2016 Evan Wallace
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
-const RELEASE = process.env.NODE_ENV === 'production'
-
-type IntMap<T> = {[key: number]: T}
-type StringMap<T> = {[key: string]: T}
-type List<T> = T[]
+// Dependencies & polyfills for import from skew
+const RELEASE =
+  typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'production'
 
 function assert(condition: boolean) {
   if (!condition) throw new Error('Assertion failed.')
@@ -251,9 +271,9 @@ export namespace Graphics {
 export namespace Browser {
   export class Context extends Graphics.Context {
     private _attributeCount = 0
-    private _blendOperationMap: IntMap<GLenum>
+    private _blendOperationMap: {[key: number]: GLenum}
     private _blendOperations = 0
-    private _contextResetHandlers: List<() => void> = []
+    private _contextResetHandlers: (() => void)[] = []
     private _currentClearColor = Graphics.Color.TRANSPARENT
     private _currentRenderTarget: RenderTarget | null = null
     private _defaultViewport = new Graphics.Rect()
@@ -809,8 +829,8 @@ export namespace Browser {
       private readonly _format: Graphics.VertexFormat,
       private readonly _vertexSource: string,
       private readonly _fragmentSource: string,
-      private readonly _uniformsMap: StringMap<Uniform> = {},
-      private readonly _uniformsList: List<Uniform> = [],
+      private readonly _uniformsMap: {[key: string]: Uniform} = {},
+      private readonly _uniformsList: Uniform[] = [],
       private _generation = 0,
       private _program: WebGLProgram | null = null,
     ) {}
