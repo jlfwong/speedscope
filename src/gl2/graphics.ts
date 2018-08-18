@@ -223,11 +223,18 @@ export namespace Graphics {
     }
   }
 
-  export interface VertexBuffer {
-    byteCount: number
-    context: Context
-    move(sourceByteOffset: number, targetByteOffset: number, byteCount: number): void
-    upload(bytes: Uint8Array, byteOffset?: number): void
+  export abstract class VertexBuffer {
+    abstract byteCount: number
+    abstract context: Context
+    abstract move(sourceByteOffset: number, targetByteOffset: number, byteCount: number): void
+    abstract upload(bytes: Uint8Array, byteOffset?: number): void
+    uploadFloat32Array(floats: Float32Array) {
+      this.upload(new Uint8Array(floats.buffer), 0)
+    }
+    uploadFloats(floats: number[]) {
+      this.uploadFloat32Array(new Float32Array(floats))
+    }
+    abstract free(): void
   }
 
   export enum PixelFilter {
@@ -502,6 +509,21 @@ export namespace Browser {
 
     createRenderTarget(texture: Graphics.Texture): Graphics.RenderTarget {
       return new RenderTarget(this, Texture.from(texture))
+    }
+
+    private ANGLE_instanced_arrays: ANGLE_instanced_arrays | null = null
+    private ANGLE_instanced_arrays_generation: number = -1
+    getANGLE_instanced_arrays(): ANGLE_instanced_arrays {
+      if (this.ANGLE_instanced_arrays_generation !== this._generation) {
+        this.ANGLE_instanced_arrays = null
+      }
+      if (!this.ANGLE_instanced_arrays) {
+        this.ANGLE_instanced_arrays = this.gl.getExtension('ANGLE_instanced_arrays')
+        if (!this.ANGLE_instanced_arrays) {
+          throw new Error('Failed to get extension ANGLE_instanced_arrays')
+        }
+      }
+      return this.ANGLE_instanced_arrays!
     }
 
     _updateRenderTargetAndViewport() {
@@ -1042,7 +1064,7 @@ export namespace Browser {
     }
   }
 
-  class VertexBuffer implements Graphics.VertexBuffer {
+  class VertexBuffer extends Graphics.VertexBuffer {
     private readonly _context: Context
     private _generation = 0
     private _buffer: WebGLBuffer | null = null
@@ -1055,6 +1077,7 @@ export namespace Browser {
     private _byteCount = 0
 
     constructor(context: Context, byteCount: number) {
+      super()
       this._context = context
       this._byteCount = byteCount
       this._bytes = new Uint8Array(byteCount)
@@ -1086,6 +1109,16 @@ export namespace Browser {
       assert(this._bytes != null)
       this._bytes!.set(bytes, byteOffset)
       this._growDirtyRegion(byteOffset, byteOffset + bytes.length)
+    }
+
+    free() {
+      if (this._buffer) {
+        this._context.gl.deleteBuffer(this._buffer)
+      }
+
+      // Reset the generation to force this to be re-uploaded if it's used again
+      // in the future.
+      this._generation = 0
     }
 
     prepare(): void {
