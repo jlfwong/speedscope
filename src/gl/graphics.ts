@@ -1,8 +1,9 @@
-// This is a port of the GPU APIs from https://github.com/evanw/sky from Skew to TypeScript.
-// This file intentionally has no dependencies.
+// This is a port of the GPU APIs from https://github.com/evanw/sky from Skew to
+// TypeScript.
 //
 // The MIT License (MIT)
-// Copyright (c) 2016 Evan Wallace
+// Original work Copyright (c) 2016 Evan Wallace
+// Modified work Copyright (c) 2018 Jamie Wong
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +22,8 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+
+// NOTE: This file intentionally has no dependencies.
 
 // Dependencies & polyfills for import from skew
 const RELEASE =
