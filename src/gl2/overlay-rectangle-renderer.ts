@@ -8,6 +8,9 @@ export interface ViewportRectangleRendererProps {
   configSpaceViewportRect: Rect
 }
 
+const vertexFormat = new Graphics.VertexFormat()
+vertexFormat.add('position', Graphics.AttributeType.FLOAT, 2)
+
 const vert = `
   attribute vec2 position;
 
@@ -63,9 +66,6 @@ export class Sky_ViewportRectangleRenderer {
   private buffer: Graphics.VertexBuffer
 
   constructor(private gl: Graphics.Context) {
-    const vertexFormat = new Graphics.VertexFormat()
-    vertexFormat.add('position', Graphics.AttributeType.FLOAT, 2)
-
     const vertices = [[-1, 1], [1, 1], [-1, -1], [1, -1]]
     const floats: number[] = []
     for (let v of vertices) {

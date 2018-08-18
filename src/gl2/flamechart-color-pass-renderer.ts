@@ -2,6 +2,10 @@ import {Vec2, Rect, AffineTransform} from '../lib/math'
 import {Graphics} from './graphics'
 import {setUniformAffineTransform} from './utils'
 
+const vertexFormat = new Graphics.VertexFormat()
+vertexFormat.add('position', Graphics.AttributeType.FLOAT, 2)
+vertexFormat.add('uv', Graphics.AttributeType.FLOAT, 2)
+
 const vert = `
   uniform mat3 uvTransform;
   uniform mat3 positionTransform;
@@ -104,10 +108,6 @@ export class Sky_FlamechartColorPassRenderer {
   private buffer: Graphics.VertexBuffer
 
   constructor(private gl: Graphics.Context) {
-    const vertexFormat = new Graphics.VertexFormat()
-    vertexFormat.add('position', Graphics.AttributeType.FLOAT, 2)
-    vertexFormat.add('uv', Graphics.AttributeType.FLOAT, 2)
-
     const vertices = [
       {pos: [-1, 1], uv: [0, 1]},
       {pos: [1, 1], uv: [1, 1]},
@@ -123,7 +123,7 @@ export class Sky_FlamechartColorPassRenderer {
     }
 
     this.buffer = gl.createVertexBuffer(vertexFormat.stride * vertices.length)
-    this.buffer.upload(new Uint8Array(new Float32Array(floats).buffer))
+    this.buffer.uploadFloats(floats)
     this.material = gl.createMaterial(vertexFormat, vert, frag)
   }
 
