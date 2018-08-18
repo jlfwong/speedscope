@@ -144,6 +144,9 @@ export namespace Graphics {
     abstract width: number
     abstract height: number
 
+    abstract renderTargetHeight: number
+    abstract renderTargetWidth: number
+
     abstract setBlendState(source: BlendOperation, target: BlendOperation): void
     setCopyBlendState() {
       this.setBlendState(BlendOperation.ONE, BlendOperation.ZERO)
@@ -391,6 +394,18 @@ export namespace Browser {
       return this._currentRenderTarget != null
         ? this._currentRenderTarget.viewport
         : this._defaultViewport
+    }
+
+    get renderTargetWidth() {
+      return this._currentRenderTarget != null
+        ? this._currentRenderTarget.viewport.width
+        : this._height
+    }
+
+    get renderTargetHeight() {
+      return this._currentRenderTarget != null
+        ? this._currentRenderTarget.viewport.height
+        : this._height
     }
 
     draw(

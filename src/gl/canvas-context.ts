@@ -36,6 +36,9 @@ export function setUniformAffineTransform(
   let {m00, m01, m02, m10, m11, m12} = transform
   material.setUniformMat3(name, m00, m01, m02, m10, m11, m12, 0, 0, 0)
 }
+export function setUniformVec2(material: Graphics.Material, name: string, vec: Vec2) {
+  material.setUniformVec2(name, vec.x, vec.y)
+}
 
 export class CanvasContext {
   public gl: regl.Instance

@@ -122,19 +122,16 @@ export class Sky_FlamechartColorPassRenderer {
       {pos: [-1, -1], uv: [0, 0]},
       {pos: [1, -1], uv: [1, 0]},
     ]
-    const elements: number[] = []
+    const floats: number[] = []
     for (let v of vertices) {
-      elements.push(v.pos[0])
-      elements.push(v.pos[1])
-      elements.push(v.uv[0])
-      elements.push(v.uv[1])
+      floats.push(v.pos[0])
+      floats.push(v.pos[1])
+      floats.push(v.uv[0])
+      floats.push(v.uv[1])
     }
 
-    const data = new Float32Array(elements)
-    const bytes = new Uint8Array(data.buffer)
     this.buffer = gl.createVertexBuffer(vertexFormat.stride * vertices.length)
-    this.buffer.upload(bytes)
-
+    this.buffer.upload(new Uint8Array(new Float32Array(floats).buffer))
     this.material = gl.createMaterial(vertexFormat, vert, frag)
   }
 

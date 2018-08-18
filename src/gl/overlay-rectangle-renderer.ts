@@ -1,5 +1,7 @@
 import regl from 'regl'
 import {AffineTransform, Rect} from '../lib/math'
+import {Graphics} from './graphics'
+import {setUniformAffineTransform, setUniformVec2} from './canvas-context'
 
 export interface ViewportRectangleRendererProps {
   configSpaceToPhysicalViewSpace: AffineTransform
@@ -55,6 +57,47 @@ const frag = `
     }
   }
 `
+
+export class Sky_ViewportRectangleRenderer {
+  private material: Graphics.Material
+  private buffer: Graphics.VertexBuffer
+
+  constructor(private gl: Graphics.Context) {
+    const vertexFormat = new Graphics.VertexFormat()
+    vertexFormat.add('position', Graphics.AttributeType.FLOAT, 2)
+
+    const vertices = [[-1, 1], [1, 1], [-1, -1], [1, -1]]
+    const floats: number[] = []
+    for (let v of vertices) {
+      floats.push(v[0])
+      floats.push(v[1])
+    }
+    this.buffer = gl.createVertexBuffer(vertexFormat.stride * vertices.length)
+    this.buffer.upload(new Uint8Array(new Float32Array(floats).buffer))
+    this.material = gl.createMaterial(vertexFormat, vert, frag)
+  }
+
+  render(props: ViewportRectangleRendererProps) {
+    setUniformAffineTransform(
+      this.material,
+      'configSpaceToPhysicalViewSpace',
+      props.configSpaceToPhysicalViewSpace,
+    )
+    // TODO(jlfwong): Pack these into a Vec4 instead
+    setUniformVec2(this.material, 'configSpaceViewportOrigin', props.configSpaceViewportRect.origin)
+    setUniformVec2(this.material, 'configSpaceViewportSize', props.configSpaceViewportRect.origin)
+    this.material.setUniformVec2('physicalSize', this.gl.viewport.width, this.gl.viewport.height)
+    this.material.setUniformVec2('physicalOrigin', this.gl.viewport.x, this.gl.viewport.y)
+    this.material.setUniformFloat('framebufferHeight', this.gl.renderTargetHeight)
+
+    this.gl.setBlendState(
+      Graphics.BlendOperation.SOURCE_ALPHA,
+      Graphics.BlendOperation.INVERSE_SOURCE_ALPHA,
+    )
+    this.gl.draw(Graphics.Primitive.TRIANGLE_STRIP, this.material, this.buffer)
+    this.gl.setCopyBlendState()
+  }
+}
 
 export class ViewportRectangleRenderer {
   private command: regl.Command<ViewportRectangleRendererProps>
