@@ -124,7 +124,7 @@ export namespace Graphics {
       format: TextureFormat,
       width: number,
       height: number,
-      pixels: Uint8Array | null,
+      pixels?: Uint8Array,
     ): Texture
     abstract createRenderTarget(texture: Texture): RenderTarget
     abstract createVertexBuffer(byteCount: number): VertexBuffer
@@ -138,7 +138,7 @@ export namespace Graphics {
       widthInAppUnits: number,
       heightInAppUnits: number,
     ): void
-    abstract setRenderTarget(renderTarget: RenderTarget): void
+    abstract setRenderTarget(renderTarget: RenderTarget | null): void
     abstract setViewport(x: number, y: number, width: number, height: number): void
     abstract viewport: Rect
     abstract width: number
@@ -495,7 +495,7 @@ export namespace Browser {
       format: Graphics.TextureFormat,
       width: number,
       height: number,
-      pixels: Uint8Array,
+      pixels?: Uint8Array,
     ): Graphics.Texture {
       return new Texture(this, format, width, height, pixels)
     }
@@ -1138,7 +1138,7 @@ export namespace Browser {
       private _format: Graphics.TextureFormat,
       private _width: number,
       private _height: number,
-      private _pixels: Uint8Array,
+      private _pixels: Uint8Array = new Uint8Array(0),
       private _texture: WebGLTexture | null = null,
       private _generation = 0,
       private _isFormatDirty = true,
