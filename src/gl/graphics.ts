@@ -30,7 +30,9 @@ const RELEASE =
   typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'production'
 
 function assert(condition: boolean) {
-  if (!condition) throw new Error('Assertion failed.')
+  if (!RELEASE) {
+    if (!condition) throw new Error('Assertion failed.')
+  }
 }
 
 function appendOne<T>(ts: T[], t: T): void {

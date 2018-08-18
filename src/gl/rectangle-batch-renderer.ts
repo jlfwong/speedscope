@@ -79,6 +79,38 @@ export interface RectangleBatchRendererProps {
   parityOffset?: number
 }
 
+const vert = `
+  uniform mat3 configSpaceToNDC;
+
+  // Non-instanced
+  attribute vec2 corner;
+
+  // Instanced
+  attribute vec2 configSpaceOffset;
+  attribute vec2 configSpaceSize;
+  attribute vec3 color;
+  attribute float index;
+
+  varying vec3 vColor;
+
+  void main() {
+    vColor = color;
+    vec2 configSpacePos = configSpaceOffset + corner * configSpaceSize;
+    vec2 position = (configSpaceToNDC * vec3(configSpacePos, 1)).xy;
+    gl_Position = vec4(position, 1, 1);
+  }
+`
+
+const frag = `
+  precision mediump float;
+  varying vec3 vColor;
+  varying float vParity;
+
+  void main() {
+    gl_FragColor = vec4(vColor.rgb, 1);
+  }
+`
+
 export class RectangleBatchRenderer {
   private command: regl.Command<RectangleBatchRendererProps>
   constructor(gl: regl.Instance) {
@@ -87,41 +119,12 @@ export class RectangleBatchRenderer {
     // different values (2 per row) + one for the background, so we can
     // distingish both between adjacent rectangles on a row and between rows!
     this.command = gl({
-      vert: `
-      uniform mat3 configSpaceToNDC;
-
-      // Non-instanced
-      attribute vec2 corner;
-
-      // Instanced
-      attribute vec2 configSpaceOffset;
-      attribute vec2 configSpaceSize;
-      attribute vec3 color;
-      attribute float index;
-
-      varying vec3 vColor;
-
-      void main() {
-        vColor = color;
-        vec2 configSpacePos = configSpaceOffset + corner * configSpaceSize;
-        vec2 position = (configSpaceToNDC * vec3(configSpacePos, 1)).xy;
-        gl_Position = vec4(position, 1, 1);
-      }
-    `,
+      vert,
+      frag,
 
       depth: {
         enable: false,
       },
-
-      frag: `
-      precision mediump float;
-      varying vec3 vColor;
-      varying float vParity;
-
-      void main() {
-        gl_FragColor = vec4(vColor.rgb, 1);
-      }
-    `,
 
       attributes: {
         // Non-instanced attributes

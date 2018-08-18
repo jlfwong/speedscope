@@ -7,33 +7,37 @@ export interface TextureRendererProps {
   dstRect: Rect
 }
 
+const vert = `
+  uniform mat3 uvTransform;
+  uniform mat3 positionTransform;
+
+  attribute vec2 position;
+  attribute vec2 uv;
+  varying vec2 vUv;
+
+  void main() {
+    vUv = (uvTransform * vec3(uv, 1)).xy;
+    gl_Position = vec4((positionTransform * vec3(position, 1)).xy, 0, 1);
+  }
+`
+
+const frag = `
+  precision mediump float;
+
+  varying vec2 vUv;
+  uniform sampler2D texture;
+
+  void main() {
+    gl_FragColor = texture2D(texture, vUv);
+  }
+`
+
 export class TextureRenderer {
   private command: regl.Command<TextureRendererProps>
   constructor(gl: regl.Instance) {
     this.command = gl({
-      vert: `
-        uniform mat3 uvTransform;
-        uniform mat3 positionTransform;
-
-        attribute vec2 position;
-        attribute vec2 uv;
-        varying vec2 vUv;
-
-        void main() {
-          vUv = (uvTransform * vec3(uv, 1)).xy;
-          gl_Position = vec4((positionTransform * vec3(position, 1)).xy, 0, 1);
-        }
-      `,
-      frag: `
-        precision mediump float;
-
-        varying vec2 vUv;
-        uniform sampler2D texture;
-
-        void main() {
-          gl_FragColor = texture2D(texture, vUv);
-        }
-      `,
+      vert,
+      frag,
 
       depth: {
         enable: false,
