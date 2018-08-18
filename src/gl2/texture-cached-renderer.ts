@@ -1,5 +1,7 @@
 import regl from 'regl'
 import {Vec2, Rect, AffineTransform} from '../lib/math'
+import {Graphics} from './graphics'
+import {setUniformAffineTransform} from './utils'
 
 export interface TextureRendererProps {
   texture: regl.Texture
@@ -99,6 +101,80 @@ export class TextureRenderer {
   }
   stats() {
     return this.command.stats
+  }
+}
+
+export interface Sky_TextureRendererProps {
+  texture: Graphics.Texture
+  srcRect: Rect
+  dstRect: Rect
+}
+
+export class Sky_TextureRenderer {
+  private buffer: Graphics.VertexBuffer
+  private material: Graphics.Material
+
+  constructor(private gl: Graphics.Context) {
+    const vertexFormat = new Graphics.VertexFormat()
+    vertexFormat.add('position', Graphics.AttributeType.FLOAT, 2)
+    vertexFormat.add('uv', Graphics.AttributeType.FLOAT, 2)
+
+    const vertices = [
+      {pos: [-1, 1], uv: [0, 1]},
+      {pos: [1, 1], uv: [1, 1]},
+      {pos: [-1, -1], uv: [0, 0]},
+      {pos: [1, -1], uv: [1, 0]},
+    ]
+    const floats: number[] = []
+    for (let v of vertices) {
+      floats.push(v.pos[0])
+      floats.push(v.pos[1])
+      floats.push(v.uv[0])
+      floats.push(v.uv[1])
+    }
+
+    this.buffer = gl.createVertexBuffer(vertexFormat.stride * vertices.length)
+    this.buffer.upload(new Uint8Array(new Float32Array(floats).buffer))
+    this.material = gl.createMaterial(vertexFormat, vert, frag)
+  }
+
+  render(props: Sky_TextureRendererProps) {
+    this.material.setUniformSampler('texture', props.texture, 0)
+    setUniformAffineTransform(
+      this.material,
+      'uvTransform',
+      (() => {
+        const {srcRect, texture} = props
+        const physicalToUV = AffineTransform.withTranslation(new Vec2(0, 1))
+          .times(AffineTransform.withScale(new Vec2(1, -1)))
+          .times(
+            AffineTransform.betweenRects(
+              new Rect(Vec2.zero, new Vec2(texture.width, texture.height)),
+              Rect.unit,
+            ),
+          )
+        const uvRect = physicalToUV.transformRect(srcRect)
+        return AffineTransform.betweenRects(Rect.unit, uvRect)
+      })(),
+    )
+    setUniformAffineTransform(
+      this.material,
+      'positionTransform',
+      (() => {
+        const {srcRect, texture} = props
+        const physicalToUV = AffineTransform.withTranslation(new Vec2(0, 1))
+          .times(AffineTransform.withScale(new Vec2(1, -1)))
+          .times(
+            AffineTransform.betweenRects(
+              new Rect(Vec2.zero, new Vec2(texture.width, texture.height)),
+              Rect.unit,
+            ),
+          )
+        const uvRect = physicalToUV.transformRect(srcRect)
+        return AffineTransform.betweenRects(Rect.unit, uvRect)
+      })(),
+    )
+    this.gl.draw(Graphics.Primitive.TRIANGLE_STRIP, this.material, this.buffer)
   }
 }
 
