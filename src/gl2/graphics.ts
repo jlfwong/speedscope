@@ -272,14 +272,16 @@ export namespace Graphics {
     format: TextureFormat
     width: number
     height: number
-    resize(width: number, height: number, pixels: Uint8Array): void
+    resize(width: number, height: number, pixels?: Uint8Array): void
     setFormat(format: TextureFormat): void
+    free(): void
   }
 
   export interface RenderTarget {
     context: Context
     texture: Texture
     setColor(texture: Texture): void
+    free(): void
   }
 }
 
@@ -1171,7 +1173,7 @@ export namespace Browser {
       private _format: Graphics.TextureFormat,
       private _width: number,
       private _height: number,
-      private _pixels: Uint8Array = new Uint8Array(0),
+      private _pixels: Uint8Array | null = null,
       private _texture: WebGLTexture | null = null,
       private _generation = 0,
       private _isFormatDirty = true,
@@ -1191,7 +1193,7 @@ export namespace Browser {
       return this._height
     }
 
-    resize(width: number, height: number, pixels: Uint8Array) {
+    resize(width: number, height: number, pixels: Uint8Array | null = null) {
       this._width = width
       this._height = height
       this._pixels = pixels
@@ -1261,6 +1263,13 @@ export namespace Browser {
       return this._texture!
     }
 
+    free() {
+      if (this.texture) {
+        this._context.gl.deleteTexture(this.texture)
+        this._generation = 0
+      }
+    }
+
     static from(texture: Graphics.Texture): Texture {
       assert(texture == null || texture instanceof Texture)
       return texture as Texture
@@ -1313,6 +1322,13 @@ export namespace Browser {
       }
 
       return this._framebuffer!
+    }
+
+    free() {
+      if (this._framebuffer) {
+        this._context.gl.deleteFramebuffer(this._framebuffer)
+        this._generation = 0
+      }
     }
 
     static from(renderTarget: Graphics.RenderTarget | null): RenderTarget | null {

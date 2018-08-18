@@ -96,14 +96,14 @@ const frag = `
   }
 `
 
-export interface Sky_FlamechartColorPassRenderProps {
+export interface FlamechartColorPassRenderProps {
   rectInfoTexture: Graphics.Texture
   renderOutlines: boolean
   srcRect: Rect
   dstRect: Rect
 }
 
-export class Sky_FlamechartColorPassRenderer {
+export class FlamechartColorPassRenderer {
   private material: Graphics.Material
   private buffer: Graphics.VertexBuffer
 
@@ -127,7 +127,7 @@ export class Sky_FlamechartColorPassRenderer {
     this.material = gl.createMaterial(vertexFormat, vert, frag)
   }
 
-  render(props: Sky_FlamechartColorPassRenderProps) {
+  render(props: FlamechartColorPassRenderProps) {
     const {srcRect, rectInfoTexture} = props
     const physicalToUV = AffineTransform.withTranslation(new Vec2(0, 1))
       .times(AffineTransform.withScale(new Vec2(1, -1)))
