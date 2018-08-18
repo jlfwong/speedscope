@@ -3,7 +3,7 @@ import {RectangleBatch, RectangleBatchRenderer} from './rectangle-batch-renderer
 import {Rect, Vec2} from '../lib/math'
 import {Color} from '../lib/color'
 import {Graphics} from './graphics'
-import {TextureRenderer} from './texture-cached-renderer'
+import {TextureRenderer} from './texture-renderer'
 
 export class RowAtlas<K> {
   private texture: Graphics.Texture

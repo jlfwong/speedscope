@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 
-import {Store, AnyAction} from '../../node_modules/redux'
+import {Store, AnyAction} from 'redux'
 import {ApplicationState, createApplicationStore} from '.'
 import {importSpeedscopeProfiles} from '../lib/file-format'
 
