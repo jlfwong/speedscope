@@ -1,8 +1,8 @@
 import {Rect, AffineTransform, Vec2, clamp} from '../lib/math'
 import {CallTreeNode} from '../lib/profile'
 import {Flamechart, FlamechartFrame} from '../lib/flamechart'
-import {CanvasContext} from '../gl/canvas-context'
-import {FlamechartRenderer} from '../gl/flamechart-renderer'
+import {CanvasContext} from '../gl2/canvas-context'
+import {FlamechartRenderer} from '../gl2/flamechart-renderer'
 import {Sizes, FontSize, Colors, FontFamily, commonStyle} from './style'
 import {cachedMeasureTextWidth, ELLIPSIS, trimTextMid} from '../lib/text-utils'
 import {style} from './flamechart-style'
@@ -410,7 +410,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
     if (this.props.configSpaceViewportRect.isEmpty()) return
 
-    this.props.canvasContext.renderInto(this.container, context => {
+    this.props.canvasContext.renderInto(this.container, () => {
       this.props.flamechartRenderer.render({
         physicalSpaceDstRect: this.physicalBounds(),
         configSpaceSrcRect: this.props.configSpaceViewportRect,

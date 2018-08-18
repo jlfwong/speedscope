@@ -2,11 +2,10 @@ import {h, Component} from 'preact'
 import {css} from 'aphrodite'
 import {Flamechart} from '../lib/flamechart'
 import {Rect, Vec2, AffineTransform, clamp} from '../lib/math'
-import {FlamechartRenderer} from '../gl/flamechart-renderer'
+import {FlamechartRenderer} from '../gl2/flamechart-renderer'
 import {style} from './flamechart-style'
 import {FontFamily, FontSize, Colors, Sizes, commonStyle} from './style'
-import {CanvasContext} from '../gl/canvas-context'
-import {TextureCachedRenderer} from '../gl/texture-cached-renderer'
+import {CanvasContext} from '../gl2/canvas-context'
 import {cachedMeasureTextWidth} from '../lib/text-utils'
 
 interface FlamechartMinimapViewProps {
@@ -71,45 +70,13 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     return AffineTransform.withTranslation(new Vec2(-bounds.left, -bounds.top))
   }
 
-  private cachedRenderer: TextureCachedRenderer<{
-    physicalSize: Vec2
-  }> | null = null
   private renderRects() {
     if (!this.container) return
 
     // Hasn't resized yet -- no point in rendering yet
     if (this.physicalViewSize().x < 2) return
 
-    if (!this.cachedRenderer) {
-      this.cachedRenderer = this.props.canvasContext.createTextureCachedRenderer({
-        shouldUpdate(oldProps, newProps) {
-          if (!oldProps.physicalSize.equals(newProps.physicalSize)) {
-            return true
-          }
-          return false
-        },
-        render: props => {
-          this.props.flamechartRenderer.render({
-            physicalSpaceDstRect: new Rect(
-              this.minimapOrigin(),
-              this.physicalViewSize().minus(this.minimapOrigin()),
-            ),
-            configSpaceSrcRect: new Rect(new Vec2(0, 0), this.configSpaceSize()),
-            renderOutlines: false,
-          })
-        },
-      })
-    }
-
-    this.props.canvasContext.renderInto(this.container, context => {
-      // TODO(jlfwong): Switch back to the texture cached renderer once I figure out
-      // how to resize a framebuffer while another framebuffer is active. It seems
-      // to crash regl. I should submit a reduced repro case and hopefully get it fixed?
-      /*
-      this.cachedRenderer!.render({
-        physicalSize: this.physicalViewSize()
-      })
-      */
+    this.props.canvasContext.renderInto(this.container, () => {
       this.props.flamechartRenderer.render({
         configSpaceSrcRect: new Rect(new Vec2(0, 0), this.configSpaceSize()),
         physicalSpaceDstRect: new Rect(
@@ -118,7 +85,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
         ),
         renderOutlines: false,
       })
-      this.props.canvasContext.drawViewportRectangle({
+      this.props.canvasContext.viewportRectangleRenderer.render({
         configSpaceViewportRect: this.props.configSpaceViewportRect,
         configSpaceToPhysicalViewSpace: this.configSpaceToPhysicalViewSpace(),
       })
@@ -190,9 +157,6 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
 
   componentWillReceiveProps(nextProps: FlamechartMinimapViewProps) {
     if (this.props.flamechart !== nextProps.flamechart) {
-      if (this.cachedRenderer) {
-        this.cachedRenderer.setDirty()
-      }
       this.renderCanvas()
     } else if (this.props.configSpaceViewportRect != nextProps.configSpaceViewportRect) {
       this.renderCanvas()

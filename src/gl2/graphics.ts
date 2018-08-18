@@ -286,7 +286,7 @@ export namespace Graphics {
 }
 
 // Converted from https://github.com/evanw/sky/blob/c72de77/src/browser/context.sk
-export namespace Browser {
+export namespace WebGL {
   export class Context extends Graphics.Context {
     private _attributeCount = 0
     private _blendOperationMap: {[key: number]: GLenum}

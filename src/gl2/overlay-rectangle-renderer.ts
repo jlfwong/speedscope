@@ -1,4 +1,3 @@
-import regl from 'regl'
 import {AffineTransform, Rect} from '../lib/math'
 import {Graphics} from './graphics'
 import {setUniformAffineTransform, setUniformVec2} from './utils'
@@ -61,7 +60,7 @@ const frag = `
   }
 `
 
-export class Sky_ViewportRectangleRenderer {
+export class ViewportRectangleRenderer {
   private material: Graphics.Material
   private buffer: Graphics.VertexBuffer
 
@@ -96,77 +95,5 @@ export class Sky_ViewportRectangleRenderer {
     )
     this.gl.draw(Graphics.Primitive.TRIANGLE_STRIP, this.material, this.buffer)
     this.gl.setCopyBlendState()
-  }
-}
-
-export class ViewportRectangleRenderer {
-  private command: regl.Command<ViewportRectangleRendererProps>
-  constructor(regl: regl.Instance) {
-    this.command = regl<ViewportRectangleRendererProps>({
-      vert,
-      frag,
-
-      blend: {
-        enable: true,
-        func: {
-          srcRGB: 'src alpha',
-          srcAlpha: 'one',
-          dstRGB: 'one minus src alpha',
-          dstAlpha: 'one',
-        },
-      },
-
-      depth: {
-        enable: false,
-      },
-
-      attributes: {
-        // Cover full canvas with a rectangle
-        // with 2 triangles using a triangle
-        // strip.
-        //
-        // 0 +--+ 1
-        //   | /|
-        //   |/ |
-        // 2 +--+ 3
-        position: [[-1, 1], [1, 1], [-1, -1], [1, -1]],
-      },
-
-      uniforms: {
-        configSpaceToPhysicalViewSpace: (context, props) => {
-          return props.configSpaceToPhysicalViewSpace.flatten()
-        },
-        configSpaceViewportOrigin: (context, props) => {
-          return props.configSpaceViewportRect.origin.flatten()
-        },
-        configSpaceViewportSize: (context, props) => {
-          return props.configSpaceViewportRect.size.flatten()
-        },
-        physicalSize: (context, props) => {
-          return [context.viewportWidth, context.viewportHeight]
-        },
-        physicalOrigin: (context, props) => {
-          return [context.viewportX, context.viewportY]
-        },
-        framebufferHeight: (context, props) => {
-          return context.framebufferHeight
-        },
-      },
-
-      primitive: 'triangle strip',
-
-      count: 4,
-    })
-  }
-
-  render(props: ViewportRectangleRendererProps) {
-    this.command(props)
-  }
-
-  resetStats() {
-    return Object.assign(this.command.stats, {cpuTime: 0, gpuTime: 0, count: 0})
-  }
-  stats() {
-    return this.command.stats
   }
 }

@@ -1,7 +1,7 @@
 import {FlamechartID, FlamechartViewState} from '../store/flamechart-view-state'
-import {CanvasContext} from '../gl/canvas-context'
+import {CanvasContext} from '../gl2/canvas-context'
 import {Flamechart} from '../lib/flamechart'
-import {FlamechartRenderer, FlamechartRendererOptions} from '../gl/flamechart-renderer'
+import {FlamechartRenderer, FlamechartRendererOptions} from '../gl2/flamechart-renderer'
 import {Dispatch, createContainer, ActionCreator} from '../lib/typed-redux'
 import {Frame, Profile, CallTreeNode} from '../lib/profile'
 import {memoizeByShallowEquality} from '../lib/utils'
@@ -103,7 +103,14 @@ export const createMemoizedFlamechartRenderer = (options?: FlamechartRendererOpt
       canvasContext: CanvasContext
       flamechart: Flamechart
     }): FlamechartRenderer => {
-      return new FlamechartRenderer(canvasContext, getRowAtlas(canvasContext), flamechart, options)
+      return new FlamechartRenderer(
+        canvasContext.gl,
+        getRowAtlas(canvasContext),
+        flamechart,
+        canvasContext.rectangleBatchRenderer,
+        canvasContext.flamechartColorPassRenderer,
+        options,
+      )
     },
   )
 
