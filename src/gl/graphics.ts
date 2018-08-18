@@ -140,6 +140,7 @@ export namespace Graphics {
     ): void
     abstract setRenderTarget(renderTarget: RenderTarget): void
     abstract setViewport(x: number, y: number, width: number, height: number): void
+    abstract viewport: Rect
     abstract width: number
     abstract height: number
 
@@ -223,7 +224,7 @@ export namespace Graphics {
     byteCount: number
     context: Context
     move(sourceByteOffset: number, targetByteOffset: number, byteCount: number): void
-    upload(bytes: Uint8Array, byteOffset: number): void
+    upload(bytes: Uint8Array, byteOffset?: number): void
   }
 
   export enum PixelFilter {
@@ -384,6 +385,12 @@ export namespace Browser {
         ? this._currentRenderTarget.viewport
         : this._defaultViewport
       ).set(x, y, width, height)
+    }
+
+    get viewport() {
+      return this._currentRenderTarget != null
+        ? this._currentRenderTarget.viewport
+        : this._defaultViewport
     }
 
     draw(
@@ -1059,7 +1066,7 @@ export namespace Browser {
       }
     }
 
-    upload(bytes: Uint8Array, byteOffset: number) {
+    upload(bytes: Uint8Array, byteOffset: number = 0) {
       assert(0 <= byteOffset && byteOffset + bytes.length <= this._byteCount)
       assert(this._bytes != null)
       this._bytes!.set(bytes, byteOffset)

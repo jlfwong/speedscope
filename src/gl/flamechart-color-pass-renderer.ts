@@ -1,5 +1,7 @@
 import regl from 'regl'
 import {Vec2, Rect, AffineTransform} from '../lib/math'
+import {Graphics} from './graphics'
+import {setUniformAffineTransform} from './canvas-context'
 
 export interface FlamechartColorPassRenderProps {
   rectInfoTexture: regl.Texture
@@ -97,6 +99,80 @@ const frag = `
     }
   }
 `
+
+export interface Sky_FlamechartColorPassRenderProps {
+  rectInfoTexture: Graphics.Texture
+  renderOutlines: boolean
+  srcRect: Rect
+  dstRect: Rect
+}
+
+export class Sky_FlamechartColorPassRenderer {
+  private material: Graphics.Material
+  private buffer: Graphics.VertexBuffer
+
+  constructor(private gl: Graphics.Context) {
+    const vertexFormat = new Graphics.VertexFormat()
+    vertexFormat.add('position', Graphics.AttributeType.FLOAT, 2)
+    vertexFormat.add('uv', Graphics.AttributeType.FLOAT, 2)
+
+    const vertices = [
+      {pos: [-1, 1], uv: [0, 1]},
+      {pos: [1, 1], uv: [1, 1]},
+      {pos: [-1, -1], uv: [0, 0]},
+      {pos: [1, -1], uv: [1, 0]},
+    ]
+    const elements: number[] = []
+    for (let v of vertices) {
+      elements.push(v.pos[0])
+      elements.push(v.pos[1])
+      elements.push(v.uv[0])
+      elements.push(v.uv[1])
+    }
+
+    const data = new Float32Array(elements)
+    const bytes = new Uint8Array(data.buffer)
+    this.buffer = gl.createVertexBuffer(vertexFormat.stride * vertices.length)
+    this.buffer.upload(bytes)
+
+    this.material = gl.createMaterial(vertexFormat, vert, frag)
+  }
+
+  render(props: Sky_FlamechartColorPassRenderProps) {
+    const {srcRect, rectInfoTexture} = props
+    const physicalToUV = AffineTransform.withTranslation(new Vec2(0, 1))
+      .times(AffineTransform.withScale(new Vec2(1, -1)))
+      .times(
+        AffineTransform.betweenRects(
+          new Rect(Vec2.zero, new Vec2(rectInfoTexture.width, rectInfoTexture.height)),
+          Rect.unit,
+        ),
+      )
+    const uvRect = physicalToUV.transformRect(srcRect)
+    const uvTransform = AffineTransform.betweenRects(Rect.unit, uvRect)
+
+    const {dstRect} = props
+    const viewportSize = new Vec2(this.gl.viewport.width, this.gl.viewport.height)
+
+    const physicalToNDC = AffineTransform.withScale(new Vec2(1, -1)).times(
+      AffineTransform.betweenRects(new Rect(Vec2.zero, viewportSize), Rect.NDC),
+    )
+    const ndcRect = physicalToNDC.transformRect(dstRect)
+    const positionTransform = AffineTransform.betweenRects(Rect.NDC, ndcRect)
+
+    const uvSpacePixelSize = Vec2.unit.dividedByPointwise(
+      new Vec2(props.rectInfoTexture.width, props.rectInfoTexture.height),
+    )
+
+    this.material.setUniformSampler('colorTexture', props.rectInfoTexture, 0)
+    setUniformAffineTransform(this.material, 'uvTransform', uvTransform)
+    this.material.setUniformFloat('renderOutlines', props.renderOutlines ? 1.0 : 0.0)
+    this.material.setUniformVec2('uvSpacePixelSize', uvSpacePixelSize.x, uvSpacePixelSize.y)
+    setUniformAffineTransform(this.material, 'positionTransform', positionTransform)
+
+    this.gl.draw(Graphics.Primitive.TRIANGLE_STRIP, this.material, this.buffer)
+  }
+}
 
 export class FlamechartColorPassRenderer {
   private command: regl.Command<FlamechartColorPassRenderProps>

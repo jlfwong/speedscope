@@ -15,16 +15,26 @@ import {
 } from './texture-cached-renderer'
 import {StatsPanel} from '../lib/stats'
 
-import {Vec2, Rect} from '../lib/math'
+import {Vec2, Rect, AffineTransform} from '../lib/math'
 import {
   FlamechartColorPassRenderer,
   FlamechartColorPassRenderProps,
 } from './flamechart-color-pass-renderer'
+import {Graphics} from './graphics'
 
 type FrameCallback = () => void
 
 interface SetViewportScopeProps {
   physicalBounds: Rect
+}
+
+export function setUniformAffineTransform(
+  material: Graphics.Material,
+  name: string,
+  transform: AffineTransform,
+) {
+  let {m00, m01, m02, m10, m11, m12} = transform
+  material.setUniformMat3(name, m00, m01, m02, m10, m11, m12, 0, 0, 0)
 }
 
 export class CanvasContext {
