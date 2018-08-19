@@ -17,8 +17,16 @@
     "test": "tsc --noEmit && npm run lint && npm run coverage",
     "serve": "parcel assets/index.html --open --no-autoinstall"
   },
-  "files": ["bin/cli.js", "dist/release/**", "dist/release-csp/**", "!*.map"],
-  "browserslist": ["last 2 Chrome versions", "last 2 Firefox versions"],
+  "files": [
+    "bin/cli.js",
+    "dist/release/**",
+    "dist/release-csp/**",
+    "!*.map"
+  ],
+  "browserslist": [
+    "last 2 Chrome versions",
+    "last 2 Firefox versions"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
@@ -30,6 +38,7 @@
     "coveralls": "3.0.1",
     "eslint": "4.19.1",
     "eslint-plugin-prettier": "2.6.0",
+    "finalhandler": "^1.1.1",
     "jest": "23.0.1",
     "jsverify": "0.8.3",
     "jszip": "3.1.5",
@@ -40,6 +49,7 @@
     "prettier": "1.12.0",
     "quicktype": "15.0.45",
     "redux": "^4.0.0",
+    "server-static": "^2.0.5",
     "ts-jest": "22.4.6",
     "typescript": "2.8.1",
     "typescript-eslint-parser": "17.0.1",
@@ -50,8 +60,17 @@
       "^.+\\.tsx?$": "ts-jest"
     },
     "testRegex": "\\.test\\.tsx?$",
-    "collectCoverageFrom": ["**/*.{ts,tsx}", "!**/*.d.{ts,tsx}"],
-    "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json"]
+    "collectCoverageFrom": [
+      "**/*.{ts,tsx}",
+      "!**/*.d.{ts,tsx}"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json"
+    ]
   },
   "dependencies": {
     "opn": "5.3.0"
