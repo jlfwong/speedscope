@@ -37,6 +37,7 @@ export class CanvasContext {
   }
   private onBeforeFrame = () => {
     this.animationFrameRequest = null
+    this.gl.setViewport(0, 0, this.gl.renderTargetWidth, this.gl.renderTargetHeight)
     this.gl.clear(new Graphics.Color(1, 1, 1, 1))
 
     for (const handler of this.beforeFrameHandlers) {
@@ -55,7 +56,7 @@ export class CanvasContext {
     this.gl.setViewport(x, y, width, height)
   }
 
-  renderInto(el: Element, cb: () => void) {
+  renderBehind(el: Element, cb: () => void) {
     const bounds = el.getBoundingClientRect()
     const physicalBounds = new Rect(
       new Vec2(bounds.left * window.devicePixelRatio, bounds.top * window.devicePixelRatio),

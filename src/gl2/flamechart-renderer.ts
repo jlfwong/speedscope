@@ -6,6 +6,7 @@ import {KeyedSet} from '../lib/utils'
 import {RowAtlas} from './row-atlas'
 import {Graphics} from './graphics'
 import {FlamechartColorPassRenderer} from './flamechart-color-pass-renderer'
+import {renderInto} from './utils'
 
 const MAX_BATCH_SIZE = 10000
 
@@ -332,33 +333,32 @@ export class FlamechartRenderer {
       physicalSpaceDstRect.height(),
     )
 
-    this.gl.setRenderTarget(renderTarget)
-    this.gl.clear(Graphics.Color.TRANSPARENT)
-    const viewportRect = new Rect(
-      Vec2.zero,
-      new Vec2(this.gl.viewport.width, this.gl.viewport.height),
-    )
-    const configToViewport = AffineTransform.betweenRects(configSpaceSrcRect, viewportRect)
+    renderInto(this.gl, renderTarget, () => {
+      const viewportRect = new Rect(
+        Vec2.zero,
+        new Vec2(this.gl.viewport.width, this.gl.viewport.height),
+      )
+      const configToViewport = AffineTransform.betweenRects(configSpaceSrcRect, viewportRect)
 
-    // Render from the cache
-    for (let key of keysToRenderCached) {
-      const configSpaceSrcRect = this.configSpaceBoundsForKey(key)
-      this.rowAtlas.renderViaAtlas(key, configToViewport.transformRect(configSpaceSrcRect))
-    }
+      // Render from the cache
+      for (let key of keysToRenderCached) {
+        const configSpaceSrcRect = this.configSpaceBoundsForKey(key)
+        this.rowAtlas.renderViaAtlas(key, configToViewport.transformRect(configSpaceSrcRect))
+      }
 
-    // Render entries that didn't make it into the cache
-    for (let key of keysToRenderUncached) {
-      const configSpaceBounds = this.configSpaceBoundsForKey(key)
-      const physicalBounds = configToViewport.transformRect(configSpaceBounds)
-      this.layers[key.stackDepth].forEachLeafNodeWithinBounds(configSpaceBounds, leaf => {
-        this.rectangleBatchRenderer.render({
-          batch: leaf.getBatch(),
-          configSpaceSrcRect,
-          physicalSpaceDstRect: physicalBounds,
+      // Render entries that didn't make it into the cache
+      for (let key of keysToRenderUncached) {
+        const configSpaceBounds = this.configSpaceBoundsForKey(key)
+        const physicalBounds = configToViewport.transformRect(configSpaceBounds)
+        this.layers[key.stackDepth].forEachLeafNodeWithinBounds(configSpaceBounds, leaf => {
+          this.rectangleBatchRenderer.render({
+            batch: leaf.getBatch(),
+            configSpaceSrcRect,
+            physicalSpaceDstRect: physicalBounds,
+          })
         })
-      })
-    }
-    this.gl.setRenderTarget(null)
+      }
+    })
 
     const rectInfoTexture = this.getRectInfoTexture(
       physicalSpaceDstRect.width(),

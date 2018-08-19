@@ -29,7 +29,7 @@ const frag = `
   uniform sampler2D texture;
 
   void main() {
-    gl_FragColor = texture2D(texture, vUv);
+   gl_FragColor = texture2D(texture, vUv);
   }
 `
 
@@ -90,17 +90,16 @@ export class TextureRenderer {
       this.material,
       'positionTransform',
       (() => {
-        const {srcRect, texture} = props
-        const physicalToUV = AffineTransform.withTranslation(new Vec2(0, 1))
-          .times(AffineTransform.withScale(new Vec2(1, -1)))
-          .times(
-            AffineTransform.betweenRects(
-              new Rect(Vec2.zero, new Vec2(texture.width, texture.height)),
-              Rect.unit,
-            ),
-          )
-        const uvRect = physicalToUV.transformRect(srcRect)
-        return AffineTransform.betweenRects(Rect.unit, uvRect)
+        const {dstRect} = props
+
+        const {viewport} = this.gl
+        const viewportSize = new Vec2(viewport.width, viewport.height)
+
+        const physicalToNDC = AffineTransform.withScale(new Vec2(1, -1)).times(
+          AffineTransform.betweenRects(new Rect(Vec2.zero, viewportSize), Rect.NDC),
+        )
+        const ndcRect = physicalToNDC.transformRect(dstRect)
+        return AffineTransform.betweenRects(Rect.NDC, ndcRect)
       })(),
     )
 

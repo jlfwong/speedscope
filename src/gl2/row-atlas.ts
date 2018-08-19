@@ -4,6 +4,7 @@ import {Rect, Vec2} from '../lib/math'
 import {Color} from '../lib/color'
 import {Graphics} from './graphics'
 import {TextureRenderer} from './texture-renderer'
+import {renderInto} from './utils'
 
 export class RowAtlas<K> {
   private texture: Graphics.Texture
@@ -48,27 +49,25 @@ export class RowAtlas<K> {
   }
 
   writeToAtlasIfNeeded(keys: K[], render: (textureDstRect: Rect, key: K) => void) {
-    this.gl.setRenderTarget(this.renderTarget)
+    renderInto(this.gl, this.renderTarget, () => {
+      for (let key of keys) {
+        let row = this.rowCache.get(key)
+        if (row != null) {
+          // Already cached!
+          continue
+        }
+        // Not cached -- we'll have to actually render
+        row = this.allocateLine(key)
 
-    for (let key of keys) {
-      let row = this.rowCache.get(key)
-      if (row != null) {
-        // Already cached!
-        continue
+        const textureRect = new Rect(new Vec2(0, row), new Vec2(this.texture.width, 1))
+        this.rectangleBatchRenderer.render({
+          batch: this.clearLineBatch,
+          configSpaceSrcRect: Rect.unit,
+          physicalSpaceDstRect: textureRect,
+        })
+        render(textureRect, key)
       }
-      // Not cached -- we'll have to actually render
-      row = this.allocateLine(key)
-
-      const textureRect = new Rect(new Vec2(0, row), new Vec2(this.texture.width, 1))
-      this.rectangleBatchRenderer.render({
-        batch: this.clearLineBatch,
-        configSpaceSrcRect: Rect.unit,
-        physicalSpaceDstRect: textureRect,
-      })
-      render(textureRect, key)
-    }
-
-    this.gl.setRenderTarget(null)
+    })
   }
 
   renderViaAtlas(key: K, dstRect: Rect): boolean {

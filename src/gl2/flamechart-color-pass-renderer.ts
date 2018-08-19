@@ -159,7 +159,7 @@ export class FlamechartColorPassRenderer {
     this.material.setUniformVec2('uvSpacePixelSize', uvSpacePixelSize.x, uvSpacePixelSize.y)
     setUniformAffineTransform(this.material, 'positionTransform', positionTransform)
 
-    this.gl.setCopyBlendState()
+    this.gl.setUnpremultipliedBlendState()
     this.gl.draw(Graphics.Primitive.TRIANGLE_STRIP, this.material, this.buffer)
   }
 }
