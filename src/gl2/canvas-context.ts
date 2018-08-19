@@ -8,7 +8,7 @@ import {FlamechartColorPassRenderer} from './flamechart-color-pass-renderer'
 type FrameCallback = () => void
 
 export class CanvasContext {
-  public readonly gl: Graphics.Context
+  public readonly gl: WebGL.Context
   public readonly rectangleBatchRenderer: RectangleBatchRenderer
   public readonly textureRenderer: TextureRenderer
   public readonly viewportRectangleRenderer: ViewportRectangleRenderer
@@ -20,6 +20,9 @@ export class CanvasContext {
     this.textureRenderer = new TextureRenderer(this.gl)
     this.viewportRectangleRenderer = new ViewportRectangleRenderer(this.gl)
     this.flamechartColorPassRenderer = new FlamechartColorPassRenderer(this.gl)
+    ;(window as any)['testContextLoss'] = () => {
+      this.gl.testContextLoss()
+    }
   }
 
   private animationFrameRequest: number | null = null

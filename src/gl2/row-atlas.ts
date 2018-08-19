@@ -22,6 +22,13 @@ export class RowAtlas<K> {
     this.rowCache = new LRUCache(this.texture.height)
     this.clearLineBatch = new RectangleBatch(gl)
     this.clearLineBatch.addRect(Rect.unit, new Color(0, 0, 0, 0))
+
+    // All of the cached data is stored GPU-side, and we don't retain a copy of
+    // it client-side. This means when we get a context loss event, the data is
+    // totally gone. So let's clear our CPU-side cache to reflect that fact.
+    gl.addContextResetHandler(() => {
+      this.rowCache.clear()
+    })
   }
 
   has(key: K) {

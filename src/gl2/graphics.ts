@@ -335,15 +335,7 @@ export namespace WebGL {
         e.preventDefault()
       })
 
-      canvas.addEventListener('webglcontextrestored', () => {
-        this._attributeCount = 0
-        this._currentClearColor = Graphics.Color.TRANSPARENT
-        this._forceStateUpdate = true
-        this._generation++
-        for (let handler of this._contextResetHandlers) {
-          handler()
-        }
-      })
+      canvas.addEventListener('webglcontextrestored', this.handleWebglContextRestored)
 
       // Using maps makes these compact in release
       this._blendOperationMap = {
@@ -363,6 +355,20 @@ export namespace WebGL {
         [Graphics.BlendOperation.CONSTANT]: this._gl.CONSTANT_COLOR,
         [Graphics.BlendOperation.INVERSE_CONSTANT]: this._gl.ONE_MINUS_CONSTANT_COLOR,
       }
+    }
+
+    private handleWebglContextRestored = () => {
+      this._attributeCount = 0
+      this._currentClearColor = Graphics.Color.TRANSPARENT
+      this._forceStateUpdate = true
+      this._generation++
+      for (let handler of this._contextResetHandlers) {
+        handler()
+      }
+    }
+
+    public testContextLoss() {
+      this.handleWebglContextRestored()
     }
 
     get gl() {
