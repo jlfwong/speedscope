@@ -90,7 +90,7 @@ const frag = `
       // We're on an edge! Draw transparent.
       gl_FragColor = vec4(0, 0, 0, 0);
     } else {
-      // Not on an edge. Draw the appropriate color;
+      // Not on an edge. Draw the appropriate color.
       gl_FragColor = vec4(colorForBucket(here.z), here.a);
     }
   }

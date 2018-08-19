@@ -226,9 +226,7 @@ export class FlamechartRenderer {
       }
     }
     if (!this.rectInfoRenderTarget) {
-      this.rectInfoRenderTarget = this.gl.createRenderTarget(
-        this.gl.createTexture(Graphics.TextureFormat.NEAREST_CLAMP, width, height),
-      )
+      this.rectInfoRenderTarget = this.gl.createRenderTarget(texture)
     }
     return this.rectInfoRenderTarget
   }
@@ -371,14 +369,5 @@ export class FlamechartRenderer {
       dstRect: physicalSpaceDstRect,
       renderOutlines: props.renderOutlines,
     })
-
-    // Overlay the atlas on top of the canvas for debugging
-    /*
-    this.canvasContext.drawTexture({
-      texture: this.rowAtlas.texture,
-      srcRect: new Rect(Vec2.zero, new Vec2(this.rowAtlas.texture.width, this.rowAtlas.texture.height)),
-      dstRect: new Rect(Vec2.zero, new Vec2(800, 800))
-    })
-    */
   }
 }
