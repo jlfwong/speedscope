@@ -650,7 +650,7 @@ export namespace WebGL {
     // Upload this uniform if it's dirty
     abstract prepare(): void
 
-    get location(): WebGLUniformLocation | null {
+    get location(): WebGLUniformLocation {
       let context = Context.from(this._material.context)
       if (this._generation != context.generation) {
         this._location = context.gl.getUniformLocation(this._material.program, this._name)
@@ -699,6 +699,9 @@ export namespace WebGL {
             }
           }
         }
+      }
+      if (!this._location) {
+        throw new Error('Failed to get uniform location')
       }
       return this._location
     }
