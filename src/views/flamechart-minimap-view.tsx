@@ -2,10 +2,10 @@ import {h, Component} from 'preact'
 import {css} from 'aphrodite'
 import {Flamechart} from '../lib/flamechart'
 import {Rect, Vec2, AffineTransform, clamp} from '../lib/math'
-import {FlamechartRenderer} from '../gl2/flamechart-renderer'
+import {FlamechartRenderer} from '../gl/flamechart-renderer'
 import {style} from './flamechart-style'
 import {FontFamily, FontSize, Colors, Sizes, commonStyle} from './style'
-import {CanvasContext} from '../gl2/canvas-context'
+import {CanvasContext} from '../gl/canvas-context'
 import {cachedMeasureTextWidth} from '../lib/text-utils'
 
 interface FlamechartMinimapViewProps {

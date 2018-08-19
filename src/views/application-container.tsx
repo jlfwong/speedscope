@@ -3,7 +3,7 @@ import {Application, ActiveProfileState} from './application'
 import {ApplicationState} from '../store'
 import {getProfileToView, getCanvasContext} from '../store/getters'
 import {actions} from '../store/actions'
-import {Graphics} from '../gl2/graphics'
+import {Graphics} from '../gl/graphics'
 
 export const ApplicationContainer = createContainer(
   Application,

@@ -12,7 +12,7 @@ import {StatelessComponent} from '../lib/typed-redux'
 import {LeftHeavyFlamechartView, ChronoFlamechartView} from './flamechart-view-container'
 import {SandwichViewState} from '../store/sandwich-view-state'
 import {FlamechartViewState} from '../store/flamechart-view-state'
-import {Graphics} from '../gl2/graphics'
+import {Graphics} from '../gl/graphics'
 
 const importModule = import('../import')
 // Force eager loading of the module

@@ -1,9 +1,9 @@
 import {Frame, Profile} from '../lib/profile'
 import {triangle, memoizeByReference, memoizeByShallowEquality} from '../lib/utils'
-import {RowAtlas} from '../gl2/row-atlas'
-import {CanvasContext} from '../gl2/canvas-context'
+import {RowAtlas} from '../gl/row-atlas'
+import {CanvasContext} from '../gl/canvas-context'
 import {Color} from '../lib/color'
-import {FlamechartRowAtlasKey} from '../gl2/flamechart-renderer'
+import {FlamechartRowAtlasKey} from '../gl/flamechart-renderer'
 
 export const createGetColorBucketForFrame = memoizeByReference(
   (frameToColorBucket: Map<number | string, number>) => {
