@@ -71,7 +71,7 @@ export class RectangleBatch {
         floats[idx++] = rect.origin.x
         floats[idx++] = rect.origin.y
         floats[idx++] = rect.size.x
-        floats[idx++] = rect.size.x
+        floats[idx++] = rect.size.y
 
         floats[idx++] = color.r
         floats[idx++] = color.g

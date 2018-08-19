@@ -351,7 +351,7 @@ export class FlamechartRenderer {
         this.layers[key.stackDepth].forEachLeafNodeWithinBounds(configSpaceBounds, leaf => {
           this.rectangleBatchRenderer.render({
             batch: leaf.getBatch(),
-            configSpaceSrcRect,
+            configSpaceSrcRect: configSpaceBounds,
             physicalSpaceDstRect: physicalBounds,
           })
         })
