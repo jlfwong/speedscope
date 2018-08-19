@@ -612,6 +612,14 @@ export namespace WebGL {
       this._attributeCount = count
     }
 
+    getWebGLInfo(): {renderer: string | null; vendor: string | null; version: string | null} {
+      const ext = this.gl.getExtension('WEBGL_debug_renderer_info')
+      const renderer = ext ? this.gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : null
+      const vendor = ext ? this.gl.getParameter(ext.UNMASKED_VENDOR_WEBGL) : null
+      const version = this.gl.getParameter(this.gl.VERSION)
+      return {renderer, vendor, version}
+    }
+
     static from(context: Graphics.Context): Context {
       assert(context == null || context instanceof Context)
       return context as Context

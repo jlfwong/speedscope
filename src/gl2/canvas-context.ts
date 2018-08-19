@@ -20,6 +20,15 @@ export class CanvasContext {
     this.textureRenderer = new TextureRenderer(this.gl)
     this.viewportRectangleRenderer = new ViewportRectangleRenderer(this.gl)
     this.flamechartColorPassRenderer = new FlamechartColorPassRenderer(this.gl)
+
+    const webGLInfo = this.gl.getWebGLInfo()
+    if (webGLInfo) {
+      console.log(
+        `WebGL initialized. renderer: ${webGLInfo.renderer}, vendor: ${
+          webGLInfo.vendor
+        }, version: ${webGLInfo.version}`,
+      )
+    }
     ;(window as any)['testContextLoss'] = () => {
       this.gl.testContextLoss()
     }
