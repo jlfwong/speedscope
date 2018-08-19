@@ -310,6 +310,11 @@ export class FlamechartRenderer {
       }
     }
 
+    // TODO(jlfwong): When I switched the GL backend from regl to the port from
+    // evanw/sky, rendering uncached even for massive documents seemed fast
+    // enough. It's possible that the row cache is now unnecessary, but I'll
+    // leave it around for now since it's not causing issues.
+
     const cacheCapacity = this.rowAtlas.getCapacity()
     const keysToRenderCached = atlasKeysToRender.slice(0, cacheCapacity)
     const keysToRenderUncached = atlasKeysToRender.slice(cacheCapacity)

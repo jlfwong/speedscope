@@ -4,22 +4,18 @@ import {Graphics} from './graphics'
 import {setUniformAffineTransform} from './utils'
 
 const vertexFormat = new Graphics.VertexFormat()
-vertexFormat.add('corner', Graphics.AttributeType.FLOAT, 2)
-vertexFormat.add('configSpaceBounds', Graphics.AttributeType.FLOAT, 4)
+vertexFormat.add('configSpacePos', Graphics.AttributeType.FLOAT, 2)
 vertexFormat.add('color', Graphics.AttributeType.FLOAT, 3)
 
 const vert = `
   uniform mat3 configSpaceToNDC;
 
-  attribute vec2 corner;
-  attribute vec4 configSpaceBounds;
+  attribute vec2 configSpacePos;
   attribute vec3 color;
-
   varying vec3 vColor;
 
   void main() {
     vColor = color;
-    vec2 configSpacePos = configSpaceBounds.xy + corner * configSpaceBounds.zw;
     vec2 position = (configSpaceToNDC * vec3(configSpacePos, 1)).xy;
     gl_Position = vec4(position, 1, 1);
   }
@@ -65,13 +61,8 @@ export class RectangleBatch {
       // things. Adding instanced drawing to graphics.ts is non-trivial, so I'm
       // just going to try this for now.
       for (let corner of corners) {
-        floats[idx++] = corner[0]
-        floats[idx++] = corner[1]
-
-        floats[idx++] = rect.origin.x
-        floats[idx++] = rect.origin.y
-        floats[idx++] = rect.size.x
-        floats[idx++] = rect.size.y
+        floats[idx++] = rect.origin.x + corner[0] * rect.size.x
+        floats[idx++] = rect.origin.y + corner[1] * rect.size.y
 
         floats[idx++] = color.r
         floats[idx++] = color.g
