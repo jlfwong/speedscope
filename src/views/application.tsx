@@ -12,6 +12,7 @@ import {StatelessComponent} from '../lib/typed-redux'
 import {LeftHeavyFlamechartView, ChronoFlamechartView} from './flamechart-view-container'
 import {SandwichViewState} from '../store/sandwich-view-state'
 import {FlamechartViewState} from '../store/flamechart-view-state'
+import {Graphics} from '../gl/graphics'
 
 const importModule = import('../import')
 // Force eager loading of the module
@@ -168,6 +169,7 @@ export class Toolbar extends StatelessComponent<ToolbarProps> {
 }
 
 interface GLCanvasProps {
+  resizeCanvas: typeof Graphics.Context.prototype.resize
   setGLCanvas: (canvas: HTMLCanvasElement | null) => void
 }
 export class GLCanvas extends Component<GLCanvasProps, void> {
@@ -197,8 +199,12 @@ export class GLCanvas extends Component<GLCanvasProps, void> {
     // Already at the right size
     if (width === oldWidth && height === oldHeight) return
 
-    this.canvas.width = width
-    this.canvas.height = height
+    this.props.resizeCanvas(
+      width,
+      height,
+      width / window.devicePixelRatio,
+      height / window.devicePixelRatio,
+    )
   }
 
   onWindowResize = () => {
@@ -226,6 +232,7 @@ export interface ActiveProfileState {
 }
 
 export type ApplicationProps = ApplicationState & {
+  resizeCanvas: typeof Graphics.Context.prototype.resize
   setGLCanvas: (canvas: HTMLCanvasElement | null) => void
   setLoading: (loading: boolean) => void
   setError: (error: boolean) => void
@@ -608,7 +615,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
         onDragLeave={this.onDragLeave}
         className={css(style.root, this.props.dragActive && style.dragTargetRoot)}
       >
-        <GLCanvas setGLCanvas={this.props.setGLCanvas} />
+        <GLCanvas setGLCanvas={this.props.setGLCanvas} resizeCanvas={this.props.resizeCanvas} />
         <Toolbar
           saveFile={this.saveFile}
           browseForFile={this.browseForFile}

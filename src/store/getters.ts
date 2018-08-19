@@ -33,7 +33,11 @@ export const getCanvasContext = memoizeByReference((canvas: HTMLCanvasElement) =
 })
 
 export const getRowAtlas = memoizeByReference((canvasContext: CanvasContext) => {
-  return new RowAtlas<FlamechartRowAtlasKey>(canvasContext)
+  return new RowAtlas<FlamechartRowAtlasKey>(
+    canvasContext.gl,
+    canvasContext.rectangleBatchRenderer,
+    canvasContext.textureRenderer,
+  )
 })
 
 export const getProfileWithRecursionFlattened = memoizeByReference((profile: Profile) =>

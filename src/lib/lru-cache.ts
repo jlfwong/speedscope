@@ -159,4 +159,9 @@ export class LRUCache<K, V> {
     this.map.delete(key)
     return [key, value]
   }
+
+  clear() {
+    this.list = new List<K>()
+    this.map = new Map<K, LRUCacheNode<K, V>>()
+  }
 }

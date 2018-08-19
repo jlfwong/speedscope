@@ -1,11 +1,12 @@
-import regl from 'regl'
 import {Flamechart} from '../lib/flamechart'
-import {RectangleBatch} from './rectangle-batch-renderer'
-import {CanvasContext} from './canvas-context'
+import {RectangleBatch, RectangleBatchRenderer} from './rectangle-batch-renderer'
 import {Vec2, Rect, AffineTransform} from '../lib/math'
 import {Color} from '../lib/color'
 import {KeyedSet} from '../lib/utils'
 import {RowAtlas} from './row-atlas'
+import {Graphics} from './graphics'
+import {FlamechartColorPassRenderer} from './flamechart-color-pass-renderer'
+import {renderInto} from './utils'
 
 const MAX_BATCH_SIZE = 10000
 
@@ -23,9 +24,7 @@ class RangeTreeLeafNode implements RangeTreeNode {
     private batch: RectangleBatch,
     private bounds: Rect,
     private numPrecedingRectanglesInRow: number,
-  ) {
-    batch.uploadToGPU()
-  }
+  ) {}
 
   getBatch() {
     return this.batch
@@ -127,13 +126,13 @@ export interface FlamechartRendererOptions {
 
 export class FlamechartRenderer {
   private layers: RangeTreeNode[] = []
-  private rectInfoTexture: regl.Texture
-  private framebuffer: regl.Framebuffer
 
   constructor(
-    private canvasContext: CanvasContext,
+    private gl: Graphics.Context,
     private rowAtlas: RowAtlas<FlamechartRowAtlasKey>,
     private flamechart: Flamechart,
+    private rectangleBatchRenderer: RectangleBatchRenderer,
+    private colorPassRenderer: FlamechartColorPassRenderer,
     private options: FlamechartRendererOptions = {inverted: false},
   ) {
     const nLayers = flamechart.getLayers().length
@@ -143,7 +142,7 @@ export class FlamechartRenderer {
 
       let minLeft = Infinity
       let maxRight = -Infinity
-      let batch = canvasContext.createRectangleBatch()
+      let batch = new RectangleBatch(this.gl)
 
       let rectCount = 0
 
@@ -161,7 +160,7 @@ export class FlamechartRenderer {
           )
           minLeft = Infinity
           maxRight = -Infinity
-          batch = canvasContext.createRectangleBatch()
+          batch = new RectangleBatch(this.gl)
         }
         const configSpaceBounds = new Rect(
           new Vec2(frame.start, y),
@@ -198,10 +197,47 @@ export class FlamechartRenderer {
       // range than a tree of always-height-two might make this run faster
       this.layers.push(new RangeTreeInteriorNode(leafNodes))
     }
-    this.rectInfoTexture = this.canvasContext.gl.texture({width: 1, height: 1})
-    this.framebuffer = this.canvasContext.gl.framebuffer({
-      color: [this.rectInfoTexture],
-    })
+  }
+
+  private rectInfoTexture: Graphics.Texture | null = null
+  getRectInfoTexture(width: number, height: number): Graphics.Texture {
+    if (this.rectInfoTexture) {
+      const texture = this.rectInfoTexture
+      if (texture.width != width || texture.height != height) {
+        texture.resize(width, height)
+      }
+    } else {
+      this.rectInfoTexture = this.gl.createTexture(
+        Graphics.TextureFormat.NEAREST_CLAMP,
+        width,
+        height,
+      )
+    }
+    return this.rectInfoTexture
+  }
+
+  private rectInfoRenderTarget: Graphics.RenderTarget | null = null
+  getRectInfoRenderTarget(width: number, height: number): Graphics.RenderTarget {
+    const texture = this.getRectInfoTexture(width, height)
+    if (this.rectInfoRenderTarget) {
+      if (this.rectInfoRenderTarget.texture != texture) {
+        this.rectInfoRenderTarget.texture.free()
+        this.rectInfoRenderTarget.setColor(texture)
+      }
+    }
+    if (!this.rectInfoRenderTarget) {
+      this.rectInfoRenderTarget = this.gl.createRenderTarget(texture)
+    }
+    return this.rectInfoRenderTarget
+  }
+
+  free() {
+    if (this.rectInfoRenderTarget) {
+      this.rectInfoRenderTarget.free()
+    }
+    if (this.rectInfoTexture) {
+      this.rectInfoTexture.free()
+    }
   }
 
   private atlasKeys = new KeyedSet<FlamechartRowAtlasKey>()
@@ -274,6 +310,11 @@ export class FlamechartRenderer {
       }
     }
 
+    // TODO(jlfwong): When I switched the GL backend from regl to the port from
+    // evanw/sky, rendering uncached even for massive documents seemed fast
+    // enough. It's possible that the row cache is now unnecessary, but I'll
+    // leave it around for now since it's not causing issues.
+
     const cacheCapacity = this.rowAtlas.getCapacity()
     const keysToRenderCached = atlasKeysToRender.slice(0, cacheCapacity)
     const keysToRenderUncached = atlasKeysToRender.slice(cacheCapacity)
@@ -282,24 +323,24 @@ export class FlamechartRenderer {
     this.rowAtlas.writeToAtlasIfNeeded(keysToRenderCached, (textureDstRect, key) => {
       const configSpaceBounds = this.configSpaceBoundsForKey(key)
       this.layers[key.stackDepth].forEachLeafNodeWithinBounds(configSpaceBounds, leaf => {
-        this.canvasContext.drawRectangleBatch({
+        this.rectangleBatchRenderer.render({
           batch: leaf.getBatch(),
           configSpaceSrcRect: configSpaceBounds,
           physicalSpaceDstRect: textureDstRect,
-          parityMin: key.stackDepth % 2 == 0 ? 2 : 0,
-          parityOffset: leaf.getParity(),
         })
       })
     })
 
-    this.framebuffer.resize(physicalSpaceDstRect.width(), physicalSpaceDstRect.height())
-    this.framebuffer.use(context => {
-      this.canvasContext.gl.clear({color: [0, 0, 0, 0]})
+    const renderTarget = this.getRectInfoRenderTarget(
+      physicalSpaceDstRect.width(),
+      physicalSpaceDstRect.height(),
+    )
+
+    renderInto(this.gl, renderTarget, () => {
       const viewportRect = new Rect(
         Vec2.zero,
-        new Vec2(context.viewportWidth, context.viewportHeight),
+        new Vec2(this.gl.viewport.width, this.gl.viewport.height),
       )
-
       const configToViewport = AffineTransform.betweenRects(configSpaceSrcRect, viewportRect)
 
       // Render from the cache
@@ -313,34 +354,25 @@ export class FlamechartRenderer {
         const configSpaceBounds = this.configSpaceBoundsForKey(key)
         const physicalBounds = configToViewport.transformRect(configSpaceBounds)
         this.layers[key.stackDepth].forEachLeafNodeWithinBounds(configSpaceBounds, leaf => {
-          this.canvasContext.drawRectangleBatch({
+          this.rectangleBatchRenderer.render({
             batch: leaf.getBatch(),
-            configSpaceSrcRect,
+            configSpaceSrcRect: configSpaceBounds,
             physicalSpaceDstRect: physicalBounds,
-            parityMin: key.stackDepth % 2 == 0 ? 2 : 0,
-            parityOffset: leaf.getParity(),
           })
         })
       }
     })
 
-    this.canvasContext.drawFlamechartColorPass({
-      rectInfoTexture: this.rectInfoTexture,
-      srcRect: new Rect(
-        Vec2.zero,
-        new Vec2(this.rectInfoTexture.width, this.rectInfoTexture.height),
-      ),
+    const rectInfoTexture = this.getRectInfoTexture(
+      physicalSpaceDstRect.width(),
+      physicalSpaceDstRect.height(),
+    )
+
+    this.colorPassRenderer.render({
+      rectInfoTexture,
+      srcRect: new Rect(Vec2.zero, new Vec2(rectInfoTexture.width, rectInfoTexture.height)),
       dstRect: physicalSpaceDstRect,
       renderOutlines: props.renderOutlines,
     })
-
-    // Overlay the atlas on top of the canvas for debugging
-    /*
-    this.canvasContext.drawTexture({
-      texture: this.rowAtlas.texture,
-      srcRect: new Rect(Vec2.zero, new Vec2(this.rowAtlas.texture.width, this.rowAtlas.texture.height)),
-      dstRect: new Rect(Vec2.zero, new Vec2(800, 800))
-    })
-    */
   }
 }

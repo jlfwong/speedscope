@@ -1,31 +1,34 @@
-import regl from 'regl'
 import {LRUCache} from '../lib/lru-cache'
-import {RectangleBatch} from './rectangle-batch-renderer'
-import {CanvasContext} from './canvas-context'
+import {RectangleBatch, RectangleBatchRenderer} from './rectangle-batch-renderer'
 import {Rect, Vec2} from '../lib/math'
 import {Color} from '../lib/color'
+import {Graphics} from './graphics'
+import {TextureRenderer} from './texture-renderer'
+import {renderInto} from './utils'
 
 export class RowAtlas<K> {
-  texture: regl.Texture
-  private framebuffer: regl.Framebuffer
-  private renderToFramebuffer: regl.Command<{}>
+  private texture: Graphics.Texture
+  private renderTarget: Graphics.RenderTarget
   private rowCache: LRUCache<K, number>
   private clearLineBatch: RectangleBatch
 
-  constructor(private canvasContext: CanvasContext) {
-    this.texture = canvasContext.gl.texture({
-      width: Math.min(canvasContext.getMaxTextureSize(), 4096),
-      height: Math.min(canvasContext.getMaxTextureSize(), 4096),
-      wrapS: 'clamp',
-      wrapT: 'clamp',
-    })
-    this.framebuffer = canvasContext.gl.framebuffer({color: [this.texture]})
+  constructor(
+    private gl: Graphics.Context,
+    private rectangleBatchRenderer: RectangleBatchRenderer,
+    private textureRenderer: TextureRenderer,
+  ) {
+    this.texture = gl.createTexture(Graphics.TextureFormat.NEAREST_CLAMP, 4096, 4096)
+    this.renderTarget = gl.createRenderTarget(this.texture)
     this.rowCache = new LRUCache(this.texture.height)
-    this.renderToFramebuffer = canvasContext.gl({
-      framebuffer: this.framebuffer,
-    })
-    this.clearLineBatch = canvasContext.createRectangleBatch()
+    this.clearLineBatch = new RectangleBatch(gl)
     this.clearLineBatch.addRect(Rect.unit, new Color(0, 0, 0, 0))
+
+    // All of the cached data is stored GPU-side, and we don't retain a copy of
+    // it client-side. This means when we get a context loss event, the data is
+    // totally gone. So let's clear our CPU-side cache to reflect that fact.
+    gl.addContextResetHandler(() => {
+      this.rowCache.clear()
+    })
   }
 
   has(key: K) {
@@ -53,7 +56,7 @@ export class RowAtlas<K> {
   }
 
   writeToAtlasIfNeeded(keys: K[], render: (textureDstRect: Rect, key: K) => void) {
-    this.renderToFramebuffer((context: regl.Context) => {
+    renderInto(this.gl, this.renderTarget, () => {
       for (let key of keys) {
         let row = this.rowCache.get(key)
         if (row != null) {
@@ -64,7 +67,7 @@ export class RowAtlas<K> {
         row = this.allocateLine(key)
 
         const textureRect = new Rect(new Vec2(0, row), new Vec2(this.texture.width, 1))
-        this.canvasContext.drawRectangleBatch({
+        this.rectangleBatchRenderer.render({
           batch: this.clearLineBatch,
           configSpaceSrcRect: Rect.unit,
           physicalSpaceDstRect: textureRect,
@@ -84,7 +87,7 @@ export class RowAtlas<K> {
 
     // At this point, we have the row in cache, and we can
     // paint directly from it into the framebuffer.
-    this.canvasContext.drawTexture({
+    this.textureRenderer.render({
       texture: this.texture,
       srcRect: textureRect,
       dstRect: dstRect,

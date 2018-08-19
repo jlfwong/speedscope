@@ -103,7 +103,14 @@ export const createMemoizedFlamechartRenderer = (options?: FlamechartRendererOpt
       canvasContext: CanvasContext
       flamechart: Flamechart
     }): FlamechartRenderer => {
-      return new FlamechartRenderer(canvasContext, getRowAtlas(canvasContext), flamechart, options)
+      return new FlamechartRenderer(
+        canvasContext.gl,
+        getRowAtlas(canvasContext),
+        flamechart,
+        canvasContext.rectangleBatchRenderer,
+        canvasContext.flamechartColorPassRenderer,
+        options,
+      )
     },
   )
 

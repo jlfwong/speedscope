@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Fixed
+
+* Removed dependency on regl in order to allow speedscope to run in strict content-security-policy environments [#140]
+
 ## [0.7.0]
 
 ### Added

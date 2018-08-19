@@ -410,7 +410,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
     if (this.props.configSpaceViewportRect.isEmpty()) return
 
-    this.props.canvasContext.renderInto(this.container, context => {
+    this.props.canvasContext.renderBehind(this.container, () => {
       this.props.flamechartRenderer.render({
         physicalSpaceDstRect: this.physicalBounds(),
         configSpaceSrcRect: this.props.configSpaceViewportRect,
