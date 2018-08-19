@@ -82,11 +82,16 @@ export class ViewportRectangleRenderer {
       'configSpaceToPhysicalViewSpace',
       props.configSpaceToPhysicalViewSpace,
     )
+
     // TODO(jlfwong): Pack these into a Vec4 instead
     setUniformVec2(this.material, 'configSpaceViewportOrigin', props.configSpaceViewportRect.origin)
-    setUniformVec2(this.material, 'configSpaceViewportSize', props.configSpaceViewportRect.origin)
-    this.material.setUniformVec2('physicalSize', this.gl.viewport.width, this.gl.viewport.height)
-    this.material.setUniformVec2('physicalOrigin', this.gl.viewport.x, this.gl.viewport.y)
+    setUniformVec2(this.material, 'configSpaceViewportSize', props.configSpaceViewportRect.size)
+    // TODO(jlfwong): Pack these into a Vec4 instead
+
+    const viewport = this.gl.viewport
+    this.material.setUniformVec2('physicalOrigin', viewport.x, viewport.y)
+    this.material.setUniformVec2('physicalSize', viewport.width, viewport.height)
+
     this.material.setUniformFloat('framebufferHeight', this.gl.renderTargetHeight)
 
     this.gl.setBlendState(
@@ -94,6 +99,5 @@ export class ViewportRectangleRenderer {
       Graphics.BlendOperation.INVERSE_SOURCE_ALPHA,
     )
     this.gl.draw(Graphics.Primitive.TRIANGLE_STRIP, this.material, this.buffer)
-    this.gl.setCopyBlendState()
   }
 }

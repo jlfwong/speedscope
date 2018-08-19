@@ -410,6 +410,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
     if (this.props.configSpaceViewportRect.isEmpty()) return
 
+    /*
     this.props.canvasContext.renderInto(this.container, () => {
       this.props.flamechartRenderer.render({
         physicalSpaceDstRect: this.physicalBounds(),
@@ -417,6 +418,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
         renderOutlines: true,
       })
     })
+    */
   }
 
   // Inertial scrolling introduces tricky interaction problems.

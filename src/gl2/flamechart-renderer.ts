@@ -323,8 +323,6 @@ export class FlamechartRenderer {
           batch: leaf.getBatch(),
           configSpaceSrcRect: configSpaceBounds,
           physicalSpaceDstRect: textureDstRect,
-          parityMin: key.stackDepth % 2 == 0 ? 2 : 0,
-          parityOffset: leaf.getParity(),
         })
       })
     })
@@ -357,12 +355,9 @@ export class FlamechartRenderer {
           batch: leaf.getBatch(),
           configSpaceSrcRect,
           physicalSpaceDstRect: physicalBounds,
-          parityMin: key.stackDepth % 2 == 0 ? 2 : 0,
-          parityOffset: leaf.getParity(),
         })
       })
     }
-
     this.gl.setRenderTarget(null)
 
     const rectInfoTexture = this.getRectInfoTexture(

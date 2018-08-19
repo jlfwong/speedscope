@@ -1,8 +1,9 @@
 import {createContainer, Dispatch, bindActionCreator, ActionCreator} from '../lib/typed-redux'
 import {Application, ActiveProfileState} from './application'
 import {ApplicationState} from '../store'
-import {getProfileToView} from '../store/getters'
+import {getProfileToView, getCanvasContext} from '../store/getters'
 import {actions} from '../store/actions'
+import {Graphics} from '../gl2/graphics'
 
 export const ApplicationContainer = createContainer(
   Application,
@@ -26,6 +27,8 @@ export const ApplicationContainer = createContainer(
       return bindActionCreator(dispatch, actionCreator)
     }
 
+    // TODO(jlfwong): Cache this and resizeCanvas below to prevent re-renders
+    // due to changing props.
     const setters = {
       setGLCanvas: wrapActionCreator(actions.setGLCanvas),
       setLoading: wrapActionCreator(actions.setLoading),
@@ -40,6 +43,18 @@ export const ApplicationContainer = createContainer(
     return {
       activeProfileState,
       dispatch,
+      resizeCanvas: (
+        widthInPixels: number,
+        heightInPixels: number,
+        widthInAppUnits: number,
+        heightInAppUnits: number,
+      ) => {
+        if (state.glCanvas) {
+          const gl = getCanvasContext(state.glCanvas).gl
+          gl.resize(widthInPixels, heightInPixels, widthInAppUnits, heightInAppUnits)
+          gl.clear(new Graphics.Color(1, 1, 1, 1))
+        }
+      },
       ...setters,
       ...state,
     }

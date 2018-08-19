@@ -49,9 +49,10 @@ export class RectangleBatch {
       return this.buffer
     }
 
-    const corners = [[0, 0], [1, 0], [0, 1], [1, 1]]
+    const corners = [[0, 0], [1, 0], [0, 1], [1, 0], [0, 1], [1, 1]]
 
-    const floats = new Float32Array(vertexFormat.stride * 4 * this.rects.length)
+    const bytes = new Uint8Array(vertexFormat.stride * corners.length * this.rects.length)
+    const floats = new Float32Array(bytes.buffer)
     let idx = 0
 
     for (let i = 0; i < this.rects.length; i++) {
@@ -60,12 +61,12 @@ export class RectangleBatch {
 
       // TODO(jlfwong): In the conversion from regl to graphics.ts, I lost the
       // ability to do instanced drawing. This is a pretty significant hit to
-      // the performance here since I need 4x the memory to allocate these
+      // the performance here since I need 6x the memory to allocate these
       // things. Adding instanced drawing to graphics.ts is non-trivial, so I'm
       // just going to try this for now.
-      for (let j = 0; j < 4; j++) {
-        floats[idx++] = corners[j][0]
-        floats[idx++] = corners[j][1]
+      for (let corner of corners) {
+        floats[idx++] = corner[0]
+        floats[idx++] = corner[1]
 
         floats[idx++] = rect.origin.x
         floats[idx++] = rect.origin.y
@@ -78,7 +79,10 @@ export class RectangleBatch {
       }
     }
 
-    const bytes = new Uint8Array(floats.buffer)
+    if (idx !== floats.length) {
+      throw new Error("Buffer expected to be full but wasn't")
+    }
+
     this.buffer = this.gl.createVertexBuffer(bytes.length)
     this.buffer.upload(bytes)
     return this.buffer
@@ -106,8 +110,6 @@ export interface RectangleBatchRendererProps {
   batch: RectangleBatch
   configSpaceSrcRect: Rect
   physicalSpaceDstRect: Rect
-  parityMin?: number
-  parityOffset?: number
 }
 
 export class RectangleBatchRenderer {
@@ -126,7 +128,8 @@ export class RectangleBatchRenderer {
           props.physicalSpaceDstRect,
         )
 
-        const viewportSize = new Vec2(this.gl.renderTargetWidth, this.gl.renderTargetHeight)
+        const viewportSize = new Vec2(this.gl.viewport.width, this.gl.viewport.height)
+
         const physicalToNDC = AffineTransform.withTranslation(new Vec2(-1, 1)).times(
           AffineTransform.withScale(new Vec2(2, -2).dividedByPointwise(viewportSize)),
         )
@@ -135,6 +138,7 @@ export class RectangleBatchRenderer {
       })(),
     )
 
-    this.gl.draw(Graphics.Primitive.TRIANGLE_STRIP, this.material, props.batch.getBuffer())
+    this.gl.setUnpremultipliedBlendState()
+    this.gl.draw(Graphics.Primitive.TRIANGLES, this.material, props.batch.getBuffer())
   }
 }

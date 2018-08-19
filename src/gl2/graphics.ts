@@ -408,7 +408,7 @@ export namespace WebGL {
     get renderTargetWidth() {
       return this._currentRenderTarget != null
         ? this._currentRenderTarget.viewport.width
-        : this._height
+        : this._width
     }
 
     get renderTargetHeight() {
@@ -453,8 +453,8 @@ export namespace WebGL {
       let style = canvas.style
       canvas.width = widthInPixels
       canvas.height = heightInPixels
-      style.width = '(widthInAppUnits)px'
-      style.height = '(heightInAppUnits)px'
+      style.width = `${widthInAppUnits}px`
+      style.height = `${heightInAppUnits}px`
       this.setViewport(0, 0, widthInPixels, heightInPixels)
       this._width = widthInPixels
       this._height = heightInPixels
@@ -539,7 +539,12 @@ export namespace WebGL {
       }
 
       if (this._forceStateUpdate || !this._oldViewport.equals(viewport)) {
-        gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
+        gl.viewport(
+          viewport.x,
+          this.renderTargetHeight - viewport.y - viewport.height,
+          viewport.width,
+          viewport.height,
+        )
         this._oldViewport.set(viewport.x, viewport.y, viewport.width, viewport.height)
       }
     }
@@ -631,7 +636,7 @@ export namespace WebGL {
     // Upload this uniform if it's dirty
     abstract prepare(): void
 
-    location(): WebGLUniformLocation | null {
+    get location(): WebGLUniformLocation | null {
       let context = Context.from(this._material.context)
       if (this._generation != context.generation) {
         this._location = context.gl.getUniformLocation(this._material.program, this._name)
@@ -698,7 +703,7 @@ export namespace WebGL {
     prepare() {
       let context = Context.from(this._material.context)
       if (this._generation != context.generation || this._isDirty) {
-        context.gl.uniform1f(location, this._x)
+        context.gl.uniform1f(this.location, this._x)
         this._isDirty = false
       }
     }
@@ -717,7 +722,7 @@ export namespace WebGL {
     prepare() {
       let context = Context.from(this._material.context)
       if (this._generation != context.generation || this._isDirty) {
-        context.gl.uniform1i(location, this._x)
+        context.gl.uniform1i(this.location, this._x)
         this._isDirty = false
       }
     }
@@ -738,7 +743,7 @@ export namespace WebGL {
     prepare() {
       let context = Context.from(this._material.context)
       if (this._generation != context.generation || this._isDirty) {
-        context.gl.uniform2f(location, this._x, this._y)
+        context.gl.uniform2f(this.location, this._x, this._y)
         this._isDirty = false
       }
     }
@@ -761,7 +766,7 @@ export namespace WebGL {
     prepare() {
       let context = Context.from(this._material.context)
       if (this._generation != context.generation || this._isDirty) {
-        context.gl.uniform3f(location, this._x, this._y, this._z)
+        context.gl.uniform3f(this.location, this._x, this._y, this._z)
         this._isDirty = false
       }
     }
@@ -786,7 +791,7 @@ export namespace WebGL {
     prepare() {
       let context = Context.from(this._material.context)
       if (this._generation != context.generation || this._isDirty) {
-        context.gl.uniform4f(location, this._x, this._y, this._z, this._w)
+        context.gl.uniform4f(this.location, this._x, this._y, this._z, this._w)
         this._isDirty = false
       }
     }
@@ -831,7 +836,7 @@ export namespace WebGL {
     prepare() {
       let context = Context.from(this._material.context)
       if (this._generation != context.generation || this._isDirty) {
-        context.gl.uniformMatrix3fv(location, false, this._values)
+        context.gl.uniformMatrix3fv(this.location, false, this._values)
         this._isDirty = false
       }
     }
@@ -861,7 +866,7 @@ export namespace WebGL {
           this._texture != context.currentRenderTarget.texture,
       )
       if (this._generation != context.generation || this._isDirty) {
-        gl.uniform1i(location, this._index)
+        gl.uniform1i(this.location, this._index)
         this._isDirty = false
       }
       gl.activeTexture(TEXTURE_N(gl, this._index))

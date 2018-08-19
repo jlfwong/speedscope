@@ -7,6 +7,8 @@ import {style} from './flamechart-style'
 import {FontFamily, FontSize, Colors, Sizes, commonStyle} from './style'
 import {CanvasContext} from '../gl2/canvas-context'
 import {cachedMeasureTextWidth} from '../lib/text-utils'
+import {RectangleBatch} from '../gl2/rectangle-batch-renderer'
+import {Color} from '../lib/color'
 
 interface FlamechartMinimapViewProps {
   flamechart: Flamechart
@@ -85,6 +87,20 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
         ),
         renderOutlines: false,
       })
+
+      /*
+      const batch = new RectangleBatch(this.props.canvasContext.gl)
+      batch.addRect(new Rect(Vec2.zero, new Vec2(1, 1)), new Color(1.0, 0.0, 0.0, 1.0))
+      batch.addRect(new Rect(new Vec2(1, 0), new Vec2(1, 1)), new Color(0.0, 1.0, 0.0, 1.0))
+      batch.addRect(new Rect(new Vec2(0, 1), new Vec2(1, 1)), new Color(0.0, 0.0, 1.0, 1.0))
+
+      this.props.canvasContext.rectangleBatchRenderer.render({
+        batch,
+        configSpaceSrcRect: new Rect(Vec2.zero, new Vec2(2, 2)),
+        physicalSpaceDstRect: new Rect(new Vec2(10, 50), new Vec2(200, 200)),
+      })
+      */
+
       this.props.canvasContext.viewportRectangleRenderer.render({
         configSpaceViewportRect: this.props.configSpaceViewportRect,
         configSpaceToPhysicalViewSpace: this.configSpaceToPhysicalViewSpace(),
