@@ -227,22 +227,24 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
           )
         }
 
-        const trimmedText = trimTextMid(
-          ctx,
-          frame.node.frame.name,
-          physicalLabelBounds.width() - 2 * LABEL_PADDING_PX,
-        )
+        if (physicalLabelBounds.width() > minWidthToRender) {
+          const trimmedText = trimTextMid(
+            ctx,
+            frame.node.frame.name,
+            physicalLabelBounds.width() - 2 * LABEL_PADDING_PX,
+          )
 
-        // Note that this is specifying the position of the starting text
-        // baseline.
-        ctx.fillText(
-          trimmedText,
-          physicalLabelBounds.left() + LABEL_PADDING_PX,
-          Math.round(
-            physicalLabelBounds.bottom() -
-              (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2,
-          ),
-        )
+          // Note that this is specifying the position of the starting text
+          // baseline.
+          ctx.fillText(
+            trimmedText,
+            physicalLabelBounds.left() + LABEL_PADDING_PX,
+            Math.round(
+              physicalLabelBounds.bottom() -
+                (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2,
+            ),
+          )
+        }
       }
       for (let child of frame.children) {
         renderFrameLabelAndChildren(child, depth + 1)
