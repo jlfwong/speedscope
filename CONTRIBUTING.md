@@ -17,7 +17,7 @@ To start running speedscope locally, run the following:
 
 This should open up a running version of speedscope in your default browser.
 
-In your terminal, you should see this:
+In your terminal, you should see something like this:
 
     $ npm run serve
     > speedscope@0.7.1 serve /Users/jlfwong/code/speedscope
@@ -26,9 +26,11 @@ In your terminal, you should see this:
     Server running at http://localhost:1234
     ✨  Built in 7.30s.
 
-Most of speedscope is written in TypeScript. If you're unfamiliar with TypeScript,
-then you can either just try to learn it as you go, then [the official TypeScript
-document](https://www.typescriptlang.org/docs/home.html) may be of use to you!
+Most of speedscope is written in TypeScript. If you're unfamiliar with
+TypeScript, then you can either just try to learn it as you go, then the
+[official TypeScript
+documentation](https://www.typescriptlang.org/docs/home.html) may be of use
+to you!
 
 If you're not sure where the code you want to modify lives, the [`README.md`
 in the `src/` directory](./src/README.md) might be helpful.
@@ -40,7 +42,7 @@ All TypeScript code in speedscope is automatically formatted with
 you don't have to worry about following a formatting guide, because a program will
 format your code for you!
 
-The easiest way to use this is to use an editor integration. See the [Editor
+The easiest way to use Prettier is via an editor integration. See the [Editor
 Integration](https://prettier.io/docs/en/editors.html) page from Prettier's
 documentation for help with that.
 
