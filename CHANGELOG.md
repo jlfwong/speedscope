@@ -1,16 +1,19 @@
 ## [Unreleased]
 
+## [0.7.1] - 2018-08-20
+
 ### Fixed
 
 * Removed dependency on regl in order to allow speedscope to run in strict content-security-policy environments [#140]
+* Fixed text culling bug [#143]
 
-## [0.7.0]
+## [0.7.0] - 2018-08-16
 
 ### Added
 
 * Added support to import from linux `perf script` [#135]
 
-## [0.6.0]
+## [0.6.0] - 2018-08-14
 
 ### Added
 
