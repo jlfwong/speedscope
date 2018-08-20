@@ -30,6 +30,9 @@ Most of speedscope is written in TypeScript. If you're unfamiliar with TypeScrip
 then you can either just try to learn it as you go, then [the official TypeScript
 document](https://www.typescriptlang.org/docs/home.html) may be of use to you!
 
+If you're not sure where the code you want to modify lives, the [`README.md`
+in the `src/` directory](./src/README.md) might be helpful.
+
 ## Code formatting
 
 All TypeScript code in speedscope is automatically formatted with
@@ -41,7 +44,13 @@ The easiest way to use this is to use an editor integration. See the [Editor
 Integration](https://prettier.io/docs/en/editors.html) page from Prettier's
 documentation for help with that.
 
-If you don't want to do that, you can run the autoformatter by running `npm run prettier`.
+If you don't want to do that, you can alternatively run the autoformatter by
+running `npm run prettier`.
+
+## Running tests
+
+All TypeScript tests are written use [Jest](https://jestjs.io/). To run the
+tests, run `npm run jest`.
 
 ## Contributing new features
 
