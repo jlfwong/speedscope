@@ -1,6 +1,6 @@
 # 🔬speedscope
 
-A fast, interactive web-based viewer for [sampling profiles][0]. An alternative viewer for [FlameGraphs][1]. Will happily display multi-megabyte profiles without crashing your browser.
+A fast, interactive web-based viewer for performance profiles. An alternative viewer for [FlameGraphs][1]. Will happily display multi-megabyte profiles without crashing your browser.
 
 Given raw profiling data, speedscope allows you to interactively explore the data to get insight into what's slow in your application, or allocating all the memory, or whatever data is represented in the profiling data.
 
