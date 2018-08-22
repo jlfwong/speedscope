@@ -8,6 +8,7 @@ Publishing speedscope is a multi-step process:
 2.  Prepare the release
 3.  Publish to npm
 4.  Deploy the website
+5.  Upload a release to GitHub
 
 At time of writing, deployment assumes you're running macOS. It probably
 works if you're on a linux, and almost definitely does not work on Windows.
@@ -54,7 +55,7 @@ a matter of running `npm publish`.
 
 To verify that the publish was successful, run `npm install -g speedscope`.
 Try `speedscope`, which should open speedscope in browser.
-Try `speedscope sample/profiles/stackcollapse/simple.txt`, which should immediately load the profile
+Try `speedscope sample/profiles/stackcollapse/simple.txt`, which should immediately load the profile.
 
 ## Deploying the website
 
@@ -76,3 +77,12 @@ If everything looks good, type `yes` then enter. This will commit to the `gh-pag
 
 To check if a deploy has happened, you can check https://www.speedscope.app/release.txt
 which includes the version, the date, and the commit of the deploy.
+
+## Upload a release to GitHub
+
+To make a zipfile suitable for uploading to GitHub as a release, run prepare-zip-file.sh. Note that this step must follow the "Publish to npm" step,
+since it uses assets from the npm publish.
+
+Once that's done, you should have a zip file in `dist/release/`
+
+Upload that file along with changelog notes to https://github.com/jlfwong/speedscope/releases/new
