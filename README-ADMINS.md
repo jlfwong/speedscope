@@ -44,7 +44,7 @@ If everything looks good, proceed to "Prepare the release".
 2.  Update CHANGELOG.md to indicate the changes that were made as part of this release
 3.  Commit the changes with the version name as the commit message, e.g. `git commit -m 0.6.0`
 4.  `git tag` the release. We use tags like `v0.6.0`, e.g. `git tag v0.6.0`
-5.  `git push`
+5.  `git push --tags`
 
 ## Publish to npm
 
