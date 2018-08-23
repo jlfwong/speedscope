@@ -44,7 +44,7 @@ If everything looks good, proceed to "Prepare the release".
 2.  Update CHANGELOG.md to indicate the changes that were made as part of this release
 3.  Commit the changes with the version name as the commit message, e.g. `git commit -m 0.6.0`
 4.  `git tag` the release. We use tags like `v0.6.0`, e.g. `git tag v0.6.0`
-5.  `git push --tags`
+5.  `git push && git push --tags`
 
 ## Publish to npm
 
@@ -80,7 +80,7 @@ which includes the version, the date, and the commit of the deploy.
 
 ## Upload a release to GitHub
 
-To make a zipfile suitable for uploading to GitHub as a release, run prepare-zip-file.sh. Note that this step must follow the "Publish to npm" step,
+To make a zipfile suitable for uploading to GitHub as a release, run `scripts/prepare-zip-file.sh`. Note that this step must follow the "Publish to npm" step,
 since it uses assets from the npm publish.
 
 Once that's done, you should have a zip file in `dist/release/`
