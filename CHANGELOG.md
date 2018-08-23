@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Fixed
+
+* Fixed rendering issues when switching between screens w/ different `devicePixelRatios` [#147]
+
 ## [0.7.1] - 2018-08-20
 
 ### Fixed

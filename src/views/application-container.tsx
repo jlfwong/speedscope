@@ -43,6 +43,7 @@ export const ApplicationContainer = createContainer(
     return {
       activeProfileState,
       dispatch,
+      canvasContext: state.glCanvas ? getCanvasContext(state.glCanvas) : null,
       resizeCanvas: (
         widthInPixels: number,
         heightInPixels: number,

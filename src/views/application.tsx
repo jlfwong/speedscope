@@ -12,6 +12,7 @@ import {StatelessComponent} from '../lib/typed-redux'
 import {LeftHeavyFlamechartView, ChronoFlamechartView} from './flamechart-view-container'
 import {SandwichViewState} from '../store/sandwich-view-state'
 import {FlamechartViewState} from '../store/flamechart-view-state'
+import {CanvasContext} from '../gl/canvas-context'
 import {Graphics} from '../gl/graphics'
 
 const importModule = import('../import')
@@ -169,7 +170,7 @@ export class Toolbar extends StatelessComponent<ToolbarProps> {
 }
 
 interface GLCanvasProps {
-  resizeCanvas: typeof Graphics.Context.prototype.resize
+  canvasContext: CanvasContext | null
   setGLCanvas: (canvas: HTMLCanvasElement | null) => void
 }
 export class GLCanvas extends Component<GLCanvasProps, void> {
@@ -185,37 +186,52 @@ export class GLCanvas extends Component<GLCanvasProps, void> {
     this.props.setGLCanvas(this.canvas)
   }
 
-  private maybeResize() {
+  private maybeResize = () => {
     if (!this.canvas) return
+    if (!this.props.canvasContext) return
+
     let {width, height} = this.canvas.getBoundingClientRect()
-    width = Math.floor(width) * window.devicePixelRatio
-    height = Math.floor(height) * window.devicePixelRatio
 
-    // Still initializing: don't resize yet
-    if (width < 4 || height < 4) return
-    const oldWidth = this.canvas.width
-    const oldHeight = this.canvas.height
+    const widthInAppUnits = width
+    const heightInAppUnits = height
+    const widthInPixels = width * window.devicePixelRatio
+    const heightInPixels = height * window.devicePixelRatio
 
-    // Already at the right size
-    if (width === oldWidth && height === oldHeight) return
-
-    this.props.resizeCanvas(
-      width,
-      height,
-      width / window.devicePixelRatio,
-      height / window.devicePixelRatio,
+    this.props.canvasContext.gl.resize(
+      widthInPixels,
+      heightInPixels,
+      widthInAppUnits,
+      heightInAppUnits,
     )
+    this.props.canvasContext.gl.clear(new Graphics.Color(1, 1, 1, 1))
   }
 
   onWindowResize = () => {
-    this.maybeResize()
+    if (this.props.canvasContext) {
+      this.props.canvasContext.requestFrame()
+    }
     window.addEventListener('resize', this.onWindowResize)
+  }
+  componentWillReceiveProps(nextProps: GLCanvasProps) {
+    if (this.props.canvasContext !== nextProps.canvasContext) {
+      if (this.props.canvasContext) {
+        console.log('a')
+        this.props.canvasContext.removeBeforeFrameHandler(this.maybeResize)
+      }
+      if (nextProps.canvasContext) {
+        console.log('b')
+        nextProps.canvasContext.addBeforeFrameHandler(this.maybeResize)
+        nextProps.canvasContext.requestFrame()
+      }
+    }
   }
   componentDidMount() {
     window.addEventListener('resize', this.onWindowResize)
-    requestAnimationFrame(() => this.maybeResize())
   }
   componentWillUnmount() {
+    if (this.props.canvasContext) {
+      this.props.canvasContext.removeBeforeFrameHandler(this.maybeResize)
+    }
     window.removeEventListener('resize', this.onWindowResize)
   }
   render() {
@@ -232,7 +248,6 @@ export interface ActiveProfileState {
 }
 
 export type ApplicationProps = ApplicationState & {
-  resizeCanvas: typeof Graphics.Context.prototype.resize
   setGLCanvas: (canvas: HTMLCanvasElement | null) => void
   setLoading: (loading: boolean) => void
   setError: (error: boolean) => void
@@ -242,6 +257,7 @@ export type ApplicationProps = ApplicationState & {
   setFlattenRecursion: (flattenRecursion: boolean) => void
   setProfileIndexToView: (profileIndex: number) => void
   activeProfileState: ActiveProfileState | null
+  canvasContext: CanvasContext | null
 }
 
 export class Application extends StatelessComponent<ApplicationProps> {
@@ -615,7 +631,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
         onDragLeave={this.onDragLeave}
         className={css(style.root, this.props.dragActive && style.dragTargetRoot)}
       >
-        <GLCanvas setGLCanvas={this.props.setGLCanvas} resizeCanvas={this.props.resizeCanvas} />
+        <GLCanvas setGLCanvas={this.props.setGLCanvas} canvasContext={this.props.canvasContext} />
         <Toolbar
           saveFile={this.saveFile}
           browseForFile={this.browseForFile}
