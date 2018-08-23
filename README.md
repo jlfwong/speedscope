@@ -4,7 +4,7 @@ A fast, interactive web-based viewer for performance profiles. An alternative vi
 
 Given raw profiling data, speedscope allows you to interactively explore the data to get insight into what's slow in your application, or allocating all the memory, or whatever data is represented in the profiling data.
 
-![Example Profile](https://user-images.githubusercontent.com/150329/40900669-86eced80-6781-11e8-92c1-dc667b651e72.gif)
+![Example Profile](https://user-images.githubusercontent.com/150329/44535962-3b0d9180-a6b0-11e8-81f4-ea65374897f2.gif)
 
 [0]: https://en.wikipedia.org/wiki/Profiling_(computer_programming)#Statistical_profilers
 [1]: https://github.com/brendangregg/FlameGraph
