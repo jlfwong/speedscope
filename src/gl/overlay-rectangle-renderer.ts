@@ -92,7 +92,7 @@ export class ViewportRectangleRenderer {
     this.material.setUniformVec2('physicalOrigin', viewport.x, viewport.y)
     this.material.setUniformVec2('physicalSize', viewport.width, viewport.height)
 
-    this.material.setUniformFloat('framebufferHeight', this.gl.renderTargetHeight)
+    this.material.setUniformFloat('framebufferHeight', this.gl.renderTargetHeightInPixels)
 
     this.gl.setBlendState(
       Graphics.BlendOperation.SOURCE_ALPHA,

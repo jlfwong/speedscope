@@ -49,7 +49,7 @@ export class CanvasContext {
   }
   private onBeforeFrame = () => {
     this.animationFrameRequest = null
-    this.gl.setViewport(0, 0, this.gl.renderTargetWidth, this.gl.renderTargetHeight)
+    this.gl.setViewport(0, 0, this.gl.renderTargetWidthInPixels, this.gl.renderTargetHeightInPixels)
     this.gl.clear(new Graphics.Color(1, 1, 1, 1))
 
     for (const handler of this.beforeFrameHandlers) {

@@ -141,11 +141,11 @@ export namespace Graphics {
     abstract setRenderTarget(renderTarget: RenderTarget | null): void
     abstract setViewport(x: number, y: number, width: number, height: number): void
     abstract viewport: Rect
-    abstract width: number
-    abstract height: number
+    abstract widthInPixels: number
+    abstract heightInPixels: number
 
-    abstract renderTargetHeight: number
-    abstract renderTargetWidth: number
+    abstract renderTargetHeightInPixels: number
+    abstract renderTargetWidthInPixels: number
 
     abstract setBlendState(source: BlendOperation, target: BlendOperation): void
     setCopyBlendState() {
@@ -304,10 +304,10 @@ export namespace WebGL {
     private _oldViewport = new Graphics.Rect()
     private _width = 0
 
-    get width() {
+    get widthInPixels() {
       return this._width
     }
-    get height() {
+    get heightInPixels() {
       return this._height
     }
 
@@ -411,13 +411,13 @@ export namespace WebGL {
         : this._defaultViewport
     }
 
-    get renderTargetWidth() {
+    get renderTargetWidthInPixels() {
       return this._currentRenderTarget != null
         ? this._currentRenderTarget.viewport.width
         : this._width
     }
 
-    get renderTargetHeight() {
+    get renderTargetHeightInPixels() {
       return this._currentRenderTarget != null
         ? this._currentRenderTarget.viewport.height
         : this._height
@@ -455,6 +455,18 @@ export namespace WebGL {
       widthInAppUnits: number,
       heightInAppUnits: number,
     ) {
+      const bounds = this._gl.canvas.getBoundingClientRect()
+
+      if (
+        this._width === widthInAppUnits &&
+        this._height === heightInPixels &&
+        bounds.width === widthInAppUnits &&
+        bounds.height === heightInAppUnits
+      ) {
+        // Nothing to do here!
+        return
+      }
+
       let canvas = this._gl.canvas
       let style = canvas.style
       canvas.width = widthInPixels
@@ -547,7 +559,7 @@ export namespace WebGL {
       if (this._forceStateUpdate || !this._oldViewport.equals(viewport)) {
         gl.viewport(
           viewport.x,
-          this.renderTargetHeight - viewport.y - viewport.height,
+          this.renderTargetHeightInPixels - viewport.y - viewport.height,
           viewport.width,
           viewport.height,
         )
