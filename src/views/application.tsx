@@ -186,11 +186,20 @@ export class GLCanvas extends Component<GLCanvasProps, void> {
     this.props.setGLCanvas(this.canvas)
   }
 
+  private container: HTMLElement | null = null
+  private containerRef = (container?: Element) => {
+    if (container instanceof HTMLElement) {
+      this.container = container
+    } else {
+      this.container = null
+    }
+  }
+
   private maybeResize = () => {
-    if (!this.canvas) return
+    if (!this.container) return
     if (!this.props.canvasContext) return
 
-    let {width, height} = this.canvas.getBoundingClientRect()
+    let {width, height} = this.container.getBoundingClientRect()
 
     const widthInAppUnits = width
     const heightInAppUnits = height
@@ -210,16 +219,13 @@ export class GLCanvas extends Component<GLCanvasProps, void> {
     if (this.props.canvasContext) {
       this.props.canvasContext.requestFrame()
     }
-    window.addEventListener('resize', this.onWindowResize)
   }
   componentWillReceiveProps(nextProps: GLCanvasProps) {
     if (this.props.canvasContext !== nextProps.canvasContext) {
       if (this.props.canvasContext) {
-        console.log('a')
         this.props.canvasContext.removeBeforeFrameHandler(this.maybeResize)
       }
       if (nextProps.canvasContext) {
-        console.log('b')
         nextProps.canvasContext.addBeforeFrameHandler(this.maybeResize)
         nextProps.canvasContext.requestFrame()
       }
@@ -235,7 +241,11 @@ export class GLCanvas extends Component<GLCanvasProps, void> {
     window.removeEventListener('resize', this.onWindowResize)
   }
   render() {
-    return <canvas className={css(style.glCanvasView)} ref={this.ref} width={1} height={1} />
+    return (
+      <div ref={this.containerRef} className={css(style.glCanvasView)}>
+        <canvas ref={this.ref} width={1} height={1} />
+      </div>
+    )
   }
 }
 
