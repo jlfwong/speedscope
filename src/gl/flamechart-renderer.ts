@@ -337,6 +337,8 @@ export class FlamechartRenderer {
     )
 
     renderInto(this.gl, renderTarget, () => {
+      this.gl.clear(new Graphics.Color(0, 0, 0, 0))
+
       const viewportRect = new Rect(
         Vec2.zero,
         new Vec2(this.gl.viewport.width, this.gl.viewport.height),
