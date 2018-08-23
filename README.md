@@ -54,26 +54,25 @@ To load a specific profile by URL, you can append a hash fragment like `#profile
 ## Views
 
 ### 🕰Time Order
-
-In the "Time Order" view (the default), the stacks are ordered left-to-right in the same order as the occurred in the input file, which is usually going to be the chronological order they were recorded in. This view is most helpful for understand the behavior of an application over time, e.g. "first the data is fetched from the database, then the data is prepared for serialization, then the data is serialized to JSON". This is the only flame graph order supported by Chrome developer tools.
-
-In all flamegraph views, the horizontal axis represents the "weight" of each stack (most commonly CPU time), and the vertical axis shows you the stack active at the time of the sample.
-
-If you click on one of the frames, you'll be able to see summary statistics about it.
-
 ![Detail View](https://user-images.githubusercontent.com/150329/42108613-e6ef6d3a-7b8f-11e8-93d4-541b2cb93fe5.png)
 
+In the "Time Order" view (the default), call stacks are ordered left-to-right in the same order as they occurred in the input file, which is usually going to be the chronological order they were recorded in. This view is most helpful for understand the behavior of an application over time, e.g. "first the data is fetched from the database, then the data is prepared for serialization, then the data is serialized to JSON". 
+
+The horizontal axis represents the "weight" of each stack (most commonly CPU time), and the vertical axis shows you the stack active at the time of the sample. If you click on one of the frames, you'll be able to see summary statistics about it.
+
+
 ### ⬅️Left Heavy
+![Left Heavy View](https://user-images.githubusercontent.com/150329/44534434-a05f8380-a6ac-11e8-86ac-e3e05e577c52.png)
 
 In the "Left Heavy" view, identical stacks are grouped together, regardless of whether they were recorded sequentially. Then, the stacks are sorted so that the heaviest stack for each parent is on the left -- hence "left heavy". This view is useful for understanding where all the time is going in situations where there are hundreds or thousands of function calls interleaved between other call stacks.
 
 ### 🥪 Sandwich
+![Sandwich View](https://user-images.githubusercontent.com/150329/42108467-76a57baa-7b8f-11e8-815f-1df7b6ac3ede.png)
 
 The Sandwich view is a table view in which you can find a list of all functions an their associated times. You can sort by self time or total time.
 It's called "Sandwich" view because if you select one of the rows in the table, you can see flamegraphs for all the callers and callees of the selected
 row.
 
-![Sandwich View](https://user-images.githubusercontent.com/150329/42108467-76a57baa-7b8f-11e8-815f-1df7b6ac3ede.png)
 
 ## Navigation
 
