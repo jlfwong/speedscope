@@ -7,7 +7,8 @@ describe('TimeFormatter', () => {
     expect(f.format(0.04)).toEqual('40.00µs')
     expect(f.format(3)).toEqual('3.00ms')
     expect(f.format(2070)).toEqual('2.07s')
-    expect(f.format(1203123)).toEqual('20.05min')
+    expect(f.format(150000)).toEqual('2:30')
+    expect(f.format(1203123)).toEqual('20:03')
   })
 
   test('input units seconds', () => {
@@ -15,7 +16,8 @@ describe('TimeFormatter', () => {
     expect(f.format(0.00004)).toEqual('40.00µs')
     expect(f.format(0.003)).toEqual('3.00ms')
     expect(f.format(2.07)).toEqual('2.07s')
-    expect(f.format(1203.123)).toEqual('20.05min')
+    expect(f.format(150)).toEqual('2:30')
+    expect(f.format(1203.123)).toEqual('20:03')
   })
 })
 
