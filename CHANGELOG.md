@@ -1,3 +1,7 @@
+## Unreleased
+
+* Change time formatting for minutes from 1.50min to 1:30 (#153)
+
 ## [1.0.1] - 2018-08-23
 
 * Fixed an issue where flamegraph bounds were not always being cleared correctly, leading to visual artifacts [#150]
