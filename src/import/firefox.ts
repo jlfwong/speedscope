@@ -180,7 +180,11 @@ export function importFromFirefox(firefoxProfile: FirefoxProfile): Profile {
 
         if (!match) return null
 
-        if (match[2].startsWith('resource:') || match[2] === 'self-hosted') {
+        if (
+          match[2].startsWith('resource:') ||
+          match[2] === 'self-hosted' ||
+          match[2].startsWith('self-hosted:')
+        ) {
           // Ignore Firefox-internals stuff
           return null
         }
