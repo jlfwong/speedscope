@@ -59,6 +59,70 @@ Object {
 }
 `;
 
+exports[`importFromFirefox ignore self-hosted 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": "http://localhost:8000/simple.js:1",
+      "key": "alpha (http://localhost:8000/simple.js:1:14)",
+      "line": 14,
+      "name": "alpha",
+      "selfWeight": 0,
+      "totalWeight": 26.983816999942064,
+    },
+    Frame {
+      "col": undefined,
+      "file": "http://localhost:8000/simple.js:14",
+      "key": "delta (http://localhost:8000/simple.js:14:14)",
+      "line": 14,
+      "name": "delta",
+      "selfWeight": 0,
+      "totalWeight": 11.946324001066387,
+    },
+    Frame {
+      "col": undefined,
+      "file": "http://localhost:8000/simple.js:20",
+      "key": "gamma (http://localhost:8000/simple.js:20:14)",
+      "line": 14,
+      "name": "gamma",
+      "selfWeight": 26.983816999942064,
+      "totalWeight": 26.983816999942064,
+    },
+    Frame {
+      "col": undefined,
+      "file": "http://localhost:8000/simple.js:8",
+      "key": "beta (http://localhost:8000/simple.js:8:13)",
+      "line": 13,
+      "name": "beta",
+      "selfWeight": 0,
+      "totalWeight": 15.037492998875678,
+    },
+  ],
+  "name": "simple-firefox.json",
+  "stacks": Array [
+    "alpha;delta;gamma 999.57µs",
+    "alpha;beta;gamma 2.01ms",
+    "alpha;delta;gamma 1.00ms",
+    "alpha;beta;gamma 995.68µs",
+    "alpha;delta;gamma 996.27µs",
+    "alpha;beta;gamma 4.01ms",
+    "alpha;delta;gamma 2.02ms",
+    "alpha;beta;gamma 959.44µs",
+    "alpha;delta;gamma 2.01ms",
+    "alpha;beta;gamma 4.01ms",
+    "alpha;delta;gamma 959.28µs",
+    "alpha;beta;gamma 2.03ms",
+    "alpha;delta;gamma 3.96ms",
+    "alpha;beta;gamma 1.02ms",
+  ],
+}
+`;
+
+exports[`importFromFirefox ignore self-hosted: indexToView 1`] = `0`;
+
+exports[`importFromFirefox ignore self-hosted: profileGroup.name 1`] = `"simple-firefox.json"`;
+
 exports[`importFromFirefox recursion 1`] = `
 Object {
   "frames": Array [
