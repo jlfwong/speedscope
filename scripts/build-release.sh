@@ -7,6 +7,9 @@ OUTDIR=`pwd`/dist/release
 # Typecheck
 node_modules/.bin/tsc --noEmit
 
+# Run unit tests
+npm run jest
+
 # Clean out the release directory
 rm -rf "$OUTDIR"
 mkdir -p "$OUTDIR"
