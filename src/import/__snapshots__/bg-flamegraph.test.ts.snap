@@ -50,11 +50,7 @@ Object {
 }
 `;
 
-exports[`importFromBGFlameGraph: indexToView 1`] = `0`;
-
-exports[`importFromBGFlameGraph: profileGroup.name 1`] = `"simple.txt"`;
-
-exports[`importFromBGFlameGraphWithCRLF 1`] = `
+exports[`importFromBGFlameGraph with CRLF 1`] = `
 Object {
   "frames": Array [
     Frame {
@@ -104,6 +100,10 @@ Object {
 }
 `;
 
-exports[`importFromBGFlameGraphWithCRLF: indexToView 1`] = `0`;
+exports[`importFromBGFlameGraph with CRLF: indexToView 1`] = `0`;
 
-exports[`importFromBGFlameGraphWithCRLF: profileGroup.name 1`] = `"simple-crlf.txt"`;
+exports[`importFromBGFlameGraph with CRLF: profileGroup.name 1`] = `"simple-crlf.txt"`;
+
+exports[`importFromBGFlameGraph: indexToView 1`] = `0`;
+
+exports[`importFromBGFlameGraph: profileGroup.name 1`] = `"simple.txt"`;

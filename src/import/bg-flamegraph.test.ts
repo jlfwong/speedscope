@@ -4,6 +4,6 @@ test('importFromBGFlameGraph', async () => {
   await checkProfileSnapshot('./sample/profiles/stackcollapse/simple.txt')
 })
 
-test('importFromBGFlameGraphWithCRLF', async () => {
+test('importFromBGFlameGraph with CRLF', async () => {
   await checkProfileSnapshot('./sample/profiles/stackcollapse/simple-crlf.txt')
 })
