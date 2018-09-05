@@ -103,7 +103,7 @@ async function _importProfileGroup(
     // If every line ends with a space followed by a number, it's probably
     // the collapsed stack format.
     const lineCount = contents.split(/\n/).length
-    if (lineCount >= 1 && lineCount === contents.split(/ \d+\n/).length) {
+    if (lineCount >= 1 && lineCount === contents.split(/ \d+\r?\n/).length) {
       console.log('Importing as collapsed stack format')
       return toGroup(importFromBGFlameGraph(contents))
     }
