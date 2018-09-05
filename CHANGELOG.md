@@ -1,6 +1,8 @@
 ## Unreleased
 
+### Fixed
 * Change time formatting for minutes from 1.50min to 1:30 (#153)
+* Fix import for Firefox 63 (#156)
 
 ## [1.0.1] - 2018-08-23
 
