@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Prepare a mock installation of speedscope to test it before the actual npm
-# publish
+# Create a zip file containing a standalone copy of speedscope
+# based on the contents of the package published to npm
 
 set -euxo pipefail
 

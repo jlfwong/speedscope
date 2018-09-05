@@ -1,26 +1,28 @@
 #!/bin/bash
 #
-# type check, do a release build, then do a shallow clone of the
-# repository into a temporary directory and copy the release build
-# artifacts into there to commit & push to the gh-pages branch
+# Do a shallow clone of the repository into a temporary directory and copy the
+# artifacts pulled from npm into the shallow clone to commit & push to the
+# gh-pages branch.
 
 set -euxo pipefail
 
-OUTDIR=`pwd`/dist/release
-echo $OUTDIR
+SRCDIR=`pwd`
+OUTDIR=`mktemp -d -t speedscope-unpacked`
 
-./scripts/build-release.sh
+# Untar the package
+pushd "$OUTDIR"
+PACKEDNAME=`npm pack speedscope | tail -n1`
+tar -xvvf "$PACKEDNAME"
 
 # Create a shallow clone of the repository
-TMPDIR=`mktemp -d -t speedscope-release`
-echo "Entering $TMPDIR"
+TMPDIR=`mktemp -d -t speedscope-deploy`
 pushd "$TMPDIR"
 git clone --depth 1 git@github.com:jlfwong/speedscope.git -b gh-pages
 
 # Copy the build artifacts into the shallow clone
 pushd speedscope
 rm -rf *
-cp -R "$OUTDIR"/* .
+cp -R "$OUTDIR"/package/dist/release/** .
 
 # Set the CNAME record
 echo www.speedscope.app > CNAME
@@ -35,17 +37,14 @@ function ctrl_c() {
   if [[ $REPLY =~ ^yes$ ]]
   then
     git add --all
-    git commit -m 'Release'
+    git commit -m "Deploy $PACKEDNAME"
     git push origin HEAD:gh-pages
-    popd
     rm -rf "$TMPDIR"
     exit 0
   else
     set +x
     echo "Aborting release."
     set -x
-
-    popd
     rm -rf "$TMPDIR"
     exit 1
   fi

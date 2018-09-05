@@ -59,13 +59,16 @@ Try `speedscope sample/profiles/stackcollapse/simple.txt`, which should immediat
 
 ## Deploying the website
 
+This step must follow the "Publish to npm" step, since it uses assets from
+the npm publish.
+
 https://www.speedscope.app/ is hosted on GitHub pages, and is published via pushing
 to the `gh-pages` branch. The `gh-pages` branch has totally different contents than
 other branches of this repository: https://github.com/jlfwong/speedscope/tree/gh-pages.
 
-It's populated by a deploy script which is invoked by running `npm run deploy` script.
-This will do a build of the static resources, and boot a local server for you to test
-the compiled assets. Please do not skip the manual testing in this step.
+It's populated by a deploy script which is invoked by running `npm run deploy` script. This populate a directory with assets pulled from npm, and
+boot a local server for you to test the compiled assets. Please do not skip
+the manual testing in this step.
 
 If everything looks good, you should be able to hit Ctrl+C, and you should see this prompt:
 
@@ -80,8 +83,10 @@ which includes the version, the date, and the commit of the deploy.
 
 ## Upload a release to GitHub
 
-To make a zipfile suitable for uploading to GitHub as a release, run `scripts/prepare-zip-file.sh`. Note that this step must follow the "Publish to npm" step,
-since it uses assets from the npm publish.
+This step must follow the "Publish to npm" step, since it uses assets from
+the npm publish.
+
+To make a zipfile suitable for uploading to GitHub as a release, run `scripts/prepare-zip-file.sh`.
 
 Once that's done, you should have a zip file in `dist/release/`
 
