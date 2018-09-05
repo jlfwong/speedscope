@@ -1,6 +1,9 @@
 ## Unreleased
 
+## [1.0.2] - 2018-09-04
+
 ### Fixed
+
 * Allow optional CR before LF when probing collapsed stacks files [#154]
 * Fix import for Firefox 63 [#156]
 * Change time formatting for minutes from 1.50min to 1:30 [#153]
