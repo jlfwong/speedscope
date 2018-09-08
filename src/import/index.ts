@@ -1,7 +1,7 @@
 import {Profile, ProfileGroup} from '../lib/profile'
 import {FileSystemDirectoryEntry} from './file-system-entry'
 
-import {importFromChromeCPUProfile, importFromChromeTimeline} from './chrome'
+import {importFromChromeCPUProfile, importFromChromeTimeline, isChromeTimeline} from './chrome'
 import {importFromStackprof} from './stackprof'
 import {importFromInstrumentsDeepCopy, importFromInstrumentsTrace} from './instruments'
 import {importFromBGFlameGraph} from './bg-flamegraph'
@@ -77,7 +77,7 @@ async function _importProfileGroup(
     } else if (parsed['systemHost'] && parsed['systemHost']['name'] == 'Firefox') {
       console.log('Importing as Firefox profile')
       return toGroup(importFromFirefox(parsed))
-    } else if (Array.isArray(parsed) && parsed[parsed.length - 1].name === 'CpuProfile') {
+    } else if (isChromeTimeline(parsed)) {
       console.log('Importing as Chrome CPU Profile')
       return toGroup(importFromChromeTimeline(parsed))
     } else if ('nodes' in parsed && 'samples' in parsed && 'timeDeltas' in parsed) {

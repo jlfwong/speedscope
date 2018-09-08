@@ -1,5 +1,5 @@
 import {Profile, FrameInfo, CallTreeProfileBuilder} from '../lib/profile'
-import {getOrInsert, lastOf} from '../lib/utils'
+import {getOrInsert, lastOf, sortBy} from '../lib/utils'
 import {TimeFormatter} from '../lib/value-formatters'
 
 interface TimelineEvent {
@@ -45,16 +45,73 @@ interface CPUProfile {
   timeDeltas: number[]
 }
 
+export function isChromeTimeline(rawProfile: any): boolean {
+  if (!Array.isArray(rawProfile)) return false
+  if (rawProfile.length < 1) return false
+  const first = rawProfile[0]
+  if (!('pid' in first && 'tid' in first && 'ph' in first && 'cat' in first)) return false
+  if (!rawProfile.find(e => e.name === 'CpuProfile' || e.name === 'ProfileChunk')) return false
+  return true
+}
+
 export function importFromChromeTimeline(events: TimelineEvent[]): Profile {
   // It seems like sometimes Chrome timeline files contain multiple CpuProfiles?
   // For now, choose the first one in the list.
+
+  let cpuProfile: CPUProfile | null = null
+
+  // The events aren't necessarily recorded in chronological order. Sort them so
+  // that they are.
+  sortBy(events, e => e.ts)
+
   for (let event of events) {
     if (event.name == 'CpuProfile') {
-      const chromeProfile = event.args.data.cpuProfile as CPUProfile
-      return importFromChromeCPUProfile(chromeProfile)
+      cpuProfile = event.args.data.cpuProfile as CPUProfile
+      break
+    }
+
+    if (event.name == 'Profile') {
+      cpuProfile = {
+        startTime: 0,
+        endTime: 0,
+        nodes: [],
+        samples: [],
+        timeDeltas: [],
+        ...event.args.data,
+      }
+    }
+
+    if (event.name == 'ProfileChunk') {
+      if (cpuProfile) {
+        const chunk = event.args.data
+        if (chunk.cpuProfile) {
+          if (chunk.cpuProfile.nodes) {
+            cpuProfile.nodes = cpuProfile.nodes.concat(chunk.cpuProfile.nodes)
+          }
+          if (chunk.cpuProfile.samples) {
+            cpuProfile.samples = cpuProfile.samples.concat(chunk.cpuProfile.samples)
+          }
+        }
+        if (chunk.timeDeltas) {
+          cpuProfile.timeDeltas = cpuProfile.timeDeltas.concat(chunk.timeDeltas)
+        }
+        if (chunk.startTime != null) {
+          cpuProfile.startTime = chunk.startTime
+        }
+        if (chunk.endTime != null) {
+          cpuProfile.endTime = chunk.endTime
+        }
+      } else {
+        console.log('Ignoring ProfileChunk when no Profile is active')
+      }
     }
   }
-  throw new Error('Could not find CPU profile in Timeline')
+
+  if (cpuProfile) {
+    return importFromChromeCPUProfile(cpuProfile as CPUProfile)
+  } else {
+    throw new Error('Could not find CPU profile in Timeline')
+  }
 }
 
 const callFrameToFrameInfo = new Map<CPUProfileCallFrame, FrameInfo>()
@@ -90,6 +147,10 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile): Profile {
     nodeById.set(node.id, node)
   }
   for (let node of chromeProfile.nodes) {
+    if (typeof node.parent === 'number') {
+      node.parent = nodeById.get(node.parent)
+    }
+
     if (!node.children) continue
     for (let childId of node.children) {
       const child = nodeById.get(childId)
