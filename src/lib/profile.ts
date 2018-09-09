@@ -522,6 +522,10 @@ export class CallTreeProfileBuilder extends Profile {
   private stack: Frame[] = []
 
   private lastValue: number | null = null
+  public setLastValue(lastValue: number) {
+    this.lastValue = lastValue
+  }
+
   private addWeightsToFrames(value: number) {
     if (this.lastValue == null) this.lastValue = value
     const delta = value - this.lastValue!
