@@ -521,14 +521,9 @@ export class CallTreeProfileBuilder extends Profile {
   private framesInStack = new Map<Frame, number>()
   private stack: Frame[] = []
 
-  private lastValue: number | null = null
-  public setLastValue(lastValue: number) {
-    this.lastValue = lastValue
-  }
-
+  private lastValue: number = 0
   private addWeightsToFrames(value: number) {
-    if (this.lastValue == null) this.lastValue = value
-    const delta = value - this.lastValue!
+    const delta = value - this.lastValue
     for (let frame of this.framesInStack.keys()) {
       frame.addToTotalWeight(delta)
     }
@@ -538,7 +533,7 @@ export class CallTreeProfileBuilder extends Profile {
     }
   }
   private addWeightsToNodes(value: number, stack: CallTreeNode[]) {
-    const delta = value - this.lastValue!
+    const delta = value - this.lastValue
     for (let node of stack) {
       node.addToTotalWeight(delta)
     }
@@ -556,14 +551,15 @@ export class CallTreeProfileBuilder extends Profile {
 
     if (prevTop) {
       if (useAppendOrder) {
-        const delta = value - this.lastValue!
+        const delta = value - this.lastValue
         if (delta > 0) {
           this.samples.push(prevTop)
-          this.weights.push(value - this.lastValue!)
+          this.weights.push(value - this.lastValue)
         } else if (delta < 0) {
           throw new Error(
-            `Samples must be provided in increasing order of cumulative value. Last sample was ${this
-              .lastValue!}, this sample was ${value}`,
+            `Samples must be provided in increasing order of cumulative value. Last sample was ${
+              this.lastValue
+            }, this sample was ${value}`,
           )
         }
       }

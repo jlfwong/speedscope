@@ -205,8 +205,6 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile): Profile {
 
   let prevStack: CPUProfileNode[] = []
 
-  profile.setLastValue(0)
-
   for (let i = 0; i < samples.length; i++) {
     const value = sampleTimes[i]
     const nodeId = samples[i]
