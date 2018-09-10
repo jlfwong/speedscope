@@ -4,6 +4,8 @@
 
 ### Fixed
 
+* Fix import for Chrome 69, support leading idle time before first call [#160]
+
 ## [1.0.2] - 2018-09-04
 
 ### Fixed
