@@ -25,8 +25,4 @@ function gamma() {
   return prod
 }
 
-console.profile('simple')
 alpha()
-setTimeout(() => {
-  console.profileEnd('simple')
-}, 0)

@@ -42,6 +42,7 @@ Object {
   ],
   "name": "simple-firefox.json",
   "stacks": Array [
+    " 2.04ms",
     "a;b;d 989.53µs",
     "a;c;d 1.02ms",
     "a;b;d 982.04µs",
@@ -101,6 +102,7 @@ Object {
   ],
   "name": "simple-firefox.json",
   "stacks": Array [
+    " 4.61ms",
     "alpha;delta;gamma 999.57µs",
     "alpha;beta;gamma 2.01ms",
     "alpha;delta;gamma 1.00ms",
@@ -174,6 +176,7 @@ Object {
   ],
   "name": "recursion.json",
   "stacks": Array [
+    " 1.71ms",
     "main;alpha;beta;alpha;beta;alpha;beta;alpha;delta;gamma 998.89µs",
     "main 1.19ms",
     "main;alpha;beta;alpha;delta;gamma 1.83ms",
