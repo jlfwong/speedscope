@@ -74,7 +74,6 @@ export function importFromChromeTimeline(events: TimelineEvent[]): Profile {
   for (let event of events) {
     if (event.name == 'CpuProfile') {
       cpuProfile = event.args.data.cpuProfile as CPUProfile
-      break
     }
 
     if (event.name == 'Profile') {
