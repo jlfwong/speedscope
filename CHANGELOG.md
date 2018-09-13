@@ -1,5 +1,11 @@
 ## Unreleased
 
+## [1.0.4] - 2018-09-12
+
+### Fixed
+
+* Fix import from Chrome < 69 when there are multiple profiles [#161]
+
 ## [1.0.3] - 2018-09-10
 
 ### Fixed
