@@ -8,17 +8,10 @@ import {
   StackListProfileBuilder,
   ProfileGroup,
 } from '../lib/profile'
-import {
-  sortBy,
-  getOrThrow,
-  getOrInsert,
-  lastOf,
-  getOrElse,
-  zeroPad,
-  MaybeCompressedFileReader,
-} from '../lib/utils'
+import {sortBy, getOrThrow, getOrInsert, lastOf, getOrElse, zeroPad} from '../lib/utils'
 import {ByteFormatter, TimeFormatter} from '../lib/value-formatters'
 import {FileSystemDirectoryEntry, FileSystemEntry, FileSystemFileEntry} from './file-system-entry'
+import {MaybeCompressedFileReader} from './utils'
 
 function parseTSV<T>(contents: string): T[] {
   const lines = contents.split('\n').map(l => l.split('\t'))
