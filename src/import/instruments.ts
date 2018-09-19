@@ -8,8 +8,15 @@ import {
   StackListProfileBuilder,
   ProfileGroup,
 } from '../lib/profile'
-import {sortBy, getOrThrow, getOrInsert, lastOf, getOrElse, zeroPad} from '../lib/utils'
-import * as pako from 'pako'
+import {
+  sortBy,
+  getOrThrow,
+  getOrInsert,
+  lastOf,
+  getOrElse,
+  zeroPad,
+  MaybeCompressedFileReader,
+} from '../lib/utils'
 import {ByteFormatter, TimeFormatter} from '../lib/value-formatters'
 import {FileSystemDirectoryEntry, FileSystemEntry, FileSystemFileEntry} from './file-system-entry'
 
@@ -181,50 +188,6 @@ async function extractDirectoryTree(entry: FileSystemDirectoryEntry): Promise<Tr
   }
 
   return node
-}
-
-class MaybeCompressedFileReader {
-  private fileData: Promise<ArrayBuffer>
-
-  constructor(file: File) {
-    this.fileData = new Promise(resolve => {
-      const reader = new FileReader()
-      reader.addEventListener('loadend', () => {
-        if (!(reader.result instanceof ArrayBuffer)) {
-          throw new Error('Expected reader.result to be an instance of ArrayBuffer')
-        }
-        resolve(reader.result)
-      })
-      reader.readAsArrayBuffer(file)
-    })
-  }
-
-  private async getUncompressed(): Promise<ArrayBuffer> {
-    const fileData = await this.fileData
-    try {
-      const result = pako.inflate(new Uint8Array(fileData)).buffer
-      return result
-    } catch (e) {
-      return fileData
-    }
-  }
-
-  async readAsArrayBuffer(): Promise<ArrayBuffer> {
-    return await this.getUncompressed()
-  }
-
-  async readAsText(): Promise<string> {
-    const buffer = await this.getUncompressed()
-    let ret: string = ''
-
-    // JavaScript strings are UTF-16 encoded, but this data is coming
-    // from a UTF-8 encoded file.
-    const array = new Uint8Array(buffer)
-    for (let i = 0; i < array.length; i++) {
-      ret += String.fromCharCode(array[i])
-    }
-    return ret
-  }
 }
 
 function readAsArrayBuffer(file: File): Promise<ArrayBuffer> {
