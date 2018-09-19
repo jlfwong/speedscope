@@ -9,12 +9,14 @@ import {importFromFirefox} from './firefox'
 import {importSpeedscopeProfiles} from '../lib/file-format'
 import {importFromV8ProfLog} from './v8proflog'
 import {importFromLinuxPerf} from './linux-tools-perf'
+import {ProfileDataSource} from './utils'
 
 export async function importProfileGroup(
-  fileName: string,
-  contents: string,
+  dataSource: ProfileDataSource,
 ): Promise<ProfileGroup | null> {
-  const profileGroup = await _importProfileGroup(fileName, contents)
+  const fileName = await dataSource.name()
+
+  const profileGroup = await _importProfileGroup(dataSource)
   if (profileGroup) {
     if (!profileGroup.name) {
       profileGroup.name = fileName
@@ -34,10 +36,11 @@ function toGroup(profile: Profile | null): ProfileGroup | null {
   return {name: profile.getName(), indexToView: 0, profiles: [profile]}
 }
 
-async function _importProfileGroup(
-  fileName: string,
-  contents: string,
-): Promise<ProfileGroup | null> {
+async function _importProfileGroup(dataSource: ProfileDataSource): Promise<ProfileGroup | null> {
+  const fileName = await dataSource.name()
+
+  const contents = await dataSource.readAsText()
+
   // First pass: Check known file format names to infer the file type
   if (fileName.endsWith('.speedscope.json')) {
     console.log('Importing as speedscope json file')

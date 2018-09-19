@@ -14,12 +14,13 @@ import {SandwichViewState} from '../store/sandwich-view-state'
 import {FlamechartViewState} from '../store/flamechart-view-state'
 import {CanvasContext} from '../gl/canvas-context'
 import {Graphics} from '../gl/graphics'
+import {TextProfileDataSource} from '../import/utils'
 
 const importModule = import('../import')
 // Force eager loading of the module
 importModule.then(() => {})
 async function importProfiles(fileName: string, contents: string): Promise<ProfileGroup | null> {
-  return (await importModule).importProfileGroup(fileName, contents)
+  return (await importModule).importProfileGroup(new TextProfileDataSource(fileName, contents))
 }
 async function importFromFileSystemDirectoryEntry(entry: FileSystemDirectoryEntry) {
   return (await importModule).importFromFileSystemDirectoryEntry(entry)

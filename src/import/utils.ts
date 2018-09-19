@@ -6,6 +6,21 @@ export interface ProfileDataSource {
   readAsText(): Promise<string>
 }
 
+export class TextProfileDataSource implements ProfileDataSource {
+  constructor(private fileName: string, private contents: string) {}
+  async name() {
+    return this.fileName
+  }
+  async readAsArrayBuffer() {
+    // TODO(jlfwong): Might want to make this construct an array
+    // buffer based on the text
+    return new ArrayBuffer(0)
+  }
+  async readAsText() {
+    return this.contents
+  }
+}
+
 export class MaybeCompressedDataReader implements ProfileDataSource {
   private uncompressedData: Promise<ArrayBuffer>
 
