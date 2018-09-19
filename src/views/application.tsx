@@ -14,13 +14,15 @@ import {SandwichViewState} from '../store/sandwich-view-state'
 import {FlamechartViewState} from '../store/flamechart-view-state'
 import {CanvasContext} from '../gl/canvas-context'
 import {Graphics} from '../gl/graphics'
-import {TextProfileDataSource} from '../import/utils'
 
 const importModule = import('../import')
 // Force eager loading of the module
 importModule.then(() => {})
 async function importProfiles(fileName: string, contents: string): Promise<ProfileGroup | null> {
-  return (await importModule).importProfileGroup(new TextProfileDataSource(fileName, contents))
+  return (await importModule).importProfileGroupFromText(fileName, contents)
+}
+async function importProfilesFromFile(file: File): Promise<ProfileGroup | null> {
+  return (await importModule).importProfilesFromFile(file)
 }
 async function importFromFileSystemDirectoryEntry(entry: FileSystemDirectoryEntry) {
   return (await importModule).importFromFileSystemDirectoryEntry(entry)
@@ -321,16 +323,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
 
   loadFromFile(file: File) {
     this.loadProfile(async () => {
-      const reader = new FileReader()
-      const loadPromise = new Promise(resolve => reader.addEventListener('loadend', resolve))
-      reader.readAsText(file)
-      await loadPromise
-
-      if (typeof reader.result !== 'string') {
-        throw new Error('Expected ArrayBuffer')
-      }
-
-      const profiles = await importProfiles(file.name, reader.result)
+      const profiles = await importProfilesFromFile(file)
       if (profiles) {
         for (let profile of profiles.profiles) {
           if (!profile.getName()) {
@@ -345,7 +338,19 @@ export class Application extends StatelessComponent<ApplicationProps> {
         // a symbol map. If that's the case, we want to parse it, and apply the symbol
         // mapping to the already loaded profile. This can be use to take an opaque
         // profile and make it readable.
-        const map = importEmscriptenSymbolMap(reader.result)
+        const reader = new FileReader()
+        const fileContentsPromise = new Promise<string>(resolve => {
+          reader.addEventListener('loadend', () => {
+            if (typeof reader.result !== 'string') {
+              throw new Error('Expected reader.result to be an instance of ArrayBuffer')
+            }
+            resolve(reader.result)
+          })
+        })
+        reader.readAsText(file)
+        const fileContents = await fileContentsPromise
+
+        const map = importEmscriptenSymbolMap(fileContents)
         if (map) {
           const {profile, index} = this.props.activeProfileState
           console.log('Importing as emscripten symbol map')

@@ -1,9 +1,8 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import {Profile, CallTreeNode, Frame} from './profile'
-import {importProfileGroup} from '../import'
 import {exportProfileGroup, importSpeedscopeProfiles} from './file-format'
-import {TextProfileDataSource} from '../import/utils'
+import {importProfileGroupFromText} from '../import'
 
 interface DumpedProfile {
   name: string
@@ -50,9 +49,7 @@ export function dumpProfile(profile: Profile): any {
 export async function checkProfileSnapshot(filepath: string) {
   const input = fs.readFileSync(filepath, 'utf8')
 
-  const profileGroup = await importProfileGroup(
-    new TextProfileDataSource(path.basename(filepath), input),
-  )
+  const profileGroup = await importProfileGroupFromText(path.basename(filepath), input)
   if (profileGroup) {
     expect(profileGroup.name).toMatchSnapshot('profileGroup.name')
     expect(profileGroup.indexToView).toMatchSnapshot('indexToView')
@@ -65,9 +62,7 @@ export async function checkProfileSnapshot(filepath: string) {
     return
   }
 
-  const profilesWithoutFilename = await importProfileGroup(
-    new TextProfileDataSource('unknown', input),
-  )
+  const profilesWithoutFilename = await importProfileGroupFromText('unknown', input)
   if (profilesWithoutFilename) {
     expect(profilesWithoutFilename.profiles.length).toEqual(profileGroup.profiles.length)
     profilesWithoutFilename.name = profileGroup.name
