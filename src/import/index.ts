@@ -10,6 +10,7 @@ import {importSpeedscopeProfiles} from '../lib/file-format'
 import {importFromV8ProfLog} from './v8proflog'
 import {importFromLinuxPerf} from './linux-tools-perf'
 import {ProfileDataSource, TextProfileDataSource, MaybeCompressedDataReader} from './utils'
+import {importAsPprofProfile} from './pprof'
 
 export async function importProfileGroupFromText(
   fileName: string,
@@ -47,6 +48,10 @@ function toGroup(profile: Profile | null): ProfileGroup | null {
 
 async function _importProfileGroup(dataSource: ProfileDataSource): Promise<ProfileGroup | null> {
   const fileName = await dataSource.name()
+
+  const buffer = await dataSource.readAsArrayBuffer()
+
+  importAsPprofProfile(buffer)
 
   const contents = await dataSource.readAsText()
 
