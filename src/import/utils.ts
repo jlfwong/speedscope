@@ -1,6 +1,7 @@
 import * as pako from 'pako'
 
 export interface ProfileDataSource {
+  name(): Promise<string>
   readAsArrayBuffer(): Promise<ArrayBuffer>
   readAsText(): Promise<string>
 }
@@ -8,7 +9,10 @@ export interface ProfileDataSource {
 export class MaybeCompressedDataReader implements ProfileDataSource {
   private uncompressedData: Promise<ArrayBuffer>
 
-  constructor(maybeCompressedDataPromise: Promise<ArrayBuffer>) {
+  constructor(
+    private namePromise: Promise<string>,
+    maybeCompressedDataPromise: Promise<ArrayBuffer>,
+  ) {
     this.uncompressedData = maybeCompressedDataPromise.then(async (fileData: ArrayBuffer) => {
       try {
         const result = pako.inflate(new Uint8Array(fileData)).buffer
@@ -17,6 +21,10 @@ export class MaybeCompressedDataReader implements ProfileDataSource {
         return fileData
       }
     })
+  }
+
+  async name(): Promise<string> {
+    return await this.namePromise
   }
 
   async readAsArrayBuffer(): Promise<ArrayBuffer> {
@@ -35,12 +43,8 @@ export class MaybeCompressedDataReader implements ProfileDataSource {
     }
     return ret
   }
-}
 
-export class MaybeCompressedFileReader implements ProfileDataSource {
-  private reader: MaybeCompressedDataReader
-
-  constructor(file: File) {
+  static fromFile(file: File): MaybeCompressedDataReader {
     const maybeCompressedDataPromise: Promise<ArrayBuffer> = new Promise(resolve => {
       const reader = new FileReader()
       reader.addEventListener('loadend', () => {
@@ -52,14 +56,6 @@ export class MaybeCompressedFileReader implements ProfileDataSource {
       reader.readAsArrayBuffer(file)
     })
 
-    this.reader = new MaybeCompressedDataReader(maybeCompressedDataPromise)
-  }
-
-  readAsArrayBuffer(): Promise<ArrayBuffer> {
-    return this.reader.readAsArrayBuffer()
-  }
-
-  readAsText(): Promise<string> {
-    return this.reader.readAsText()
+    return new MaybeCompressedDataReader(Promise.resolve(file.name), maybeCompressedDataPromise)
   }
 }

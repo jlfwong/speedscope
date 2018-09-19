@@ -11,7 +11,7 @@ import {
 import {sortBy, getOrThrow, getOrInsert, lastOf, getOrElse, zeroPad} from '../lib/utils'
 import {ByteFormatter, TimeFormatter} from '../lib/value-formatters'
 import {FileSystemDirectoryEntry, FileSystemEntry, FileSystemFileEntry} from './file-system-entry'
-import {MaybeCompressedFileReader} from './utils'
+import {MaybeCompressedDataReader} from './utils'
 
 function parseTSV<T>(contents: string): T[] {
   const lines = contents.split('\n').map(l => l.split('\t'))
@@ -184,11 +184,11 @@ async function extractDirectoryTree(entry: FileSystemDirectoryEntry): Promise<Tr
 }
 
 function readAsArrayBuffer(file: File): Promise<ArrayBuffer> {
-  return new MaybeCompressedFileReader(file).readAsArrayBuffer()
+  return MaybeCompressedDataReader.fromFile(file).readAsArrayBuffer()
 }
 
 function readAsText(file: File): Promise<string> {
-  return new MaybeCompressedFileReader(file).readAsText()
+  return MaybeCompressedDataReader.fromFile(file).readAsText()
 }
 
 function getCoreDirForRun(tree: TraceDirectoryTree, selectedRun: number): TraceDirectoryTree {
