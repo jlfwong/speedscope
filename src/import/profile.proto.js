@@ -1,3 +1,10 @@
+// THIS FILE WAS AUTOMATICALLY GENERATED. DO NOT MODIFY THIS FILE MANUALLY.
+//
+// To regenerate this file, run the following in the repository root:
+//
+//    node node_modules/protobufjs/cli/bin/pbjs -t static-module -w commonjs -o src/import/profile.proto.js src/import/profile.proto
+//
+// Then prepend this comment to the result.
 /*eslint-disable block-scoped-var, id-length, no-control-regex, no-magic-numbers, no-prototype-builtins, no-redeclare, no-shadow, no-var, sort-vars*/
 'use strict'
 
