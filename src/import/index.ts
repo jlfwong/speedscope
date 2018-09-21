@@ -51,7 +51,13 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
 
   const buffer = await dataSource.readAsArrayBuffer()
 
-  importAsPprofProfile(buffer)
+  {
+    const profile = importAsPprofProfile(buffer)
+    if (profile) {
+      console.log('Importing as protobuf encoded pprof file')
+      return toGroup(profile)
+    }
+  }
 
   const contents = await dataSource.readAsText()
 
