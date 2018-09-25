@@ -73,4 +73,8 @@ export class MaybeCompressedDataReader implements ProfileDataSource {
 
     return new MaybeCompressedDataReader(Promise.resolve(file.name), maybeCompressedDataPromise)
   }
+
+  static fromArrayBuffer(name: string, buffer: ArrayBuffer): MaybeCompressedDataReader {
+    return new MaybeCompressedDataReader(Promise.resolve(name), Promise.resolve(buffer))
+  }
 }

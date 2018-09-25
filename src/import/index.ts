@@ -23,6 +23,13 @@ export async function importProfilesFromFile(file: File): Promise<ProfileGroup |
   return importProfileGroup(MaybeCompressedDataReader.fromFile(file))
 }
 
+export async function importProfilesFromArrayBuffer(
+  fileName: string,
+  buffer: ArrayBuffer,
+): Promise<ProfileGroup | null> {
+  return importProfileGroup(MaybeCompressedDataReader.fromArrayBuffer(fileName, buffer))
+}
+
 async function importProfileGroup(dataSource: ProfileDataSource): Promise<ProfileGroup | null> {
   const fileName = await dataSource.name()
 
