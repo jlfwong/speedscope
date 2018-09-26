@@ -520,8 +520,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
       // as a JavaScript file which will invoke a global function.
       ;(window as any)['speedscope'] = {
         loadFileFromBase64: (filename: string, base64source: string) => {
-          const source = atob(base64source)
-          this.loadProfile(() => importProfilesFromBase64(filename, source))
+          this.loadProfile(() => importProfilesFromBase64(filename, base64source))
         },
       }
 
