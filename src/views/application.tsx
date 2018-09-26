@@ -18,7 +18,10 @@ import {Graphics} from '../gl/graphics'
 const importModule = import('../import')
 // Force eager loading of the module
 importModule.then(() => {})
-async function importProfiles(fileName: string, contents: string): Promise<ProfileGroup | null> {
+async function importProfilesFromText(
+  fileName: string,
+  contents: string,
+): Promise<ProfileGroup | null> {
   return (await importModule).importProfileGroupFromText(fileName, contents)
 }
 async function importProfilesFromFile(file: File): Promise<ProfileGroup | null> {
@@ -371,7 +374,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
     this.loadProfile(async () => {
       const filename = 'perf-vertx-stacks-01-collapsed-all.txt'
       const data = await fetch(exampleProfileURL).then(resp => resp.text())
-      return await importProfiles(filename, data)
+      return await importProfilesFromText(filename, data)
     })
   }
 
@@ -469,7 +472,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
 
     const pasted = (ev as ClipboardEvent).clipboardData.getData('text')
     this.loadProfile(async () => {
-      return await importProfiles('From Clipboard', pasted)
+      return await importProfilesFromText('From Clipboard', pasted)
     })
   }
 
@@ -500,7 +503,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
         if (filename.includes('/')) {
           filename = filename.slice(filename.lastIndexOf('/') + 1)
         }
-        return await importProfiles(filename, await response.text())
+        return await importProfilesFromText(filename, await response.text())
       })
     } else if (this.props.hashParams.localProfilePath) {
       // There isn't good cross-browser support for XHR of local files, even from
@@ -509,7 +512,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
       ;(window as any)['speedscope'] = {
         loadFileFromBase64: (filename: string, base64source: string) => {
           const source = atob(base64source)
-          this.loadProfile(() => importProfiles(filename, source))
+          this.loadProfile(() => importProfilesFromText(filename, source))
         },
       }
 
