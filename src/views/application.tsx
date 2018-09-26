@@ -354,7 +354,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
         const fileContentsPromise = new Promise<string>(resolve => {
           reader.addEventListener('loadend', () => {
             if (typeof reader.result !== 'string') {
-              throw new Error('Expected reader.result to be an instance of ArrayBuffer')
+              throw new Error('Expected reader.result to be a string')
             }
             resolve(reader.result)
           })
