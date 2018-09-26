@@ -9,7 +9,12 @@ import {importFromFirefox} from './firefox'
 import {importSpeedscopeProfiles} from '../lib/file-format'
 import {importFromV8ProfLog} from './v8proflog'
 import {importFromLinuxPerf} from './linux-tools-perf'
-import {ProfileDataSource, TextProfileDataSource, MaybeCompressedDataReader} from './utils'
+import {
+  ProfileDataSource,
+  TextProfileDataSource,
+  MaybeCompressedDataReader,
+  Base64ProfileDataSource,
+} from './utils'
 import {importAsPprofProfile} from './pprof'
 
 export async function importProfileGroupFromText(
@@ -17,6 +22,13 @@ export async function importProfileGroupFromText(
   contents: string,
 ): Promise<ProfileGroup | null> {
   return await importProfileGroup(new TextProfileDataSource(fileName, contents))
+}
+
+export async function importProfileGroupFromBase64(
+  fileName: string,
+  b64contents: string,
+): Promise<ProfileGroup | null> {
+  return await importProfileGroup(new Base64ProfileDataSource(fileName, b64contents))
 }
 
 export async function importProfilesFromFile(file: File): Promise<ProfileGroup | null> {

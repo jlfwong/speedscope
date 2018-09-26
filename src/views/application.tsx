@@ -18,12 +18,21 @@ import {Graphics} from '../gl/graphics'
 const importModule = import('../import')
 // Force eager loading of the module
 importModule.then(() => {})
+
 async function importProfilesFromText(
   fileName: string,
   contents: string,
 ): Promise<ProfileGroup | null> {
   return (await importModule).importProfileGroupFromText(fileName, contents)
 }
+
+async function importProfilesFromBase64(
+  fileName: string,
+  contents: string,
+): Promise<ProfileGroup | null> {
+  return (await importModule).importProfileGroupFromBase64(fileName, contents)
+}
+
 async function importProfilesFromFile(file: File): Promise<ProfileGroup | null> {
   return (await importModule).importProfilesFromFile(file)
 }
@@ -512,7 +521,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
       ;(window as any)['speedscope'] = {
         loadFileFromBase64: (filename: string, base64source: string) => {
           const source = atob(base64source)
-          this.loadProfile(() => importProfilesFromText(filename, source))
+          this.loadProfile(() => importProfilesFromBase64(filename, source))
         },
       }
 
