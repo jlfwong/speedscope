@@ -1,33 +1,9 @@
 import * as pako from 'pako'
-import {decodeBase64} from '../lib/utils'
 
 export interface ProfileDataSource {
   name(): Promise<string>
   readAsArrayBuffer(): Promise<ArrayBuffer>
   readAsText(): Promise<string>
-}
-
-export class Base64ProfileDataSource implements ProfileDataSource {
-  private bytes: Uint8Array
-
-  constructor(private fileName: string, b64contents: string) {
-    this.bytes = decodeBase64(b64contents)
-  }
-  async name() {
-    return this.fileName
-  }
-  async readAsArrayBuffer() {
-    return this.bytes.buffer
-  }
-  async readAsText() {
-    // JavaScript strings are UTF-16 encoded, but we're reading data
-    // from disk that we're going to asusme is UTF-8 encoded.
-    let ret: string = ''
-    for (let i = 0; i < this.bytes.length; i++) {
-      ret += String.fromCharCode(this.bytes[i])
-    }
-    return ret
-  }
 }
 
 export class TextProfileDataSource implements ProfileDataSource {
