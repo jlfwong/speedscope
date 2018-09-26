@@ -1,5 +1,11 @@
 ## Unreleased
 
+## [1.1.0] - 2018-09-26
+
+### Added
+
+* Add go tool pprof import support [#165]
+
 ## [1.0.4] - 2018-09-12
 
 ### Fixed
