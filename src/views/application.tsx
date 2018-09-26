@@ -18,8 +18,23 @@ import {Graphics} from '../gl/graphics'
 const importModule = import('../import')
 // Force eager loading of the module
 importModule.then(() => {})
-async function importProfiles(fileName: string, contents: string): Promise<ProfileGroup | null> {
-  return (await importModule).importProfileGroup(fileName, contents)
+
+async function importProfilesFromText(
+  fileName: string,
+  contents: string,
+): Promise<ProfileGroup | null> {
+  return (await importModule).importProfileGroupFromText(fileName, contents)
+}
+
+async function importProfilesFromBase64(
+  fileName: string,
+  contents: string,
+): Promise<ProfileGroup | null> {
+  return (await importModule).importProfileGroupFromBase64(fileName, contents)
+}
+
+async function importProfilesFromFile(file: File): Promise<ProfileGroup | null> {
+  return (await importModule).importProfilesFromFile(file)
 }
 async function importFromFileSystemDirectoryEntry(entry: FileSystemDirectoryEntry) {
   return (await importModule).importFromFileSystemDirectoryEntry(entry)
@@ -320,16 +335,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
 
   loadFromFile(file: File) {
     this.loadProfile(async () => {
-      const reader = new FileReader()
-      const loadPromise = new Promise(resolve => reader.addEventListener('loadend', resolve))
-      reader.readAsText(file)
-      await loadPromise
-
-      if (typeof reader.result !== 'string') {
-        throw new Error('Expected ArrayBuffer')
-      }
-
-      const profiles = await importProfiles(file.name, reader.result)
+      const profiles = await importProfilesFromFile(file)
       if (profiles) {
         for (let profile of profiles.profiles) {
           if (!profile.getName()) {
@@ -344,7 +350,19 @@ export class Application extends StatelessComponent<ApplicationProps> {
         // a symbol map. If that's the case, we want to parse it, and apply the symbol
         // mapping to the already loaded profile. This can be use to take an opaque
         // profile and make it readable.
-        const map = importEmscriptenSymbolMap(reader.result)
+        const reader = new FileReader()
+        const fileContentsPromise = new Promise<string>(resolve => {
+          reader.addEventListener('loadend', () => {
+            if (typeof reader.result !== 'string') {
+              throw new Error('Expected reader.result to be a string')
+            }
+            resolve(reader.result)
+          })
+        })
+        reader.readAsText(file)
+        const fileContents = await fileContentsPromise
+
+        const map = importEmscriptenSymbolMap(fileContents)
         if (map) {
           const {profile, index} = this.props.activeProfileState
           console.log('Importing as emscripten symbol map')
@@ -365,7 +383,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
     this.loadProfile(async () => {
       const filename = 'perf-vertx-stacks-01-collapsed-all.txt'
       const data = await fetch(exampleProfileURL).then(resp => resp.text())
-      return await importProfiles(filename, data)
+      return await importProfilesFromText(filename, data)
     })
   }
 
@@ -463,7 +481,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
 
     const pasted = (ev as ClipboardEvent).clipboardData.getData('text')
     this.loadProfile(async () => {
-      return await importProfiles('From Clipboard', pasted)
+      return await importProfilesFromText('From Clipboard', pasted)
     })
   }
 
@@ -489,12 +507,12 @@ export class Application extends StatelessComponent<ApplicationProps> {
         return
       }
       this.loadProfile(async () => {
-        const response = await fetch(this.props.hashParams.profileURL!)
+        const response: Response = await fetch(this.props.hashParams.profileURL!)
         let filename = new URL(this.props.hashParams.profileURL!).pathname
         if (filename.includes('/')) {
           filename = filename.slice(filename.lastIndexOf('/') + 1)
         }
-        return await importProfiles(filename, await response.text())
+        return await importProfilesFromText(filename, await response.text())
       })
     } else if (this.props.hashParams.localProfilePath) {
       // There isn't good cross-browser support for XHR of local files, even from
@@ -502,8 +520,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
       // as a JavaScript file which will invoke a global function.
       ;(window as any)['speedscope'] = {
         loadFileFromBase64: (filename: string, base64source: string) => {
-          const source = atob(base64source)
-          this.loadProfile(() => importProfiles(filename, source))
+          this.loadProfile(() => importProfilesFromBase64(filename, base64source))
         },
       }
 

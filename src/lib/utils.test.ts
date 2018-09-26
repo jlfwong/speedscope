@@ -13,7 +13,10 @@ import {
   memoizeByReference,
   memoizeByShallowEquality,
   objectsHaveShallowEquality,
+  decodeBase64,
 } from './utils'
+
+import * as jsc from 'jsverify'
 
 test('sortBy', () => {
   const ls = ['a3', 'b2', 'c1', 'd4']
@@ -172,4 +175,20 @@ test('objectsHaveShallowEquality', () => {
 
   expect(objectsHaveShallowEquality([1], [1, 2])).toBe(false)
   expect(objectsHaveShallowEquality([1, 2], [1])).toBe(false)
+})
+
+test('decodeBase64', () => {
+  jsc.assertForall(jsc.array(jsc.uint8), byteArray => {
+    let binaryString = ''
+    for (let byte of byteArray) {
+      binaryString += String.fromCharCode(byte)
+    }
+    const b64string = btoa(binaryString)
+    const decoded = decodeBase64(b64string)
+
+    expect(Uint8Array.from(byteArray)).toEqual(decoded)
+
+    // If the above expect(...) assertion fails, we won't reach here.
+    return true
+  })
 })

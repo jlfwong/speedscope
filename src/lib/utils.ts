@@ -167,3 +167,131 @@ export function memoizeByReference<T, U>(cb: (t: T) => U): (t: T) => U {
     }
   }
 }
+
+export function lazyStatic<T>(cb: () => T): () => T {
+  let last: {result: T} | null = null
+  return () => {
+    if (last == null) {
+      last = {result: cb()}
+    }
+    return last.result
+  }
+}
+
+const base64lookupTable = lazyStatic((): Map<string, number> => {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+  const ret = new Map<string, number>()
+  for (let i = 0; i < alphabet.length; i++) {
+    ret.set(alphabet.charAt(i), i)
+  }
+  ret.set('=', -1)
+  return ret
+})
+
+// NOTE: There are probably simpler solutions to this problem, but I have this written already, so
+// until we run into problems with this, let's just use this.
+//
+// See: https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding#The_Unicode_Problem#The_Unicode_Problem
+export function decodeBase64(encoded: string): Uint8Array {
+  // Reference: https://www.rfc-editor.org/rfc/rfc4648.txt
+
+  const lookupTable = base64lookupTable()
+
+  // 3 byte groups are represented as sequneces of 4 characters.
+  //
+  // "The encoding process represents 24-bit groups of input bits as output
+  //  strings of 4 encoded characters."
+  //
+  // "Special processing is performed if fewer than 24 bits are available
+  //  at the end of the data being encoded.  A full encoding quantum is
+  //  always completed at the end of a quantity.  When fewer than 24 input
+  //  bits are available in an input group bits with value zero are added
+  //  (on the right) to form an integral number of 6-bit groups."
+
+  if (encoded.length % 4 !== 0) {
+    throw new Error(
+      `Invalid length for base64 encoded string. Expected length % 4 = 0, got length = ${
+        encoded.length
+      }`,
+    )
+  }
+
+  const quartetCount = encoded.length / 4
+  let byteCount: number
+
+  // Special processing is performed if fewer than 24 bits are available
+  // at the end of the data being encoded.  A full encoding quantum is
+  // always completed at the end of a quantity.  When fewer than 24 input
+  // bits are available in an input group, bits with value zero are added
+  // (on the right) to form an integral number of 6-bit groups.  Padding
+  // at the end of the data is performed using the '=' character.  Since
+  // all base 64 input is an integral number of octets, only the following
+  // cases can arise:
+  //
+  // (1) The final quantum of encoding input is an integral multiple of 24
+  //     bits; here, the final unit of encoded output will be an integral
+  //     multiple of 4 characters with no "=" padding.
+  //
+  // (2) The final quantum of encoding input is exactly 8 bits; here, the
+  //     final unit of encoded output will be two characters followed by
+  //     two "=" padding characters.
+  //
+  // (3) The final quantum of encoding input is exactly 16 bits; here, the
+  //     final unit of encoded output will be three characters followed by
+  //     one "=" padding character.
+  if (encoded.length >= 4) {
+    if (encoded.charAt(encoded.length - 1) === '=') {
+      if (encoded.charAt(encoded.length - 2) === '=') {
+        // Case (2)
+        byteCount = quartetCount * 3 - 2
+      } else {
+        // Case (3)
+        byteCount = quartetCount * 3 - 1
+      }
+    } else {
+      // Case (1)
+      byteCount = quartetCount * 3
+    }
+  } else {
+    // Case (1)
+    byteCount = quartetCount * 3
+  }
+
+  const bytes = new Uint8Array(byteCount)
+  let offset = 0
+
+  for (let i = 0; i < quartetCount; i++) {
+    const enc1 = encoded.charAt(i * 4 + 0)
+    const enc2 = encoded.charAt(i * 4 + 1)
+    const enc3 = encoded.charAt(i * 4 + 2)
+    const enc4 = encoded.charAt(i * 4 + 3)
+
+    const sextet1 = lookupTable.get(enc1)
+    const sextet2 = lookupTable.get(enc2)
+    const sextet3 = lookupTable.get(enc3)
+    const sextet4 = lookupTable.get(enc4)
+
+    if (sextet1 == null || sextet2 == null || sextet3 == null || sextet4 == null) {
+      throw new Error(
+        `Invalid quartet at indices ${i * 4} .. ${i * 4 + 3}: ${encoded.substring(
+          i * 4,
+          i * 4 + 3,
+        )}`,
+      )
+    }
+
+    bytes[offset++] = (sextet1 << 2) | (sextet2 >> 4)
+    if (enc3 !== '=') {
+      bytes[offset++] = ((sextet2 & 15) << 4) | (sextet3 >> 2)
+    }
+    if (enc4 !== '=') {
+      bytes[offset++] = ((sextet3 & 7) << 6) | sextet4
+    }
+  }
+
+  if (offset !== byteCount) {
+    throw new Error(`Expected to decode ${byteCount} bytes, but only decoded ${offset})`)
+  }
+
+  return bytes
+}

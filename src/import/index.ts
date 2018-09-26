@@ -9,12 +9,41 @@ import {importFromFirefox} from './firefox'
 import {importSpeedscopeProfiles} from '../lib/file-format'
 import {importFromV8ProfLog} from './v8proflog'
 import {importFromLinuxPerf} from './linux-tools-perf'
+import {ProfileDataSource, TextProfileDataSource, MaybeCompressedDataReader} from './utils'
+import {importAsPprofProfile} from './pprof'
+import {decodeBase64} from '../lib/utils'
 
-export async function importProfileGroup(
+export async function importProfileGroupFromText(
   fileName: string,
   contents: string,
 ): Promise<ProfileGroup | null> {
-  const profileGroup = await _importProfileGroup(fileName, contents)
+  return await importProfileGroup(new TextProfileDataSource(fileName, contents))
+}
+
+export async function importProfileGroupFromBase64(
+  fileName: string,
+  b64contents: string,
+): Promise<ProfileGroup | null> {
+  return await importProfileGroup(
+    MaybeCompressedDataReader.fromArrayBuffer(fileName, decodeBase64(b64contents).buffer),
+  )
+}
+
+export async function importProfilesFromFile(file: File): Promise<ProfileGroup | null> {
+  return importProfileGroup(MaybeCompressedDataReader.fromFile(file))
+}
+
+export async function importProfilesFromArrayBuffer(
+  fileName: string,
+  buffer: ArrayBuffer,
+): Promise<ProfileGroup | null> {
+  return importProfileGroup(MaybeCompressedDataReader.fromArrayBuffer(fileName, buffer))
+}
+
+async function importProfileGroup(dataSource: ProfileDataSource): Promise<ProfileGroup | null> {
+  const fileName = await dataSource.name()
+
+  const profileGroup = await _importProfileGroup(dataSource)
   if (profileGroup) {
     if (!profileGroup.name) {
       profileGroup.name = fileName
@@ -34,10 +63,21 @@ function toGroup(profile: Profile | null): ProfileGroup | null {
   return {name: profile.getName(), indexToView: 0, profiles: [profile]}
 }
 
-async function _importProfileGroup(
-  fileName: string,
-  contents: string,
-): Promise<ProfileGroup | null> {
+async function _importProfileGroup(dataSource: ProfileDataSource): Promise<ProfileGroup | null> {
+  const fileName = await dataSource.name()
+
+  const buffer = await dataSource.readAsArrayBuffer()
+
+  {
+    const profile = importAsPprofProfile(buffer)
+    if (profile) {
+      console.log('Importing as protobuf encoded pprof file')
+      return toGroup(profile)
+    }
+  }
+
+  const contents = await dataSource.readAsText()
+
   // First pass: Check known file format names to infer the file type
   if (fileName.endsWith('.speedscope.json')) {
     console.log('Importing as speedscope json file')
