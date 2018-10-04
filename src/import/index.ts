@@ -12,6 +12,7 @@ import {importFromLinuxPerf} from './linux-tools-perf'
 import {ProfileDataSource, TextProfileDataSource, MaybeCompressedDataReader} from './utils'
 import {importAsPprofProfile} from './pprof'
 import {decodeBase64} from '../lib/utils'
+import {importFromChromeHeapProfile} from './v8heapalloc'
 
 export async function importProfileGroupFromText(
   fileName: string,
@@ -103,6 +104,9 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
   } else if (fileName.endsWith('.v8log.json')) {
     console.log('Importing as --prof-process v8 log')
     return toGroup(importFromV8ProfLog(JSON.parse(contents)))
+  } else if (fileName.endsWith('.heapprofile')) {
+    console.log('Important as Chrome Heap Profile')
+    return toGroup(importFromChromeHeapProfile(JSON.parse(contents)))
   }
 
   // Second pass: Try to guess what file format it is based on structure
