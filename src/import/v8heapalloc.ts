@@ -103,6 +103,7 @@ export function importFromChromeHeapProfile(chromeProfile: HeapProfile): Profile
       lastFrame.selfSize,
     )
   }
+
   profile.setValueFormatter(new ByteFormatter())
   return profile.build()
 }
