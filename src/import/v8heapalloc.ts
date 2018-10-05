@@ -6,10 +6,10 @@ import {ByteFormatter} from '../lib/value-formatters'
  * The V8 Heap Allocation profile is a way to represent heap allocation for each
  * javascript function. The format is a simple tree where the weight of each node
  * represent the memory allocated by the function and all its callee.
- * You can find more information on how to get a profile there : 
+ * You can find more information on how to get a profile there :
  * https://developers.google.com/web/tools/chrome-devtools/memory-problems/#allocation-profile
  * You need to scroll down to "Investigate memory allocation by function"
- * 
+ *
  * Note that Node.JS can retrieve this kind of profile via the Inspector protocol.
  */
 
