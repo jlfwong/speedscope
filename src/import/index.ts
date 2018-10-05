@@ -105,7 +105,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     console.log('Importing as --prof-process v8 log')
     return toGroup(importFromV8ProfLog(JSON.parse(contents)))
   } else if (fileName.endsWith('.heapprofile')) {
-    console.log('Important as Chrome Heap Profile')
+    console.log('Importing as Chrome Heap Profile')
     return toGroup(importFromChromeHeapProfile(JSON.parse(contents)))
   }
 
@@ -133,6 +133,9 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     } else if ('code' in parsed && 'functions' in parsed && 'ticks' in parsed) {
       console.log('Importing as --prof-process v8 log')
       return toGroup(importFromV8ProfLog(parsed))
+    } else if ('head' in parsed && 'selfSize' in parsed['head']) {
+      console.log('Importing as Chrome Heap Profile')
+      return toGroup(importFromChromeHeapProfile(JSON.parse(contents)))
     }
   } else {
     // Format is not JSON

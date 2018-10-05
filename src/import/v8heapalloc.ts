@@ -54,7 +54,7 @@ export function importFromChromeHeapProfile(chromeProfile: HeapProfile): Profile
   }
   computeId(chromeProfile.head)
 
-  // compute the total size
+  // Compute the total size
   const computeTotalSize = (node: HeapProfileNode): number => {
     if (node.children.length === 0) return node.selfSize || 0
     const totalChild = node.children.reduce((total: number, children) => {
@@ -66,32 +66,33 @@ export function importFromChromeHeapProfile(chromeProfile: HeapProfile): Profile
   }
   const total = computeTotalSize(chromeProfile.head)
 
-  // compute all stacks by taking each last node and going upward
-  const stacks: HeapProfileNode[][] = Array.from(nodeById.values()).map(currentNode => {
+  // Compute all stacks by taking each last node and going upward
+  const stacks: HeapProfileNode[][] = []
+  for (let currentNode of nodeById.values()) {
     let stack: HeapProfileNode[] = []
     stack.push(currentNode)
-    // while we found a parent
+    // While we found a parent
     while (true) {
-      if (typeof currentNode.parent !== 'number') break
+      if (currentNode.parent === undefined) break
       const parent = nodeById.get(currentNode.parent)
       if (parent === undefined) break
-      // push the parent at the begining of the stack
+      // Push the parent at the beginning of the stack
       stack.unshift(parent)
       currentNode = parent
     }
-    return stack
-  })
+    stacks.push(stack)
+  }
 
   const profile = new StackListProfileBuilder(total)
 
-  for (let i = 0; i < stacks.length; i++) {
-    const stack = stacks[i]
+  for (let stack of stacks) {
     const lastFrame = stack[stack.length - 1]
     profile.appendSampleWithWeight(
       stack.map(frame => frameInfoForCallFrame(frame.callFrame)),
       lastFrame.selfSize,
     )
   }
+
   profile.setValueFormatter(new ByteFormatter())
   return profile.build()
 }
