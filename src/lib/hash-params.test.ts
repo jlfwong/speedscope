@@ -24,4 +24,7 @@ test('getHashParams', () => {
   })
   expect(getHashParams('#abc=bcd')).toEqual({})
   expect(getHashParams('garbage')).toEqual({})
+  expect(getHashParams('#profileBase64URL=aHR0cDovL3Rlc3QuY29tL3Byb2ZpbGU/dGVzdD10ZXN0')).toEqual({
+    profileURL: 'http://test.com/profile?test=test',
+  })
 })
