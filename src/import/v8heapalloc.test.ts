@@ -5,5 +5,5 @@ test('importV8HeapAlloc from Chrome', async () => {
 })
 
 test('importV8HeapAlloc from NodeJS', async () => {
-  await checkProfileSnapshot('./sample/profiles/node/10.11.10/Heap-20181003T105432.heapprofile')
+  await checkProfileSnapshot('./sample/profiles/node/10.11.0/Heap-20181003T105432.heapprofile')
 })
