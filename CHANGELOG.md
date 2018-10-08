@@ -1,5 +1,11 @@
 ## Unreleased
 
+## [1.2.0] - 2018-10-08
+
+### Added
+
+* Add import of v8 heap allocation profile [#170] (by @vmarchaud)
+
 ## [1.1.0] - 2018-09-26
 
 ### Added
@@ -24,7 +30,7 @@
 
 * Allow optional CR before LF when probing collapsed stacks files [#154]
 * Fix import for Firefox 63 [#156]
-* Change time formatting for minutes from 1.50min to 1:30 [#153]
+* Change time formatting for minutes from 1.50min to 1:30 [#153] (by @Alex-Diez)
 
 ## [1.0.1] - 2018-08-23
 
