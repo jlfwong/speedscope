@@ -1,7 +1,12 @@
 import {Profile, ProfileGroup} from '../lib/profile'
 import {FileSystemDirectoryEntry} from './file-system-entry'
 
-import {importFromChromeCPUProfile, importFromChromeTimeline, isChromeTimeline, importFromOldV8CPUProfile} from './chrome'
+import {
+  importFromChromeCPUProfile,
+  importFromChromeTimeline,
+  isChromeTimeline,
+  importFromOldV8CPUProfile,
+} from './chrome'
 import {importFromStackprof} from './stackprof'
 import {importFromInstrumentsDeepCopy, importFromInstrumentsTrace} from './instruments'
 import {importFromBGFlameGraph} from './bg-flamegraph'

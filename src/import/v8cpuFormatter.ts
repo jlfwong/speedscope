@@ -1,4 +1,3 @@
-
 import {CPUProfile, CPUProfileNode} from './chrome'
 
 export interface OldCPUProfileNode {
@@ -28,10 +27,10 @@ function treeToArray(node: OldCPUProfileNode, nodes: CPUProfileNode[]) {
       functionName: node.functionName,
       lineNumber: node.lineNumber,
       scriptId: node.scriptId,
-      url: node.url
+      url: node.url,
     },
     hitCount: node.hitCount,
-    children: node.children.map(child => child.id)
+    children: node.children.map(child => child.id),
   })
   node.children.forEach(child => {
     return treeToArray(child, nodes)
@@ -57,6 +56,6 @@ export function chromeTree2nodes(content: OldCPUProfile): CPUProfile {
     startTime: content.startTime * 1000000,
     endTime: content.endTime * 1000000,
     nodes: treeToArray(content.head, []),
-    timeDeltas: timestampsToDelta(content.timestamps, content.startTime)
+    timeDeltas: timestampsToDelta(content.timestamps, content.startTime),
   }
 }
