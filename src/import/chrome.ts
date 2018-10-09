@@ -145,11 +145,7 @@ function shouldIgnoreFunction(callFrame: CPUProfileCallFrame) {
     // See: https://github.com/v8/v8/blob/b8626ca4/tools/js2c.py#L419-L424
     return true
   }
-  return functionName === '(root)' || functionName === '(idle)'
-}
-
-function shouldPlaceOnTopOfPreviousStack(functionName: string) {
-  return functionName === '(garbage collector)' || functionName === '(program)'
+  return functionName === '(root)'
 }
 
 export function importFromChromeCPUProfile(chromeProfile: CPUProfile): Profile {
@@ -218,16 +214,6 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile): Profile {
     // Find lowest common ancestor of the current stack and the previous one
     let lca: CPUProfileNode | null = null
 
-    // This is O(n^2), but n should be relatively small here (stack height),
-    // so hopefully this isn't much of a problem
-    for (
-      lca = stackTop;
-      lca && prevStack.indexOf(lca) === -1;
-      lca = shouldPlaceOnTopOfPreviousStack(lca.callFrame.functionName)
-        ? lastOf(prevStack)
-        : lca.parent || null
-    ) {}
-
     // Close frames that are no longer open
     while (prevStack.length > 0 && lastOf(prevStack) != lca) {
       const closingNode = prevStack.pop()!
@@ -241,9 +227,7 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile): Profile {
       let node: CPUProfileNode | null = stackTop;
       node && node != lca && !shouldIgnoreFunction(node.callFrame);
       // Place Chrome internal functions on top of the previous call stack
-      node = shouldPlaceOnTopOfPreviousStack(node.callFrame.functionName)
-        ? lastOf(prevStack)
-        : node.parent || null
+      node = node.parent || null
     ) {
       toOpen.push(node)
     }
