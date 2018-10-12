@@ -35,7 +35,7 @@ async function importProfilesFromBase64(
 
 async function importProfilesFromArrayBuffer(
   fileName: string,
-  contents: string,
+  contents: ArrayBuffer,
 ): Promise<ProfileGroup | null> {
   return (await importModule).importProfilesFromArrayBuffer(fileName, contents)
 }
