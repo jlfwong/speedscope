@@ -2,6 +2,7 @@ export interface HashParams {
   profileURL?: string
   title?: string
   localProfilePath?: string
+  viewMode?: number
 }
 
 export function getHashParams(hashContents = window.location.hash): HashParams {
@@ -20,6 +21,8 @@ export function getHashParams(hashContents = window.location.hash): HashParams {
         result.title = value
       } else if (key === 'localProfilePath') {
         result.localProfilePath = value
+      } else if (key === 'viewMode') {
+        result.viewMode = parseInt(value)
       }
     }
     return result
