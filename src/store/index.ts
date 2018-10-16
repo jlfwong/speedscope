@@ -11,7 +11,7 @@ import {HashParams, getHashParams} from '../lib/hash-params'
 import {ProfileGroupState, profileGroup} from './profiles-state'
 import {SortMethod, SortField, SortDirection} from '../views/profile-table-view'
 
-export enum ViewMode {
+export const enum ViewMode {
   CHRONO_FLAME_CHART,
   LEFT_HEAVY_FLAME_GRAPH,
   SANDWICH_VIEW,
@@ -48,7 +48,9 @@ export function createApplicationStore(
 
   const loading = canUseXHR && hashParams.profileURL != null
   const viewMode =
-    hashParams.viewMode !== undefined ? hashParams.viewMode : ViewMode.CHRONO_FLAME_CHART
+    hashParams.viewMode !== undefined && ViewMode.hasOwnProperty(hashParams.viewMode)
+      ? hashParams.viewMode
+      : ViewMode.CHRONO_FLAME_CHART
 
   const reducer: Reducer<ApplicationState> = redux.combineReducers({
     profileGroup,
