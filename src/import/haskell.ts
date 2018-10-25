@@ -1,6 +1,6 @@
-import {Profile, FrameInfo, CallTreeProfileBuilder} from '../lib/profile'
+import {ProfileGroup, FrameInfo, CallTreeProfileBuilder} from '../lib/profile'
 import {getOrInsert} from '../lib/utils'
-import {TimeFormatter} from '../lib/value-formatters'
+import {TimeFormatter, ByteFormatter} from '../lib/value-formatters'
 
 // See https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/profiling.html#json-profile-format
 // for information on the GHC profiler JSON output format.
@@ -38,9 +38,10 @@ interface HaskellProfile {
 // The profiler already collapses recursion before output so using the JS stack here should be fine
 function addToProfile(
   tree: ProfileTree,
+  startVal: number,
   profile: CallTreeProfileBuilder,
   infos: Map<number, FrameInfo>,
-  startVal: number,
+  attribute: (ProfileTree) => number,
 ): number {
   // If the expression never did anything we don't care about it
   if (tree.ticks == 0 && tree.entries == 0 && tree.alloc == 0 && tree.children.length == 0)
@@ -52,17 +53,17 @@ function addToProfile(
   profile.enterFrame(frameInfo, curVal)
 
   for (let child of tree.children) {
-    curVal = addToProfile(child, profile, infos, curVal)
+    curVal = addToProfile(child, curVal, profile, infos, attribute)
   }
 
-  curVal += tree.ticks
+  curVal += attribute(tree)
 
   profile.leaveFrame(frameInfo, curVal)
 
   return curVal
 }
 
-export function importFromHaskell(haskellProfile: HaskellProfile): Profile {
+export function importFromHaskell(haskellProfile: HaskellProfile): ProfileGroup {
   const idToFrameInfo = new Map<number, FrameInfo>()
   for (let centre of haskellProfile.cost_centres) {
     const frameInfo: FrameInfo = {
@@ -80,9 +81,20 @@ export function importFromHaskell(haskellProfile: HaskellProfile): Profile {
     idToFrameInfo[centre.id] = frameInfo
   }
 
-  const profile = new CallTreeProfileBuilder(haskellProfile.total_ticks)
-  addToProfile(haskellProfile.profile, profile, idToFrameInfo, 0)
+  const timeProfile = new CallTreeProfileBuilder(haskellProfile.total_ticks)
+  addToProfile(haskellProfile.profile, 0, timeProfile, idToFrameInfo, tree => tree.ticks)
+  timeProfile.setValueFormatter(new TimeFormatter('milliseconds'))
+  console.log(timeProfile.getName())
+  timeProfile.setName(`${haskellProfile.program} time`)
 
-  profile.setValueFormatter(new TimeFormatter('milliseconds'))
-  return profile.build()
+  const allocProfile = new CallTreeProfileBuilder(haskellProfile.total_ticks)
+  addToProfile(haskellProfile.profile, 0, allocProfile, idToFrameInfo, tree => tree.alloc)
+  allocProfile.setValueFormatter(new ByteFormatter())
+  allocProfile.setName(`${haskellProfile.program} allocation`)
+
+  return {
+    name: haskellProfile.program,
+    indexToView: 0,
+    profiles: [timeProfile.build(), allocProfile.build()],
+  }
 }

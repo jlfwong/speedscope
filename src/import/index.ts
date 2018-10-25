@@ -139,7 +139,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
       return toGroup(importFromChromeHeapProfile(JSON.parse(contents)))
     } else if ('rts_arguments' in parsed && 'initial_capabilities' in parsed) {
       console.log('Importing as Haskell GHC JSON Profile')
-      return toGroup(importFromHaskell(parsed))
+      return importFromHaskell(parsed)
     }
   } else {
     // Format is not JSON
