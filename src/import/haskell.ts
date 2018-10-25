@@ -1,5 +1,4 @@
 import {ProfileGroup, FrameInfo, CallTreeProfileBuilder} from '../lib/profile'
-import {getOrInsert} from '../lib/utils'
 import {TimeFormatter, ByteFormatter} from '../lib/value-formatters'
 
 // See https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/profiling.html#json-profile-format
@@ -41,14 +40,14 @@ function addToProfile(
   startVal: number,
   profile: CallTreeProfileBuilder,
   infos: Map<number, FrameInfo>,
-  attribute: (ProfileTree) => number,
+  attribute: (tree: ProfileTree) => number,
 ): number {
   // If the expression never did anything we don't care about it
-  if (tree.ticks == 0 && tree.entries == 0 && tree.alloc == 0 && tree.children.length == 0)
+  if (tree.ticks === 0 && tree.entries === 0 && tree.alloc === 0 && tree.children.length === 0)
     return startVal
 
   let curVal = startVal
-  let frameInfo = infos[tree.id]
+  let frameInfo = infos.get(tree.id)!
 
   profile.enterFrame(frameInfo, curVal)
 
@@ -78,7 +77,7 @@ export function importFromHaskell(haskellProfile: HaskellProfile): ProfileGroup 
       frameInfo.file = centre.src_loc
     }
 
-    idToFrameInfo[centre.id] = frameInfo
+    idToFrameInfo.set(centre.id, frameInfo)
   }
 
   const timeProfile = new CallTreeProfileBuilder(haskellProfile.total_ticks)
