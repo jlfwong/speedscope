@@ -9,6 +9,7 @@ import {importFromFirefox} from './firefox'
 import {importSpeedscopeProfiles} from '../lib/file-format'
 import {importFromV8ProfLog} from './v8proflog'
 import {importFromLinuxPerf} from './linux-tools-perf'
+import {importFromHaskell} from './haskell'
 import {ProfileDataSource, TextProfileDataSource, MaybeCompressedDataReader} from './utils'
 import {importAsPprofProfile} from './pprof'
 import {decodeBase64} from '../lib/utils'
@@ -136,6 +137,9 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     } else if ('head' in parsed && 'selfSize' in parsed['head']) {
       console.log('Importing as Chrome Heap Profile')
       return toGroup(importFromChromeHeapProfile(JSON.parse(contents)))
+    } else if ('rts_arguments' in parsed && 'initial_capabilities' in parsed) {
+      console.log('Importing as Haskell GHC JSON Profile')
+      return toGroup(importFromHaskell(parsed))
     }
   } else {
     // Format is not JSON
