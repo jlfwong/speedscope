@@ -83,7 +83,6 @@ export function importFromHaskell(haskellProfile: HaskellProfile): ProfileGroup 
   const timeProfile = new CallTreeProfileBuilder(haskellProfile.total_ticks)
   addToProfile(haskellProfile.profile, 0, timeProfile, idToFrameInfo, tree => tree.ticks)
   timeProfile.setValueFormatter(new TimeFormatter('milliseconds'))
-  console.log(timeProfile.getName())
   timeProfile.setName(`${haskellProfile.program} time`)
 
   const allocProfile = new CallTreeProfileBuilder(haskellProfile.total_ticks)
