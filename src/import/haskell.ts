@@ -72,7 +72,7 @@ export function importFromHaskell(haskellProfile: HaskellProfile): ProfileGroup 
 
     // Ignore things like <entire-module> and <no location info>
     if (!centre.src_loc.startsWith('<')) {
-      // this also contains line and column information, but sometimes it contains ranges,
+      // This also contains line and column information, but sometimes it contains ranges,
       // and in varying formats, so it's a better experience just to leave it as is
       frameInfo.file = centre.src_loc
     }
