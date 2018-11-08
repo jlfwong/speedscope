@@ -1,5 +1,11 @@
 ## Unreleased
 
+## [1.3.1] - 2018-11-08
+
+### Fixed
+
+* Fixed a file import performance regression by using TextDecoder [#188] (by @jlfwong)
+
 ## [1.3.0] - 2018-10-29
 
 ### Added
