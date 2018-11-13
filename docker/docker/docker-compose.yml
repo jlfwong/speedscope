@@ -1,0 +1,11 @@
+version: '2'
+services:  
+  speedscope:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    container_name: speedscope-dev 
+    
+    expose:
+      - "1234"
+    network_mode: host
