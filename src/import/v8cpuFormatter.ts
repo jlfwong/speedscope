@@ -1,6 +1,15 @@
 import {CPUProfile, CPUProfileNode} from './chrome'
 
-export interface OldCPUProfileNode {
+/**
+  * This importer handles an old format used by the C++ API of V8. This format is still used by v8-profiler-node8.
+  * There are two differences between the two formats:
+  *  - Nodes are a tree in the old format and a flat array in the new format
+  *  - Weights are timestamps in the old format and deltas in the new format.
+  *
+  * For more information, see https://github.com/hyj1991/v8-profiler-node8
+ */
+
+interface OldCPUProfileNode {
   functionName: string
   lineNumber: number
   scriptId: string
@@ -19,43 +28,44 @@ export interface OldCPUProfile {
   timestamps: number[]
 }
 
-function treeToArray(node: OldCPUProfileNode, nodes: CPUProfileNode[]) {
-  nodes.push({
-    id: node.id,
-    callFrame: {
-      columnNumber: 0,
-      functionName: node.functionName,
-      lineNumber: node.lineNumber,
-      scriptId: node.scriptId,
-      url: node.url,
-    },
-    hitCount: node.hitCount,
-    children: node.children.map(child => child.id),
-  })
-  node.children.forEach(child => {
-    return treeToArray(child, nodes)
-  })
+function treeToArray(root: OldCPUProfileNode): CPUProfileNode[] {
+  const nodes: CPUProfileNode[] = []
+  function visit(node: OldCPUProfileNode) {
+    nodes.push({
+      id: node.id,
+      callFrame: {
+        columnNumber: 0,
+        functionName: node.functionName,
+        lineNumber: node.lineNumber,
+        scriptId: node.scriptId,
+        url: node.url,
+      },
+      hitCount: node.hitCount,
+      children: node.children.map(child => child.id),
+    })
+    node.children.forEach(visit)
+  }
+  visit(root)
   return nodes
 }
 
-function timestampsToDelta(timestamps: number[], startTime: number): number[] {
-  return timestamps.reduce((deltas: number[], timestamp: number, index: number) => {
-    let lastTimestamp = index === 0 ? startTime * 1000000 : timestamps[index - 1]
-    deltas.push(timestamp - lastTimestamp)
-    return deltas
-  }, [])
+function timestampsToDeltas(timestamps: number[], startTime: number): number[] {
+  return timestamps.map((timestamp, index) => {
+    const lastTimestamp = index === 0 ? startTime * 1000000 : timestamps[index - 1]
+    return timestamp - lastTimestamp
+  })
 }
 
 /**
- * Convert the tree based format to the array of nodes like actually
+ * Convert the old tree-based format to the new flat-array based format
  */
-export function chromeTree2nodes(content: OldCPUProfile): CPUProfile {
-  // Care that both startTime and endTime are now in microsecond
+export function chromeTreeToNodes(content: OldCPUProfile): CPUProfile {
+  // Note that both startTime and endTime are now in microseconds
   return {
     samples: content.samples,
     startTime: content.startTime * 1000000,
     endTime: content.endTime * 1000000,
-    nodes: treeToArray(content.head, []),
-    timeDeltas: timestampsToDelta(content.timestamps, content.startTime),
+    nodes: treeToArray(content.head),
+    timeDeltas: timestampsToDeltas(content.timestamps, content.startTime),
   }
 }

@@ -1,7 +1,7 @@
 import {Profile, FrameInfo, CallTreeProfileBuilder} from '../lib/profile'
 import {getOrInsert, lastOf, sortBy} from '../lib/utils'
 import {TimeFormatter} from '../lib/value-formatters'
-import {chromeTree2nodes, OldCPUProfile} from './v8cpuFormatter'
+import {chromeTreeToNodes, OldCPUProfile} from './v8cpuFormatter'
 
 // See: https://github.com/v8/v8/blob/master/src/inspector/js_protocol.json
 
@@ -23,7 +23,7 @@ interface PositionTickInfo {
   ticks: number
 }
 
-export interface CPUProfileCallFrame {
+interface CPUProfileCallFrame {
   columnNumber: number
   functionName: string
   lineNumber: number
@@ -266,14 +266,6 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile): Profile {
   return profile.build()
 }
 
-/**
- * This importer handle a old format used by the C++ API of V8, that can still be retrieved via v8-profiler-node8
- * There is two difference between the two formats :
- *  - Nodes are a tree in the old and a flat array in the new
- *  - Weigth are timestamps in the old and delta in the new
- *
- * For more informations : https://github.com/hyj1991/v8-profiler-node8
- */
 export function importFromOldV8CPUProfile(content: OldCPUProfile): Profile {
-  return importFromChromeCPUProfile(chromeTree2nodes(content))
+  return importFromChromeCPUProfile(chromeTreeToNodes(content))
 }
