@@ -12,6 +12,10 @@ test('importFromChromeTimeline Chrome 69', async () => {
   await checkProfileSnapshot('./sample/profiles/Chrome/69/simple.json')
 })
 
+test('importFromV8Profiler Node 10', async () => {
+  await checkProfileSnapshot('./sample/profiles/node/10.11.0/example.cpuprofile')
+})
+
 test('importFromChromeTimeline Workers Chrome 70', async () => {
   await checkProfileSnapshot('./sample/profiles/Chrome/70/worker.json')
 })

@@ -1357,3 +1357,66 @@ exports[`importFromChromeTimeline Workers Chrome 70: profileGroup.name 1`] = `"w
 exports[`importFromChromeTimeline: indexToView 1`] = `0`;
 
 exports[`importFromChromeTimeline: profileGroup.name 1`] = `"simple-timeline.json"`;
+
+exports[`importFromV8Profiler Node 10 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": 0,
+      "file": "",
+      "key": "(anonymous)::0:0",
+      "line": 0,
+      "name": "(anonymous)",
+      "selfWeight": 11575,
+      "totalWeight": 44777,
+    },
+    Frame {
+      "col": 0,
+      "file": "",
+      "key": "a::0:0",
+      "line": 0,
+      "name": "a",
+      "selfWeight": 0,
+      "totalWeight": 33202,
+    },
+    Frame {
+      "col": 0,
+      "file": "",
+      "key": "b::5:0",
+      "line": 5,
+      "name": "b",
+      "selfWeight": 0,
+      "totalWeight": 16788,
+    },
+    Frame {
+      "col": 0,
+      "file": "",
+      "key": "d::13:0",
+      "line": 13,
+      "name": "d",
+      "selfWeight": 33202,
+      "totalWeight": 33202,
+    },
+    Frame {
+      "col": 0,
+      "file": "",
+      "key": "c::9:0",
+      "line": 9,
+      "name": "c",
+      "selfWeight": 0,
+      "totalWeight": 16414,
+    },
+  ],
+  "name": "example.cpuprofile",
+  "stacks": Array [
+    " 599.29ms",
+    "(anonymous) 11.57ms",
+    "(anonymous);a;b;d 16.79ms",
+    "(anonymous);a;c;d 16.41ms",
+  ],
+}
+`;
+
+exports[`importFromV8Profiler Node 10: indexToView 1`] = `0`;
+
+exports[`importFromV8Profiler Node 10: profileGroup.name 1`] = `"example.cpuprofile"`;

@@ -1,6 +1,7 @@
 import {Profile, FrameInfo, CallTreeProfileBuilder, ProfileGroup} from '../lib/profile'
 import {getOrInsert, lastOf, sortBy, itForEach} from '../lib/utils'
 import {TimeFormatter} from '../lib/value-formatters'
+import {chromeTreeToNodes, OldCPUProfile} from './v8cpuFormatter'
 
 // See: https://github.com/v8/v8/blob/master/src/inspector/js_protocol.json
 
@@ -31,7 +32,7 @@ interface CPUProfileCallFrame {
   url: string
 }
 
-interface CPUProfileNode {
+export interface CPUProfileNode {
   callFrame: CPUProfileCallFrame
   hitCount: number
   id: number
@@ -40,7 +41,7 @@ interface CPUProfileNode {
   parent?: CPUProfileNode
 }
 
-interface CPUProfile {
+export interface CPUProfile {
   startTime: number
   endTime: number
   nodes: CPUProfileNode[]
@@ -311,4 +312,8 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile): Profile {
 
   profile.setValueFormatter(new TimeFormatter('microseconds'))
   return profile.build()
+}
+
+export function importFromOldV8CPUProfile(content: OldCPUProfile): Profile {
+  return importFromChromeCPUProfile(chromeTreeToNodes(content))
 }

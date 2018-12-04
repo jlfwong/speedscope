@@ -1,7 +1,12 @@
 import {Profile, ProfileGroup} from '../lib/profile'
 import {FileSystemDirectoryEntry} from './file-system-entry'
 
-import {importFromChromeCPUProfile, importFromChromeTimeline, isChromeTimeline} from './chrome'
+import {
+  importFromChromeCPUProfile,
+  importFromChromeTimeline,
+  isChromeTimeline,
+  importFromOldV8CPUProfile,
+} from './chrome'
 import {importFromStackprof} from './stackprof'
 import {importFromInstrumentsDeepCopy, importFromInstrumentsTrace} from './instruments'
 import {importFromBGFlameGraph} from './bg-flamegraph'
@@ -84,9 +89,6 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
   if (fileName.endsWith('.speedscope.json')) {
     console.log('Importing as speedscope json file')
     return importSpeedscopeProfiles(JSON.parse(contents))
-  } else if (fileName.endsWith('.cpuprofile')) {
-    console.log('Importing as Chrome CPU Profile')
-    return toGroup(importFromChromeCPUProfile(JSON.parse(contents)))
   } else if (fileName.endsWith('.chrome.json') || /Profile-\d{8}T\d{6}/.exec(fileName)) {
     console.log('Importing as Chrome Timeline')
     return importFromChromeTimeline(JSON.parse(contents), fileName)
@@ -123,11 +125,14 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
       console.log('Importing as Firefox profile')
       return toGroup(importFromFirefox(parsed))
     } else if (isChromeTimeline(parsed)) {
-      console.log('Importing as Chrome CPU Profile')
+      console.log('Importing as Chrome Timeline')
       return importFromChromeTimeline(parsed, fileName)
     } else if ('nodes' in parsed && 'samples' in parsed && 'timeDeltas' in parsed) {
-      console.log('Importing as Chrome Timeline')
+      console.log('Importing as Chrome CPU Profile')
       return toGroup(importFromChromeCPUProfile(parsed))
+    } else if ('head' in parsed && 'samples' in parsed && 'timestamps' in parsed) {
+      console.log('Importing as Chrome CPU Profile (old format)')
+      return toGroup(importFromOldV8CPUProfile(parsed))
     } else if ('mode' in parsed && 'frames' in parsed) {
       console.log('Importing as stackprof profile')
       return toGroup(importFromStackprof(parsed))
