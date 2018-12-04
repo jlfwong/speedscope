@@ -89,7 +89,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     return toGroup(importFromChromeCPUProfile(JSON.parse(contents)))
   } else if (fileName.endsWith('.chrome.json') || /Profile-\d{8}T\d{6}/.exec(fileName)) {
     console.log('Importing as Chrome Timeline')
-    return toGroup(importFromChromeTimeline(JSON.parse(contents)))
+    return importFromChromeTimeline(JSON.parse(contents), fileName)
   } else if (fileName.endsWith('.stackprof.json')) {
     console.log('Importing as stackprof profile')
     return toGroup(importFromStackprof(JSON.parse(contents)))
@@ -124,7 +124,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
       return toGroup(importFromFirefox(parsed))
     } else if (isChromeTimeline(parsed)) {
       console.log('Importing as Chrome CPU Profile')
-      return toGroup(importFromChromeTimeline(parsed))
+      return importFromChromeTimeline(parsed, fileName)
     } else if ('nodes' in parsed && 'samples' in parsed && 'timeDeltas' in parsed) {
       console.log('Importing as Chrome Timeline')
       return toGroup(importFromChromeCPUProfile(parsed))

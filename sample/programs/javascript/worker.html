@@ -1,0 +1,28 @@
+<script>
+  function banana() {
+    let prod = 1
+    for (let i = 1; i < 1000; i++) {
+      prod *= i
+    }
+    return prod
+  }
+
+  function apple() {
+    for (let i = 0; i < 1000; i++) {
+      banana()
+    }
+  }
+
+  let bounces = 0
+
+  const worker = new Worker('./worker.js')
+
+  worker.onmessage = function() {
+    apple()
+    if (bounces++ < 10) {
+      worker.postMessage('ping')
+    }
+  }
+
+  worker.postMessage('ping')
+</script>

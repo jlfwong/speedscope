@@ -1,5 +1,5 @@
-import {Profile, FrameInfo, CallTreeProfileBuilder} from '../lib/profile'
-import {getOrInsert, lastOf, sortBy} from '../lib/utils'
+import {Profile, FrameInfo, CallTreeProfileBuilder, ProfileGroup} from '../lib/profile'
+import {getOrInsert, lastOf, sortBy, itForEach} from '../lib/utils'
 import {TimeFormatter} from '../lib/value-formatters'
 
 // See: https://github.com/v8/v8/blob/master/src/inspector/js_protocol.json
@@ -15,6 +15,7 @@ interface TimelineEvent {
   tdur: number
   tts: number
   args: {[key: string]: any}
+  id?: string
 }
 
 interface PositionTickInfo {
@@ -61,33 +62,54 @@ export function isChromeTimeline(rawProfile: any): boolean {
   return true
 }
 
-export function importFromChromeTimeline(events: TimelineEvent[]): Profile {
+export function importFromChromeTimeline(events: TimelineEvent[], fileName: string): ProfileGroup {
   // It seems like sometimes Chrome timeline files contain multiple CpuProfiles?
   // For now, choose the first one in the list.
 
-  let cpuProfile: CPUProfile | null = null
+  const cpuProfileByID = new Map<string, CPUProfile>()
+
+  // Maps profile IDs (like "0x3") to pid/tid pairs formatted as `${pid}:${tid}`
+  const pidTidById = new Map<string, string>()
+
+  // Maps pid/tid pairs to thread names
+  const threadNameByPidTid = new Map<string, string>()
 
   // The events aren't necessarily recorded in chronological order. Sort them so
   // that they are.
   sortBy(events, e => e.ts)
 
+  const DEFAULT_ID = '(default id)'
+
   for (let event of events) {
-    if (event.name == 'CpuProfile') {
-      cpuProfile = event.args.data.cpuProfile as CPUProfile
+    if (event.name === 'CpuProfile') {
+      cpuProfileByID.set(event.id || DEFAULT_ID, event.args.data.cpuProfile as CPUProfile)
+
+      if (event.id) {
+        pidTidById.set(event.id, `${event.pid}:${event.tid}`)
+      }
     }
 
-    if (event.name == 'Profile') {
-      cpuProfile = {
+    if (event.name === 'Profile') {
+      cpuProfileByID.set(event.id || DEFAULT_ID, {
         startTime: 0,
         endTime: 0,
         nodes: [],
         samples: [],
         timeDeltas: [],
         ...event.args.data,
+      })
+
+      if (event.id) {
+        pidTidById.set(event.id, `${event.pid}:${event.tid}`)
       }
     }
 
-    if (event.name == 'ProfileChunk') {
+    if (event.name === 'thread_name') {
+      threadNameByPidTid.set(`${event.pid}:${event.tid}`, event.args.name)
+    }
+
+    if (event.name === 'ProfileChunk') {
+      const cpuProfile = cpuProfileByID.get(event.id || DEFAULT_ID)
       if (cpuProfile) {
         const chunk = event.args.data
         if (chunk.cpuProfile) {
@@ -108,13 +130,38 @@ export function importFromChromeTimeline(events: TimelineEvent[]): Profile {
           cpuProfile.endTime = chunk.endTime
         }
       } else {
-        console.log('Ignoring ProfileChunk when no Profile is active')
+        console.warn(
+          `Ignoring ProfileChunk for undeclared Profile with id ${event.id || DEFAULT_ID}`,
+        )
       }
     }
   }
 
-  if (cpuProfile) {
-    return importFromChromeCPUProfile(cpuProfile as CPUProfile)
+  if (cpuProfileByID.size > 0) {
+    const profiles: Profile[] = []
+    let indexToView = 0
+
+    itForEach(cpuProfileByID.keys(), profileId => {
+      let threadName: string | null = null
+      let pidTid = pidTidById.get(profileId)
+      if (pidTid) {
+        threadName = threadNameByPidTid.get(pidTid) || null
+        if (threadName) {
+        }
+      }
+      const profile = importFromChromeCPUProfile(cpuProfileByID.get(profileId)!)
+      if (threadName && cpuProfileByID.size > 1) {
+        profile.setName(`${fileName} - ${threadName}`)
+        if (threadName === 'CrRendererMain') {
+          indexToView = profiles.length
+        }
+      } else {
+        profile.setName(`${fileName}`)
+      }
+      profiles.push(profile)
+    })
+
+    return {name: fileName, indexToView, profiles}
   } else {
     throw new Error('Could not find CPU profile in Timeline')
   }
@@ -198,7 +245,8 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile): Profile {
     } else {
       let timeDelta = chromeProfile.timeDeltas[i + 1]
       if (timeDelta < 0) {
-        console.warn('Substituting zero for unexpected time delta:', timeDelta, 'at index', i)
+        // This is super noisy, but can be helpful when debugging strange data
+        // console.warn('Substituting zero for unexpected time delta:', timeDelta, 'at index', i)
         timeDelta = 0
       }
 
