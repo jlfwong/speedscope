@@ -1,12 +1,12 @@
 import {CPUProfile, CPUProfileNode} from './chrome'
 
 /**
-  * This importer handles an old format used by the C++ API of V8. This format is still used by v8-profiler-node8.
-  * There are two differences between the two formats:
-  *  - Nodes are a tree in the old format and a flat array in the new format
-  *  - Weights are timestamps in the old format and deltas in the new format.
-  *
-  * For more information, see https://github.com/hyj1991/v8-profiler-node8
+ * This importer handles an old format used by the C++ API of V8. This format is still used by v8-profiler-node8.
+ * There are two differences between the two formats:
+ *  - Nodes are a tree in the old format and a flat array in the new format
+ *  - Weights are timestamps in the old format and deltas in the new format.
+ *
+ * For more information, see https://github.com/hyj1991/v8-profiler-node8
  */
 
 interface OldCPUProfileNode {
