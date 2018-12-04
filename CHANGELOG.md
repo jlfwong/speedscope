@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Added
+
+* Import v8 cpu profile (old format) [#177] (by @vmarchaud)
+
 ## [1.3.2] - 2018-12-03
 
 ### Fixed
