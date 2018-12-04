@@ -1,3 +1,3 @@
-speedscope@1.3.1
-Thu Nov  8 10:06:45 PST 2018
-ad49dacb29f6b9dab22171af9da92e9b44abf909
+speedscope@1.3.2
+Mon Dec  3 19:26:43 PST 2018
+519847b48920eb4bd932cc0633277dc86efd5d30
