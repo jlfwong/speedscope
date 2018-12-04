@@ -1,5 +1,11 @@
 ## Unreleased
 
+## [1.3.2] - 2018-12-03
+
+* Fixed import of multithreaded Chrome profiles [#19] (by @jlfwong)
+
+### Fixed
+
 ## [1.3.1] - 2018-11-08
 
 ### Fixed
