@@ -660,15 +660,20 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
     if (ev.ctrlKey || ev.shiftKey || ev.metaKey) return
 
+    // NOTE: We intentionally use ev.code rather than ev.key for
+    // WASD in order to have the keys retain the same layout even
+    // if the keyboard layout is not QWERTY.
+    //
+    // See: https://github.com/jlfwong/speedscope/pull/184
     if (ev.key === '0') {
       this.zoom(new Vec2(width / 2, height / 2), 1e9)
-    } else if (ev.key === 'ArrowRight' || ev.key === 'd') {
+    } else if (ev.key === 'ArrowRight' || ev.code === 'KeyD') {
       this.pan(new Vec2(100, 0))
-    } else if (ev.key === 'ArrowLeft' || ev.key === 'a') {
+    } else if (ev.key === 'ArrowLeft' || ev.code === 'KeyA') {
       this.pan(new Vec2(-100, 0))
-    } else if (ev.key === 'ArrowUp' || ev.key === 'w') {
+    } else if (ev.key === 'ArrowUp' || ev.code === 'KeyW') {
       this.pan(new Vec2(0, -100))
-    } else if (ev.key === 'ArrowDown' || ev.key === 's') {
+    } else if (ev.key === 'ArrowDown' || ev.code === 'KeyS') {
       this.pan(new Vec2(0, 100))
     } else if (ev.key === 'Escape') {
       this.props.onNodeSelect(null)

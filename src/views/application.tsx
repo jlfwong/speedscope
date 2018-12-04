@@ -33,6 +33,13 @@ async function importProfilesFromBase64(
   return (await importModule).importProfileGroupFromBase64(fileName, contents)
 }
 
+async function importProfilesFromArrayBuffer(
+  fileName: string,
+  contents: ArrayBuffer,
+): Promise<ProfileGroup | null> {
+  return (await importModule).importProfilesFromArrayBuffer(fileName, contents)
+}
+
 async function importProfilesFromFile(file: File): Promise<ProfileGroup | null> {
   return (await importModule).importProfilesFromFile(file)
 }
@@ -512,7 +519,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
         if (filename.includes('/')) {
           filename = filename.slice(filename.lastIndexOf('/') + 1)
         }
-        return await importProfilesFromText(filename, await response.text())
+        return await importProfilesFromArrayBuffer(filename, await response.arrayBuffer())
       })
     } else if (this.props.hashParams.localProfilePath) {
       // There isn't good cross-browser support for XHR of local files, even from

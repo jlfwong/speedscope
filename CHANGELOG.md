@@ -1,5 +1,28 @@
 ## Unreleased
 
+## [1.3.2] - 2018-12-03
+
+### Fixed
+
+* Fixed import of multithreaded Chrome profiles [#19] (by @jlfwong)
+
+## [1.3.1] - 2018-11-08
+
+### Fixed
+
+* Fixed a file import performance regression by using TextDecoder [#188] (by @jlfwong)
+
+## [1.3.0] - 2018-10-29
+
+### Added
+
+* Support import from Haskell GHC JSON format support [#183] (by @trishume)
+
+### Fixed
+
+* Make the wasd keymappings work on azerty keyboards [#184] (by @vrischmann)
+* Fix import of binary formats via profileURL [#179] (by @f-hj)
+
 ## [1.2.0] - 2018-10-08
 
 ### Added

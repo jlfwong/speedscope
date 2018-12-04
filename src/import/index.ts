@@ -14,6 +14,7 @@ import {importFromFirefox} from './firefox'
 import {importSpeedscopeProfiles} from '../lib/file-format'
 import {importFromV8ProfLog} from './v8proflog'
 import {importFromLinuxPerf} from './linux-tools-perf'
+import {importFromHaskell} from './haskell'
 import {ProfileDataSource, TextProfileDataSource, MaybeCompressedDataReader} from './utils'
 import {importAsPprofProfile} from './pprof'
 import {decodeBase64} from '../lib/utils'
@@ -90,7 +91,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     return importSpeedscopeProfiles(JSON.parse(contents))
   } else if (fileName.endsWith('.chrome.json') || /Profile-\d{8}T\d{6}/.exec(fileName)) {
     console.log('Importing as Chrome Timeline')
-    return toGroup(importFromChromeTimeline(JSON.parse(contents)))
+    return importFromChromeTimeline(JSON.parse(contents), fileName)
   } else if (fileName.endsWith('.stackprof.json')) {
     console.log('Importing as stackprof profile')
     return toGroup(importFromStackprof(JSON.parse(contents)))
@@ -125,7 +126,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
       return toGroup(importFromFirefox(parsed))
     } else if (isChromeTimeline(parsed)) {
       console.log('Importing as Chrome Timeline')
-      return toGroup(importFromChromeTimeline(parsed))
+      return importFromChromeTimeline(parsed, fileName)
     } else if ('nodes' in parsed && 'samples' in parsed && 'timeDeltas' in parsed) {
       console.log('Importing as Chrome CPU Profile')
       return toGroup(importFromChromeCPUProfile(parsed))
@@ -141,6 +142,9 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     } else if ('head' in parsed && 'selfSize' in parsed['head']) {
       console.log('Importing as Chrome Heap Profile')
       return toGroup(importFromChromeHeapProfile(JSON.parse(contents)))
+    } else if ('rts_arguments' in parsed && 'initial_capabilities' in parsed) {
+      console.log('Importing as Haskell GHC JSON Profile')
+      return importFromHaskell(parsed)
     }
   } else {
     // Format is not JSON
