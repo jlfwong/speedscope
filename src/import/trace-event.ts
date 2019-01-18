@@ -15,7 +15,52 @@
 //
 // Spec: https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview
 
-function isTraceEventList(maybeEventList: any): boolean {
+interface BaseTraceEvent {
+  // The process ID for the process that output this event.
+  pid: number
+
+  // The thread ID for the thread that output this event.
+  tid: number
+
+  // The event type. This is a single character which changes depending on the type of event being output. The valid values are listed in the table below. We will discuss each phase type below.
+  ph: string
+
+  // The tracing clock timestamp of the event. The timestamps are provided at microsecond granularity.
+  ts: number
+
+  // The thread clock timestamp of the event. The timestamps are provided at microsecond granularity.
+  tts?: number
+
+  // The name of the event, as displayed in Trace Viewer
+  name?: string
+
+  // The event categories. This is a comma separated list of categories for the event. The categories can be used to hide events in the Trace Viewer UI.
+  cat?: string
+
+  // Any arguments provided for the event. Some of the event types have required argument fields, otherwise, you can put any information you wish in here. The arguments are displayed in Trace Viewer when you view an event in the analysis section.
+  args: any
+
+  // A fixed color name to associate with the event. If provided, cname must be one of the names listed in trace-viewer's base color scheme's reserved color names list
+  cname?: string
+}
+
+interface BTraceEvent extends BaseTraceEvent {
+  ph: 'B'
+}
+
+interface ETraceEvent extends BaseTraceEvent {
+  ph: 'E'
+}
+
+interface XTraceEvent extends BaseTraceEvent {
+  ph: 'X'
+  dur: number
+}
+
+// NOTE: This type union is a bit of a lie because there are other 'ph' values that exist but we ignore.
+type TraceEvent = BTraceEvent | ETraceEvent | XTraceEvent
+
+function isTraceEventList(maybeEventList: any): maybeEventList is TraceEvent[] {
   if (!Array.isArray(maybeEventList)) return false
   if (maybeEventList.length === 0) return false
 
@@ -29,6 +74,13 @@ function isTraceEventList(maybeEventList: any): boolean {
   return true
 }
 
+function isTraceEventObject(
+  maybeTraceEventObject: any,
+): maybeTraceEventObject is {traceEvents: TraceEvent[]} {
+  if (!('traceEvents' in maybeTraceEventObject)) return false
+  return isTraceEventList(maybeTraceEventObject['traceEvents'])
+}
+
 export function isTraceEventFormatted(rawProfile: any): boolean {
   // We're only going to suppor the JSON formatted profiles for now.
   // The spec also discusses support for data embedded in ftrace supported data: https://lwn.net/Articles/365835/.
@@ -37,8 +89,5 @@ export function isTraceEventFormatted(rawProfile: any): boolean {
   // That complicates things a bit for us, so let's just ignore that for now until someone writes in with a
   // bug report from real data.
 
-  return (
-    isTraceEventList(rawProfile) ||
-    ('traceEvents' in rawProfile && isTraceEventList(rawProfile['traceEvents']))
-  )
+  return isTraceEventObject(rawProfile) || isTraceEventList(rawProfile)
 }
