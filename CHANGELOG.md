@@ -1,8 +1,11 @@
 ## Unreleased
 
+## [1.4.0] - 2019-01-22
+
 ### Added
 
 * Import v8 cpu profile (old format) [#177] (by @vmarchaud)
+* Import basic "Trace Event Format" profiles [#197] (by @jlfwong)
 
 ## [1.3.2] - 2018-12-03
 
