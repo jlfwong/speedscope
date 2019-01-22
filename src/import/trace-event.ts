@@ -1,5 +1,5 @@
 import {sortBy, zeroPad} from '../lib/utils'
-import {ProfileGroup, CallTreeProfileBuilder} from '../lib/profile'
+import {ProfileGroup, CallTreeProfileBuilder, FrameInfo} from '../lib/profile'
 import {TimeFormatter} from '../lib/value-formatters'
 
 // This file concerns import from the "Trace Event Format", authored by Google
@@ -135,6 +135,14 @@ function getThreadNamesByPidTid(events: TraceEvent[]): Map<string, string> {
   return threadNameByPidTid
 }
 
+function keyForEvent(event: TraceEvent): string {
+  let name = `${event.name || '(unnamed)'}`
+  if (event.args) {
+    name += ` ${JSON.stringify(event.args)}`
+  }
+  return name
+}
+
 function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
   const profileByPidTid = new Map<string, CallTreeProfileBuilder>()
 
@@ -148,8 +156,24 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
     if (a.ts < b.ts) return -1
     if (a.ts > b.ts) return 1
 
-    if (a.ph === 'B' && b.ph === 'E') return -1
-    if (a.ph === 'E' && b.ph === 'B') return 1
+    // We have to be careful with events that have the same timestamp
+    if (a.pid === b.pid && a.tid === b.tid) {
+      const aKey = keyForEvent(a)
+      const bKey = keyForEvent(b)
+
+      if (aKey === bKey) {
+        // If the two elements have the same key, we need to process the begin
+        // event before the end event. This will be a zero-duration event.
+        if (a.ph === 'B' && b.ph === 'E') return -1
+        if (a.ph === 'E' && b.ph === 'B') return 1
+      } else {
+        // If the two elements have *different* keys, we want to process
+        // the end of an event before the beginning of the event to prevent
+        // out-of-order push/pops from the callstack.
+        if (a.ph === 'B' && b.ph === 'E') return 1
+        if (a.ph === 'E' && b.ph === 'B') return -1
+      }
+    }
 
     return -1
   })
@@ -189,30 +213,18 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
 
   for (let ev of durationEvents) {
     const profile = getOrCreateProfile(ev.pid, ev.tid)
-    let name = `${ev.name || '(unnamed)'}`
-    if (ev.args) {
-      name += ` ${JSON.stringify(ev.args)}`
+    const key = keyForEvent(ev)
+    const frameInfo: FrameInfo = {
+      key: key,
+      name: key,
     }
-
     switch (ev.ph) {
       case 'B':
-        profile.enterFrame(
-          {
-            key: name,
-            name: name,
-          },
-          ev.ts,
-        )
+        profile.enterFrame(frameInfo, ev.ts)
         break
 
       case 'E':
-        profile.leaveFrame(
-          {
-            key: name,
-            name: name,
-          },
-          ev.ts,
-        )
+        profile.leaveFrame(frameInfo, ev.ts)
         break
 
       default:
@@ -222,7 +234,7 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
   }
 
   // For now, we just sort processes by pid & tid.
-  // The standard specifies that metadata events with the name
+  // TODO: The standard specifies that metadata events with the name
   // "process_sort_index" and "thread_sort_index" can be used to influence the
   // order, but for simplicity we'll ignore that until someone complains :)
   const profilePairs = Array.from(profileByPidTid.entries())
@@ -265,7 +277,9 @@ export function isTraceEventFormatted(
   return isTraceEventObject(rawProfile) || isTraceEventList(rawProfile)
 }
 
-export function importTrace(rawProfile: {traceEvents: TraceEvent[]} | TraceEvent[]): ProfileGroup {
+export function importTraceEvents(
+  rawProfile: {traceEvents: TraceEvent[]} | TraceEvent[],
+): ProfileGroup {
   if (isTraceEventObject(rawProfile)) {
     return eventListToProfileGroup(rawProfile.traceEvents)
   } else if (isTraceEventList(rawProfile)) {
