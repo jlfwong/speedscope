@@ -1,4 +1,4 @@
-import {sortBy} from '../lib/utils'
+import {sortBy, zeroPad} from '../lib/utils'
 import {ProfileGroup, CallTreeProfileBuilder} from '../lib/profile'
 import {TimeFormatter} from '../lib/value-formatters'
 
@@ -111,18 +111,24 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
   sortBy(durationEvents, ev => ev.ts)
 
   function getOrCreateProfile(pid: number, tid: number) {
-    const pidTid = `${pid}:${tid}`
+    // We zero-pad the PID and TID to make sorting them by pid/tid pair later easier.
+    const pidTid = `${zeroPad('' + pid, 10)}:${zeroPad('' + tid, 10)}`
+
     let profile = profileByPidTid.get(pidTid)
     if (profile != null) return profile
     profile = new CallTreeProfileBuilder()
     profile.setValueFormatter(new TimeFormatter('microseconds'))
     profileByPidTid.set(pidTid, profile)
+    profile.setName(`pid: ${pid}, tid: ${tid}`)
     return profile
   }
 
   for (let ev of durationEvents) {
     const profile = getOrCreateProfile(ev.pid, ev.tid)
-    const name = ev.name || '(unnamed)'
+    let name = `${ev.name || '(unnamed)'}`
+    if (ev.args) {
+      name += ` ${JSON.stringify(ev.args)}`
+    }
 
     switch (ev.ph) {
       case 'B':
@@ -151,7 +157,9 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
     }
   }
 
-  return {name: '', indexToView: 0, profiles: Array.from(profileByPidTid.values())}
+  const profilePairs = Array.from(profileByPidTid.entries())
+  sortBy(profilePairs, p => p[0])
+  return {name: '', indexToView: 0, profiles: profilePairs.map(p => p[1])}
 }
 
 function isTraceEventList(maybeEventList: any): maybeEventList is TraceEvent[] {
