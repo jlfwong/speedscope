@@ -19,6 +19,7 @@ import {ProfileDataSource, TextProfileDataSource, MaybeCompressedDataReader} fro
 import {importAsPprofProfile} from './pprof'
 import {decodeBase64} from '../lib/utils'
 import {importFromChromeHeapProfile} from './v8heapalloc'
+import {isTraceEventFormatted, importTraceEvents} from './trace-event'
 
 export async function importProfileGroupFromText(
   fileName: string,
@@ -130,6 +131,9 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     } else if ('nodes' in parsed && 'samples' in parsed && 'timeDeltas' in parsed) {
       console.log('Importing as Chrome CPU Profile')
       return toGroup(importFromChromeCPUProfile(parsed))
+    } else if (isTraceEventFormatted(parsed)) {
+      console.log('Importing as Trace Event Format profile')
+      return importTraceEvents(parsed)
     } else if ('head' in parsed && 'samples' in parsed && 'timestamps' in parsed) {
       console.log('Importing as Chrome CPU Profile (old format)')
       return toGroup(importFromOldV8CPUProfile(parsed))
