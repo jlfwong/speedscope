@@ -1,3 +1,7 @@
+import {sortBy} from '../lib/utils'
+import {ProfileGroup, CallTreeProfileBuilder} from '../lib/profile'
+import {TimeFormatter} from '../lib/value-formatters'
+
 // This file concerns import from the "Trace Event Format", authored by Google
 // and used for Google's own chrome://trace.
 //
@@ -15,7 +19,7 @@
 //
 // Spec: https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview
 
-interface BaseTraceEvent {
+interface TraceEvent {
   // The process ID for the process that output this event.
   pid: number
 
@@ -44,21 +48,111 @@ interface BaseTraceEvent {
   cname?: string
 }
 
-interface BTraceEvent extends BaseTraceEvent {
+interface BTraceEvent extends TraceEvent {
   ph: 'B'
 }
 
-interface ETraceEvent extends BaseTraceEvent {
+interface ETraceEvent extends TraceEvent {
   ph: 'E'
 }
 
-interface XTraceEvent extends BaseTraceEvent {
+interface XTraceEvent extends TraceEvent {
   ph: 'X'
   dur: number
 }
 
-// NOTE: This type union is a bit of a lie because there are other 'ph' values that exist but we ignore.
-type TraceEvent = BTraceEvent | ETraceEvent | XTraceEvent
+// The trace format supports a number of event types that we ignore.
+type ImportableTraceEvent = BTraceEvent | ETraceEvent | XTraceEvent
+type DurationEvent = BTraceEvent | ETraceEvent
+
+function filterIgnoredEventTypes(events: TraceEvent[]): ImportableTraceEvent[] {
+  const ret: ImportableTraceEvent[] = []
+  for (let ev of events) {
+    switch (ev.ph) {
+      case 'B':
+      case 'E':
+      case 'X':
+        ret.push(ev as ImportableTraceEvent)
+    }
+  }
+  return ret
+}
+
+function convertToDurationEvents(events: ImportableTraceEvent[]): DurationEvent[] {
+  const ret: DurationEvent[] = []
+  for (let ev of events) {
+    switch (ev.ph) {
+      case 'B':
+        ret.push(ev)
+        break
+
+      case 'E':
+        ret.push(ev)
+        break
+
+      case 'X':
+        ret.push({...ev, ph: 'B'} as BTraceEvent)
+        ret.push({...ev, ph: 'E', ts: ev.ts + ev.dur} as ETraceEvent)
+        break
+
+      default:
+        const _exhaustiveCheck: never = ev
+        return _exhaustiveCheck
+    }
+  }
+  return ret
+}
+
+function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
+  const profileByPidTid = new Map<string, CallTreeProfileBuilder>()
+
+  const importableEvents = filterIgnoredEventTypes(events)
+  const durationEvents = convertToDurationEvents(importableEvents)
+  sortBy(durationEvents, ev => ev.ts)
+
+  function getOrCreateProfile(pid: number, tid: number) {
+    const pidTid = `${pid}:${tid}`
+    let profile = profileByPidTid.get(pidTid)
+    if (profile != null) return profile
+    profile = new CallTreeProfileBuilder()
+    profile.setValueFormatter(new TimeFormatter('microseconds'))
+    profileByPidTid.set(pidTid, profile)
+    return profile
+  }
+
+  for (let ev of durationEvents) {
+    const profile = getOrCreateProfile(ev.pid, ev.tid)
+    const name = ev.name || '(unnamed)'
+
+    switch (ev.ph) {
+      case 'B':
+        profile.enterFrame(
+          {
+            key: name,
+            name: name,
+          },
+          ev.ts,
+        )
+        break
+
+      case 'E':
+        profile.leaveFrame(
+          {
+            key: name,
+            name: name,
+          },
+          ev.ts,
+        )
+        break
+
+      default:
+        const _exhaustiveCheck: never = ev
+        return _exhaustiveCheck
+    }
+  }
+
+  return {name: '', indexToView: 0, profiles: Array.from(profileByPidTid.values())}
+}
 
 function isTraceEventList(maybeEventList: any): maybeEventList is TraceEvent[] {
   if (!Array.isArray(maybeEventList)) return false
@@ -81,7 +175,9 @@ function isTraceEventObject(
   return isTraceEventList(maybeTraceEventObject['traceEvents'])
 }
 
-export function isTraceEventFormatted(rawProfile: any): boolean {
+export function isTraceEventFormatted(
+  rawProfile: any,
+): rawProfile is {traceEvents: TraceEvent[]} | TraceEvent[] {
   // We're only going to suppor the JSON formatted profiles for now.
   // The spec also discusses support for data embedded in ftrace supported data: https://lwn.net/Articles/365835/.
 
@@ -90,4 +186,15 @@ export function isTraceEventFormatted(rawProfile: any): boolean {
   // bug report from real data.
 
   return isTraceEventObject(rawProfile) || isTraceEventList(rawProfile)
+}
+
+export function importTrace(rawProfile: {traceEvents: TraceEvent[]} | TraceEvent[]): ProfileGroup {
+  if (isTraceEventObject(rawProfile)) {
+    return eventListToProfileGroup(rawProfile.traceEvents)
+  } else if (isTraceEventList(rawProfile)) {
+    return eventListToProfileGroup(rawProfile)
+  } else {
+    const _exhaustiveCheck: never = rawProfile
+    return _exhaustiveCheck
+  }
 }
