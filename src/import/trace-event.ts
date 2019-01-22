@@ -113,11 +113,36 @@ function convertToDurationEvents(events: ImportableTraceEvent[]): DurationEvent[
   return ret
 }
 
+function getProcessNamesByPid(events: TraceEvent[]): Map<number, string> {
+  const processNamesByPid = new Map<number, string>()
+  for (let ev of events) {
+    if (ev.ph === 'M' && ev.name === 'process_name' && ev.args && ev.args.name) {
+      processNamesByPid.set(ev.pid, ev.args.name)
+    }
+  }
+  return processNamesByPid
+}
+
+function getThreadNamesByPidTid(events: TraceEvent[]): Map<string, string> {
+  const threadNameByPidTid = new Map<string, string>()
+
+  for (let ev of events) {
+    if (ev.ph === 'M' && ev.name === 'thread_name' && ev.args && ev.args.name) {
+      const key = `${ev.pid}:${ev.tid}`
+      threadNameByPidTid.set(key, ev.args.name)
+    }
+  }
+  return threadNameByPidTid
+}
+
 function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
   const profileByPidTid = new Map<string, CallTreeProfileBuilder>()
 
   const importableEvents = filterIgnoredEventTypes(events)
   const durationEvents = convertToDurationEvents(importableEvents)
+
+  const processNamesByPid = getProcessNamesByPid(events)
+  const threadNamesByPidTid = getThreadNamesByPidTid(events)
 
   durationEvents.sort((a, b) => {
     if (a.ts < b.ts) return -1
@@ -145,7 +170,20 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
     profile = new CallTreeProfileBuilder()
     profile.setValueFormatter(new TimeFormatter('microseconds'))
     profileByPidTid.set(pidTid, profile)
-    profile.setName(`pid: ${pid}, tid: ${tid}`)
+
+    const processName = processNamesByPid.get(pid)
+    const threadName = threadNamesByPidTid.get(`${pid}:${tid}`)
+
+    if (processName != null && threadName != null) {
+      profile.setName(`${processName} (pid ${pid}), ${threadName} (tid ${tid})`)
+    } else if (processName != null) {
+      profile.setName(`${processName} (pid ${pid}, tid ${tid})`)
+    } else if (threadName != null) {
+      profile.setName(`${threadName} (pid ${pid}, tid ${tid})`)
+    } else {
+      profile.setName(`pid ${pid}, tid ${tid}`)
+    }
+
     return profile
   }
 
@@ -183,8 +221,13 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
     }
   }
 
+  // For now, we just sort processes by pid & tid.
+  // The standard specifies that metadata events with the name
+  // "process_sort_index" and "thread_sort_index" can be used to influence the
+  // order, but for simplicity we'll ignore that until someone complains :)
   const profilePairs = Array.from(profileByPidTid.entries())
   sortBy(profilePairs, p => p[0])
+
   return {name: '', indexToView: 0, profiles: profilePairs.map(p => p[1])}
 }
 
