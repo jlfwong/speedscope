@@ -80,6 +80,86 @@ Object {
 }
 `;
 
+exports[`importTraceEvents multiprocess 5`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "epsilon",
+      "line": undefined,
+      "name": "epsilon",
+      "selfWeight": 1,
+      "totalWeight": 1,
+    },
+  ],
+  "name": "p2t0 (pid 2, tid 0)",
+  "stacks": Array [
+    "epsilon 1.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents multiprocess 6`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "phi",
+      "line": undefined,
+      "name": "phi",
+      "selfWeight": 1,
+      "totalWeight": 1,
+    },
+  ],
+  "name": "p2t1 (pid 2, tid 1)",
+  "stacks": Array [
+    "phi 1.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents multiprocess 7`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "zeta",
+      "line": undefined,
+      "name": "zeta",
+      "selfWeight": 1,
+      "totalWeight": 1,
+    },
+  ],
+  "name": "p3 (pid 3, tid 0)",
+  "stacks": Array [
+    "zeta 1.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents multiprocess 8`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "eta",
+      "line": undefined,
+      "name": "eta",
+      "selfWeight": 1,
+      "totalWeight": 1,
+    },
+  ],
+  "name": "p3 (pid 3, tid 1)",
+  "stacks": Array [
+    "eta 1.00µs",
+  ],
+}
+`;
+
 exports[`importTraceEvents multiprocess: indexToView 1`] = `0`;
 
 exports[`importTraceEvents multiprocess: profileGroup.name 1`] = `"multiprocess.json"`;
@@ -108,9 +188,9 @@ Object {
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "gamma",
+      "key": "gamma {\\"detail\\":\\"foobar\\"}",
       "line": undefined,
-      "name": "gamma",
+      "name": "gamma {\\"detail\\":\\"foobar\\"}",
       "selfWeight": 5,
       "totalWeight": 5,
     },
@@ -128,13 +208,59 @@ Object {
   "stacks": Array [
     "alpha 1.00µs",
     "alpha;beta 1.00µs",
-    "alpha;beta;gamma 5.00µs",
+    "alpha;beta;gamma {\\"detail\\":\\"foobar\\"} 5.00µs",
     "alpha;beta;epsilon 4.00µs",
     "alpha;beta 2.00µs",
     "alpha 1.00µs",
   ],
 }
 `;
+
+exports[`importTraceEvents simple object 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "alpha",
+      "line": undefined,
+      "name": "alpha",
+      "selfWeight": 2,
+      "totalWeight": 14,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "beta",
+      "line": undefined,
+      "name": "beta",
+      "selfWeight": 8,
+      "totalWeight": 12,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "(unnamed)",
+      "line": undefined,
+      "name": "(unnamed)",
+      "selfWeight": 4,
+      "totalWeight": 4,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "alpha 1.00µs",
+    "alpha;beta 6.00µs",
+    "alpha;beta;(unnamed) 4.00µs",
+    "alpha;beta 2.00µs",
+    "alpha 1.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents simple object: indexToView 1`] = `0`;
+
+exports[`importTraceEvents simple object: profileGroup.name 1`] = `"simple-object.json"`;
 
 exports[`importTraceEvents simple: indexToView 1`] = `0`;
 
