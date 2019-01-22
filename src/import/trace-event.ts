@@ -58,7 +58,8 @@ interface ETraceEvent extends TraceEvent {
 
 interface XTraceEvent extends TraceEvent {
   ph: 'X'
-  dur: number
+  dur?: number
+  tdur?: number
 }
 
 // The trace format supports a number of event types that we ignore.
@@ -91,8 +92,17 @@ function convertToDurationEvents(events: ImportableTraceEvent[]): DurationEvent[
         break
 
       case 'X':
+        let dur: number | null = null
+        if (ev.dur != null) dur = ev.dur
+        else if (ev.tdur != null) dur = ev.tdur
+
+        if (dur == null) {
+          console.warn('Found a complete event (X) with no duration. Skipping: ', ev)
+          continue
+        }
+
         ret.push({...ev, ph: 'B'} as BTraceEvent)
-        ret.push({...ev, ph: 'E', ts: ev.ts + ev.dur} as ETraceEvent)
+        ret.push({...ev, ph: 'E', ts: ev.ts + dur} as ETraceEvent)
         break
 
       default:
@@ -108,7 +118,23 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
 
   const importableEvents = filterIgnoredEventTypes(events)
   const durationEvents = convertToDurationEvents(importableEvents)
-  sortBy(durationEvents, ev => ev.ts)
+
+  durationEvents.sort((a, b) => {
+    if (a.ts < b.ts) return -1
+    if (a.ts > b.ts) return 1
+
+    if (a.ph === 'B' && b.ph === 'E') return -1
+    if (a.ph === 'E' && b.ph === 'B') return 1
+
+    return -1
+  })
+
+  if (durationEvents.length > 0) {
+    const firstTs = durationEvents[0].ts
+    for (let ev of durationEvents) {
+      ev.ts -= firstTs
+    }
+  }
 
   function getOrCreateProfile(pid: number, tid: number) {
     // We zero-pad the PID and TID to make sorting them by pid/tid pair later easier.
