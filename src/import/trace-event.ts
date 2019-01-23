@@ -251,7 +251,25 @@ function isTraceEventList(maybeEventList: any): maybeEventList is TraceEvent[] {
   // fields are mandatory, but without these fields, we won't usefully be able
   // to import the data, so we'll rely upon these.
   for (let el of maybeEventList) {
-    if (!('ph' in el) || !('ts' in el)) return false
+    if (!('ph' in el)) {
+      return false
+    }
+
+    switch (el.ph) {
+      case 'B':
+      case 'E':
+      case 'X':
+        // All B, E, and X events must have a timestamp specified, otherwise we
+        // won't be able to import correctly.
+        if (!('ts' in el)) {
+          return false
+        }
+
+      case 'M':
+        // It's explicitly okay for "M" (metadata) events not to specify a "ts"
+        // field, since usually there is no logical timestamp for them to have
+        break
+    }
   }
 
   return true
