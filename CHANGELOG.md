@@ -1,5 +1,11 @@
 ## Unreleased
 
+## [1.4.1] - 2019-01-22
+
+### Fixed
+
+* Fix importing of Trace Event Format files with no ts field on M events [#198] (by @jlfwong)
+
 ## [1.4.0] - 2019-01-22
 
 ### Added
