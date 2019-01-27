@@ -1,6 +1,8 @@
 import {Profile, ProfileGroup} from '../lib/profile'
 import {FileSystemDirectoryEntry} from './file-system-entry'
 
+import {partialParse} from 'partial-json-parser'
+
 import {
   importFromChromeCPUProfile,
   importFromChromeTimeline,
@@ -71,6 +73,14 @@ function toGroup(profile: Profile | null): ProfileGroup | null {
   return {name: profile.getName(), indexToView: 0, profiles: [profile]}
 }
 
+function tryImportTraceEvents(parsed: any): ProfileGroup | null {
+  if (isTraceEventFormatted(parsed)) {
+    console.log('Importing as Trace Event Format profile')
+    return importTraceEvents(parsed)
+  }
+  return null
+}
+
 async function _importProfileGroup(dataSource: ProfileDataSource): Promise<ProfileGroup | null> {
   const fileName = await dataSource.name()
 
@@ -115,6 +125,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
 
   // Second pass: Try to guess what file format it is based on structure
   let parsed: any
+  let profileGroup: ProfileGroup | null
   try {
     parsed = JSON.parse(contents)
   } catch (e) {}
@@ -131,9 +142,8 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     } else if ('nodes' in parsed && 'samples' in parsed && 'timeDeltas' in parsed) {
       console.log('Importing as Chrome CPU Profile')
       return toGroup(importFromChromeCPUProfile(parsed))
-    } else if (isTraceEventFormatted(parsed)) {
-      console.log('Importing as Trace Event Format profile')
-      return importTraceEvents(parsed)
+    } else if ((profileGroup = tryImportTraceEvents(parsed))) {
+      return profileGroup
     } else if ('head' in parsed && 'samples' in parsed && 'timestamps' in parsed) {
       console.log('Importing as Chrome CPU Profile (old format)')
       return toGroup(importFromOldV8CPUProfile(parsed))
@@ -172,6 +182,17 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     if (fromLinuxPerf) {
       console.log('Importing from linux perf script output')
       return fromLinuxPerf
+    }
+  }
+
+  // Third pass: try parsing partial JSON file, as some of the formats,
+  // e.g. Trace Event Format, allow partial files.
+  try {
+    parsed = partialParse(contents)
+  } catch {}
+  if (parsed) {
+    if ((profileGroup = tryImportTraceEvents(parsed))) {
+      return profileGroup
     }
   }
 
