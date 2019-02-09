@@ -44,8 +44,7 @@
     "ts-jest": "22.4.6",
     "typescript": "2.8.1",
     "typescript-eslint-parser": "17.0.1",
-    "uglify-es": "3.2.2",
-    "partial-json-parser": "1.0.3"
+    "uglify-es": "3.2.2"
   },
   "jest": {
     "transform": {
