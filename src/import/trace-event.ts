@@ -288,10 +288,6 @@ export function isTraceEventFormatted(
   // We're only going to suppor the JSON formatted profiles for now.
   // The spec also discusses support for data embedded in ftrace supported data: https://lwn.net/Articles/365835/.
 
-  // TODO(jlfwong): The spec also specifies that it's valid for the trace to not contain a terminating `]`.
-  // That complicates things a bit for us, so let's just ignore that for now until someone writes in with a
-  // bug report from real data.
-
   return isTraceEventObject(rawProfile) || isTraceEventList(rawProfile)
 }
 
