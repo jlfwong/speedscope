@@ -310,9 +310,13 @@ export class Application extends StatelessComponent<ApplicationProps> {
       return
     }
 
+    // TODO(jlfwong): Make these into nicer overlays
     if (profileGroup == null) {
-      // TODO(jlfwong): Make this a nicer overlay
       alert('Unrecognized format! See documentation about supported formats.')
+      this.props.setLoading(false)
+      return
+    } else if (profileGroup.profiles.length === 0) {
+      alert("Successfully imported profile, but it's empty!")
       this.props.setLoading(false)
       return
     }
