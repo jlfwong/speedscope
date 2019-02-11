@@ -82,11 +82,9 @@ export function importFromChromeTimeline(events: TimelineEvent[], fileName: stri
   for (let event of events) {
     if (event.name === 'CpuProfile') {
       const pidTid = `${event.pid}:${event.tid}`
-      cpuProfileByID.set(event.id || pidTid, event.args.data.cpuProfile as CPUProfile)
-
-      if (event.id) {
-        pidTidById.set(event.id, pidTid)
-      }
+      const id = event.id || pidTid
+      cpuProfileByID.set(id, event.args.data.cpuProfile as CPUProfile)
+      pidTidById.set(id, pidTid)
     }
 
     if (event.name === 'Profile') {

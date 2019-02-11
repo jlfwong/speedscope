@@ -564,7 +564,7 @@ Object {
       "totalWeight": 21931,
     },
   ],
-  "name": "worker.json",
+  "name": "worker.json - DedicatedWorker thread",
   "stacks": Array [
     " 9.07ms",
     "(program) 5.49ms",
@@ -781,7 +781,7 @@ Object {
       "totalWeight": 1530,
     },
   ],
-  "name": "worker.json",
+  "name": "worker.json - CrRendererMain",
   "stacks": Array [
     " 28.66ms",
     "(program) 315.00µs",
@@ -913,7 +913,7 @@ Object {
 }
 `;
 
-exports[`importFromChromeTimeline Workers Chrome 66: indexToView 1`] = `0`;
+exports[`importFromChromeTimeline Workers Chrome 66: indexToView 1`] = `1`;
 
 exports[`importFromChromeTimeline Workers Chrome 66: profileGroup.name 1`] = `"worker.json"`;
 
