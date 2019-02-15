@@ -364,7 +364,6 @@ async function readFormTemplate(tree: TraceDirectoryTree): Promise<FormTemplateD
   let selectedRunNumber = 1
   if ('com.apple.xray.owner.template' in Object.keys(archive)) {
     selectedRunNumber = archive['com.apple.xray.owner.template'].get('_selectedRunNumber')
-    console.log('get selectedRunNumber', selectedRunNumber)
   }
   let instrument = archive['$1']
   if ('stubInfoByUUID' in archive) {
