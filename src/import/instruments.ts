@@ -362,7 +362,7 @@ async function readFormTemplate(tree: TraceDirectoryTree): Promise<FormTemplateD
 
   const version = archive['com.apple.xray.owner.template.version']
   let selectedRunNumber = 1
-  if ('com.apple.xray.owner.template' in Object.keys(archive)) {
+  if ('com.apple.xray.owner.template' in archive) {
     selectedRunNumber = archive['com.apple.xray.owner.template'].get('_selectedRunNumber')
   }
   let instrument = archive['$1']
