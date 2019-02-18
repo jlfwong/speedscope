@@ -164,6 +164,174 @@ exports[`importTraceEvents multiprocess: indexToView 1`] = `0`;
 
 exports[`importTraceEvents multiprocess: profileGroup.name 1`] = `"multiprocess.json"`;
 
+exports[`importTraceEvents partial json import 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "alpha",
+      "line": undefined,
+      "name": "alpha",
+      "selfWeight": 2,
+      "totalWeight": 14,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "beta",
+      "line": undefined,
+      "name": "beta",
+      "selfWeight": 3,
+      "totalWeight": 12,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "gamma {\\"detail\\":\\"foobar\\"}",
+      "line": undefined,
+      "name": "gamma {\\"detail\\":\\"foobar\\"}",
+      "selfWeight": 5,
+      "totalWeight": 5,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "epsilon",
+      "line": undefined,
+      "name": "epsilon",
+      "selfWeight": 4,
+      "totalWeight": 4,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "alpha 1.00µs",
+    "alpha;beta 1.00µs",
+    "alpha;beta;gamma {\\"detail\\":\\"foobar\\"} 5.00µs",
+    "alpha;beta;epsilon 4.00µs",
+    "alpha;beta 2.00µs",
+    "alpha 1.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents partial json import trailing comma 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "alpha",
+      "line": undefined,
+      "name": "alpha",
+      "selfWeight": 2,
+      "totalWeight": 14,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "beta",
+      "line": undefined,
+      "name": "beta",
+      "selfWeight": 3,
+      "totalWeight": 12,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "gamma {\\"detail\\":\\"foobar\\"}",
+      "line": undefined,
+      "name": "gamma {\\"detail\\":\\"foobar\\"}",
+      "selfWeight": 5,
+      "totalWeight": 5,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "epsilon",
+      "line": undefined,
+      "name": "epsilon",
+      "selfWeight": 4,
+      "totalWeight": 4,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "alpha 1.00µs",
+    "alpha;beta 1.00µs",
+    "alpha;beta;gamma {\\"detail\\":\\"foobar\\"} 5.00µs",
+    "alpha;beta;epsilon 4.00µs",
+    "alpha;beta 2.00µs",
+    "alpha 1.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents partial json import trailing comma: indexToView 1`] = `0`;
+
+exports[`importTraceEvents partial json import trailing comma: profileGroup.name 1`] = `"simple-partial-trailing-comma.json"`;
+
+exports[`importTraceEvents partial json import whitespace padding 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "alpha",
+      "line": undefined,
+      "name": "alpha",
+      "selfWeight": 2,
+      "totalWeight": 14,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "beta",
+      "line": undefined,
+      "name": "beta",
+      "selfWeight": 3,
+      "totalWeight": 12,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "gamma {\\"detail\\":\\"foobar\\"}",
+      "line": undefined,
+      "name": "gamma {\\"detail\\":\\"foobar\\"}",
+      "selfWeight": 5,
+      "totalWeight": 5,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "epsilon",
+      "line": undefined,
+      "name": "epsilon",
+      "selfWeight": 4,
+      "totalWeight": 4,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "alpha 1.00µs",
+    "alpha;beta 1.00µs",
+    "alpha;beta;gamma {\\"detail\\":\\"foobar\\"} 5.00µs",
+    "alpha;beta;epsilon 4.00µs",
+    "alpha;beta 2.00µs",
+    "alpha 1.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents partial json import whitespace padding: indexToView 1`] = `0`;
+
+exports[`importTraceEvents partial json import whitespace padding: profileGroup.name 1`] = `"simple-partial-whitespace.json"`;
+
+exports[`importTraceEvents partial json import: indexToView 1`] = `0`;
+
+exports[`importTraceEvents partial json import: profileGroup.name 1`] = `"simple-partial.json"`;
+
 exports[`importTraceEvents simple 1`] = `
 Object {
   "frames": Array [
