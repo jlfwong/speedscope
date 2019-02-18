@@ -79,19 +79,17 @@ export function importFromChromeTimeline(events: TimelineEvent[], fileName: stri
   // that they are.
   sortBy(events, e => e.ts)
 
-  const DEFAULT_ID = '(default id)'
-
   for (let event of events) {
     if (event.name === 'CpuProfile') {
-      cpuProfileByID.set(event.id || DEFAULT_ID, event.args.data.cpuProfile as CPUProfile)
-
-      if (event.id) {
-        pidTidById.set(event.id, `${event.pid}:${event.tid}`)
-      }
+      const pidTid = `${event.pid}:${event.tid}`
+      const id = event.id || pidTid
+      cpuProfileByID.set(id, event.args.data.cpuProfile as CPUProfile)
+      pidTidById.set(id, pidTid)
     }
 
     if (event.name === 'Profile') {
-      cpuProfileByID.set(event.id || DEFAULT_ID, {
+      const pidTid = `${event.pid}:${event.tid}`
+      cpuProfileByID.set(event.id || pidTid, {
         startTime: 0,
         endTime: 0,
         nodes: [],
@@ -110,7 +108,8 @@ export function importFromChromeTimeline(events: TimelineEvent[], fileName: stri
     }
 
     if (event.name === 'ProfileChunk') {
-      const cpuProfile = cpuProfileByID.get(event.id || DEFAULT_ID)
+      const pidTid = `${event.pid}:${event.tid}`
+      const cpuProfile = cpuProfileByID.get(event.id || pidTid)
       if (cpuProfile) {
         const chunk = event.args.data
         if (chunk.cpuProfile) {
@@ -131,9 +130,7 @@ export function importFromChromeTimeline(events: TimelineEvent[], fileName: stri
           cpuProfile.endTime = chunk.endTime
         }
       } else {
-        console.warn(
-          `Ignoring ProfileChunk for undeclared Profile with id ${event.id || DEFAULT_ID}`,
-        )
+        console.warn(`Ignoring ProfileChunk for undeclared Profile with id ${event.id || pidTid}`)
       }
     }
   }
