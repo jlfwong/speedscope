@@ -98,4 +98,7 @@ describe('importFromInstrumentsTrace', () => {
   test('Instruments 9.3.1', async () => {
     await importFromTrace('./sample/profiles/Instruments/9.3.1/simple-time-profile.trace.zip')
   })
+  test('Instruments 10.0', async () => {
+    await importFromTrace('./sample/profiles/Instruments/10.0/simple-time-profile.trace.zip')
+  })
 })
