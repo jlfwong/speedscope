@@ -11,3 +11,15 @@ test('importTraceEvents simple object', async () => {
 test('importTraceEvents multiprocess', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/multiprocess.json')
 })
+
+test('importTraceEvents partial json import', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/simple-partial.json')
+})
+
+test('importTraceEvents partial json import trailing comma', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/simple-partial-trailing-comma.json')
+})
+
+test('importTraceEvents partial json import whitespace padding', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/simple-partial-whitespace.json')
+})
