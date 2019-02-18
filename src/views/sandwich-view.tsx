@@ -42,7 +42,14 @@ class SandwichView extends StatelessComponent<SandwichViewProps> {
 
     if (selectedFrame) {
       flamegraphViews = (
-        <div className={css(commonStyle.fillY, style.callersAndCallees, commonStyle.vbox)}>
+        <div
+          className={css(
+            commonStyle.fillY,
+            style.callersAndCallees,
+            commonStyle.vbox,
+            commonStyle.hResizable,
+          )}
+        >
           <div className={css(commonStyle.hbox, style.panZoomViewWraper)}>
             <div className={css(style.flamechartLabelParent)}>
               <div className={css(style.flamechartLabel)}>Callers</div>
@@ -67,7 +74,7 @@ class SandwichView extends StatelessComponent<SandwichViewProps> {
     }
 
     return (
-      <div className={css(commonStyle.hbox, commonStyle.fillY)}>
+      <div className={css(commonStyle.hbox, commonStyle.fillY, commonStyle.hResizable)}>
         <div className={css(style.tableView)}>
           <ProfileTableViewContainer activeProfileState={this.props.activeProfileState} />
         </div>
