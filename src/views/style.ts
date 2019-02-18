@@ -62,7 +62,4 @@ export const commonStyle = StyleSheet.create({
     position: 'relative',
     overflow: 'hidden',
   },
-  hResizable: {
-    resize: 'horizontal',
-  },
 })
