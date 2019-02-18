@@ -1,5 +1,18 @@
 ## Unreleased
 
+## [1.5.0] - 2019-02-17
+
+### Added
+
+* Support importing unterminated JSON in simple cases (#208) (by @jlfwong)
+
+### Fixed
+
+* Fix crash when importing from stackpro without raw_timestamp_deltas (#207) (by @jlfwong)
+* Alert instead of crash when importing a file containing no profiles (#205) (by @jlfwong)
+* Fixed import of multithreaded profiles from Chrome 66 (#206) (by @jlfwong)
+* Fixed import of instruments trace files with missing run number (#203) (by @Archerlly)
+
 ## [1.4.1] - 2019-01-22
 
 ### Fixed
