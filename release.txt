@@ -1,3 +1,3 @@
-speedscope@1.4.1
-Tue Jan 22 21:56:32 PST 2019
-ddc61302e886ca521fcfacc44f4f5b45144e1510
+speedscope@1.5.0
+Sun Feb 17 18:39:11 PST 2019
+30ca6291ca93557e2bb77a2bafc5bac580627102
