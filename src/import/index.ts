@@ -137,7 +137,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     } else if ('head' in parsed && 'samples' in parsed && 'timestamps' in parsed) {
       console.log('Importing as Chrome CPU Profile (old format)')
       return toGroup(importFromOldV8CPUProfile(parsed))
-    } else if ('mode' in parsed && 'frames' in parsed) {
+    } else if ('mode' in parsed && 'frames' in parsed && 'raw_timestamp_deltas' in parsed) {
       console.log('Importing as stackprof profile')
       return toGroup(importFromStackprof(parsed))
     } else if ('code' in parsed && 'functions' in parsed && 'ticks' in parsed) {
