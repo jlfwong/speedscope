@@ -740,7 +740,7 @@ function paternMatchObjectiveC(
       // Replace NSString with a string
       case 'NSString':
       case 'NSMutableString':
-        return decodeUTF8(value['NS.bytes'])
+        return decodeUTF8(value['NS.bytes']) || value['NS.string']
 
       // Replace NSArray with an Array
       case 'NSArray':
