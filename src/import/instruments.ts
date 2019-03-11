@@ -278,13 +278,21 @@ async function getRawSampleList(core: TraceDirectoryTree): Promise<Sample[]> {
     while (true) {
       // Schema as of Instruments 8.3.3 is a 6 byte timestamp, followed by a bunch
       // of stuff we don't care about, followed by a 4 byte backtrace ID
+      const timestampBytes = 48 / 8
       const timestamp = bulkstore.readUint48()
       if (timestamp === 0) break
 
+      const threadIDBytes = 32 / 8
       const threadID = bulkstore.readUint32()
 
-      bulkstore.skip(bytesPerEntry - 6 - 4 - 4)
+      // Skip the stuff we don't care about. We can do this because we know how
+      // many bytes there shuold be per entry from the header of the file, and
+      // we know how many bytes we're reading for each of the fields we do care
+      // about.
+      const backtraceIDBytes = 32 / 8
+      bulkstore.skip(bytesPerEntry - timestampBytes - threadIDBytes - backtraceIDBytes)
       const backtraceID = bulkstore.readUint32()
+
       samples.push({timestamp, threadID, backtraceID})
     }
     return samples
