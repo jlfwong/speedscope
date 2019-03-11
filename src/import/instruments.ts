@@ -508,22 +508,44 @@ export function importThreadFromInstrumentsTrace(args: {
   const profile = new StackListProfileBuilder(lastOf(samples)!.timestamp)
   profile.setName(`${fileName} - thread ${threadID}`)
 
+  // Each sample's stack is identified by a single number. This number might be
+  // a an address, or an index into the integer array list. If it's an index
+  // into the integer arrays list, then the integer array it corresponds to
+  // might itself contain either addresses or indices into the integer array.
   function appendRecursive(k: number, stack: FrameInfo[]) {
-    const frame = addressToFrameMap.get(k)
+    // First try: let's see if the number is an address and we have
+    // an associated stack frame for the address.
+    const address = k
+    const frame = addressToFrameMap.get(address)
     if (frame) {
       stack.push(frame)
-    } else if (k in arrays) {
-      for (let addr of arrays[k]) {
+      return
+    }
+
+    // Second try: let's see if the number is an index into the integer array
+    // list. We'll re-interpret the index as a 32 bit integer here by ignoring
+    // the upper 32 bits of the integer.
+    //
+    // TODO(jlfwong): This seems pretty dubious. Is there a more correct wait to
+    // differentiate between an address and a number? I wonder if there's either
+    // some metadata somewhere that we need or if there's something in the byte
+    // sequence that indicates what kind of number it is.
+    const arrayIndex = k & 0xffffffff
+    if (arrayIndex in arrays) {
+      for (let addr of arrays[arrayIndex]) {
         appendRecursive(addr, stack)
       }
-    } else {
-      const rawAddressFrame: FrameInfo = {
-        key: k,
-        name: `0x${zeroPad(k.toString(16), 16)}`,
-      }
-      addressToFrameMap.set(k, rawAddressFrame)
-      stack.push(rawAddressFrame)
+      return
     }
+
+    // Fallback case: we'll say we can't find the address, and just
+    // display the address instead of frame information.
+    const rawAddressFrame: FrameInfo = {
+      key: k,
+      name: `0x${zeroPad(k.toString(16), 16)}`,
+    }
+    addressToFrameMap.set(k, rawAddressFrame)
+    stack.push(rawAddressFrame)
   }
 
   let lastTimestamp: null | number = null
