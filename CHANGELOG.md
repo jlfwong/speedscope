@@ -1,5 +1,11 @@
 ## Unreleased
 
+## [1.5.1] - 2019-06-06
+
+### Fixed
+
+* Fixed import of trace event files which contain unmatched "E" events (#222) (by @jlfwong)
+
 ## [1.5.0] - 2019-02-17
 
 ### Added
