@@ -23,3 +23,7 @@ test('importTraceEvents partial json import trailing comma', async () => {
 test('importTraceEvents partial json import whitespace padding', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/simple-partial-whitespace.json')
 })
+
+test('importTraceEvents bad E events', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/too-many-end-events.json')
+})

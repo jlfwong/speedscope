@@ -1,5 +1,40 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`importTraceEvents bad E events 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "alpha",
+      "line": undefined,
+      "name": "alpha",
+      "selfWeight": 2,
+      "totalWeight": 14,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "beta",
+      "line": undefined,
+      "name": "beta",
+      "selfWeight": 12,
+      "totalWeight": 12,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "alpha 1.00µs",
+    "alpha;beta 12.00µs",
+    "alpha 1.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents bad E events: indexToView 1`] = `0`;
+
+exports[`importTraceEvents bad E events: profileGroup.name 1`] = `"too-many-end-events.json"`;
+
 exports[`importTraceEvents multiprocess 1`] = `
 Object {
   "frames": Array [
