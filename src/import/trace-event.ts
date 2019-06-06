@@ -1,4 +1,4 @@
-import {sortBy, zeroPad} from '../lib/utils'
+import {sortBy, zeroPad, lastOf} from '../lib/utils'
 import {ProfileGroup, CallTreeProfileBuilder, FrameInfo} from '../lib/profile'
 import {TimeFormatter} from '../lib/value-formatters'
 
@@ -143,8 +143,10 @@ function keyForEvent(event: TraceEvent): string {
   return name
 }
 
+type TraceEventProfileState = {profile: CallTreeProfileBuilder; eventStack: BTraceEvent[]}
+
 function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
-  const profileByPidTid = new Map<string, CallTreeProfileBuilder>()
+  const stateByPidTid = new Map<string, TraceEventProfileState>()
 
   const importableEvents = filterIgnoredEventTypes(events)
   const durationEvents = convertToDurationEvents(importableEvents)
@@ -185,15 +187,16 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
     }
   }
 
-  function getOrCreateProfile(pid: number, tid: number) {
+  function getOrCreateProfileState(pid: number, tid: number): TraceEventProfileState {
     // We zero-pad the PID and TID to make sorting them by pid/tid pair later easier.
     const pidTid = `${zeroPad('' + pid, 10)}:${zeroPad('' + tid, 10)}`
 
-    let profile = profileByPidTid.get(pidTid)
-    if (profile != null) return profile
-    profile = new CallTreeProfileBuilder()
+    let state = stateByPidTid.get(pidTid)
+    if (state != null) return state
+    let profile = new CallTreeProfileBuilder()
+    state = {profile, eventStack: []}
     profile.setValueFormatter(new TimeFormatter('microseconds'))
-    profileByPidTid.set(pidTid, profile)
+    stateByPidTid.set(pidTid, state)
 
     const processName = processNamesByPid.get(pid)
     const threadName = threadNamesByPidTid.get(`${pid}:${tid}`)
@@ -208,11 +211,11 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
       profile.setName(`pid ${pid}, tid ${tid}`)
     }
 
-    return profile
+    return state
   }
 
   for (let ev of durationEvents) {
-    const profile = getOrCreateProfile(ev.pid, ev.tid)
+    const {profile, eventStack} = getOrCreateProfileState(ev.pid, ev.tid)
     const key = keyForEvent(ev)
     const frameInfo: FrameInfo = {
       key: key,
@@ -220,11 +223,23 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
     }
     switch (ev.ph) {
       case 'B':
+        eventStack.push(ev)
         profile.enterFrame(frameInfo, ev.ts)
         break
 
       case 'E':
-        profile.leaveFrame(frameInfo, ev.ts)
+        const lastEvent = lastOf(eventStack)
+        if (lastEvent != null && lastEvent.name === ev.name) {
+          profile.leaveFrame(frameInfo, ev.ts)
+          eventStack.pop()
+        } else {
+          console.warn(
+            'Event discarded because it did not match top-of-stack. Discarded event:',
+            ev,
+            'Top of stack:',
+            lastEvent,
+          )
+        }
         break
 
       default:
@@ -237,10 +252,10 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
   // TODO: The standard specifies that metadata events with the name
   // "process_sort_index" and "thread_sort_index" can be used to influence the
   // order, but for simplicity we'll ignore that until someone complains :)
-  const profilePairs = Array.from(profileByPidTid.entries())
+  const profilePairs = Array.from(stateByPidTid.entries())
   sortBy(profilePairs, p => p[0])
 
-  return {name: '', indexToView: 0, profiles: profilePairs.map(p => p[1])}
+  return {name: '', indexToView: 0, profiles: profilePairs.map(p => p[1].profile)}
 }
 
 function isTraceEventList(maybeEventList: any): maybeEventList is TraceEvent[] {

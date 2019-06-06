@@ -1,0 +1,8 @@
+[
+  {"pid": 0, "tid": 0, "ph": "B", "name": "alpha", "ts": 0},
+  {"pid": 0, "tid": 0, "ph": "B", "name": "beta", "ts": 1},
+  {"pid": 0, "tid": 0, "ph": "E", "name": "beta", "ts": 13},
+  {"pid": 0, "tid": 0, "ph": "E", "name": "alpha", "ts": 14},
+  {"pid": 0, "tid": 0, "ph": "E", "name": "gamma", "ts": 5},
+  {"pid": 0, "tid": 0, "ph": "E", "name": "delta", "ts": 5}
+]
