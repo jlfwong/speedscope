@@ -41,6 +41,9 @@ test('importEmscriptenSymbolMap', () => {
         '1:B',
         '2:C',
         '3:D-D',
+        '4:a\\20b',
+        '5:a\\2',
+        '6:a\\3z',
       ].join('\n'),
     ),
   ).toEqual(
@@ -49,6 +52,9 @@ test('importEmscriptenSymbolMap', () => {
       ['wasm-function[1]', 'B'],
       ['wasm-function[2]', 'C'],
       ['wasm-function[3]', 'D-D'],
+      ['wasm-function[4]', 'a b'],
+      ['wasm-function[5]', 'a\\2'],
+      ['wasm-function[6]', 'a\\3z'],
     ]),
   )
 
