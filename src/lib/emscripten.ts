@@ -1,6 +1,8 @@
 type EmscriptenSymbolMap = Map<string, string>
 
 // Returns `input` with hex escapes expanded (e.g. `\20` becomes ` `.)
+//
+// NOTE: This will fail to ignore escaped backslahes (e.g. `\\20`).
 function unescapeHex(input: string): string {
   return input.replace(/\\([a-fA-F0-9]{2})/, (_match, group) => {
     const scalar = parseInt(group, 16)
