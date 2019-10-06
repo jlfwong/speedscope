@@ -42,8 +42,11 @@ speedscope is designed to ingest profiles from a variety of different profilers 
   - [Importing from rbspy](https://github.com/jlfwong/speedscope/wiki/Importing-from-rbspy-(ruby))
 - Python
   - [Importing from py-spy](https://github.com/jlfwong/speedscope/wiki/Importing-from-py-spy-(python))
+  - [pyspeedscope](https://github.com/windelbouwman/pyspeedscope)
 - Go
   - [Importing from pprof](https://github.com/jlfwong/speedscope/wiki/Importing-from-pprof-(go))  
+- Rust
+  - [flamescope](https://github.com/coolreader18/flamescope)
 - Native code
   - [Importing from Instruments.app](https://github.com/jlfwong/speedscope/wiki/Importing-from-Instruments.app) (macOS)
   - [Importing from `perf`](https://github.com/jlfwong/speedscope/wiki/Importing-from-perf-(linux)) (linux)
