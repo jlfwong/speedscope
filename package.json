@@ -1,6 +1,6 @@
 {
   "name": "speedscope",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "",
   "repository": "jlfwong/speedscope",
   "main": "index.js",
@@ -17,8 +17,15 @@
     "test": "tsc --noEmit && npm run lint && npm run coverage",
     "serve": "parcel assets/index.html --open --no-autoinstall"
   },
-  "files": ["bin/cli.js", "dist/release/**", "!*.map"],
-  "browserslist": ["last 2 Chrome versions", "last 2 Firefox versions"],
+  "files": [
+    "bin/cli.js",
+    "dist/release/**",
+    "!*.map"
+  ],
+  "browserslist": [
+    "last 2 Chrome versions",
+    "last 2 Firefox versions"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
@@ -51,8 +58,17 @@
       "^.+\\.tsx?$": "ts-jest"
     },
     "testRegex": "\\.test\\.tsx?$",
-    "collectCoverageFrom": ["**/*.{ts,tsx}", "!**/*.d.{ts,tsx}"],
-    "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json"]
+    "collectCoverageFrom": [
+      "**/*.{ts,tsx}",
+      "!**/*.d.{ts,tsx}"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json"
+    ]
   },
   "dependencies": {
     "opn": "5.3.0"
