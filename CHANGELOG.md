@@ -1,5 +1,11 @@
 ## Unreleased
 
+## [1.5.2] - 2019-10-10
+
+### Fixed
+
+* Fix emscripten remapping when symbols are hex-escaped, like `a\20b` [#233] (by @jyc)
+
 ## [1.5.1] - 2019-06-06
 
 ### Fixed
