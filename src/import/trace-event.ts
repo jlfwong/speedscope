@@ -177,7 +177,7 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
       }
     }
 
-    return -1
+    return 1
   })
 
   if (durationEvents.length > 0) {
