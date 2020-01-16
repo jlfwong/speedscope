@@ -1,6 +1,6 @@
 import {checkProfileSnapshot} from '../lib/test-utils'
 
-describe('importFromLinuxPerf', async () => {
+describe('importFromLinuxPerf', () => {
   test('simple.linux-perf.txt', async () => {
     await checkProfileSnapshot('./sample/profiles/linux-perf/simple.linux-perf.txt')
   })

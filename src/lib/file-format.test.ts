@@ -1,6 +1,6 @@
 import {checkProfileSnapshot} from './test-utils'
 
-describe('importSpeedscopeProfiles', async () => {
+describe('importSpeedscopeProfiles', () => {
   test('0.0.1 evented profile', async () => {
     await checkProfileSnapshot('./sample/profiles/speedscope/0.0.1/simple.speedscope.json')
   })

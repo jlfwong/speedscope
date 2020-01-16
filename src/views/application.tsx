@@ -402,6 +402,8 @@ export class Application extends StatelessComponent<ApplicationProps> {
     this.props.setDragActive(false)
     ev.preventDefault()
 
+    if (!ev.dataTransfer) return
+
     const firstItem = ev.dataTransfer.items[0]
     if ('webkitGetAsEntry' in firstItem) {
       const webkitEntry: FileSystemDirectoryEntry = firstItem.webkitGetAsEntry()
@@ -490,7 +492,9 @@ export class Application extends StatelessComponent<ApplicationProps> {
     ev.preventDefault()
     ev.stopPropagation()
 
-    const pasted = (ev as ClipboardEvent).clipboardData.getData('text')
+    const clipboardData = (ev as ClipboardEvent).clipboardData
+    if (!clipboardData) return
+    const pasted = clipboardData.getData('text')
     this.loadProfile(async () => {
       return await importProfilesFromText('From Clipboard', pasted)
     })
@@ -611,7 +615,8 @@ export class Application extends StatelessComponent<ApplicationProps> {
               href="https://github.com/jlfwong/speedscope/issues"
             >
               report any issues on GitHub
-            </a>.
+            </a>
+            .
           </p>
         </div>
       </div>

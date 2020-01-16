@@ -633,7 +633,7 @@ export function readInstrumentsKeyedArchive(buffer: ArrayBuffer): any {
 ////////////////////////////////////////////////////////////////////////////////
 
 export function decodeUTF8(bytes: Uint8Array): string {
-  let text = String.fromCharCode.apply(String, bytes)
+  let text = String.fromCharCode.apply(String, Array.from(bytes))
   if (text.slice(-1) === '\0') text = text.slice(0, -1) // Remove a single trailing null character if present
   return decodeURIComponent(escape(text))
 }
@@ -740,7 +740,10 @@ function paternMatchObjectiveC(
       // Replace NSString with a string
       case 'NSString':
       case 'NSMutableString':
-        return decodeUTF8(value['NS.bytes'])
+        if (value['NS.string']) return value['NS.string']
+        if (value['NS.bytes']) return decodeUTF8(value['NS.bytes'])
+        console.warn(`Unexpected ${name} format: `, value)
+        return null
 
       // Replace NSArray with an Array
       case 'NSArray':
