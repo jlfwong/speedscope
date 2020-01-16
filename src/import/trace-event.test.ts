@@ -27,3 +27,7 @@ test('importTraceEvents partial json import whitespace padding', async () => {
 test('importTraceEvents bad E events', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/too-many-end-events.json')
 })
+
+test('importTraceEvents event re-ordering', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/must-retain-original-order.json')
+})

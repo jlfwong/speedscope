@@ -1,0 +1,16 @@
+[
+  {"tid": 1, "ph": "B", "pid": 0, "name": "A", "ts": 0},
+  {"tid": 1, "ph": "B", "pid": 0, "name": "B", "ts": 0},
+  {"tid": 1, "ph": "B", "pid": 0, "name": "C", "ts": 0},
+  {"tid": 1, "ph": "E", "pid": 0, "name": "C", "ts": 1},
+  {"tid": 1, "ph": "E", "pid": 0, "name": "B", "ts": 2},
+  {"tid": 1, "ph": "E", "pid": 0, "name": "A", "ts": 3},
+  {"tid": 1, "ph": "B", "pid": 0, "name": "A", "ts": 4},
+  {"tid": 1, "ph": "B", "pid": 0, "name": "B", "ts": 5},
+  {"tid": 1, "ph": "B", "pid": 0, "name": "C", "ts": 6},
+  {"tid": 1, "ph": "E", "pid": 0, "name": "C", "ts": 7},
+  {"tid": 1, "ph": "E", "pid": 0, "name": "B", "ts": 7},
+  {"tid": 1, "ph": "E", "pid": 0, "name": "A", "ts": 7},
+  {"tid": 1, "ph": "B", "pid": 0, "name": "X", "ts": 7},
+  {"tid": 1, "ph": "E", "pid": 0, "name": "X", "ts": 10}
+]
