@@ -455,7 +455,8 @@ export namespace WebGL {
       widthInAppUnits: number,
       heightInAppUnits: number,
     ) {
-      const bounds = this._gl.canvas.getBoundingClientRect()
+      let canvas = this._gl.canvas as HTMLCanvasElement
+      const bounds = canvas.getBoundingClientRect()
 
       if (
         this._width === widthInAppUnits &&
@@ -467,7 +468,6 @@ export namespace WebGL {
         return
       }
 
-      let canvas = this._gl.canvas
       let style = canvas.style
       canvas.width = widthInPixels
       canvas.height = heightInPixels
@@ -1086,10 +1086,16 @@ export namespace WebGL {
 
     _compileShader(gl: WebGLRenderingContext, type: GLenum, source: string) {
       let shader = gl.createShader(type)
+      if (!shader) {
+        throw new Error('Failed to create shader')
+      }
       gl.shaderSource(shader, source)
       gl.compileShader(shader)
       if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
         throw new Error(`${gl.getShaderInfoLog(shader)}`)
+      }
+      if (!this._program) {
+        throw new Error('Tried to attach shader before program was created')
       }
       gl.attachShader(this._program, shader)
     }
