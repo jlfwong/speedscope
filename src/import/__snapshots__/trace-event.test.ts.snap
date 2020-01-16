@@ -35,6 +35,62 @@ exports[`importTraceEvents bad E events: indexToView 1`] = `0`;
 
 exports[`importTraceEvents bad E events: profileGroup.name 1`] = `"too-many-end-events.json"`;
 
+exports[`importTraceEvents event re-ordering 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "A",
+      "line": undefined,
+      "name": "A",
+      "selfWeight": 1,
+      "totalWeight": 10,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "C",
+      "line": undefined,
+      "name": "C",
+      "selfWeight": 3,
+      "totalWeight": 10,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "B",
+      "line": undefined,
+      "name": "B",
+      "selfWeight": 3,
+      "totalWeight": 4,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "X",
+      "line": undefined,
+      "name": "X",
+      "selfWeight": 3,
+      "totalWeight": 3,
+    },
+  ],
+  "name": "pid 0, tid 1",
+  "stacks": Array [
+    "A;C;B 2.00µs",
+    "A;C 2.00µs",
+    "A;C;A 1.00µs",
+    "A;C;A;B 1.00µs",
+    "A;C;A;B;C 1.00µs",
+    "A;C;X 3.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents event re-ordering: indexToView 1`] = `0`;
+
+exports[`importTraceEvents event re-ordering: profileGroup.name 1`] = `"must-retain-original-order.json"`;
+
 exports[`importTraceEvents multiprocess 1`] = `
 Object {
   "frames": Array [

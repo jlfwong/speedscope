@@ -157,27 +157,30 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
   durationEvents.sort((a, b) => {
     if (a.ts < b.ts) return -1
     if (a.ts > b.ts) return 1
+    if (a.pid < b.pid) return -1
+    if (a.pid > b.pid) return 1
+    if (a.tid < b.tid) return -1
+    if (a.tid > b.tid) return 1
 
     // We have to be careful with events that have the same timestamp
-    if (a.pid === b.pid && a.tid === b.tid) {
-      const aKey = keyForEvent(a)
-      const bKey = keyForEvent(b)
-
-      if (aKey === bKey) {
-        // If the two elements have the same key, we need to process the begin
-        // event before the end event. This will be a zero-duration event.
-        if (a.ph === 'B' && b.ph === 'E') return -1
-        if (a.ph === 'E' && b.ph === 'B') return 1
-      } else {
-        // If the two elements have *different* keys, we want to process
-        // the end of an event before the beginning of the event to prevent
-        // out-of-order push/pops from the callstack.
-        if (a.ph === 'B' && b.ph === 'E') return 1
-        if (a.ph === 'E' && b.ph === 'B') return -1
-      }
+    // and the same pid/tid
+    const aKey = keyForEvent(a)
+    const bKey = keyForEvent(b)
+    if (aKey === bKey) {
+      // If the two elements have the same key, we need to process the begin
+      // event before the end event. This will be a zero-duration event.
+      if (a.ph === 'B' && b.ph === 'E') return -1
+      if (a.ph === 'E' && b.ph === 'B') return 1
+    } else {
+      // If the two elements have *different* keys, we want to process
+      // the end of an event before the beginning of the event to prevent
+      // out-of-order push/pops from the call-stack.
+      if (a.ph === 'B' && b.ph === 'E') return 1
+      if (a.ph === 'E' && b.ph === 'B') return -1
     }
 
-    return -1
+    // In all other cases, retain the original sort order.
+    return 0
   })
 
   if (durationEvents.length > 0) {
