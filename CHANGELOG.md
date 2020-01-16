@@ -5,8 +5,7 @@
 ### Fixed
 
 - Bump dependency versions to unbreak build [#253] (by @jlfwong, with changes from @Archerlly's #215)
-- Trace event: Prevent event re-ordering from generating incorrect flam
-  egraphs (#252, with changes from @hwajaywang's #249)
+- Trace event: Prevent event re-ordering from generating incorrect flamegraphs (#252, with changes from @hwajaywang's #249)
 - Make tooltip width wider [#239] (by @miso11)
 
 ## [1.5.2] - 2019-10-10
