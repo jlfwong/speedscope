@@ -65,7 +65,12 @@ export class ViewportRectangleRenderer {
   private buffer: Graphics.VertexBuffer
 
   constructor(private gl: Graphics.Context) {
-    const vertices = [[-1, 1], [1, 1], [-1, -1], [1, -1]]
+    const vertices = [
+      [-1, 1],
+      [1, 1],
+      [-1, -1],
+      [1, -1],
+    ]
     const floats: number[] = []
     for (let v of vertices) {
       floats.push(v[0])

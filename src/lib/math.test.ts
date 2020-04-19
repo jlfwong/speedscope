@@ -13,9 +13,10 @@ test('clamp', () => {
 // Change this to jsc.integer to debug failures more easily
 let numericType = jsc.number
 
-const arbitraryVec2 = jsc
-  .record({x: jsc.integer, y: numericType})
-  .smap(v => new Vec2(v.x, v.y), v => v)
+const arbitraryVec2 = jsc.record({x: jsc.integer, y: numericType}).smap(
+  v => new Vec2(v.x, v.y),
+  v => v,
+)
 
 const positiveVec2 = jsc.suchthat(arbitraryVec2, v => v.x > 0 && v.y > 0)
 
@@ -28,23 +29,25 @@ const arbitraryTransform = jsc
     m11: numericType,
     m12: numericType,
   })
-  .smap(t => new AffineTransform(t.m00, t.m01, t.m02, t.m10, t.m11, t.m12), t => t)
+  .smap(
+    t => new AffineTransform(t.m00, t.m01, t.m02, t.m10, t.m11, t.m12),
+    t => t,
+  )
 
 const invertibleTransform = jsc.suchthat(arbitraryTransform, t => t.det() != 0)
 
 const simpleTransform = jsc.suchthat(
-  jsc
-    .record({scale: arbitraryVec2, translation: arbitraryVec2})
-    .smap(
-      t => AffineTransform.withScale(t.scale).withTranslation(t.translation),
-      t => ({scale: t.getScale(), translation: t.getTranslation()}),
-    ),
+  jsc.record({scale: arbitraryVec2, translation: arbitraryVec2}).smap(
+    t => AffineTransform.withScale(t.scale).withTranslation(t.translation),
+    t => ({scale: t.getScale(), translation: t.getTranslation()}),
+  ),
   t => t.det() != 0,
 )
 
-const arbitraryRect = jsc
-  .record({origin: arbitraryVec2, size: positiveVec2})
-  .smap(r => new Rect(r.origin, r.size), r => r)
+const arbitraryRect = jsc.record({origin: arbitraryVec2, size: positiveVec2}).smap(
+  r => new Rect(r.origin, r.size),
+  r => r,
+)
 
 describe('Vec2', () => {
   test('constructor', () => {

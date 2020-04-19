@@ -53,7 +53,7 @@ export class StatsPanel {
     this.msPanel.update(time - this.beginTime, 200)
 
     if (time >= this.prevTime + 1000) {
-      this.fpsPanel.update(this.frames * 1000 / (time - this.prevTime), 100)
+      this.fpsPanel.update((this.frames * 1000) / (time - this.prevTime), 100)
       this.prevTime = time
       this.frames = 0
     }

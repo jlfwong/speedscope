@@ -24,9 +24,7 @@ export class CanvasContext {
     const webGLInfo = this.gl.getWebGLInfo()
     if (webGLInfo) {
       console.log(
-        `WebGL initialized. renderer: ${webGLInfo.renderer}, vendor: ${
-          webGLInfo.vendor
-        }, version: ${webGLInfo.version}`,
+        `WebGL initialized. renderer: ${webGLInfo.renderer}, vendor: ${webGLInfo.vendor}, version: ${webGLInfo.version}`,
       )
     }
     ;(window as any)['testContextLoss'] = () => {

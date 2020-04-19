@@ -507,7 +507,10 @@ export class StackListProfileBuilder extends Profile {
         this.setValueFormatter(new RawValueFormatter())
       }
     }
-    this.totalWeight = Math.max(this.totalWeight, this.weights.reduce((a, b) => a + b, 0))
+    this.totalWeight = Math.max(
+      this.totalWeight,
+      this.weights.reduce((a, b) => a + b, 0),
+    )
     return this
   }
 }
@@ -557,9 +560,7 @@ export class CallTreeProfileBuilder extends Profile {
           this.weights.push(value - this.lastValue)
         } else if (delta < 0) {
           throw new Error(
-            `Samples must be provided in increasing order of cumulative value. Last sample was ${
-              this.lastValue
-            }, this sample was ${value}`,
+            `Samples must be provided in increasing order of cumulative value. Last sample was ${this.lastValue}, this sample was ${value}`,
           )
         }
       }

@@ -19,8 +19,8 @@ class StatisticsTable extends Component<StatisticsTableProps, {}> {
   render() {
     const total = this.props.formatter(this.props.selectedTotal)
     const self = this.props.formatter(this.props.selectedSelf)
-    const totalPerc = 100.0 * this.props.selectedTotal / this.props.grandTotal
-    const selfPerc = 100.0 * this.props.selectedSelf / this.props.grandTotal
+    const totalPerc = (100.0 * this.props.selectedTotal) / this.props.grandTotal
+    const selfPerc = (100.0 * this.props.selectedSelf) / this.props.grandTotal
 
     return (
       <div className={css(style.statsTable)}>

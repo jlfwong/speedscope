@@ -195,7 +195,7 @@ interface GLCanvasProps {
   canvasContext: CanvasContext | null
   setGLCanvas: (canvas: HTMLCanvasElement | null) => void
 }
-export class GLCanvas extends Component<GLCanvasProps, void> {
+export class GLCanvas extends Component<GLCanvasProps, Readonly<any>> {
   private canvas: HTMLCanvasElement | null = null
 
   private ref = (canvas?: Element) => {
@@ -678,7 +678,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
         <Toolbar
           saveFile={this.saveFile}
           browseForFile={this.browseForFile}
-          {...this.props as ApplicationProps}
+          {...(this.props as ApplicationProps)}
         />
         <div className={css(style.contentContainer)}>{this.renderContent()}</div>
         {this.props.dragActive && <div className={css(style.dragTarget)} />}

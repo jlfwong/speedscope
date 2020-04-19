@@ -69,5 +69,5 @@ export function createApplicationStore(
     }),
   })
 
-  return redux.createStore(reducer, initialState)
+  return redux.createStore(reducer, initialState as any)
 }
