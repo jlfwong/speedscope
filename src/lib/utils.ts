@@ -4,7 +4,9 @@ export function lastOf<T>(ts: T[]): T | null {
 
 export function sortBy<T>(ts: T[], key: (t: T) => number | string): void {
   function comparator(a: T, b: T) {
-    return key(a) < key(b) ? -1 : 1
+    const keyA = key(a)
+    const keyB = key(b)
+    return keyA < keyB ? -1 : keyA > keyB ? 1 : 0
   }
   ts.sort(comparator)
 }

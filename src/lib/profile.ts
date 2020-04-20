@@ -181,7 +181,7 @@ export class Profile {
       let childTime = 0
 
       const children = [...node.children]
-      children.sort((a, b) => (a.getTotalWeight() > b.getTotalWeight() ? -1 : 1))
+      children.sort((a, b) => -(a.getTotalWeight() - b.getTotalWeight()))
 
       children.forEach(function (child) {
         visit(child, start + childTime)
