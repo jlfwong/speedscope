@@ -57,6 +57,9 @@
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     },
+    "setupFilesAfterEnv": [
+      "./src/jest-setup.js"
+    ],
     "testRegex": "\\.test\\.tsx?$",
     "collectCoverageFrom": [
       "**/*.{ts,tsx}",
