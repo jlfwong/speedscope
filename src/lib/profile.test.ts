@@ -26,19 +26,22 @@ function toStackList(profile: Profile, grouped: boolean): string[] {
   const curStack: (number | string)[] = []
   let lastValue = 0
 
-  function openFrame(node: CallTreeNode, value: number) {
+  function maybeEmit(value: number) {
     if (lastValue != value) {
-      stackList.push(curStack.map(k => `${k}`).join(';'))
+      stackList.push(
+        curStack.map(k => `${k}`).join(';') + ` ${profile.formatValue(value - lastValue)}`,
+      )
       lastValue = value
     }
-    curStack.push(node.frame.key)
+  }
+
+  function openFrame(node: CallTreeNode, value: number) {
+    maybeEmit(value)
+    curStack.push(node.frame.name)
   }
 
   function closeFrame(node: CallTreeNode, value: number) {
-    if (lastValue != value) {
-      stackList.push(curStack.map(k => `${k}`).join(';'))
-      lastValue = value
-    }
+    maybeEmit(value)
     curStack.pop()
   }
 
@@ -82,49 +85,49 @@ function verifyProfile(profile: Profile) {
 
   expect(toStackList(profile, false)).toEqual([
     // prettier-ignore
-    'a',
-    'a;b',
-    'a;b;d',
-    'a;b;c',
-    '',
-    'a',
-    'a;b',
-    'a;b;b',
-    'a;b;e',
-    'a',
+    'a 1',
+    'a;b 2',
+    'a;b;d 1',
+    'a;b;c 1',
+    ' 1',
+    'a 1',
+    'a;b 1',
+    'a;b;b 1',
+    'a;b;e 1',
+    'a 1',
   ])
 
   expect(toStackList(profile, true)).toEqual([
     // prettier-ignore
-    'a;b;e',
-    'a;b;b',
-    'a;b;c',
-    'a;b;d',
-    'a;b',
-    'a',
+    'a;b;d 1',
+    'a;b;c 1',
+    'a;b;b 1',
+    'a;b;e 1',
+    'a;b 3',
+    'a 3',
   ])
 
   const flattened = profile.getProfileWithRecursionFlattened()
   expect(toStackList(flattened, false)).toEqual([
     // prettier-ignore
-    'a',
-    'a;b',
-    'a;b;d',
-    'a;b;c',
-    '',
-    'a',
-    'a;b',
-    'a;b;e',
-    'a',
+    'a 1',
+    'a;b 2',
+    'a;b;d 1',
+    'a;b;c 1',
+    ' 1',
+    'a 1',
+    'a;b 2',
+    'a;b;e 1',
+    'a 1',
   ])
 
   expect(toStackList(flattened, true)).toEqual([
     // prettier-ignore
-    'a;b;e',
-    'a;b;c',
-    'a;b;d',
-    'a;b',
-    'a',
+    'a;b;d 1',
+    'a;b;c 1',
+    'a;b;e 1',
+    'a;b 4',
+    'a 3',
   ])
 }
 
@@ -259,9 +262,9 @@ test('getInvertedProfileForCallersOf', () => {
 
   expect(toStackList(inverted, false)).toEqual([
     // prettier-ignore
-    'b',
-    'b;a',
-    'b;d',
+    'b 1',
+    'b;a 3',
+    'b;d 1',
   ])
 })
 
@@ -287,10 +290,10 @@ test('getProfileForCalleesOf', () => {
 
   expect(toStackList(inverted, false)).toEqual([
     // prettier-ignore
-    'b',
-    'b;c',
-    'b;d',
-    'b',
+    'b 2',
+    'b;c 1',
+    'b;d 1',
+    'b 1',
   ])
 })
 
@@ -313,8 +316,8 @@ test('getProfileWithRecursionFlattened', () => {
 
   expect(toStackList(inverted, false)).toEqual([
     // prettier-ignore
-    'a',
-    'a;b',
+    'a 1',
+    'a;b 3',
   ])
 
   const framesInProfile = new Set<string | number>()

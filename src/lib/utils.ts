@@ -4,7 +4,9 @@ export function lastOf<T>(ts: T[]): T | null {
 
 export function sortBy<T>(ts: T[], key: (t: T) => number | string): void {
   function comparator(a: T, b: T) {
-    return key(a) < key(b) ? -1 : 1
+    const keyA = key(a)
+    const keyB = key(b)
+    return keyA < keyB ? -1 : keyA > keyB ? 1 : 0
   }
   ts.sort(comparator)
 }
@@ -178,15 +180,17 @@ export function lazyStatic<T>(cb: () => T): () => T {
   }
 }
 
-const base64lookupTable = lazyStatic((): Map<string, number> => {
-  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-  const ret = new Map<string, number>()
-  for (let i = 0; i < alphabet.length; i++) {
-    ret.set(alphabet.charAt(i), i)
-  }
-  ret.set('=', -1)
-  return ret
-})
+const base64lookupTable = lazyStatic(
+  (): Map<string, number> => {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+    const ret = new Map<string, number>()
+    for (let i = 0; i < alphabet.length; i++) {
+      ret.set(alphabet.charAt(i), i)
+    }
+    ret.set('=', -1)
+    return ret
+  },
+)
 
 // NOTE: There are probably simpler solutions to this problem, but I have this written already, so
 // until we run into problems with this, let's just use this.
@@ -210,9 +214,7 @@ export function decodeBase64(encoded: string): Uint8Array {
 
   if (encoded.length % 4 !== 0) {
     throw new Error(
-      `Invalid length for base64 encoded string. Expected length % 4 = 0, got length = ${
-        encoded.length
-      }`,
+      `Invalid length for base64 encoded string. Expected length % 4 = 0, got length = ${encoded.length}`,
     )
   }
 

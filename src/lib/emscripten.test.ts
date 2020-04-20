@@ -11,7 +11,13 @@ test('importEmscriptenSymbolMap', () => {
         'c:C',
       ].join('\n'),
     ),
-  ).toEqual(new Map([['a', 'A'], ['b', 'B'], ['c', 'C']]))
+  ).toEqual(
+    new Map([
+      ['a', 'A'],
+      ['b', 'B'],
+      ['c', 'C'],
+    ]),
+  )
 
   // Valid symbol map with trailing newline
   expect(
@@ -25,7 +31,14 @@ test('importEmscriptenSymbolMap', () => {
         '',
       ].join('\n'),
     ),
-  ).toEqual(new Map([['a', 'A'], ['b', 'B'], ['c', 'C'], ['d', 'D-D']]))
+  ).toEqual(
+    new Map([
+      ['a', 'A'],
+      ['b', 'B'],
+      ['c', 'C'],
+      ['d', 'D-D'],
+    ]),
+  )
 
   // Valid symbol map with non-alpha characters
   expect(importEmscriptenSymbolMap('u6:__ZN8tinyxml210XMLCommentD0Ev\n')).toEqual(
