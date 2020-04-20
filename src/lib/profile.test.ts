@@ -45,7 +45,6 @@ function toStackList(profile: Profile, grouped: boolean): string[] {
     curStack.pop()
   }
 
-
   if (grouped) {
     profile.forEachCallGrouped(openFrame, closeFrame)
   } else {
