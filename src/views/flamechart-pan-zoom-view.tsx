@@ -181,9 +181,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
       )
     }
 
-    ctx.font = `${physicalViewSpaceFontSize}px/${physicalViewSpaceFrameHeight}px ${
-      FontFamily.MONOSPACE
-    }`
+    ctx.font = `${physicalViewSpaceFontSize}px/${physicalViewSpaceFrameHeight}px ${FontFamily.MONOSPACE}`
     ctx.textBaseline = 'alphabetic'
     ctx.fillStyle = Colors.DARK_GRAY
 

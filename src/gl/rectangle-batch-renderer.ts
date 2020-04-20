@@ -45,7 +45,14 @@ export class RectangleBatch {
       return this.buffer
     }
 
-    const corners = [[0, 0], [1, 0], [0, 1], [1, 0], [0, 1], [1, 1]]
+    const corners = [
+      [0, 0],
+      [1, 0],
+      [0, 1],
+      [1, 0],
+      [0, 1],
+      [1, 1],
+    ]
 
     const bytes = new Uint8Array(vertexFormat.stride * corners.length * this.rects.length)
     const floats = new Float32Array(bytes.buffer)

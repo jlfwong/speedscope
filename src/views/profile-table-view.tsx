@@ -83,8 +83,8 @@ export class ProfileTableView extends Component<ProfileTableViewProps, void> {
 
     const totalWeight = frame.getTotalWeight()
     const selfWeight = frame.getSelfWeight()
-    const totalPerc = 100.0 * totalWeight / profile.getTotalNonIdleWeight()
-    const selfPerc = 100.0 * selfWeight / profile.getTotalNonIdleWeight()
+    const totalPerc = (100.0 * totalWeight) / profile.getTotalNonIdleWeight()
+    const selfPerc = (100.0 * selfWeight) / profile.getTotalNonIdleWeight()
 
     const selected = frame === selectedFrame
 

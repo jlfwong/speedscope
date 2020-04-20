@@ -678,7 +678,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
         <Toolbar
           saveFile={this.saveFile}
           browseForFile={this.browseForFile}
-          {...this.props as ApplicationProps}
+          {...(this.props as ApplicationProps)}
         />
         <div className={css(style.contentContainer)}>{this.renderContent()}</div>
         {this.props.dragActive && <div className={css(style.dragTarget)} />}

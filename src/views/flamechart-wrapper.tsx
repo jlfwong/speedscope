@@ -34,7 +34,7 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
   }
   private formatValue(weight: number) {
     const totalWeight = this.props.flamechart.getTotalWeight()
-    const percent = 100 * weight / totalWeight
+    const percent = (100 * weight) / totalWeight
     const formattedPercent = formatPercent(percent)
     return `${this.props.flamechart.formatValue(weight)} (${formattedPercent})`
   }

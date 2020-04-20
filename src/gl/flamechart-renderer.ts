@@ -175,8 +175,8 @@ export class FlamechartRenderer {
         // and the blue channel to indicate the color bucket to render.
         // We add one to each so we have zero reserved for the background color.
         const color = new Color(
-          (1 + i % 255) / 256,
-          (1 + stackDepth % 255) / 256,
+          (1 + (i % 255)) / 256,
+          (1 + (stackDepth % 255)) / 256,
           (1 + this.flamechart.getColorBucketForFrame(frame.node.frame)) / 256,
         )
         batch.addRect(configSpaceBounds, color)
@@ -288,10 +288,10 @@ export class FlamechartRenderer {
     const configSpaceContentWidth = this.flamechart.getTotalWeight()
     const numAtlasEntriesPerLayer = Math.pow(2, zoomLevel)
     const left = Math.floor(
-      numAtlasEntriesPerLayer * configSpaceSrcRect.left() / configSpaceContentWidth,
+      (numAtlasEntriesPerLayer * configSpaceSrcRect.left()) / configSpaceContentWidth,
     )
     const right = Math.ceil(
-      numAtlasEntriesPerLayer * configSpaceSrcRect.right() / configSpaceContentWidth,
+      (numAtlasEntriesPerLayer * configSpaceSrcRect.right()) / configSpaceContentWidth,
     )
 
     const nLayers = this.flamechart.getLayers().length
