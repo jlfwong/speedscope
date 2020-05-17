@@ -78,7 +78,7 @@ interface ProfileTableRowViewProps {
   getCSSColorForFrame: (frame: Frame) => string
 }
 
-const ProfileTableRowView = memo((props: ProfileTableRowViewProps) => {
+const ProfileTableRowView = (props: ProfileTableRowViewProps) => {
   const {frame, profile, index, selectedFrame, setSelectedFrame, getCSSColorForFrame} = props
   const totalWeight = frame.getTotalWeight()
   const selfWeight = frame.getSelfWeight()
@@ -113,7 +113,7 @@ const ProfileTableRowView = memo((props: ProfileTableRowViewProps) => {
       </td>
     </tr>
   )
-})
+}
 
 interface ProfileTableViewProps {
   profile: Profile
@@ -215,14 +215,14 @@ export const ProfileTableView = memo((props: ProfileTableViewProps) => {
 
       for (let i = firstIndex; i <= lastIndex; i++) {
         rows.push(
-          <ProfileTableRowView
-            frame={frameList[i]}
-            index={i}
-            profile={profile}
-            selectedFrame={selectedFrame}
-            setSelectedFrame={setSelectedFrame}
-            getCSSColorForFrame={getCSSColorForFrame}
-          />,
+          ProfileTableRowView({
+            frame: frameList[i],
+            index: i,
+            profile: profile,
+            selectedFrame: selectedFrame,
+            setSelectedFrame: setSelectedFrame,
+            getCSSColorForFrame: getCSSColorForFrame,
+          }),
         )
       }
 
