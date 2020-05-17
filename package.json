@@ -76,7 +76,12 @@
       "js",
       "jsx",
       "json"
-    ]
+    ],
+    "moduleNameMapper": {
+      "^react$": "preact/compat",
+      "^react-dom$": "preact/compat",
+      "^react-dom/test-utils$": "preact/test-utils"
+    }
   },
   "dependencies": {
     "opn": "5.3.0",
