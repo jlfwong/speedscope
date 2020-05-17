@@ -1,4 +1,4 @@
-declare module 'preact-redux' {
+declare module 'react-redux' {
   import {VNode, Component} from 'preact'
   import {Store} from 'redux'
 

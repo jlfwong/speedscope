@@ -1,6 +1,6 @@
 import {h, render} from 'preact'
 import {createApplicationStore} from './store'
-import {Provider} from 'preact-redux'
+import {Provider} from 'react-redux'
 import {ApplicationContainer} from './views/application-container'
 
 console.log(`speedscope v${require('../package.json').version}`)

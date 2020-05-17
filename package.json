@@ -44,15 +44,19 @@
     "pako": "1.0.6",
     "parcel-bundler": "1.12.4",
     "preact": "10.4.1",
-    "preact-redux": "jlfwong/preact-redux#a56dcc4",
     "prettier": "2.0.4",
     "protobufjs": "6.8.8",
-    "typescript-json-schema": "0.42.0",
-    "redux": "4.0.0",
+    "react-redux": "^7.2.0",
+    "redux": "^4.0.5",
     "ts-jest": "24.3.0",
     "typescript": "3.9.2",
     "typescript-eslint-parser": "17.0.1",
+    "typescript-json-schema": "0.42.0",
     "uglify-es": "3.2.2"
+  },
+  "alias": {
+    "react": "preact/compat",
+    "react-dom": "preact/compat"
   },
   "jest": {
     "transform": {
@@ -75,6 +79,7 @@
     ]
   },
   "dependencies": {
-    "opn": "5.3.0"
+    "opn": "5.3.0",
+    "react": "^16.13.1"
   }
 }
