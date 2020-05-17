@@ -2,7 +2,7 @@ import {FlamechartID, FlamechartViewState} from '../store/flamechart-view-state'
 import {CanvasContext} from '../gl/canvas-context'
 import {Flamechart} from '../lib/flamechart'
 import {FlamechartRenderer, FlamechartRendererOptions} from '../gl/flamechart-renderer'
-import {Dispatch, createContainer, ActionCreator} from '../lib/typed-redux'
+import {ActionCreator, Dispatch} from '../lib/typed-redux'
 import {Frame, Profile, CallTreeNode} from '../lib/profile'
 import {memoizeByShallowEquality} from '../lib/utils'
 import {ApplicationState} from '../store'
@@ -17,6 +17,7 @@ import {
 import {ActiveProfileState} from './application'
 import {Vec2, Rect} from '../lib/math'
 import {actions} from '../store/actions'
+import {createContainer} from '../lib/preact-redux'
 
 interface FlamechartSetters {
   setLogicalSpaceViewportSize: (logicalSpaceViewportSize: Vec2) => void

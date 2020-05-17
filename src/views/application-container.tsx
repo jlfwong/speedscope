@@ -1,9 +1,10 @@
-import {createContainer, Dispatch, bindActionCreator, ActionCreator} from '../lib/typed-redux'
+import {Dispatch, ActionCreator, bindActionCreator} from '../lib/typed-redux'
 import {Application, ActiveProfileState} from './application'
 import {ApplicationState} from '../store'
 import {getProfileToView, getCanvasContext} from '../store/getters'
 import {actions} from '../store/actions'
 import {Graphics} from '../gl/graphics'
+import {createContainer} from '../lib/preact-redux'
 
 export const ApplicationContainer = createContainer(
   Application,

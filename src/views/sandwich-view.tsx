@@ -4,11 +4,12 @@ import {ProfileTableViewContainer} from './profile-table-view'
 import {h, JSX} from 'preact'
 import {commonStyle, Sizes, Colors, FontSize} from './style'
 import {actions} from '../store/actions'
-import {createContainer, Dispatch, StatelessComponent} from '../lib/typed-redux'
+import {Dispatch, StatelessComponent} from '../lib/typed-redux'
 import {ApplicationState} from '../store'
 import {InvertedCallerFlamegraphView} from './inverted-caller-flamegraph-view'
 import {CalleeFlamegraphView} from './callee-flamegraph-view'
 import {ActiveProfileState} from './application'
+import {createContainer} from '../lib/preact-redux'
 
 interface SandwichViewProps {
   selectedFrame: Frame | null

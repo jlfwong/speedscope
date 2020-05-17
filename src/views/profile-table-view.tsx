@@ -6,10 +6,11 @@ import {FontSize, Colors, Sizes, commonStyle} from './style'
 import {ColorChit} from './color-chit'
 import {ScrollableListView, ListItem} from './scrollable-list-view'
 import {actions} from '../store/actions'
-import {Dispatch, createContainer} from '../lib/typed-redux'
+import {Dispatch} from '../lib/typed-redux'
 import {ApplicationState} from '../store'
 import {createGetCSSColorForFrame, getFrameToColorBucket} from '../store/getters'
 import {ActiveProfileState} from './application'
+import {createContainer} from '../lib/preact-redux'
 
 export enum SortField {
   SYMBOL_NAME,
@@ -77,7 +78,7 @@ interface ProfileTableViewProps {
   setSortMethod: (sortMethod: SortMethod) => void
 }
 
-export class ProfileTableView extends Component<ProfileTableViewProps, void> {
+export class ProfileTableView extends Component<ProfileTableViewProps, {}> {
   renderRow(frame: Frame, index: number) {
     const {profile, selectedFrame} = this.props
 

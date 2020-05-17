@@ -6,7 +6,7 @@ import {
   FlamechartViewContainerProps,
   createFlamechartSetters,
 } from './flamechart-view-container'
-import {createContainer, Dispatch} from '../lib/typed-redux'
+import {Dispatch} from '../lib/typed-redux'
 import {ApplicationState} from '../store'
 import {
   getCanvasContext,
@@ -17,6 +17,7 @@ import {
 } from '../store/getters'
 import {FlamechartID} from '../store/flamechart-view-state'
 import {FlamechartWrapper} from './flamechart-wrapper'
+import {createContainer} from '../lib/preact-redux'
 
 const getInvertedCallerProfile = memoizeByShallowEquality(
   ({
