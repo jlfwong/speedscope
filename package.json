@@ -43,7 +43,7 @@
     "jszip": "3.1.5",
     "pako": "1.0.6",
     "parcel-bundler": "1.12.4",
-    "preact": "8.2.7",
+    "preact": "10.4.1",
     "preact-redux": "jlfwong/preact-redux#a56dcc4",
     "prettier": "2.0.4",
     "protobufjs": "6.8.8",
