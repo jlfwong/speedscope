@@ -9,7 +9,7 @@ import {actions} from '../store/actions'
 import {createGetCSSColorForFrame, getFrameToColorBucket} from '../store/getters'
 import {ActiveProfileState} from './application'
 import {useActionCreator} from '../lib/preact-redux'
-import {useAppSelector} from './application-container'
+import {useAppSelector} from '../store'
 import {memo} from 'preact/compat'
 
 export enum SortField {

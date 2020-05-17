@@ -1,14 +1,10 @@
 import {h} from 'preact'
 import {Application, ActiveProfileState} from './application'
-import {ApplicationState} from '../store'
 import {getProfileToView, getCanvasContext} from '../store/getters'
 import {actions} from '../store/actions'
-import {useSelector, useActionCreator} from '../lib/preact-redux'
+import {useActionCreator} from '../lib/preact-redux'
 import {memo} from 'preact/compat'
-
-export function useAppSelector<T>(selector: (t: ApplicationState) => T, selectorDeps?: any[]): T {
-  return useSelector(selector, selectorDeps)
-}
+import {useAppSelector} from '../store'
 
 export const ApplicationContainer = memo(() => {
   const appState = useAppSelector(state => state)

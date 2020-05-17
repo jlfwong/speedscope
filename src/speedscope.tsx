@@ -1,5 +1,5 @@
 import {h, render} from 'preact'
-import {createApplicationStore} from './store'
+import {createAppStore} from './store'
 import {ApplicationContainer} from './views/application-container'
 import {Provider} from './lib/preact-redux'
 
@@ -15,7 +15,7 @@ if (module.hot) {
 }
 
 const lastStore: any = (window as any)['store']
-const store = createApplicationStore(lastStore ? lastStore.getState() : {})
+const store = createAppStore(lastStore ? lastStore.getState() : {})
 ;(window as any)['store'] = store
 
 render(

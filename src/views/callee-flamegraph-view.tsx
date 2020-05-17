@@ -14,7 +14,7 @@ import {
 } from '../store/getters'
 import {FlamechartID} from '../store/flamechart-view-state'
 import {FlamechartWrapper} from './flamechart-wrapper'
-import {useAppSelector} from './application-container'
+import {useAppSelector} from '../store'
 import {h} from 'preact'
 import {memo} from 'preact/compat'
 

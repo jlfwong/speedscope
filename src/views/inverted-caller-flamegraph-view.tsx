@@ -14,7 +14,7 @@ import {
   getFrameToColorBucket,
 } from '../store/getters'
 import {FlamechartID} from '../store/flamechart-view-state'
-import {useAppSelector} from './application-container'
+import {useAppSelector} from '../store'
 import {FlamechartWrapper} from './flamechart-wrapper'
 import {h} from 'preact'
 import {memo} from 'preact/compat'
