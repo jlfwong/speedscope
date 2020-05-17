@@ -1,7 +1,7 @@
 // A simple implementation of an efficient scrolling list view which
 // renders only items within the viewport + a couple extra items.
 
-import {h, Component} from 'preact'
+import {h, Component, JSX} from 'preact'
 
 export interface ListItem {
   size: number
@@ -38,7 +38,7 @@ export class ScrollableListView extends Component<
   }
 
   private viewport: HTMLDivElement | null = null
-  private viewportRef = (viewport?: Element) => {
+  private viewportRef = (viewport: Element | null) => {
     this.viewport = (viewport as HTMLDivElement) || null
   }
 

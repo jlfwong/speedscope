@@ -54,7 +54,7 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
     )
   }
   container: HTMLDivElement | null = null
-  containerRef = (container?: Element) => {
+  containerRef = (container: Element | null) => {
     this.container = (container as HTMLDivElement) || null
   }
   private setNodeHover = (

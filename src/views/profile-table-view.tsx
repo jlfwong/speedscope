@@ -1,4 +1,4 @@
-import {h, Component} from 'preact'
+import {h, Component, JSX} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 import {Profile, Frame} from '../lib/profile'
 import {sortBy, formatPercent} from '../lib/utils'

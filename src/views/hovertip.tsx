@@ -14,12 +14,7 @@ export class Hovertip extends Component<HovertipProps, {}> {
     const width = containerSize.x
     const height = containerSize.y
 
-    const positionStyle: {
-      left?: number
-      right?: number
-      top?: number
-      bottom?: number
-    } = {}
+    const positionStyle: {[key: string]: number} = {}
 
     const OFFSET_FROM_MOUSE = 7
     if (offset.x + OFFSET_FROM_MOUSE + Sizes.TOOLTIP_WIDTH_MAX < width) {

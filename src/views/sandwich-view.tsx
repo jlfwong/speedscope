@@ -1,7 +1,7 @@
 import {Frame} from '../lib/profile'
 import {StyleSheet, css} from 'aphrodite'
 import {ProfileTableViewContainer} from './profile-table-view'
-import {h} from 'preact'
+import {h, JSX} from 'preact'
 import {commonStyle, Sizes, Colors, FontSize} from './style'
 import {actions} from '../store/actions'
 import {createContainer, Dispatch, StatelessComponent} from '../lib/typed-redux'

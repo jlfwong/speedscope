@@ -1,4 +1,4 @@
-import {h, Component} from 'preact'
+import {h} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 import {FileSystemDirectoryEntry} from '../import/file-system-entry'
 
@@ -195,10 +195,10 @@ interface GLCanvasProps {
   canvasContext: CanvasContext | null
   setGLCanvas: (canvas: HTMLCanvasElement | null) => void
 }
-export class GLCanvas extends Component<GLCanvasProps, void> {
+export class GLCanvas extends StatelessComponent<GLCanvasProps> {
   private canvas: HTMLCanvasElement | null = null
 
-  private ref = (canvas?: Element) => {
+  private ref = (canvas: Element | null) => {
     if (canvas instanceof HTMLCanvasElement) {
       this.canvas = canvas
     } else {
@@ -209,7 +209,7 @@ export class GLCanvas extends Component<GLCanvasProps, void> {
   }
 
   private container: HTMLElement | null = null
-  private containerRef = (container?: Element) => {
+  private containerRef = (container: Element | null) => {
     if (container instanceof HTMLElement) {
       this.container = container
     } else {
