@@ -1,6 +1,7 @@
 import {ApplicationProps} from './application'
 import {ViewMode} from '../store'
-import {h} from 'preact'
+import {h, JSX, Fragment} from 'preact'
+import {useCallback} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
 import {Sizes, Colors, FontFamily, FontSize, Duration} from './style'
 
@@ -9,136 +10,136 @@ interface ToolbarProps extends ApplicationProps {
   saveFile(): void
 }
 
-export function Toolbar(props: ToolbarProps) {
-  const setTimeOrder = () => {
+function ToolbarLeftContent(props: ToolbarProps) {
+  const setTimeOrder = useCallback(() => {
     props.setViewMode(ViewMode.CHRONO_FLAME_CHART)
-  }
+  }, [props.setViewMode])
 
-  const setLeftHeavyOrder = () => {
+  const setLeftHeavyOrder = useCallback(() => {
     props.setViewMode(ViewMode.LEFT_HEAVY_FLAME_GRAPH)
-  }
+  }, [props.setViewMode])
 
-  const setSandwichView = () => {
+  const setSandwichView = useCallback(() => {
     props.setViewMode(ViewMode.SANDWICH_VIEW)
-  }
+  }, [props.setViewMode])
 
-  const renderLeftContent = () => {
-    if (!props.activeProfileState) return null
-
-    return (
-      <div className={css(style.toolbarLeft)}>
-        <div
-          className={css(
-            style.toolbarTab,
-            props.viewMode === ViewMode.CHRONO_FLAME_CHART && style.toolbarTabActive,
-          )}
-          onClick={setTimeOrder}
-        >
-          <span className={css(style.emoji)}>🕰</span>Time Order
-        </div>
-        <div
-          className={css(
-            style.toolbarTab,
-            props.viewMode === ViewMode.LEFT_HEAVY_FLAME_GRAPH && style.toolbarTabActive,
-          )}
-          onClick={setLeftHeavyOrder}
-        >
-          <span className={css(style.emoji)}>⬅️</span>Left Heavy
-        </div>
-        <div
-          className={css(
-            style.toolbarTab,
-            props.viewMode === ViewMode.SANDWICH_VIEW && style.toolbarTabActive,
-          )}
-          onClick={setSandwichView}
-        >
-          <span className={css(style.emoji)}>🥪</span>Sandwich
-        </div>
-      </div>
-    )
-  }
-
-  const renderCenterContent = () => {
-    const {activeProfileState, profileGroup} = props
-    if (activeProfileState && profileGroup) {
-      const {index} = activeProfileState
-      if (profileGroup.profiles.length === 1) {
-        return activeProfileState.profile.getName()
-      } else {
-        function makeNavButton(content: string, disabled: boolean, onClick: () => void) {
-          return (
-            <button
-              disabled={disabled}
-              onClick={onClick}
-              className={css(
-                style.emoji,
-                style.toolbarProfileNavButton,
-                disabled && style.toolbarProfileNavButtonDisabled,
-              )}
-            >
-              {content}
-            </button>
-          )
-        }
-
-        const prevButton = makeNavButton('⬅️', index === 0, () =>
-          props.setProfileIndexToView(index - 1),
-        )
-        const nextButton = makeNavButton('➡️', index >= profileGroup.profiles.length - 1, () =>
-          props.setProfileIndexToView(index + 1),
-        )
-
-        return (
-          <div className={css(style.toolbarCenter)}>
-            {prevButton}
-            {activeProfileState.profile.getName()}{' '}
-            <span className={css(style.toolbarProfileIndex)}>
-              ({activeProfileState.index + 1}/{profileGroup.profiles.length})
-            </span>
-            {nextButton}
-          </div>
-        )
-      }
-    }
-    return '🔬speedscope'
-  }
-
-  const renderRightContent = () => {
-    const importFile = (
-      <div className={css(style.toolbarTab)} onClick={props.browseForFile}>
-        <span className={css(style.emoji)}>⤵️</span>Import
-      </div>
-    )
-    const help = (
-      <div className={css(style.toolbarTab)}>
-        <a
-          href="https://github.com/jlfwong/speedscope#usage"
-          className={css(style.noLinkStyle)}
-          target="_blank"
-        >
-          <span className={css(style.emoji)}>❓</span>Help
-        </a>
-      </div>
-    )
-
-    return (
-      <div className={css(style.toolbarRight)}>
-        {props.activeProfileState && (
-          <div className={css(style.toolbarTab)} onClick={props.saveFile}>
-            <span className={css(style.emoji)}>⤴️</span>Export
-          </div>
-        )}
-        {importFile}
-        {help}
-      </div>
-    )
-  }
+  if (!props.activeProfileState) return null
 
   return (
+    <div className={css(style.toolbarLeft)}>
+      <div
+        className={css(
+          style.toolbarTab,
+          props.viewMode === ViewMode.CHRONO_FLAME_CHART && style.toolbarTabActive,
+        )}
+        onClick={setTimeOrder}
+      >
+        <span className={css(style.emoji)}>🕰</span>Time Order
+      </div>
+      <div
+        className={css(
+          style.toolbarTab,
+          props.viewMode === ViewMode.LEFT_HEAVY_FLAME_GRAPH && style.toolbarTabActive,
+        )}
+        onClick={setLeftHeavyOrder}
+      >
+        <span className={css(style.emoji)}>⬅️</span>Left Heavy
+      </div>
+      <div
+        className={css(
+          style.toolbarTab,
+          props.viewMode === ViewMode.SANDWICH_VIEW && style.toolbarTabActive,
+        )}
+        onClick={setSandwichView}
+      >
+        <span className={css(style.emoji)}>🥪</span>Sandwich
+      </div>
+    </div>
+  )
+}
+
+function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
+  const {activeProfileState, profileGroup} = props
+  if (activeProfileState && profileGroup) {
+    const {index} = activeProfileState
+    if (profileGroup.profiles.length === 1) {
+      return <Fragment>{activeProfileState.profile.getName()}</Fragment>
+    } else {
+      function makeNavButton(content: string, disabled: boolean, onClick: () => void) {
+        return (
+          <button
+            disabled={disabled}
+            onClick={onClick}
+            className={css(
+              style.emoji,
+              style.toolbarProfileNavButton,
+              disabled && style.toolbarProfileNavButtonDisabled,
+            )}
+          >
+            {content}
+          </button>
+        )
+      }
+
+      const prevButton = makeNavButton('⬅️', index === 0, () =>
+        props.setProfileIndexToView(index - 1),
+      )
+      const nextButton = makeNavButton('➡️', index >= profileGroup.profiles.length - 1, () =>
+        props.setProfileIndexToView(index + 1),
+      )
+
+      return (
+        <div className={css(style.toolbarCenter)}>
+          {prevButton}
+          {activeProfileState.profile.getName()}{' '}
+          <span className={css(style.toolbarProfileIndex)}>
+            ({activeProfileState.index + 1}/{profileGroup.profiles.length})
+          </span>
+          {nextButton}
+        </div>
+      )
+    }
+  }
+  return <Fragment>{'🔬speedscope'}</Fragment>
+}
+
+function ToolbarRightContent(props: ToolbarProps) {
+  const importFile = (
+    <div className={css(style.toolbarTab)} onClick={props.browseForFile}>
+      <span className={css(style.emoji)}>⤵️</span>Import
+    </div>
+  )
+  const help = (
+    <div className={css(style.toolbarTab)}>
+      <a
+        href="https://github.com/jlfwong/speedscope#usage"
+        className={css(style.noLinkStyle)}
+        target="_blank"
+      >
+        <span className={css(style.emoji)}>❓</span>Help
+      </a>
+    </div>
+  )
+
+  return (
+    <div className={css(style.toolbarRight)}>
+      {props.activeProfileState && (
+        <div className={css(style.toolbarTab)} onClick={props.saveFile}>
+          <span className={css(style.emoji)}>⤴️</span>Export
+        </div>
+      )}
+      {importFile}
+      {help}
+    </div>
+  )
+}
+
+export function Toolbar(props: ToolbarProps) {
+  return (
     <div className={css(style.toolbar)}>
-      {renderLeftContent()}
-      {renderCenterContent()}
-      {renderRightContent()}
+      <ToolbarLeftContent {...props} />
+      <ToolbarCenterContent {...props} />
+      <ToolbarRightContent {...props} />
     </div>
   )
 }
