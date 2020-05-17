@@ -11,6 +11,7 @@ import {ActiveProfileState} from './application'
 import {useActionCreator} from '../lib/preact-redux'
 import {useAppSelector} from '../store'
 import {memo} from 'preact/compat'
+import {useCallback} from 'preact/hooks'
 
 export enum SortField {
   SYMBOL_NAME,
@@ -344,12 +345,14 @@ export const ProfileTableViewContainer = memo((ownProps: ProfileTableViewContain
   const frameToColorBucket = getFrameToColorBucket(profile)
   const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
 
-  const setSelectedFrame = useActionCreator(
+  const setSelectedFrameWithIndex = useCallback(
     (selectedFrame: Frame | null) => {
       return actions.sandwichView.setSelectedFrame({profileIndex: index, args: selectedFrame})
     },
     [index],
   )
+
+  const setSelectedFrame = useActionCreator(setSelectedFrameWithIndex)
   const setSortMethod = useActionCreator(actions.sandwichView.setTableSortMethod)
 
   return (

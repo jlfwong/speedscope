@@ -38,28 +38,20 @@ export function useDispatch(): Dispatch {
   return store.dispatch
 }
 
-export function useActionCreator<T, U>(
-  creator: (payload: T) => Action<U>,
-  creatorDeps?: any[],
-): (t: T) => void {
+export function useActionCreator<T, U>(creator: (payload: T) => Action<U>): (t: T) => void {
   const dispatch = useDispatch()
-  return useCallback(
-    (t: T) => dispatch(creator(t)),
-    creatorDeps ? [dispatch, ...creatorDeps] : [dispatch],
-  )
+  return useCallback((t: T) => dispatch(creator(t)), [dispatch, creator])
 }
 
-export function useSelector<T, U>(selector: (t: T) => U, selectorDeps: any[] = []): U {
-  const callback = useCallback(selector, selectorDeps)
-
+export function useSelector<T, U>(selector: (t: T) => U): U {
   const store = useStore<T>()
-  const [value, setValue] = useState(() => callback(store.getState()))
+  const [value, setValue] = useState(() => selector(store.getState()))
 
   useEffect(() => {
     return store.subscribe(() => {
       setValue(selector(store.getState()))
     })
-  }, [store, callback])
+  }, [store, selector])
 
   return value
 }

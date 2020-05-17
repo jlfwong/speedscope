@@ -10,18 +10,14 @@ interface ToolbarProps extends ApplicationProps {
   saveFile(): void
 }
 
+function useSetViewMode(setViewMode: (viewMode: ViewMode) => void, viewMode: ViewMode) {
+  return useCallback(() => setViewMode(viewMode), [setViewMode, viewMode])
+}
+
 function ToolbarLeftContent(props: ToolbarProps) {
-  const setTimeOrder = useCallback(() => {
-    props.setViewMode(ViewMode.CHRONO_FLAME_CHART)
-  }, [props.setViewMode])
-
-  const setLeftHeavyOrder = useCallback(() => {
-    props.setViewMode(ViewMode.LEFT_HEAVY_FLAME_GRAPH)
-  }, [props.setViewMode])
-
-  const setSandwichView = useCallback(() => {
-    props.setViewMode(ViewMode.SANDWICH_VIEW)
-  }, [props.setViewMode])
+  const setChronoFlameChart = useSetViewMode(props.setViewMode, ViewMode.CHRONO_FLAME_CHART)
+  const setLeftHeavyFlameGraph = useSetViewMode(props.setViewMode, ViewMode.LEFT_HEAVY_FLAME_GRAPH)
+  const setSandwichView = useSetViewMode(props.setViewMode, ViewMode.SANDWICH_VIEW)
 
   if (!props.activeProfileState) return null
 
@@ -32,7 +28,7 @@ function ToolbarLeftContent(props: ToolbarProps) {
           style.toolbarTab,
           props.viewMode === ViewMode.CHRONO_FLAME_CHART && style.toolbarTabActive,
         )}
-        onClick={setTimeOrder}
+        onClick={setChronoFlameChart}
       >
         <span className={css(style.emoji)}>🕰</span>Time Order
       </div>
@@ -41,7 +37,7 @@ function ToolbarLeftContent(props: ToolbarProps) {
           style.toolbarTab,
           props.viewMode === ViewMode.LEFT_HEAVY_FLAME_GRAPH && style.toolbarTabActive,
         )}
-        onClick={setLeftHeavyOrder}
+        onClick={setLeftHeavyFlameGraph}
       >
         <span className={css(style.emoji)}>⬅️</span>Left Heavy
       </div>

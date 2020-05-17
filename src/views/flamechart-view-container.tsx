@@ -19,6 +19,7 @@ import {ActiveProfileState} from './application'
 import {Vec2, Rect} from '../lib/math'
 import {actions} from '../store/actions'
 import {memo} from 'preact/compat'
+import {useCallback} from 'preact/hooks'
 
 interface FlamechartSetters {
   setLogicalSpaceViewportSize: (logicalSpaceViewportSize: Vec2) => void
@@ -35,17 +36,18 @@ interface WithFlamechartContext<T> {
 }
 
 export function useFlamechartSetters(id: FlamechartID, profileIndex: number): FlamechartSetters {
-  function wrapActionCreator<T, U>(
+  function useActionCreatorWithIndex<T, U>(
     actionCreator: ActionCreator<WithFlamechartContext<U>>,
     map: (t: T) => U,
   ): (t: T) => void {
-    return useActionCreator(
+    const callback = useCallback(
       (t: T) => {
         const args = Object.assign({}, map(t), {id})
         return actionCreator({profileIndex, args})
       },
-      [actionCreator, id, profileIndex],
+      [actionCreator, map],
     )
+    return useActionCreator(callback)
   }
 
   const {
@@ -56,16 +58,22 @@ export function useFlamechartSetters(id: FlamechartID, profileIndex: number): Fl
   } = actions.flamechart
 
   return {
-    setNodeHover: wrapActionCreator(setHoveredNode, hover => ({hover})),
-    setLogicalSpaceViewportSize: wrapActionCreator(
+    setNodeHover: useActionCreatorWithIndex(
+      setHoveredNode,
+      useCallback(hover => ({hover}), []),
+    ),
+    setLogicalSpaceViewportSize: useActionCreatorWithIndex(
       setLogicalSpaceViewportSize,
-      logicalSpaceViewportSize => ({logicalSpaceViewportSize}),
+      useCallback(logicalSpaceViewportSize => ({logicalSpaceViewportSize}), []),
     ),
-    setConfigSpaceViewportRect: wrapActionCreator(
+    setConfigSpaceViewportRect: useActionCreatorWithIndex(
       setConfigSpaceViewportRect,
-      configSpaceViewportRect => ({configSpaceViewportRect}),
+      useCallback(configSpaceViewportRect => ({configSpaceViewportRect}), []),
     ),
-    setSelectedNode: wrapActionCreator(setSelectedNode, selectedNode => ({selectedNode})),
+    setSelectedNode: useActionCreatorWithIndex(
+      setSelectedNode,
+      useCallback(selectedNode => ({selectedNode}), []),
+    ),
   }
 }
 

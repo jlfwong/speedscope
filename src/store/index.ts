@@ -73,6 +73,6 @@ export function createAppStore(
   return redux.createStore(reducer, initialState)
 }
 
-export function useAppSelector<T>(selector: (t: ApplicationState) => T, selectorDeps?: any[]): T {
-  return useSelector(selector, selectorDeps)
+export function useAppSelector<T>(selector: (t: ApplicationState) => T): T {
+  return useSelector(selector)
 }
