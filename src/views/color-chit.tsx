@@ -1,4 +1,4 @@
-import {h, Component} from 'preact'
+import {h} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 import {Colors, FontSize} from './style'
 
@@ -6,10 +6,8 @@ interface ColorChitProps {
   color: string
 }
 
-export class ColorChit extends Component<ColorChitProps, {}> {
-  render() {
-    return <span className={css(style.stackChit)} style={{backgroundColor: this.props.color}} />
-  }
+export function ColorChit(props: ColorChitProps) {
+  return <span className={css(style.stackChit)} style={{backgroundColor: props.color}} />
 }
 
 const style = StyleSheet.create({

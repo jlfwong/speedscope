@@ -33,14 +33,12 @@ interface HBarProps {
   perc: number
 }
 
-class HBarDisplay extends Component<HBarProps, {}> {
-  render() {
-    return (
-      <div className={css(style.hBarDisplay)}>
-        <div className={css(style.hBarDisplayFilled)} style={{width: `${this.props.perc}%`}} />
-      </div>
-    )
-  }
+function HBarDisplay(props: HBarProps) {
+  return (
+    <div className={css(style.hBarDisplay)}>
+      <div className={css(style.hBarDisplayFilled)} style={{width: `${props.perc}%`}} />
+    </div>
+  )
 }
 
 interface SortIconProps {
