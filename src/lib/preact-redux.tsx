@@ -8,11 +8,11 @@
  * react-redux that I actually need myself.
  */
 
-import {h, ComponentChild, FunctionComponent, ComponentClass} from 'preact'
+import {h} from 'preact'
 import * as redux from 'redux'
 import {createContext, ComponentChildren} from 'preact'
-import {Dispatch} from './typed-redux'
-import {useEffect, useState} from 'preact/hooks'
+import {Dispatch, Action} from './typed-redux'
+import {useEffect, useState, useContext, useCallback} from 'preact/hooks'
 
 const PreactRedux = createContext<redux.Store<any> | null>(null)
 
@@ -25,53 +25,41 @@ export function Provider(props: ProviderProps) {
   return <PreactRedux.Provider value={props.store} children={props.children} />
 }
 
-interface ConsumerInnerProps<OwnProps, State, ComponentProps> {
-  store: redux.Store<State>
-  Component: ComponentClass<ComponentProps, {}>
-  map: (state: State, dispatch: Dispatch, ownProps: OwnProps) => ComponentProps
-  ownProps: OwnProps
+function useStore<T>(): redux.Store<T> {
+  const store = useContext(PreactRedux)
+  if (store == null) {
+    throw new Error('Called useStore when no store exists in context')
+  }
+  return store
 }
 
-function ConsumerInner<OwnProps, State, ComponentProps>(
-  props: ConsumerInnerProps<OwnProps, State, ComponentProps>,
-) {
-  const {store, map, Component, ownProps} = props
+export function useDispatch(): Dispatch {
+  const store = useStore()
+  return store.dispatch
+}
 
-  const getProps = () => {
-    return map(store.getState(), store.dispatch, ownProps)
-  }
+export function useActionCreator<T, U>(
+  creator: (payload: T) => Action<U>,
+  creatorDeps?: any[],
+): (t: T) => void {
+  const dispatch = useDispatch()
+  return useCallback(
+    (t: T) => dispatch(creator(t)),
+    creatorDeps ? [dispatch, ...creatorDeps] : [dispatch],
+  )
+}
 
-  const [childProps, setChildProps] = useState(getProps())
+export function useSelector<T, U>(selector: (t: T) => U, selectorDeps: any[] = []): U {
+  const callback = useCallback(selector, selectorDeps)
+
+  const store = useStore<T>()
+  const [value, setValue] = useState(() => callback(store.getState()))
 
   useEffect(() => {
     return store.subscribe(() => {
-      console.log('State change', getProps())
-      setChildProps(getProps())
+      setValue(selector(store.getState()))
     })
-  })
+  }, [store, callback])
 
-  return <Component {...childProps} />
-}
-
-// We make this into a single function invocation instead of the connect(map, map)(Component)
-// syntax to make better use of type inference.
-//
-// NOTE: To avoid this returning objects which do not compare shallow equal, it's the
-// responsibility of the caller to ensure that the props returned by map compare shallow
-// equal. This most importantly mean memoizing functions which wrap dispatch to avoid
-// all callback props from being regenerated on every call.
-export function createContainer<OwnProps, State, ComponentProps>(
-  Component: ComponentClass<ComponentProps, {}>,
-  map: (state: State, dispatch: Dispatch, ownProps: OwnProps) => ComponentProps,
-): FunctionComponent<OwnProps> {
-  return function (ownProps: OwnProps) {
-    return (
-      <PreactRedux.Consumer>
-        {(store: redux.Store<State> | null): ComponentChild => {
-          if (!store) return null
-          return <ConsumerInner store={store} Component={Component} map={map} ownProps={ownProps} />
-        }}
-      </PreactRedux.Consumer>
-    )
-  }
+  return value
 }

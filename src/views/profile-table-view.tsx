@@ -6,11 +6,11 @@ import {FontSize, Colors, Sizes, commonStyle} from './style'
 import {ColorChit} from './color-chit'
 import {ScrollableListView, ListItem} from './scrollable-list-view'
 import {actions} from '../store/actions'
-import {Dispatch} from '../lib/typed-redux'
-import {ApplicationState} from '../store'
 import {createGetCSSColorForFrame, getFrameToColorBucket} from '../store/getters'
 import {ActiveProfileState} from './application'
-import {createContainer} from '../lib/preact-redux'
+import {useActionCreator} from '../lib/preact-redux'
+import {useAppSelector} from './application-container'
+import {memo} from 'preact/compat'
 
 export enum SortField {
   SYMBOL_NAME,
@@ -334,34 +334,35 @@ interface ProfileTableViewContainerProps {
   activeProfileState: ActiveProfileState
 }
 
-export const ProfileTableViewContainer = createContainer(
-  ProfileTableView,
-  (state: ApplicationState, dispatch: Dispatch, ownProps: ProfileTableViewContainerProps) => {
-    const {activeProfileState} = ownProps
-    const {profile, sandwichViewState, index} = activeProfileState
-    if (!profile) throw new Error('profile missing')
-    const {tableSortMethod} = state
-    const {callerCallee} = sandwichViewState
-    const selectedFrame = callerCallee ? callerCallee.selectedFrame : null
-    const frameToColorBucket = getFrameToColorBucket(profile)
-    const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
+export const ProfileTableViewContainer = memo((ownProps: ProfileTableViewContainerProps) => {
+  const {activeProfileState} = ownProps
+  const {profile, sandwichViewState, index} = activeProfileState
+  if (!profile) throw new Error('profile missing')
+  const tableSortMethod = useAppSelector(state => state.tableSortMethod)
+  const {callerCallee} = sandwichViewState
+  const selectedFrame = callerCallee ? callerCallee.selectedFrame : null
+  const frameToColorBucket = getFrameToColorBucket(profile)
+  const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
 
-    const setSelectedFrame = (selectedFrame: Frame | null) => {
-      dispatch(actions.sandwichView.setSelectedFrame({profileIndex: index, args: selectedFrame}))
-    }
+  const setSelectedFrame = useActionCreator(
+    (selectedFrame: Frame | null) => {
+      return actions.sandwichView.setSelectedFrame({profileIndex: index, args: selectedFrame})
+    },
+    [index],
+  )
+  const setSortMethod = useActionCreator(actions.sandwichView.setTableSortMethod)
 
-    const setSortMethod = (sortMethod: SortMethod) => {
-      dispatch(actions.sandwichView.setTableSortMethod(sortMethod))
-    }
-
-    return {
-      profile,
-      profileIndex: activeProfileState.index,
-      selectedFrame,
-      getCSSColorForFrame,
-      sortMethod: tableSortMethod,
-      setSelectedFrame,
-      setSortMethod,
-    }
-  },
-)
+  return (
+    <ProfileTableView
+      {...{
+        profile,
+        profileIndex: activeProfileState.index,
+        selectedFrame,
+        getCSSColorForFrame,
+        sortMethod: tableSortMethod,
+        setSelectedFrame,
+        setSortMethod,
+      }}
+    />
+  )
+})

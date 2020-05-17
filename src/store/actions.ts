@@ -41,7 +41,7 @@ export namespace actions {
     export const setTableSortMethod = actionCreator<SortMethod>('sandwichView.setTableSortMethod')
 
     export const setSelectedFrame = actionCreatorWithIndex<Frame | null>(
-      'sandwichView.setSelectedFarmr',
+      'sandwichView.setSelectedFrame',
     )
   }
 
