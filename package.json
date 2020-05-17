@@ -31,7 +31,7 @@
   "devDependencies": {
     "@types/jest": "22.2.3",
     "@types/jszip": "3.1.4",
-    "@types/node": "10.1.4",
+    "@types/node": "14.0.1",
     "@types/pako": "1.0.0",
     "aphrodite": "2.1.0",
     "coveralls": "3.0.1",
@@ -47,9 +47,9 @@
     "prettier": "2.0.4",
     "protobufjs": "6.8.8",
     "quicktype": "15.0.209",
-    "redux": "^4.0.0",
+    "redux": "4.0.0",
     "ts-jest": "24.3.0",
-    "typescript": "3.2.4",
+    "typescript": "3.9.2",
     "typescript-eslint-parser": "17.0.1",
     "uglify-es": "3.2.2"
   },

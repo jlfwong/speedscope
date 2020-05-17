@@ -62,7 +62,7 @@ class StackTraceView extends Component<StackTraceViewProps, {}> {
       row.push(<ColorChit color={this.props.getFrameColor(frame)} />)
 
       if (rows.length) {
-        row.push(<span className={css(style.stackFileLine)}>> </span>)
+        row.push(<span className={css(style.stackFileLine)}>&gt; </span>)
       }
       row.push(frame.name)
 

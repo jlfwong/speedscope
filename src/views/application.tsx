@@ -323,8 +323,8 @@ export class Application extends StatelessComponent<ApplicationProps> {
 
     if (this.props.hashParams.title) {
       profileGroup = {
-        name: this.props.hashParams.title,
         ...profileGroup,
+        name: this.props.hashParams.title,
       }
     }
     document.title = `${profileGroup.name} - speedscope`
