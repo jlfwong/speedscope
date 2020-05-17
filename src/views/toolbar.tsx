@@ -1,5 +1,4 @@
 import {ApplicationProps} from './application'
-import {StatelessComponent} from '../lib/typed-redux'
 import {ViewMode} from '../store'
 import {h} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
@@ -10,48 +9,48 @@ interface ToolbarProps extends ApplicationProps {
   saveFile(): void
 }
 
-export class Toolbar extends StatelessComponent<ToolbarProps> {
-  setTimeOrder = () => {
-    this.props.setViewMode(ViewMode.CHRONO_FLAME_CHART)
+export function Toolbar(props: ToolbarProps) {
+  const setTimeOrder = () => {
+    props.setViewMode(ViewMode.CHRONO_FLAME_CHART)
   }
 
-  setLeftHeavyOrder = () => {
-    this.props.setViewMode(ViewMode.LEFT_HEAVY_FLAME_GRAPH)
+  const setLeftHeavyOrder = () => {
+    props.setViewMode(ViewMode.LEFT_HEAVY_FLAME_GRAPH)
   }
 
-  setSandwichView = () => {
-    this.props.setViewMode(ViewMode.SANDWICH_VIEW)
+  const setSandwichView = () => {
+    props.setViewMode(ViewMode.SANDWICH_VIEW)
   }
 
-  renderLeftContent() {
-    if (!this.props.activeProfileState) return null
+  const renderLeftContent = () => {
+    if (!props.activeProfileState) return null
 
     return (
       <div className={css(style.toolbarLeft)}>
         <div
           className={css(
             style.toolbarTab,
-            this.props.viewMode === ViewMode.CHRONO_FLAME_CHART && style.toolbarTabActive,
+            props.viewMode === ViewMode.CHRONO_FLAME_CHART && style.toolbarTabActive,
           )}
-          onClick={this.setTimeOrder}
+          onClick={setTimeOrder}
         >
           <span className={css(style.emoji)}>🕰</span>Time Order
         </div>
         <div
           className={css(
             style.toolbarTab,
-            this.props.viewMode === ViewMode.LEFT_HEAVY_FLAME_GRAPH && style.toolbarTabActive,
+            props.viewMode === ViewMode.LEFT_HEAVY_FLAME_GRAPH && style.toolbarTabActive,
           )}
-          onClick={this.setLeftHeavyOrder}
+          onClick={setLeftHeavyOrder}
         >
           <span className={css(style.emoji)}>⬅️</span>Left Heavy
         </div>
         <div
           className={css(
             style.toolbarTab,
-            this.props.viewMode === ViewMode.SANDWICH_VIEW && style.toolbarTabActive,
+            props.viewMode === ViewMode.SANDWICH_VIEW && style.toolbarTabActive,
           )}
-          onClick={this.setSandwichView}
+          onClick={setSandwichView}
         >
           <span className={css(style.emoji)}>🥪</span>Sandwich
         </div>
@@ -59,8 +58,8 @@ export class Toolbar extends StatelessComponent<ToolbarProps> {
     )
   }
 
-  renderCenterContent() {
-    const {activeProfileState, profileGroup} = this.props
+  const renderCenterContent = () => {
+    const {activeProfileState, profileGroup} = props
     if (activeProfileState && profileGroup) {
       const {index} = activeProfileState
       if (profileGroup.profiles.length === 1) {
@@ -83,10 +82,10 @@ export class Toolbar extends StatelessComponent<ToolbarProps> {
         }
 
         const prevButton = makeNavButton('⬅️', index === 0, () =>
-          this.props.setProfileIndexToView(index - 1),
+          props.setProfileIndexToView(index - 1),
         )
         const nextButton = makeNavButton('➡️', index >= profileGroup.profiles.length - 1, () =>
-          this.props.setProfileIndexToView(index + 1),
+          props.setProfileIndexToView(index + 1),
         )
 
         return (
@@ -104,9 +103,9 @@ export class Toolbar extends StatelessComponent<ToolbarProps> {
     return '🔬speedscope'
   }
 
-  renderRightContent() {
+  const renderRightContent = () => {
     const importFile = (
-      <div className={css(style.toolbarTab)} onClick={this.props.browseForFile}>
+      <div className={css(style.toolbarTab)} onClick={props.browseForFile}>
         <span className={css(style.emoji)}>⤵️</span>Import
       </div>
     )
@@ -124,8 +123,8 @@ export class Toolbar extends StatelessComponent<ToolbarProps> {
 
     return (
       <div className={css(style.toolbarRight)}>
-        {this.props.activeProfileState && (
-          <div className={css(style.toolbarTab)} onClick={this.props.saveFile}>
+        {props.activeProfileState && (
+          <div className={css(style.toolbarTab)} onClick={props.saveFile}>
             <span className={css(style.emoji)}>⤴️</span>Export
           </div>
         )}
@@ -135,15 +134,13 @@ export class Toolbar extends StatelessComponent<ToolbarProps> {
     )
   }
 
-  render() {
-    return (
-      <div className={css(style.toolbar)}>
-        {this.renderLeftContent()}
-        {this.renderCenterContent()}
-        {this.renderRightContent()}
-      </div>
-    )
-  }
+  return (
+    <div className={css(style.toolbar)}>
+      {renderLeftContent()}
+      {renderCenterContent()}
+      {renderRightContent()}
+    </div>
+  )
 }
 
 const style = StyleSheet.create({
