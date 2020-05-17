@@ -139,15 +139,13 @@ export const ChronoFlamechartView = memo((props: FlamechartViewContainerProps) =
 
   return (
     <FlamechartView
-      {...{
-        renderInverted: false,
-        flamechart,
-        flamechartRenderer,
-        canvasContext,
-        getCSSColorForFrame,
-        ...useFlamechartSetters(FlamechartID.CHRONO, index),
-        ...chronoViewState,
-      }}
+      renderInverted={false}
+      flamechart={flamechart}
+      flamechartRenderer={flamechartRenderer}
+      canvasContext={canvasContext}
+      getCSSColorForFrame={getCSSColorForFrame}
+      {...useFlamechartSetters(FlamechartID.CHRONO, index)}
+      {...chronoViewState}
     />
   )
 })
@@ -192,15 +190,13 @@ export const LeftHeavyFlamechartView = memo((ownProps: FlamechartViewContainerPr
 
   return (
     <FlamechartView
-      {...{
-        renderInverted: false,
-        flamechart,
-        flamechartRenderer,
-        canvasContext,
-        getCSSColorForFrame,
-        ...useFlamechartSetters(FlamechartID.LEFT_HEAVY, index),
-        ...leftHeavyViewState,
-      }}
+      renderInverted={false}
+      flamechart={flamechart}
+      flamechartRenderer={flamechartRenderer}
+      canvasContext={canvasContext}
+      getCSSColorForFrame={getCSSColorForFrame}
+      {...useFlamechartSetters(FlamechartID.LEFT_HEAVY, index)}
+      {...leftHeavyViewState}
     />
   )
 })

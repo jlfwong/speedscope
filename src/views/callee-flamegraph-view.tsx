@@ -1,4 +1,4 @@
-import {memoizeByShallowEquality} from '../lib/utils'
+import {memoizeByShallowEquality, noop} from '../lib/utils'
 import {Profile, Frame} from '../lib/profile'
 import {Flamechart} from '../lib/flamechart'
 import {
@@ -72,17 +72,15 @@ export const CalleeFlamegraphView = memo((ownProps: FlamechartViewContainerProps
 
   return (
     <FlamechartWrapper
-      {...{
-        renderInverted: false,
-        flamechart,
-        flamechartRenderer,
-        canvasContext,
-        getCSSColorForFrame,
-        ...useFlamechartSetters(FlamechartID.SANDWICH_CALLEES, index),
-        // This overrides the setSelectedNode specified in createFlamechartSettesr
-        setSelectedNode: () => {},
-        ...callerCallee.calleeFlamegraph,
-      }}
+      renderInverted={false}
+      flamechart={flamechart}
+      flamechartRenderer={flamechartRenderer}
+      canvasContext={canvasContext}
+      getCSSColorForFrame={getCSSColorForFrame}
+      {...useFlamechartSetters(FlamechartID.SANDWICH_CALLEES, index)}
+      // This overrides the setSelectedNode specified in useFlamechartSettesr
+      setSelectedNode={noop}
+      {...callerCallee.calleeFlamegraph}
     />
   )
 })

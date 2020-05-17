@@ -354,15 +354,13 @@ export const ProfileTableViewContainer = memo((ownProps: ProfileTableViewContain
 
   return (
     <ProfileTableView
-      {...{
-        profile,
-        profileIndex: activeProfileState.index,
-        selectedFrame,
-        getCSSColorForFrame,
-        sortMethod: tableSortMethod,
-        setSelectedFrame,
-        setSortMethod,
-      }}
+      profile={profile}
+      profileIndex={activeProfileState.index}
+      selectedFrame={selectedFrame}
+      getCSSColorForFrame={getCSSColorForFrame}
+      sortMethod={tableSortMethod}
+      setSelectedFrame={setSelectedFrame}
+      setSortMethod={setSortMethod}
     />
   )
 })

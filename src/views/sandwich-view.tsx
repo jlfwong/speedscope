@@ -141,14 +141,13 @@ export const SandwichViewContainer = memo((ownProps: SandwichViewContainerProps)
     },
     [dispatch, index],
   )
-
-  const props = {
-    activeProfileState: activeProfileState,
-    glCanvas,
-    setSelectedFrame,
-    selectedFrame: callerCallee ? callerCallee.selectedFrame : null,
-    profileIndex: index,
-  }
-
-  return <SandwichView {...props} />
+  return (
+    <SandwichView
+      activeProfileState={activeProfileState}
+      glCanvas={glCanvas}
+      setSelectedFrame={setSelectedFrame}
+      selectedFrame={callerCallee ? callerCallee.selectedFrame : null}
+      profileIndex={index}
+    />
+  )
 })
