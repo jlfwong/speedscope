@@ -54,10 +54,6 @@
     "typescript-json-schema": "0.42.0",
     "uglify-es": "3.2.2"
   },
-  "alias": {
-    "react": "preact/compat",
-    "react-dom": "preact/compat"
-  },
   "jest": {
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
