@@ -11,7 +11,7 @@ import {ActiveProfileState} from './application'
 import {useActionCreator} from '../lib/preact-redux'
 import {useAppSelector} from '../store'
 import {memo} from 'preact/compat'
-import {useCallback} from 'preact/hooks'
+import {useCallback, useMemo, useRef} from 'preact/hooks'
 
 export enum SortField {
   SYMBOL_NAME,
@@ -69,9 +69,54 @@ class SortIcon extends Component<SortIconProps, {}> {
   }
 }
 
+interface ProfileTableRowViewProps {
+  frame: Frame
+  index: number
+  profile: Profile
+  selectedFrame: Frame | null
+  setSelectedFrame: (f: Frame) => void
+  getCSSColorForFrame: (frame: Frame) => string
+}
+
+const ProfileTableRowView = memo((props: ProfileTableRowViewProps) => {
+  const {frame, profile, index, selectedFrame, setSelectedFrame, getCSSColorForFrame} = props
+  const totalWeight = frame.getTotalWeight()
+  const selfWeight = frame.getSelfWeight()
+  const totalPerc = (100.0 * totalWeight) / profile.getTotalNonIdleWeight()
+  const selfPerc = (100.0 * selfWeight) / profile.getTotalNonIdleWeight()
+
+  const selected = frame === selectedFrame
+
+  // We intentionally use index rather than frame.key here as the tr key
+  // in order to re-use rows when sorting rather than creating all new elements.
+  return (
+    <tr
+      key={`${index}`}
+      onClick={setSelectedFrame.bind(null, frame)}
+      className={css(
+        style.tableRow,
+        index % 2 == 0 && style.tableRowEven,
+        selected && style.tableRowSelected,
+      )}
+    >
+      <td className={css(style.numericCell)}>
+        {profile.formatValue(totalWeight)} ({formatPercent(totalPerc)})
+        <HBarDisplay perc={totalPerc} />
+      </td>
+      <td className={css(style.numericCell)}>
+        {profile.formatValue(selfWeight)} ({formatPercent(selfPerc)})
+        <HBarDisplay perc={selfPerc} />
+      </td>
+      <td title={frame.file} className={css(style.textCell)}>
+        <ColorChit color={getCSSColorForFrame(frame)} />
+        {frame.name}
+      </td>
+    </tr>
+  )
+})
+
 interface ProfileTableViewProps {
   profile: Profile
-  profileIndex: number
   selectedFrame: Frame | null
   getCSSColorForFrame: (frame: Frame) => string
   sortMethod: SortMethod
@@ -79,81 +124,51 @@ interface ProfileTableViewProps {
   setSortMethod: (sortMethod: SortMethod) => void
 }
 
-export class ProfileTableView extends Component<ProfileTableViewProps, {}> {
-  renderRow(frame: Frame, index: number) {
-    const {profile, selectedFrame} = this.props
+export const ProfileTableView = memo((props: ProfileTableViewProps) => {
+  const {
+    profile,
+    sortMethod,
+    setSortMethod,
+    selectedFrame,
+    setSelectedFrame,
+    getCSSColorForFrame,
+  } = props
 
-    const totalWeight = frame.getTotalWeight()
-    const selfWeight = frame.getSelfWeight()
-    const totalPerc = (100.0 * totalWeight) / profile.getTotalNonIdleWeight()
-    const selfPerc = (100.0 * selfWeight) / profile.getTotalNonIdleWeight()
+  const onSortClick = useCallback(
+    (field: SortField, ev: MouseEvent) => {
+      ev.preventDefault()
 
-    const selected = frame === selectedFrame
-
-    // We intentionally use index rather than frame.key here as the tr key
-    // in order to re-use rows when sorting rather than creating all new elements.
-    return (
-      <tr
-        key={`${index}`}
-        onClick={this.props.setSelectedFrame.bind(null, frame)}
-        className={css(
-          style.tableRow,
-          index % 2 == 0 && style.tableRowEven,
-          selected && style.tableRowSelected,
-        )}
-      >
-        <td className={css(style.numericCell)}>
-          {profile.formatValue(totalWeight)} ({formatPercent(totalPerc)})
-          <HBarDisplay perc={totalPerc} />
-        </td>
-        <td className={css(style.numericCell)}>
-          {profile.formatValue(selfWeight)} ({formatPercent(selfPerc)})
-          <HBarDisplay perc={selfPerc} />
-        </td>
-        <td title={frame.file} className={css(style.textCell)}>
-          <ColorChit color={this.props.getCSSColorForFrame(frame)} />
-          {frame.name}
-        </td>
-      </tr>
-    )
-  }
-
-  onSortClick = (field: SortField, ev: MouseEvent) => {
-    ev.preventDefault()
-
-    const {sortMethod} = this.props
-
-    if (sortMethod.field == field) {
-      // Toggle
-      this.props.setSortMethod({
-        field,
-        direction:
-          sortMethod.direction === SortDirection.ASCENDING
-            ? SortDirection.DESCENDING
-            : SortDirection.ASCENDING,
-      })
-    } else {
-      // Set a sane default
-      switch (field) {
-        case SortField.SYMBOL_NAME: {
-          this.props.setSortMethod({field, direction: SortDirection.ASCENDING})
-          break
-        }
-        case SortField.SELF: {
-          this.props.setSortMethod({field, direction: SortDirection.DESCENDING})
-          break
-        }
-        case SortField.TOTAL: {
-          this.props.setSortMethod({field, direction: SortDirection.DESCENDING})
-          break
+      if (sortMethod.field == field) {
+        // Toggle
+        setSortMethod({
+          field,
+          direction:
+            sortMethod.direction === SortDirection.ASCENDING
+              ? SortDirection.DESCENDING
+              : SortDirection.ASCENDING,
+        })
+      } else {
+        // Set a sane default
+        switch (field) {
+          case SortField.SYMBOL_NAME: {
+            setSortMethod({field, direction: SortDirection.ASCENDING})
+            break
+          }
+          case SortField.SELF: {
+            setSortMethod({field, direction: SortDirection.DESCENDING})
+            break
+          }
+          case SortField.TOTAL: {
+            setSortMethod({field, direction: SortDirection.DESCENDING})
+            break
+          }
         }
       }
-    }
-  }
+    },
+    [sortMethod, setSortMethod],
+  )
 
-  private getFrameList = (): Frame[] => {
-    const {profile, sortMethod} = this.props
-
+  const frameList = useMemo((): Frame[] => {
     const frameList: Frame[] = []
 
     profile.forEachFrame(f => frameList.push(f))
@@ -179,89 +194,94 @@ export class ProfileTableView extends Component<ProfileTableViewProps, {}> {
     }
 
     return frameList
-  }
+  }, [profile, sortMethod])
 
-  private listView: ScrollableListView | null = null
-  private listViewRef = (listView: ScrollableListView | null) => {
-    if (listView === this.listView) return
-    this.listView = listView
+  const listViewRef = useRef<ScrollableListView | null>(null)
+  const listViewCallback = useCallback(
+    (listView: ScrollableListView | null) => {
+      if (listView === listViewRef.current) return
+      listViewRef.current = listView
+      if (!selectedFrame || !listView) return
+      const index = frameList.indexOf(selectedFrame)
+      if (index === -1) return
+      listView.scrollIndexIntoView(index)
+    },
+    [listViewRef, selectedFrame, frameList],
+  )
 
-    const {selectedFrame} = this.props
-    if (!selectedFrame || !listView) return
-    const index = this.getFrameList().indexOf(selectedFrame)
-    if (index === -1) return
-    listView.scrollIndexIntoView(index)
-  }
-
-  render() {
-    const {sortMethod} = this.props
-
-    const frameList = this.getFrameList()
-
-    const renderItems = (firstIndex: number, lastIndex: number) => {
+  const renderItems = useCallback(
+    (firstIndex: number, lastIndex: number) => {
       const rows: JSX.Element[] = []
 
       for (let i = firstIndex; i <= lastIndex; i++) {
-        rows.push(this.renderRow(frameList[i], i))
+        rows.push(
+          <ProfileTableRowView
+            frame={frameList[i]}
+            index={i}
+            profile={profile}
+            selectedFrame={selectedFrame}
+            setSelectedFrame={setSelectedFrame}
+            getCSSColorForFrame={getCSSColorForFrame}
+          />,
+        )
       }
 
       return <table className={css(style.tableView)}>{rows}</table>
-    }
+    },
+    [frameList, profile, selectedFrame, setSelectedFrame, getCSSColorForFrame],
+  )
 
-    const listItems: ListItem[] = frameList.map(f => ({size: Sizes.FRAME_HEIGHT}))
+  const listItems: ListItem[] = frameList.map(f => ({size: Sizes.FRAME_HEIGHT}))
 
-    return (
-      <div className={css(commonStyle.vbox, style.profileTableView)}>
-        <table className={css(style.tableView)}>
-          <thead className={css(style.tableHeader)}>
-            <tr>
-              <th
-                className={css(style.numericCell)}
-                onClick={ev => this.onSortClick(SortField.TOTAL, ev)}
-              >
-                <SortIcon
-                  activeDirection={
-                    sortMethod.field === SortField.TOTAL ? sortMethod.direction : null
-                  }
-                />
-                Total
-              </th>
-              <th
-                className={css(style.numericCell)}
-                onClick={ev => this.onSortClick(SortField.SELF, ev)}
-              >
-                <SortIcon
-                  activeDirection={
-                    sortMethod.field === SortField.SELF ? sortMethod.direction : null
-                  }
-                />
-                Self
-              </th>
-              <th
-                className={css(style.textCell)}
-                onClick={ev => this.onSortClick(SortField.SYMBOL_NAME, ev)}
-              >
-                <SortIcon
-                  activeDirection={
-                    sortMethod.field === SortField.SYMBOL_NAME ? sortMethod.direction : null
-                  }
-                />
-                Symbol Name
-              </th>
-            </tr>
-          </thead>
-        </table>
-        <ScrollableListView
-          ref={this.listViewRef}
-          axis={'y'}
-          items={listItems}
-          className={css(style.scrollView)}
-          renderItems={renderItems}
-        />
-      </div>
-    )
-  }
-}
+  const onTotalClick = useCallback((ev: MouseEvent) => onSortClick(SortField.TOTAL, ev), [
+    onSortClick,
+  ])
+  const onSelfClick = useCallback((ev: MouseEvent) => onSortClick(SortField.SELF, ev), [
+    onSortClick,
+  ])
+  const onSymbolNameClick = useCallback(
+    (ev: MouseEvent) => onSortClick(SortField.SYMBOL_NAME, ev),
+    [onSortClick],
+  )
+
+  return (
+    <div className={css(commonStyle.vbox, style.profileTableView)}>
+      <table className={css(style.tableView)}>
+        <thead className={css(style.tableHeader)}>
+          <tr>
+            <th className={css(style.numericCell)} onClick={onTotalClick}>
+              <SortIcon
+                activeDirection={sortMethod.field === SortField.TOTAL ? sortMethod.direction : null}
+              />
+              Total
+            </th>
+            <th className={css(style.numericCell)} onClick={onSelfClick}>
+              <SortIcon
+                activeDirection={sortMethod.field === SortField.SELF ? sortMethod.direction : null}
+              />
+              Self
+            </th>
+            <th className={css(style.textCell)} onClick={onSymbolNameClick}>
+              <SortIcon
+                activeDirection={
+                  sortMethod.field === SortField.SYMBOL_NAME ? sortMethod.direction : null
+                }
+              />
+              Symbol Name
+            </th>
+          </tr>
+        </thead>
+      </table>
+      <ScrollableListView
+        ref={listViewCallback}
+        axis={'y'}
+        items={listItems}
+        className={css(style.scrollView)}
+        renderItems={renderItems}
+      />
+    </div>
+  )
+})
 
 const style = StyleSheet.create({
   profileTableView: {
@@ -358,7 +378,6 @@ export const ProfileTableViewContainer = memo((ownProps: ProfileTableViewContain
   return (
     <ProfileTableView
       profile={profile}
-      profileIndex={activeProfileState.index}
       selectedFrame={selectedFrame}
       getCSSColorForFrame={getCSSColorForFrame}
       sortMethod={tableSortMethod}
