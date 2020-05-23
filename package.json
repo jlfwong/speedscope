@@ -47,7 +47,7 @@
     "preact-redux": "jlfwong/preact-redux#a56dcc4",
     "prettier": "2.0.4",
     "protobufjs": "6.8.8",
-    "quicktype": "15.0.209",
+    "typescript-json-schema": "0.42.0",
     "redux": "4.0.0",
     "ts-jest": "24.3.0",
     "typescript": "3.9.2",
