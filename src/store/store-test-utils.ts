@@ -5,7 +5,7 @@ import {ApplicationState, createAppStore} from '.'
 import {importSpeedscopeProfiles} from '../lib/file-format'
 
 export function storeTest(name: string, cb: (store: Store<ApplicationState, AnyAction>) => void) {
-  const store = createAppStore({})
+  const store = createAppStore()
   test(name, () => {
     cb(store)
   })

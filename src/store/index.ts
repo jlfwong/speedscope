@@ -42,9 +42,7 @@ const protocol = window.location.protocol
 // however, XHR will be unavailable to fetching files in adjacent directories.
 export const canUseXHR = protocol === 'http:' || protocol === 'https:'
 
-export function createAppStore(
-  initialState: Partial<ApplicationState>,
-): redux.Store<ApplicationState> {
+export function createAppStore(initialState?: ApplicationState): redux.Store<ApplicationState> {
   const hashParams = getHashParams()
 
   const loading = canUseXHR && hashParams.profileURL != null

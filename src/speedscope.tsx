@@ -15,7 +15,7 @@ if (module.hot) {
 }
 
 const lastStore: any = (window as any)['store']
-const store = createAppStore(lastStore ? lastStore.getState() : {})
+const store = lastStore ? createAppStore(lastStore.getState()) : createAppStore()
 ;(window as any)['store'] = store
 
 render(
