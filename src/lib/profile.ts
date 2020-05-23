@@ -603,6 +603,13 @@ export class CallTreeProfileBuilder extends Profile {
         throw new Error(`Trying to leave a ${frame.key} before any have been entered`)
       }
       leavingStackTop.freeze()
+
+      if (leavingStackTop.frame.key !== frame.key) {
+        throw new Error(
+          `Tried to leave frame "${frame.name}" while frame "${leavingStackTop.frame.name}" was at the top at ${value}`,
+        )
+      }
+
       const delta = value - this.lastValue
       if (delta > 0) {
         this.samples.push(leavingStackTop)
