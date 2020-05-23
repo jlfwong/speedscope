@@ -211,3 +211,7 @@ Object {
 exports[`importSpeedscopeProfiles 0.6.0 multiple profiles: indexToView 1`] = `1`;
 
 exports[`importSpeedscopeProfiles 0.6.0 multiple profiles: profileGroup.name 1`] = `"Two Samples"`;
+
+exports[`importSpeedscopeProfiles invalid due to incomplete trace 1`] = `"Tried to complete profile construction with a non-empty stack"`;
+
+exports[`importSpeedscopeProfiles invalid due to out of order events 1`] = `"Tried to leave frame \\"B\\" while frame \\"A\\" was at the top at 4"`;

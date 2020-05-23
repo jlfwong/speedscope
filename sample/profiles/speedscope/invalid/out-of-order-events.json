@@ -1,0 +1,25 @@
+{
+  "$schema": "https://www.speedscope.app/file-format-schema.json",
+  "shared": {
+    "frames": [{"name": "A"}, {"name": "B"}]
+  },
+  "profiles": [
+    {
+      "type": "evented",
+      "name": "p1",
+      "unit": "none",
+      "startValue": 0,
+      "endValue": 100,
+      "events": [
+        {"type": "O", "frame": 0, "at": 0},
+        {"type": "C", "frame": 0, "at": 1},
+        {"type": "O", "frame": 1, "at": 2},
+        {"type": "O", "frame": 0, "at": 2},
+        {"type": "O", "frame": 0, "at": 3},
+        {"type": "C", "frame": 0, "at": 4},
+        {"type": "C", "frame": 1, "at": 4},
+        {"type": "C", "frame": 0, "at": 5}
+      ]
+    }
+  ]
+}

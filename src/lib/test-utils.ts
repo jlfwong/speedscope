@@ -97,3 +97,14 @@ export async function checkProfileSnapshot(filepath: string) {
   const reexported = exportProfileGroup(reimportedGroup)
   expect(exported).toEqual(reexported)
 }
+
+export async function expectImportFailure(filepath: string) {
+  const buffer = fs.readFileSync(filepath)
+  const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
+  try {
+    await importProfilesFromArrayBuffer(path.basename(filepath), arrayBuffer)
+    fail('Expected import to fail but it succeeded')
+  } catch (error) {
+    expect(error.message).toMatchSnapshot()
+  }
+}
