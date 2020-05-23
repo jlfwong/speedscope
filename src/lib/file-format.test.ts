@@ -19,7 +19,6 @@ describe('importSpeedscopeProfiles', () => {
   })
 
   test('invalid due to incomplete trace', async () => {
-    // See: https://github.com/jlfwong/speedscope/issues/272
     await expectImportFailure('./sample/profiles/speedscope/invalid/incomplete-trace.json')
   })
 })
