@@ -1,6 +1,5 @@
-import {connect} from 'preact-redux'
 import * as redux from 'redux'
-import {ComponentConstructor, Component} from 'preact'
+import {Component} from 'preact'
 
 export interface Action<TPayload> extends redux.Action<string> {
   payload: TPayload
@@ -52,31 +51,6 @@ export function setter<T>(
 }
 
 export type Dispatch = redux.Dispatch<Action<any>>
-
-// We make this into a single function invocation instead of the connect(map, map)(Component)
-// syntax to make better use of type inference.
-//
-// NOTE: To avoid this returning objects which do not compare shallow equal, it's the
-// responsibility of the caller to ensure that the props returned by map compare shallow
-// equal. This most importantly mean memoizing functions which wrap dispatch to avoid
-// all callback props from being regenerated on every call.
-export function createContainer<OwnProps, State, ComponentProps, ComponentType>(
-  component: {
-    new (props: ComponentProps): ComponentType
-  },
-  map: (state: State, dispatch: Dispatch, ownProps: OwnProps) => ComponentProps,
-): ComponentConstructor<OwnProps, {}> {
-  const mapStateToProps = (state: State) => state
-  const mapDispatchToProps = (dispatch: Dispatch) => ({dispatch})
-  const mergeProps = (
-    stateProps: State,
-    dispatchProps: {dispatch: Dispatch},
-    ownProps: OwnProps,
-  ) => {
-    return map(stateProps, dispatchProps.dispatch, ownProps)
-  }
-  return connect(mapStateToProps, mapDispatchToProps, mergeProps)(component)
-}
 
 export type VoidState = {
   __dummyField: void

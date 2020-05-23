@@ -26,7 +26,7 @@ enum DraggingMode {
 
 export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps, {}> {
   container: Element | null = null
-  containerRef = (element?: Element) => {
+  containerRef = (element: Element | null) => {
     this.container = element || null
   }
 
@@ -394,7 +394,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     this.updateCursor(configSpaceMouse)
   }
 
-  private overlayCanvasRef = (element?: Element) => {
+  private overlayCanvasRef = (element: Element | null) => {
     if (element) {
       this.overlayCanvas = element as HTMLCanvasElement
       this.overlayCtx = this.overlayCanvas.getContext('2d')

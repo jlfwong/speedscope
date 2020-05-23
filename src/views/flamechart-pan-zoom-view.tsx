@@ -52,7 +52,7 @@ export interface FlamechartPanZoomViewProps {
 
 export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps, {}> {
   private container: Element | null = null
-  private containerRef = (element?: Element) => {
+  private containerRef = (element: Element | null) => {
     this.container = element || null
   }
 
@@ -65,7 +65,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     this.props.setConfigSpaceViewportRect(r)
   }
 
-  private overlayCanvasRef = (element?: Element) => {
+  private overlayCanvasRef = (element: Element | null) => {
     if (element) {
       this.overlayCanvas = element as HTMLCanvasElement
       this.overlayCtx = this.overlayCanvas.getContext('2d')

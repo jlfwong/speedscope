@@ -1,63 +1,50 @@
-import {createContainer, Dispatch, bindActionCreator, ActionCreator} from '../lib/typed-redux'
+import {h} from 'preact'
 import {Application, ActiveProfileState} from './application'
-import {ApplicationState} from '../store'
 import {getProfileToView, getCanvasContext} from '../store/getters'
 import {actions} from '../store/actions'
-import {Graphics} from '../gl/graphics'
+import {useActionCreator} from '../lib/preact-redux'
+import {memo} from 'preact/compat'
+import {useCallback} from 'preact/hooks'
+import {useAppSelector} from '../store'
 
-export const ApplicationContainer = createContainer(
-  Application,
-  (state: ApplicationState, dispatch: Dispatch) => {
-    const {flattenRecursion, profileGroup} = state
+export const ApplicationContainer = memo(() => {
+  const appState = useAppSelector(useCallback(state => state, []))
+  const canvasContext = useAppSelector(
+    useCallback(state => (state.glCanvas ? getCanvasContext(state.glCanvas) : null), []),
+  )
 
-    let activeProfileState: ActiveProfileState | null = null
-    if (profileGroup) {
-      if (profileGroup.profiles.length > profileGroup.indexToView) {
-        const index = profileGroup.indexToView
-        const profileState = profileGroup.profiles[index]
-        activeProfileState = {
-          ...profileGroup.profiles[profileGroup.indexToView],
-          profile: getProfileToView({profile: profileState.profile, flattenRecursion}),
-          index: profileGroup.indexToView,
-        }
+  const activeProfileState: ActiveProfileState | null = useAppSelector(
+    useCallback(state => {
+      const {profileGroup} = state
+      if (!profileGroup) return null
+      if (profileGroup.indexToView >= profileGroup.profiles.length) return null
+
+      const index = profileGroup.indexToView
+      const profileState = profileGroup.profiles[index]
+      return {
+        ...profileGroup.profiles[profileGroup.indexToView],
+        profile: getProfileToView({
+          profile: profileState.profile,
+          flattenRecursion: state.flattenRecursion,
+        }),
+        index: profileGroup.indexToView,
       }
-    }
+    }, []),
+  )
 
-    function wrapActionCreator<T>(actionCreator: ActionCreator<T>): (t: T) => void {
-      return bindActionCreator(dispatch, actionCreator)
-    }
-
-    // TODO(jlfwong): Cache this and resizeCanvas below to prevent re-renders
-    // due to changing props.
-    const setters = {
-      setGLCanvas: wrapActionCreator(actions.setGLCanvas),
-      setLoading: wrapActionCreator(actions.setLoading),
-      setError: wrapActionCreator(actions.setError),
-      setProfileGroup: wrapActionCreator(actions.setProfileGroup),
-      setDragActive: wrapActionCreator(actions.setDragActive),
-      setViewMode: wrapActionCreator(actions.setViewMode),
-      setFlattenRecursion: wrapActionCreator(actions.setFlattenRecursion),
-      setProfileIndexToView: wrapActionCreator(actions.setProfileIndexToView),
-    }
-
-    return {
-      activeProfileState,
-      dispatch,
-      canvasContext: state.glCanvas ? getCanvasContext(state.glCanvas) : null,
-      resizeCanvas: (
-        widthInPixels: number,
-        heightInPixels: number,
-        widthInAppUnits: number,
-        heightInAppUnits: number,
-      ) => {
-        if (state.glCanvas) {
-          const gl = getCanvasContext(state.glCanvas).gl
-          gl.resize(widthInPixels, heightInPixels, widthInAppUnits, heightInAppUnits)
-          gl.clear(new Graphics.Color(1, 1, 1, 1))
-        }
-      },
-      ...setters,
-      ...state,
-    }
-  },
-)
+  return (
+    <Application
+      activeProfileState={activeProfileState}
+      canvasContext={canvasContext}
+      setGLCanvas={useActionCreator(actions.setGLCanvas)}
+      setLoading={useActionCreator(actions.setLoading)}
+      setError={useActionCreator(actions.setError)}
+      setProfileGroup={useActionCreator(actions.setProfileGroup)}
+      setDragActive={useActionCreator(actions.setDragActive)}
+      setViewMode={useActionCreator(actions.setViewMode)}
+      setFlattenRecursion={useActionCreator(actions.setFlattenRecursion)}
+      setProfileIndexToView={useActionCreator(actions.setProfileIndexToView)}
+      {...appState}
+    />
+  )
+})

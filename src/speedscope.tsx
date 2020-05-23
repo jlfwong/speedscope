@@ -1,7 +1,7 @@
 import {h, render} from 'preact'
-import {createApplicationStore} from './store'
-import {Provider} from 'preact-redux'
+import {createAppStore} from './store'
 import {ApplicationContainer} from './views/application-container'
+import {Provider} from './lib/preact-redux'
 
 console.log(`speedscope v${require('../package.json').version}`)
 
@@ -15,7 +15,7 @@ if (module.hot) {
 }
 
 const lastStore: any = (window as any)['store']
-const store = createApplicationStore(lastStore ? lastStore.getState() : {})
+const store = lastStore ? createAppStore(lastStore.getState()) : createAppStore()
 ;(window as any)['store'] = store
 
 render(

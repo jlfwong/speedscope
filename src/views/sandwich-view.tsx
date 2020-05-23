@@ -1,14 +1,16 @@
 import {Frame} from '../lib/profile'
 import {StyleSheet, css} from 'aphrodite'
 import {ProfileTableViewContainer} from './profile-table-view'
-import {h} from 'preact'
+import {h, JSX} from 'preact'
+import {memo} from 'preact/compat'
+import {useCallback} from 'preact/hooks'
 import {commonStyle, Sizes, Colors, FontSize} from './style'
 import {actions} from '../store/actions'
-import {createContainer, Dispatch, StatelessComponent} from '../lib/typed-redux'
-import {ApplicationState} from '../store'
+import {StatelessComponent} from '../lib/typed-redux'
 import {InvertedCallerFlamegraphView} from './inverted-caller-flamegraph-view'
 import {CalleeFlamegraphView} from './callee-flamegraph-view'
 import {ActiveProfileState} from './application'
+import {useDispatch} from '../lib/preact-redux'
 
 interface SandwichViewProps {
   selectedFrame: Frame | null
@@ -122,28 +124,30 @@ interface SandwichViewContainerProps {
   glCanvas: HTMLCanvasElement
 }
 
-export const SandwichViewContainer = createContainer(
-  SandwichView,
-  (state: ApplicationState, dispatch: Dispatch, ownProps: SandwichViewContainerProps) => {
-    const {activeProfileState, glCanvas} = ownProps
-    const {sandwichViewState, index} = activeProfileState
-    const {callerCallee} = sandwichViewState
+export const SandwichViewContainer = memo((ownProps: SandwichViewContainerProps) => {
+  const {activeProfileState, glCanvas} = ownProps
+  const {sandwichViewState, index} = activeProfileState
+  const {callerCallee} = sandwichViewState
 
-    const setSelectedFrame = (selectedFrame: Frame | null) => {
+  const dispatch = useDispatch()
+  const setSelectedFrame = useCallback(
+    (selectedFrame: Frame | null) => {
       dispatch(
         actions.sandwichView.setSelectedFrame({
           profileIndex: index,
           args: selectedFrame,
         }),
       )
-    }
-
-    return {
-      activeProfileState: activeProfileState,
-      glCanvas,
-      setSelectedFrame,
-      selectedFrame: callerCallee ? callerCallee.selectedFrame : null,
-      profileIndex: index,
-    }
-  },
-)
+    },
+    [dispatch, index],
+  )
+  return (
+    <SandwichView
+      activeProfileState={activeProfileState}
+      glCanvas={glCanvas}
+      setSelectedFrame={setSelectedFrame}
+      selectedFrame={callerCallee ? callerCallee.selectedFrame : null}
+      profileIndex={index}
+    />
+  )
+})

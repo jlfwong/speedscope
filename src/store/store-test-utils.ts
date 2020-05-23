@@ -1,11 +1,11 @@
 import * as fs from 'fs'
 
 import {Store, AnyAction} from 'redux'
-import {ApplicationState, createApplicationStore} from '.'
+import {ApplicationState, createAppStore} from '.'
 import {importSpeedscopeProfiles} from '../lib/file-format'
 
 export function storeTest(name: string, cb: (store: Store<ApplicationState, AnyAction>) => void) {
-  const store = createApplicationStore({})
+  const store = createAppStore()
   test(name, () => {
     cb(store)
   })

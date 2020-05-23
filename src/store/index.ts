@@ -10,6 +10,7 @@ import {setter, Reducer} from '../lib/typed-redux'
 import {HashParams, getHashParams} from '../lib/hash-params'
 import {ProfileGroupState, profileGroup} from './profiles-state'
 import {SortMethod, SortField, SortDirection} from '../views/profile-table-view'
+import {useSelector} from '../lib/preact-redux'
 
 export const enum ViewMode {
   CHRONO_FLAME_CHART,
@@ -41,9 +42,7 @@ const protocol = window.location.protocol
 // however, XHR will be unavailable to fetching files in adjacent directories.
 export const canUseXHR = protocol === 'http:' || protocol === 'https:'
 
-export function createApplicationStore(
-  initialState: Partial<ApplicationState>,
-): redux.Store<ApplicationState> {
+export function createAppStore(initialState?: ApplicationState): redux.Store<ApplicationState> {
   const hashParams = getHashParams()
 
   const loading = canUseXHR && hashParams.profileURL != null
@@ -70,4 +69,8 @@ export function createApplicationStore(
   })
 
   return redux.createStore(reducer, initialState)
+}
+
+export function useAppSelector<T>(selector: (t: ApplicationState) => T): T {
+  return useSelector(selector)
 }
