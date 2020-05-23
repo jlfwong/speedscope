@@ -357,7 +357,7 @@ export const ProfileTableViewContainer = memo((ownProps: ProfileTableViewContain
   const {activeProfileState} = ownProps
   const {profile, sandwichViewState, index} = activeProfileState
   if (!profile) throw new Error('profile missing')
-  const tableSortMethod = useAppSelector(state => state.tableSortMethod)
+  const tableSortMethod = useAppSelector(useCallback(state => state.tableSortMethod, []))
   const {callerCallee} = sandwichViewState
   const selectedFrame = callerCallee ? callerCallee.selectedFrame : null
   const frameToColorBucket = getFrameToColorBucket(profile)
