@@ -14,7 +14,8 @@
     "lint": "eslint 'src/**/*.ts' 'src/**/*.tsx'",
     "jest": "./scripts/test-setup.sh && jest --runInBand",
     "coverage": "npm run jest -- --coverage && coveralls < coverage/lcov.info",
-    "test": "tsc --noEmit && npm run lint && npm run coverage",
+    "typecheck": "tsc --noEmit",
+    "test": "./scripts/ci.sh",
     "serve": "parcel assets/index.html --open --no-autoinstall"
   },
   "files": [
