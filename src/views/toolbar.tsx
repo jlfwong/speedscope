@@ -1,7 +1,7 @@
 import {ApplicationProps} from './application'
 import {ViewMode} from '../store'
-import {h, JSX, Fragment} from 'preact'
-import {useCallback} from 'preact/hooks'
+import * as React from 'react'
+import {useCallback} from 'react'
 import {StyleSheet, css} from 'aphrodite'
 import {Sizes, Colors, FontFamily, FontSize, Duration} from './style'
 
@@ -59,7 +59,7 @@ function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
   if (activeProfileState && profileGroup) {
     const {index} = activeProfileState
     if (profileGroup.profiles.length === 1) {
-      return <Fragment>{activeProfileState.profile.getName()}</Fragment>
+      return <>{activeProfileState.profile.getName()}</>
     } else {
       function makeNavButton(content: string, disabled: boolean, onClick: () => void) {
         return (
@@ -96,7 +96,7 @@ function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
       )
     }
   }
-  return <Fragment>{'🔬speedscope'}</Fragment>
+  return <>{'🔬speedscope'}</>
 }
 
 function ToolbarRightContent(props: ToolbarProps) {

@@ -1,5 +1,5 @@
 import * as redux from 'redux'
-import {Component} from 'preact'
+import {Component} from 'react'
 
 export interface Action<TPayload> extends redux.Action<string> {
   payload: TPayload

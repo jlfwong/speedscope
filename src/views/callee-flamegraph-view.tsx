@@ -15,9 +15,8 @@ import {
 import {FlamechartID} from '../store/flamechart-view-state'
 import {FlamechartWrapper} from './flamechart-wrapper'
 import {useAppSelector} from '../store'
-import {h} from 'preact'
-import {memo} from 'preact/compat'
-import {useCallback} from 'preact/hooks'
+import * as React from 'react'
+import {memo, useCallback} from 'react'
 
 const getCalleeProfile = memoizeByShallowEquality<
   {

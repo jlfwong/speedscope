@@ -1,7 +1,8 @@
 import {Vec2} from '../lib/math'
 import {Sizes, Colors, FontSize, FontFamily, ZIndex} from './style'
 import {css, StyleSheet} from 'aphrodite'
-import {h, Component} from 'preact'
+import * as React from 'react'
+import {Component} from 'react'
 
 interface HovertipProps {
   containerSize: Vec2

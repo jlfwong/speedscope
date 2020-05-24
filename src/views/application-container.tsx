@@ -1,10 +1,9 @@
-import {h} from 'preact'
+import * as React from 'react'
 import {Application, ActiveProfileState} from './application'
 import {getProfileToView, getCanvasContext} from '../store/getters'
 import {actions} from '../store/actions'
 import {useActionCreator} from '../lib/preact-redux'
-import {memo} from 'preact/compat'
-import {useCallback} from 'preact/hooks'
+import {memo, useCallback} from 'react'
 import {useAppSelector} from '../store'
 
 export const ApplicationContainer = memo(() => {

@@ -8,17 +8,16 @@
  * react-redux that I actually need myself.
  */
 
-import {h} from 'preact'
+import * as React from 'react'
 import * as redux from 'redux'
-import {createContext, ComponentChildren} from 'preact'
 import {Dispatch, Action} from './typed-redux'
-import {useState, useContext, useCallback, useLayoutEffect} from 'preact/hooks'
+import {useState, createContext, useContext, useCallback, useLayoutEffect} from 'react'
 
 const PreactRedux = createContext<redux.Store<any> | null>(null)
 
 interface ProviderProps {
   store: redux.Store<any>
-  children?: ComponentChildren
+  children?: React.ReactNode
 }
 
 export function Provider(props: ProviderProps) {

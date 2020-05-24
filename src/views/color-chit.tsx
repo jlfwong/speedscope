@@ -1,4 +1,4 @@
-import {h} from 'preact'
+import * as React from 'react'
 import {StyleSheet, css} from 'aphrodite'
 import {Colors, FontSize} from './style'
 

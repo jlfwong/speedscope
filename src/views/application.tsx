@@ -1,4 +1,4 @@
-import {h} from 'preact'
+import * as React from 'react'
 import {StyleSheet, css} from 'aphrodite'
 import {FileSystemDirectoryEntry} from '../import/file-system-entry'
 
@@ -258,7 +258,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
     })
   }
 
-  onDrop = (ev: DragEvent) => {
+  onDrop = (ev: React.DragEvent) => {
     this.props.setDragActive(false)
     ev.preventDefault()
 
@@ -284,17 +284,17 @@ export class Application extends StatelessComponent<ApplicationProps> {
     }
   }
 
-  onDragOver = (ev: DragEvent) => {
+  onDragOver = (ev: React.DragEvent) => {
     this.props.setDragActive(true)
     ev.preventDefault()
   }
 
-  onDragLeave = (ev: DragEvent) => {
+  onDragLeave = (ev: React.DragEvent) => {
     this.props.setDragActive(false)
     ev.preventDefault()
   }
 
-  onWindowKeyPress = async (ev: KeyboardEvent) => {
+  onWindowKeyPress = async (ev: KeyboardEvent | React.KeyboardEvent) => {
     if (ev.key === '1') {
       this.props.setViewMode(ViewMode.CHRONO_FLAME_CHART)
     } else if (ev.key === '2') {
@@ -336,7 +336,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
     input.click()
   }
 
-  private onWindowKeyDown = async (ev: KeyboardEvent) => {
+  private onWindowKeyDown = async (ev: KeyboardEvent | React.KeyboardEvent) => {
     // This has to be handled on key down in order to prevent the default
     // page save action.
     if (ev.key === 's' && (ev.ctrlKey || ev.metaKey)) {
@@ -348,7 +348,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
     }
   }
 
-  onDocumentPaste = (ev: Event) => {
+  onDocumentPaste = (ev: Event | React.UIEvent) => {
     ev.preventDefault()
     ev.stopPropagation()
 
@@ -405,7 +405,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
     }
   }
 
-  onFileSelect = (ev: Event) => {
+  onFileSelect = (ev: Event | React.ChangeEvent<HTMLInputElement>) => {
     const file = (ev.target as HTMLInputElement).files!.item(0)
     if (file) {
       this.loadFromFile(file)
@@ -449,7 +449,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
               onChange={this.onFileSelect}
               className={css(style.hide)}
             />
-            <label for="file" className={css(style.browseButton)} tabIndex={0}>
+            <label htmlFor="file" className={css(style.browseButton)} tabIndex={0}>
               Browse
             </label>
           </div>

@@ -16,9 +16,8 @@ import {
 import {FlamechartID} from '../store/flamechart-view-state'
 import {useAppSelector} from '../store'
 import {FlamechartWrapper} from './flamechart-wrapper'
-import {h} from 'preact'
-import {memo} from 'preact/compat'
-import {useCallback} from 'preact/hooks'
+import * as React from 'react'
+import {memo, useCallback} from 'react'
 
 const getInvertedCallerProfile = memoizeByShallowEquality(
   ({

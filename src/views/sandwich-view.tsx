@@ -1,9 +1,9 @@
 import {Frame} from '../lib/profile'
 import {StyleSheet, css} from 'aphrodite'
 import {ProfileTableViewContainer} from './profile-table-view'
-import {h, JSX} from 'preact'
-import {memo} from 'preact/compat'
-import {useCallback} from 'preact/hooks'
+import * as React from 'react'
+import {memo} from 'react'
+import {useCallback} from 'react'
 import {commonStyle, Sizes, Colors, FontSize} from './style'
 import {actions} from '../store/actions'
 import {StatelessComponent} from '../lib/typed-redux'
@@ -25,7 +25,7 @@ class SandwichView extends StatelessComponent<SandwichViewProps> {
     this.props.setSelectedFrame(selectedFrame)
   }
 
-  onWindowKeyPress = (ev: KeyboardEvent) => {
+  onWindowKeyPress = (ev: KeyboardEvent | React.KeyboardEvent) => {
     if (ev.key === 'Escape') {
       this.setSelectedFrame(null)
     }

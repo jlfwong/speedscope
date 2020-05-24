@@ -1,7 +1,8 @@
 // A simple implementation of an efficient scrolling list view which
 // renders only items within the viewport + a couple extra items.
 
-import {h, Component, JSX} from 'preact'
+import * as React from 'react'
+import {Component} from 'react'
 
 export interface ListItem {
   size: number
@@ -116,7 +117,7 @@ export class ScrollableListView extends Component<
     this.recomputeVisibleIndices(this.props)
   }
 
-  onViewportScroll = (ev: UIEvent) => {
+  onViewportScroll = () => {
     this.recomputeVisibleIndices(this.props)
   }
 

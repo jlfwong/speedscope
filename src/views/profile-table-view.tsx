@@ -1,4 +1,4 @@
-import {h, Component, JSX} from 'preact'
+import * as React from 'react'
 import {StyleSheet, css} from 'aphrodite'
 import {Profile, Frame} from '../lib/profile'
 import {sortBy, formatPercent} from '../lib/utils'
@@ -10,8 +10,8 @@ import {createGetCSSColorForFrame, getFrameToColorBucket} from '../store/getters
 import {ActiveProfileState} from './application'
 import {useActionCreator} from '../lib/preact-redux'
 import {useAppSelector} from '../store'
-import {memo} from 'preact/compat'
-import {useCallback, useMemo, useRef} from 'preact/hooks'
+import {memo, Component} from 'react'
+import {useCallback, useMemo, useRef} from 'react'
 
 export enum SortField {
   SYMBOL_NAME,
@@ -133,7 +133,7 @@ export const ProfileTableView = memo((props: ProfileTableViewProps) => {
   } = props
 
   const onSortClick = useCallback(
-    (field: SortField, ev: MouseEvent) => {
+    (field: SortField, ev: MouseEvent | React.MouseEvent) => {
       ev.preventDefault()
 
       if (sortMethod.field == field) {
@@ -231,14 +231,16 @@ export const ProfileTableView = memo((props: ProfileTableViewProps) => {
 
   const listItems: ListItem[] = frameList.map(f => ({size: Sizes.FRAME_HEIGHT}))
 
-  const onTotalClick = useCallback((ev: MouseEvent) => onSortClick(SortField.TOTAL, ev), [
-    onSortClick,
-  ])
-  const onSelfClick = useCallback((ev: MouseEvent) => onSortClick(SortField.SELF, ev), [
-    onSortClick,
-  ])
+  const onTotalClick = useCallback(
+    (ev: MouseEvent | React.MouseEvent) => onSortClick(SortField.TOTAL, ev),
+    [onSortClick],
+  )
+  const onSelfClick = useCallback(
+    (ev: MouseEvent | React.MouseEvent) => onSortClick(SortField.SELF, ev),
+    [onSortClick],
+  )
   const onSymbolNameClick = useCallback(
-    (ev: MouseEvent) => onSortClick(SortField.SYMBOL_NAME, ev),
+    (ev: MouseEvent | React.MouseEvent) => onSortClick(SortField.SYMBOL_NAME, ev),
     [onSortClick],
   )
 

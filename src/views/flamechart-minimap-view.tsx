@@ -1,4 +1,4 @@
-import {h, Component} from 'preact'
+import * as React from 'react'
 import {css} from 'aphrodite'
 import {Flamechart} from '../lib/flamechart'
 import {Rect, Vec2, AffineTransform, clamp} from '../lib/math'
@@ -7,6 +7,7 @@ import {style} from './flamechart-style'
 import {FontFamily, FontSize, Colors, Sizes, commonStyle} from './style'
 import {CanvasContext} from '../gl/canvas-context'
 import {cachedMeasureTextWidth} from '../lib/text-utils'
+import {Component} from 'react'
 
 interface FlamechartMinimapViewProps {
   flamechart: Flamechart
@@ -258,7 +259,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     this.props.transformViewport(zoomTransform)
   }
 
-  private onWheel = (ev: WheelEvent) => {
+  private onWheel = (ev: React.WheelEvent) => {
     ev.preventDefault()
 
     this.frameHadWheelEvent = true
@@ -285,7 +286,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     this.renderCanvas()
   }
 
-  private configSpaceMouse(ev: MouseEvent): Vec2 | null {
+  private configSpaceMouse(ev: MouseEvent | React.MouseEvent): Vec2 | null {
     const logicalSpaceMouse = this.windowToLogicalViewSpace().transformPosition(
       new Vec2(ev.clientX, ev.clientY),
     )
@@ -298,7 +299,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   private dragStartConfigSpaceMouse: Vec2 | null = null
   private dragConfigSpaceViewportOffset: Vec2 | null = null
   private draggingMode: DraggingMode | null = null
-  private onMouseDown = (ev: MouseEvent) => {
+  private onMouseDown = (ev: React.MouseEvent) => {
     const configSpaceMouse = this.configSpaceMouse(ev)
 
     if (configSpaceMouse) {
@@ -322,7 +323,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     }
   }
 
-  private onWindowMouseMove = (ev: MouseEvent) => {
+  private onWindowMouseMove = (ev: React.MouseEvent | MouseEvent) => {
     if (!this.dragStartConfigSpaceMouse) return
     let configSpaceMouse = this.configSpaceMouse(ev)
 
@@ -378,13 +379,13 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     }
   }
 
-  private onMouseMove = (ev: MouseEvent) => {
+  private onMouseMove = (ev: MouseEvent | React.MouseEvent) => {
     const configSpaceMouse = this.configSpaceMouse(ev)
     if (!configSpaceMouse) return
     this.updateCursor(configSpaceMouse)
   }
 
-  private onWindowMouseUp = (ev: MouseEvent) => {
+  private onWindowMouseUp = (ev: MouseEvent | React.MouseEvent) => {
     this.draggingMode = null
     window.removeEventListener('mousemove', this.onWindowMouseMove)
     window.removeEventListener('mouseup', this.onWindowMouseUp)

@@ -1,4 +1,4 @@
-import {h} from 'preact'
+import * as React from 'react'
 import {css} from 'aphrodite'
 
 import {CallTreeNode} from '../lib/profile'

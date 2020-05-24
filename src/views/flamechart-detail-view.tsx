@@ -1,10 +1,11 @@
 import {StyleDeclarationValue, css} from 'aphrodite'
-import {h, Component, JSX} from 'preact'
+import * as React from 'react'
 import {style} from './flamechart-style'
 import {formatPercent} from '../lib/utils'
 import {Frame, CallTreeNode} from '../lib/profile'
 import {ColorChit} from './color-chit'
 import {Flamechart} from '../lib/flamechart'
+import {Component} from 'react'
 
 interface StatisticsTableProps {
   title: string

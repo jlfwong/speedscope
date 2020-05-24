@@ -1,4 +1,4 @@
-import {h} from 'preact'
+import * as React from 'react'
 import {FlamechartID, FlamechartViewState} from '../store/flamechart-view-state'
 import {CanvasContext} from '../gl/canvas-context'
 import {Flamechart} from '../lib/flamechart'
@@ -18,8 +18,7 @@ import {
 import {ActiveProfileState} from './application'
 import {Vec2, Rect} from '../lib/math'
 import {actions} from '../store/actions'
-import {memo} from 'preact/compat'
-import {useCallback} from 'preact/hooks'
+import {memo, useCallback} from 'react'
 
 interface FlamechartSetters {
   setLogicalSpaceViewportSize: (logicalSpaceViewportSize: Vec2) => void

@@ -6,8 +6,9 @@ import {FlamechartRenderer} from '../gl/flamechart-renderer'
 import {Sizes, FontSize, Colors, FontFamily, commonStyle} from './style'
 import {cachedMeasureTextWidth, ELLIPSIS, trimTextMid} from '../lib/text-utils'
 import {style} from './flamechart-style'
-import {h, Component} from 'preact'
+import * as React from 'react'
 import {css} from 'aphrodite'
+import {Component} from 'react'
 
 interface FlamechartFrameLabel {
   configSpaceBounds: Rect
@@ -491,14 +492,16 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
   private lastDragPos: Vec2 | null = null
   private mouseDownPos: Vec2 | null = null
-  private onMouseDown = (ev: MouseEvent) => {
+  private onMouseDown = (ev_: MouseEvent | React.MouseEvent) => {
+    const ev: MouseEvent = 'nativeEvent' in ev_ ? ev_.nativeEvent : ev_
     this.mouseDownPos = this.lastDragPos = new Vec2(ev.offsetX, ev.offsetY)
     this.updateCursor()
     window.addEventListener('mouseup', this.onWindowMouseUp)
   }
 
-  private onMouseDrag = (ev: MouseEvent) => {
+  private onMouseDrag = (ev_: MouseEvent | React.MouseEvent) => {
     if (!this.lastDragPos) return
+    const ev: MouseEvent = 'nativeEvent' in ev_ ? ev_.nativeEvent : ev_
     const logicalMousePos = new Vec2(ev.offsetX, ev.offsetY)
     this.pan(this.lastDragPos.minus(logicalMousePos))
     this.lastDragPos = logicalMousePos
@@ -510,7 +513,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     }
   }
 
-  private onDblClick = (ev: MouseEvent) => {
+  private onDblClick = (ev: MouseEvent | React.MouseEvent) => {
     if (this.hoveredLabel) {
       const hoveredBounds = this.hoveredLabel.configSpaceBounds
       const viewportRect = new Rect(
@@ -521,7 +524,8 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     }
   }
 
-  private onClick = (ev: MouseEvent) => {
+  private onClick = (ev_: MouseEvent | React.MouseEvent) => {
+    const ev: MouseEvent = 'nativeEvent' in ev_ ? ev_.nativeEvent : ev_
     const logicalMousePos = new Vec2(ev.offsetX, ev.offsetY)
     const mouseDownPos = this.mouseDownPos
     this.mouseDownPos = null
@@ -549,13 +553,14 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     }
   }
 
-  private onWindowMouseUp = (ev: MouseEvent) => {
+  private onWindowMouseUp = (ev: MouseEvent | React.MouseEvent) => {
     this.lastDragPos = null
     this.updateCursor()
     window.removeEventListener('mouseup', this.onWindowMouseUp)
   }
 
-  private onMouseMove = (ev: MouseEvent) => {
+  private onMouseMove = (ev_: MouseEvent | React.MouseEvent) => {
+    const ev: MouseEvent = 'nativeEvent' in ev_ ? ev_.nativeEvent : ev_
     this.updateCursor()
     if (this.lastDragPos) {
       ev.preventDefault()
@@ -605,13 +610,15 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     this.renderCanvas()
   }
 
-  private onMouseLeave = (ev: MouseEvent) => {
+  private onMouseLeave = (ev: MouseEvent | React.MouseEvent) => {
     this.hoveredLabel = null
     this.props.onNodeHover(null)
     this.renderCanvas()
   }
 
-  private onWheel = (ev: WheelEvent) => {
+  private onWheel = (ev_: WheelEvent | React.WheelEvent) => {
+    const ev: WheelEvent = 'nativeEvent' in ev_ ? ev_.nativeEvent : ev_
+
     ev.preventDefault()
     this.frameHadWheelEvent = true
 
@@ -644,7 +651,9 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     this.renderCanvas()
   }
 
-  onWindowKeyPress = (ev: KeyboardEvent) => {
+  onWindowKeyPress = (ev_: KeyboardEvent | React.KeyboardEvent) => {
+    const ev: KeyboardEvent = 'nativeEvent' in ev_ ? ev_.nativeEvent : ev_
+
     if (!this.container) return
     const {width, height} = this.container.getBoundingClientRect()
 
@@ -711,7 +720,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
         onMouseMove={this.onMouseMove}
         onMouseLeave={this.onMouseLeave}
         onClick={this.onClick}
-        onDblClick={this.onDblClick}
+        onDoubleClick={this.onDblClick}
         onWheel={this.onWheel}
         ref={this.containerRef}
       >
