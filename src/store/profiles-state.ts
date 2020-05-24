@@ -16,11 +16,6 @@ export type ProfileGroupState = {
   profiles: ProfileState[]
 } | null
 
-export interface ProfileWithIndex {
-  profile: Profile
-  index: number
-}
-
 export interface ProfileState {
   profile: Profile
   chronoViewState: FlamechartViewState
