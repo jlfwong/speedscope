@@ -57,7 +57,7 @@ export function useSelector<T, U>(selector: (t: T) => U): U {
     return store.subscribe(() => {
       setValue(getValueFromStore())
     })
-  }, [getValueFromStore])
+  }, [store, getValueFromStore])
 
   return value
 }
