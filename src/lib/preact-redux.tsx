@@ -45,13 +45,19 @@ export function useActionCreator<T, U>(creator: (payload: T) => Action<U>): (t: 
 
 export function useSelector<T, U>(selector: (t: T) => U): U {
   const store = useStore<T>()
-  const [value, setValue] = useState(() => selector(store.getState()))
+  const getValueFromStore = useCallback(() => selector(store.getState()), [store, selector])
+  const [value, setValue] = useState(getValueFromStore)
 
   useLayoutEffect(() => {
+    // We need to setValue here because it's possible something has changed the
+    // value in the store between the useSelector call and layout. In most cases
+    // this should no-op.
+    setValue(getValueFromStore())
+
     return store.subscribe(() => {
-      setValue(selector(store.getState()))
+      setValue(getValueFromStore())
     })
-  }, [store, selector])
+  }, [store, getValueFromStore])
 
   return value
 }
