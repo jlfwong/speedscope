@@ -38,13 +38,24 @@ export function useDispatch(): Dispatch {
   return store.dispatch
 }
 
-export function useActionCreator<T, U>(creator: (payload: T) => Action<U>): (t: T) => void {
+export function useActionCreator<T, U>(
+  creator_: (payload: T) => Action<U>,
+  cacheArgs: any[],
+): (t: T) => void {
   const dispatch = useDispatch()
+
+  /* eslint-disable react-hooks/exhaustive-deps */
+  const creator = useCallback(creator_, cacheArgs)
+
   return useCallback((t: T) => dispatch(creator(t)), [dispatch, creator])
 }
 
-export function useSelector<T, U>(selector: (t: T) => U): U {
+export function useSelector<T, U>(selector_: (t: T) => U, cacheArgs: any[]): U {
   const store = useStore<T>()
+
+  /* eslint-disable react-hooks/exhaustive-deps */
+  const selector = useCallback(selector_, cacheArgs)
+
   const getValueFromStore = useCallback(() => selector(store.getState()), [store, selector])
   const [value, setValue] = useState(getValueFromStore)
 

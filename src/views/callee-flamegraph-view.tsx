@@ -17,7 +17,6 @@ import {FlamechartWrapper} from './flamechart-wrapper'
 import {useAppSelector} from '../store'
 import {h} from 'preact'
 import {memo} from 'preact/compat'
-import {useCallback} from 'preact/hooks'
 
 const getCalleeProfile = memoizeByShallowEquality<
   {
@@ -51,8 +50,8 @@ const getCalleeFlamegraphRenderer = createMemoizedFlamechartRenderer()
 export const CalleeFlamegraphView = memo((ownProps: FlamechartViewContainerProps) => {
   const {activeProfileState} = ownProps
   const {index, profile, sandwichViewState} = activeProfileState
-  const flattenRecursion = useAppSelector(useCallback(state => state.flattenRecursion, []))
-  const glCanvas = useAppSelector(useCallback(state => state.glCanvas, []))
+  const flattenRecursion = useAppSelector(state => state.flattenRecursion, [])
+  const glCanvas = useAppSelector(state => state.glCanvas, [])
 
   if (!profile) throw new Error('profile missing')
   if (!glCanvas) throw new Error('glCanvas missing')

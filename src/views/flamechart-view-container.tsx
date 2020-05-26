@@ -3,7 +3,6 @@ import {FlamechartID, FlamechartViewState} from '../store/flamechart-view-state'
 import {CanvasContext} from '../gl/canvas-context'
 import {Flamechart} from '../lib/flamechart'
 import {FlamechartRenderer, FlamechartRendererOptions} from '../gl/flamechart-renderer'
-import {ActionCreator} from '../lib/typed-redux'
 import {useActionCreator} from '../lib/preact-redux'
 import {Frame, Profile, CallTreeNode} from '../lib/profile'
 import {memoizeByShallowEquality} from '../lib/utils'
@@ -19,7 +18,6 @@ import {ActiveProfileState} from './application'
 import {Vec2, Rect} from '../lib/math'
 import {actions} from '../store/actions'
 import {memo} from 'preact/compat'
-import {useCallback} from 'preact/hooks'
 
 interface FlamechartSetters {
   setLogicalSpaceViewportSize: (logicalSpaceViewportSize: Vec2) => void
@@ -28,51 +26,34 @@ interface FlamechartSetters {
   setSelectedNode: (node: CallTreeNode | null) => void
 }
 
-interface WithFlamechartContext<T> {
-  profileIndex: number
-  args: {
-    id: FlamechartID
-  } & T
-}
+const {
+  setHoveredNode,
+  setLogicalSpaceViewportSize,
+  setConfigSpaceViewportRect,
+  setSelectedNode,
+} = actions.flamechart
 
 export function useFlamechartSetters(id: FlamechartID, profileIndex: number): FlamechartSetters {
-  function useActionCreatorWithIndex<T, U>(
-    actionCreator: ActionCreator<WithFlamechartContext<U>>,
-    map: (t: T) => U,
-  ): (t: T) => void {
-    const callback = useCallback(
-      (t: T) => {
-        const args = Object.assign({}, map(t), {id})
-        return actionCreator({profileIndex, args})
-      },
-      [actionCreator, map],
-    )
-    return useActionCreator(callback)
-  }
-
-  const {
-    setHoveredNode,
-    setLogicalSpaceViewportSize,
-    setConfigSpaceViewportRect,
-    setSelectedNode,
-  } = actions.flamechart
-
   return {
-    setNodeHover: useActionCreatorWithIndex(
-      setHoveredNode,
-      useCallback(hover => ({hover}), []),
+    setNodeHover: useActionCreator(
+      (hover: {node: CallTreeNode; event: MouseEvent} | null) =>
+        setHoveredNode({profileIndex, args: {id, hover}}),
+      [profileIndex, id],
     ),
-    setLogicalSpaceViewportSize: useActionCreatorWithIndex(
-      setLogicalSpaceViewportSize,
-      useCallback(logicalSpaceViewportSize => ({logicalSpaceViewportSize}), []),
+    setLogicalSpaceViewportSize: useActionCreator(
+      (logicalSpaceViewportSize: Vec2) =>
+        setLogicalSpaceViewportSize({profileIndex, args: {id, logicalSpaceViewportSize}}),
+      [profileIndex, id],
     ),
-    setConfigSpaceViewportRect: useActionCreatorWithIndex(
-      setConfigSpaceViewportRect,
-      useCallback(configSpaceViewportRect => ({configSpaceViewportRect}), []),
+    setConfigSpaceViewportRect: useActionCreator(
+      (configSpaceViewportRect: Rect) =>
+        setConfigSpaceViewportRect({profileIndex, args: {id, configSpaceViewportRect}}),
+      [profileIndex, id],
     ),
-    setSelectedNode: useActionCreatorWithIndex(
-      setSelectedNode,
-      useCallback(selectedNode => ({selectedNode}), []),
+    setSelectedNode: useActionCreator(
+      (selectedNode: CallTreeNode | null) =>
+        setSelectedNode({profileIndex, args: {id, selectedNode}}),
+      [profileIndex, id],
     ),
   }
 }

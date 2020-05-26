@@ -18,7 +18,6 @@ import {useAppSelector} from '../store'
 import {FlamechartWrapper} from './flamechart-wrapper'
 import {h} from 'preact'
 import {memo} from 'preact/compat'
-import {useCallback} from 'preact/hooks'
 
 const getInvertedCallerProfile = memoizeByShallowEquality(
   ({
@@ -57,8 +56,8 @@ const getInvertedCallerFlamegraphRenderer = createMemoizedFlamechartRenderer({in
 export const InvertedCallerFlamegraphView = memo((ownProps: FlamechartViewContainerProps) => {
   const {activeProfileState} = ownProps
   let {profile, sandwichViewState, index} = activeProfileState
-  const flattenRecursion = useAppSelector(useCallback(state => state.flattenRecursion, []))
-  const glCanvas = useAppSelector(useCallback(state => state.glCanvas, []))
+  const flattenRecursion = useAppSelector(state => state.flattenRecursion, [])
+  const glCanvas = useAppSelector(state => state.glCanvas, [])
 
   if (!profile) throw new Error('profile missing')
   if (!glCanvas) throw new Error('glCanvas missing')

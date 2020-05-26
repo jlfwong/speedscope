@@ -71,6 +71,7 @@ export function createAppStore(initialState?: ApplicationState): redux.Store<App
   return redux.createStore(reducer, initialState)
 }
 
-export function useAppSelector<T>(selector: (t: ApplicationState) => T): T {
-  return useSelector(selector)
+export function useAppSelector<T>(selector: (t: ApplicationState) => T, cacheArgs: any[]): T {
+  /* eslint-disable react-hooks/exhaustive-deps */
+  return useSelector(selector, cacheArgs)
 }
