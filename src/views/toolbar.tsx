@@ -108,14 +108,15 @@ function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
             </span>
           </span>
           {nextButton}
-          {profileSelectShown && (
+          <div style={{display: profileSelectShown ? 'block' : 'none'}}>
             <ProfileSelect
               setProfileIndexToView={props.setProfileIndexToView}
               indexToView={profileGroup.indexToView}
               profiles={profiles}
               closeProfileSelect={closeProfileSelect}
+              visible={profileSelectShown}
             />
-          )}
+          </div>
         </div>
       )
     }

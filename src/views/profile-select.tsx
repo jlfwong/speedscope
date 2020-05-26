@@ -10,6 +10,7 @@ interface ProfileSelectRowProps {
   selected: boolean
   index: number
   profileCount: number
+  selectIsVisible: boolean
   closeProfileSelect: () => void
 }
 
@@ -18,6 +19,7 @@ export function ProfileSelectRow({
   profile,
   selected,
   profileCount,
+  selectIsVisible,
   closeProfileSelect,
   index,
 }: ProfileSelectRowProps) {
@@ -29,14 +31,16 @@ export function ProfileSelectRow({
   const scrollIntoView = useCallback(
     (node: HTMLElement | null) => {
       if (node && selected) {
-        node.scrollIntoView({
-          behavior: 'auto',
-          block: 'nearest',
-          inline: 'nearest',
+        requestAnimationFrame(() => {
+          node.scrollIntoView({
+            behavior: 'auto',
+            block: 'nearest',
+            inline: 'nearest',
+          })
         })
       }
     },
-    [selected],
+    [selected, selectIsVisible],
   )
 
   const name = profile.getName()
@@ -67,14 +71,20 @@ interface ProfileSelectProps {
   indexToView: number
   profiles: Profile[]
   closeProfileSelect: () => void
+  visible: boolean
 }
 
 export function ProfileSelect({
   profiles,
   closeProfileSelect,
   indexToView,
+  visible,
   setProfileIndexToView,
 }: ProfileSelectProps) {
+  // We allow ProfileSelect to be aware of its own visibility in order to retain
+  // its scroll offset state between times when it's hidden & shown, and also to
+  // scroll the selected node into view once it becomes shown again after the
+  // selected profile has changed.
   return (
     <div className={css(style.profileSelectOuter)}>
       <div className={css(style.caret)} />
@@ -87,6 +97,7 @@ export function ProfileSelect({
                 selected={i === indexToView}
                 profile={p}
                 profileCount={profiles.length}
+                selectIsVisible={visible}
                 setProfileIndexToView={setProfileIndexToView}
                 closeProfileSelect={closeProfileSelect}
               />
