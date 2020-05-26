@@ -26,7 +26,7 @@ export function ProfileSelectRow({
   const onMouseUp = useCallback(() => {
     closeProfileSelect()
     setProfileIndexToView(index)
-  }, [setProfileIndexToView, index])
+  }, [closeProfileSelect, setProfileIndexToView, index])
 
   const scrollIntoView = useCallback(
     (node: HTMLElement | null) => {

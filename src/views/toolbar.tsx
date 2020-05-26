@@ -57,7 +57,9 @@ function ToolbarLeftContent(props: ToolbarProps) {
 
 function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
   const {activeProfileState, profileGroup} = props
-  const profiles = useMemo(() => profileGroup?.profiles.map(p => p.profile) || [], [profileGroup])
+  const profiles = useMemo(() => Array.from(profileGroup?.profiles || []).map(p => p.profile), [
+    profileGroup?.profiles,
+  ])
   const [profileSelectShown, setProfileSelectShown] = useState(false)
 
   const openProfileSelect = useCallback(() => {
