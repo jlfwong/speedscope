@@ -40,7 +40,8 @@ export enum Duration {
 }
 
 export enum ZIndex {
-  HOVERTIP = 1,
+  PROFILE_SELECT = 1,
+  HOVERTIP = 2,
 }
 
 export const commonStyle = StyleSheet.create({

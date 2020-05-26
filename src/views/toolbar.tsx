@@ -1,9 +1,10 @@
 import {ApplicationProps} from './application'
 import {ViewMode} from '../store'
 import {h, JSX, Fragment} from 'preact'
-import {useCallback} from 'preact/hooks'
+import {useCallback, useMemo} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
 import {Sizes, Colors, FontFamily, FontSize, Duration} from './style'
+import {ProfileSelect} from './profile-select'
 
 interface ToolbarProps extends ApplicationProps {
   browseForFile(): void
@@ -56,6 +57,8 @@ function ToolbarLeftContent(props: ToolbarProps) {
 
 function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
   const {activeProfileState, profileGroup} = props
+  const profiles = useMemo(() => profileGroup?.profiles.map(p => p.profile) || [], [profileGroup])
+
   if (activeProfileState && profileGroup) {
     const {index} = activeProfileState
     if (profileGroup.profiles.length === 1) {
@@ -92,6 +95,11 @@ function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
             ({activeProfileState.index + 1}/{profileGroup.profiles.length})
           </span>
           {nextButton}
+          <ProfileSelect
+            setProfileIndexToView={props.setProfileIndexToView}
+            indexToView={profileGroup.indexToView}
+            profiles={profiles}
+          />
         </div>
       )
     }
