@@ -10,6 +10,7 @@ interface ProfileSelectRowProps {
   selected: boolean
   index: number
   profileCount: number
+  closeProfileSelect: () => void
 }
 
 export function ProfileSelectRow({
@@ -17,9 +18,11 @@ export function ProfileSelectRow({
   profile,
   selected,
   profileCount,
+  closeProfileSelect,
   index,
 }: ProfileSelectRowProps) {
-  const onClick = useCallback(() => {
+  const onMouseUp = useCallback(() => {
+    closeProfileSelect()
     setProfileIndexToView(index)
   }, [setProfileIndexToView, index])
 
@@ -43,7 +46,7 @@ export function ProfileSelectRow({
   return (
     <div
       ref={scrollIntoView}
-      onClick={onClick}
+      onMouseUp={onMouseUp}
       title={name}
       className={css(
         style.profileRow,
@@ -63,9 +66,15 @@ interface ProfileSelectProps {
   setProfileIndexToView: (profileIndex: number) => void
   indexToView: number
   profiles: Profile[]
+  closeProfileSelect: () => void
 }
 
-export function ProfileSelect({profiles, indexToView, setProfileIndexToView}: ProfileSelectProps) {
+export function ProfileSelect({
+  profiles,
+  closeProfileSelect,
+  indexToView,
+  setProfileIndexToView,
+}: ProfileSelectProps) {
   return (
     <div className={css(style.profileSelectOuter)}>
       <div className={css(style.caret)} />
@@ -79,6 +88,7 @@ export function ProfileSelect({profiles, indexToView, setProfileIndexToView}: Pr
                 profile={p}
                 profileCount={profiles.length}
                 setProfileIndexToView={setProfileIndexToView}
+                closeProfileSelect={closeProfileSelect}
               />
             )
           })}
@@ -131,13 +141,15 @@ const style = StyleSheet.create({
   },
   profileSelectBox: {
     width: '100%',
-    maxWidth: 480,
     paddingTop: 10,
     paddingBottom: 10,
     background: Colors.BLACK,
     color: Colors.WHITE,
   },
   profileSelectOuter: {
+    width: '100%',
+    maxWidth: 480,
+    margin: '0 auto',
     position: 'relative',
     zIndex: ZIndex.PROFILE_SELECT,
     alignItems: 'center',

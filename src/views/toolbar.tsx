@@ -1,7 +1,7 @@
 import {ApplicationProps} from './application'
 import {ViewMode} from '../store'
 import {h, JSX, Fragment} from 'preact'
-import {useCallback, useMemo} from 'preact/hooks'
+import {useCallback, useMemo, useState} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
 import {Sizes, Colors, FontFamily, FontSize, Duration} from './style'
 import {ProfileSelect} from './profile-select'
@@ -58,6 +58,15 @@ function ToolbarLeftContent(props: ToolbarProps) {
 function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
   const {activeProfileState, profileGroup} = props
   const profiles = useMemo(() => profileGroup?.profiles.map(p => p.profile) || [], [profileGroup])
+  const [profileSelectShown, setProfileSelectShown] = useState(false)
+
+  const openProfileSelect = useCallback(() => {
+    setProfileSelectShown(true)
+  }, [setProfileSelectShown])
+
+  const closeProfileSelect = useCallback(() => {
+    setProfileSelectShown(false)
+  }, [setProfileSelectShown])
 
   if (activeProfileState && profileGroup) {
     const {index} = activeProfileState
@@ -80,6 +89,8 @@ function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
         )
       }
 
+      // TODO(jlfwong): These event handlers are going to be unbound and rebound
+      // on every render because the lambda callbacks are new on every render.
       const prevButton = makeNavButton('⬅️', index === 0, () =>
         props.setProfileIndexToView(index - 1),
       )
@@ -88,18 +99,23 @@ function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
       )
 
       return (
-        <div className={css(style.toolbarCenter)}>
+        <div className={css(style.toolbarCenter)} onMouseLeave={closeProfileSelect}>
           {prevButton}
-          {activeProfileState.profile.getName()}{' '}
-          <span className={css(style.toolbarProfileIndex)}>
-            ({activeProfileState.index + 1}/{profileGroup.profiles.length})
+          <span onMouseOver={openProfileSelect}>
+            {activeProfileState.profile.getName()}{' '}
+            <span className={css(style.toolbarProfileIndex)}>
+              ({activeProfileState.index + 1}/{profileGroup.profiles.length})
+            </span>
           </span>
           {nextButton}
-          <ProfileSelect
-            setProfileIndexToView={props.setProfileIndexToView}
-            indexToView={profileGroup.indexToView}
-            profiles={profiles}
-          />
+          {profileSelectShown && (
+            <ProfileSelect
+              setProfileIndexToView={props.setProfileIndexToView}
+              indexToView={profileGroup.indexToView}
+              profiles={profiles}
+              closeProfileSelect={closeProfileSelect}
+            />
+          )}
         </div>
       )
     }
