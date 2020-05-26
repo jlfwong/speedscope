@@ -353,25 +353,25 @@ interface ProfileTableViewContainerProps {
   activeProfileState: ActiveProfileState
 }
 
+const {setTableSortMethod} = actions.sandwichView
+
 export const ProfileTableViewContainer = memo((ownProps: ProfileTableViewContainerProps) => {
   const {activeProfileState} = ownProps
   const {profile, sandwichViewState, index} = activeProfileState
   if (!profile) throw new Error('profile missing')
-  const tableSortMethod = useAppSelector(useCallback(state => state.tableSortMethod, []))
+  const tableSortMethod = useAppSelector(state => state.tableSortMethod, [])
   const {callerCallee} = sandwichViewState
   const selectedFrame = callerCallee ? callerCallee.selectedFrame : null
   const frameToColorBucket = getFrameToColorBucket(profile)
   const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
 
-  const setSelectedFrameWithIndex = useCallback(
+  const setSelectedFrame = useActionCreator(
     (selectedFrame: Frame | null) => {
       return actions.sandwichView.setSelectedFrame({profileIndex: index, args: selectedFrame})
     },
     [index],
   )
-
-  const setSelectedFrame = useActionCreator(setSelectedFrameWithIndex)
-  const setSortMethod = useActionCreator(actions.sandwichView.setTableSortMethod)
+  const setSortMethod = useActionCreator(setTableSortMethod, [])
 
   return (
     <ProfileTableView
