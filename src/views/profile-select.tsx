@@ -30,7 +30,7 @@ export function ProfileSelectRow({
 
   const scrollIntoView = useCallback(
     (node: HTMLElement | null) => {
-      if (node && selected) {
+      if (selectIsVisible && node && selected) {
         requestAnimationFrame(() => {
           node.scrollIntoView({
             behavior: 'auto',
