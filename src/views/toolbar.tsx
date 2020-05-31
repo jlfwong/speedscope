@@ -109,45 +109,17 @@ function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
   }, [setProfileSelectShown])
 
   if (activeProfileState && profileGroup && profiles) {
-    const {index} = activeProfileState
     if (profileGroup.profiles.length === 1) {
       return <Fragment>{activeProfileState.profile.getName()}</Fragment>
     } else {
-      function makeNavButton(content: string, disabled: boolean, onClick: () => void) {
-        return (
-          <button
-            disabled={disabled}
-            onClick={onClick}
-            className={css(
-              style.emoji,
-              style.toolbarProfileNavButton,
-              disabled && style.toolbarProfileNavButtonDisabled,
-            )}
-          >
-            {content}
-          </button>
-        )
-      }
-
-      // TODO(jlfwong): These event handlers are going to be unbound and rebound
-      // on every render because the lambda callbacks are new on every render.
-      const prevButton = makeNavButton('⬅️', index === 0, () =>
-        props.setProfileIndexToView(index - 1),
-      )
-      const nextButton = makeNavButton('➡️', index >= profileGroup.profiles.length - 1, () =>
-        props.setProfileIndexToView(index + 1),
-      )
-
       return (
         <div className={css(style.toolbarCenter)} onMouseLeave={closeProfileSelect}>
-          {prevButton}
           <span onMouseOver={openProfileSelect}>
             {activeProfileState.profile.getName()}{' '}
             <span className={css(style.toolbarProfileIndex)}>
               ({activeProfileState.index + 1}/{profileGroup.profiles.length})
             </span>
           </span>
-          {nextButton}
           <div style={{display: profileSelectShown ? 'block' : 'none'}}>
             <ProfileSelect
               setProfileIndexToView={props.setProfileIndexToView}
@@ -241,26 +213,6 @@ const style = StyleSheet.create({
   },
   toolbarProfileIndex: {
     color: Colors.LIGHT_GRAY,
-  },
-  toolbarProfileNavButton: {
-    opacity: 0.8,
-    fontSize: FontSize.TITLE,
-    lineHeight: `${Sizes.TOOLBAR_TAB_HEIGHT}px`,
-    ':hover': {
-      opacity: 1.0,
-    },
-    background: 'none',
-    border: 'none',
-    padding: 0,
-    marginLeft: '0.3em',
-    marginRight: '0.3em',
-    transition: `all ${Duration.HOVER_CHANGE} ease-in`,
-  },
-  toolbarProfileNavButtonDisabled: {
-    opacity: 0.5,
-    ':hover': {
-      opacity: 0.5,
-    },
   },
   toolbarTab: {
     background: Colors.DARK_GRAY,
