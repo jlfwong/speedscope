@@ -253,7 +253,7 @@ export function ProfileSelect({
         setPendingForcedScroll(true)
       }
     },
-    [closeProfileSelect, setProfileIndexToView, hoveredProfileIndex],
+    [closeProfileSelect, setProfileIndexToView, hoveredProfileIndex, filteredProfiles],
   )
 
   const [pendingForcedScroll, setPendingForcedScroll] = useState(false)

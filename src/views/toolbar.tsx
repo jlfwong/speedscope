@@ -95,8 +95,6 @@ function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
     setProfileSelectShown(false)
   }, [setProfileSelectShown])
 
-  const onKeyUp = useCallback((ev: KeyboardEvent) => {}, [setProfileSelectShown])
-
   useEffect(() => {
     const onWindowKeyPress = (ev: KeyboardEvent) => {
       if (ev.key === 't') {
