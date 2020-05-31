@@ -1,18 +1,34 @@
 import {Profile} from '../lib/profile'
-import {h} from 'preact'
-import {useCallback, useState} from 'preact/hooks'
+import {h, JSX, ComponentChild} from 'preact'
+import {useCallback, useState, useMemo} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
 import {Colors, ZIndex, Sizes} from './style'
+import {fuzzyMatchStrings} from '../lib/fuzzy-find'
+import {sortBy} from '../lib/utils'
 
 interface ProfileSelectRowProps {
   setProfileIndexToView: (profileIndex: number) => void
   profile: Profile
+  matchedRanges: [number, number][]
   selected: boolean
   indexInProfileGroup: number
   indexInFilteredListView: number
   profileCount: number
   selectIsVisible: boolean
   closeProfileSelect: () => void
+}
+
+function highlightRanges(text: string, ranges: [number, number][]): JSX.Element {
+  const spans: ComponentChild[] = []
+  let last = 0
+  for (let range of ranges) {
+    spans.push(text.slice(last, range[0]))
+    spans.push(<span className={css(style.highlighted)}>{text.slice(range[0], range[1])}</span>)
+    last = range[1]
+  }
+  spans.push(text.slice(last))
+
+  return <span>{spans}</span>
 }
 
 export function ProfileSelectRow({
@@ -23,6 +39,7 @@ export function ProfileSelectRow({
   selectIsVisible,
   closeProfileSelect,
   indexInProfileGroup,
+  matchedRanges,
   indexInFilteredListView: indexInListView,
 }: ProfileSelectRowProps) {
   const onMouseUp = useCallback(() => {
@@ -32,7 +49,21 @@ export function ProfileSelectRow({
 
   const scrollIntoView = useCallback(
     (node: HTMLElement | null) => {
-      if (selectIsVisible && node && selected) {
+      if (!node) return
+      let shouldScrollIntoView = false
+
+      if (matchedRanges.length === 0 && selectIsVisible && selected) {
+        // When the given row has no matched ranges, it means there's no active
+        // filter query. If that's the case, then we should scroll whatever is
+        // currently selected into view.
+        shouldScrollIntoView = true
+      } else if (matchedRanges.length > 0 && indexInListView === 0) {
+        // When we *do* have filtered matches, we should make sure the best
+        // match is in view, even if we've previous scrolled.
+        shouldScrollIntoView = true
+      }
+
+      if (shouldScrollIntoView) {
         requestAnimationFrame(() => {
           node.scrollIntoView({
             behavior: 'auto',
@@ -42,13 +73,21 @@ export function ProfileSelectRow({
         })
       }
     },
-    [selected, selectIsVisible],
+    [selected, selectIsVisible, matchedRanges, indexInListView],
   )
 
   const name = profile.getName()
 
   const maxDigits = 1 + Math.floor(Math.log10(profileCount))
 
+  const highlighted = useMemo(() => {
+    const result = highlightRanges(name, matchedRanges)
+    return result
+  }, [name, matchedRanges])
+
+  // TODO(jlfwong): There's a really gnarly edge-case here where the highlighted
+  // ranges are part of the text truncated by ellipsis. I'm just going to punt
+  // on solving for that.
   return (
     <div
       ref={scrollIntoView}
@@ -63,7 +102,7 @@ export function ProfileSelectRow({
       <span className={css(style.profileIndex)} style={{width: maxDigits + 'em'}}>
         {indexInProfileGroup + 1}:
       </span>{' '}
-      {name}
+      {highlighted}
     </div>
   )
 }
@@ -80,9 +119,27 @@ function stopPropagation(ev: Event) {
   ev.stopPropagation()
 }
 
-function profileSatisfiesFilter(profile: Profile, filterText: string) {
-  if (filterText.length === 0) return true
-  return profile.getName().indexOf(filterText) !== -1
+interface FilteredProfile {
+  indexInProfileGroup: number
+  profile: Profile
+  matchedRanges: [number, number][]
+  score: number
+}
+
+function getSortedFilteredProfiles(profiles: Profile[], filterText: string): FilteredProfile[] {
+  const filtered: FilteredProfile[] = []
+  for (let i = 0; i < profiles.length; i++) {
+    const profile = profiles[i]
+    const match = fuzzyMatchStrings(profile.getName(), filterText)
+    if (!match) continue
+    filtered.push({
+      indexInProfileGroup: i,
+      profile,
+      ...match,
+    })
+  }
+  sortBy(filtered, p => -p.score)
+  return filtered
 }
 
 export function ProfileSelect({
@@ -115,11 +172,14 @@ export function ProfileSelect({
     [visible],
   )
 
+  const filteredProfiles = useMemo(() => {
+    return getSortedFilteredProfiles(profiles, filterText)
+  }, [profiles, filterText])
+
   // We allow ProfileSelect to be aware of its own visibility in order to retain
   // its scroll offset state between times when it's hidden & shown, and also to
   // scroll the selected node into view once it becomes shown again after the
   // selected profile has changed.
-  let indexInList = 0
   return (
     <div className={css(style.profileSelectOuter)}>
       <div className={css(style.caret)} />
@@ -139,22 +199,22 @@ export function ProfileSelect({
           />
         </div>
         <div className={css(style.profileSelectScrolling)}>
-          {profiles.map((profile, i) => {
-            if (!profileSatisfiesFilter(profile, filterText)) return null
+          {filteredProfiles.map(({profile, matchedRanges, indexInProfileGroup}, indexInList) => {
             return (
               <ProfileSelectRow
-                indexInProfileGroup={i}
-                indexInFilteredListView={indexInList++}
-                selected={i === indexToView}
+                indexInProfileGroup={indexInProfileGroup}
+                indexInFilteredListView={indexInList}
+                selected={indexInProfileGroup === indexToView}
                 profile={profile}
                 profileCount={profiles.length}
                 selectIsVisible={visible}
+                matchedRanges={matchedRanges}
                 setProfileIndexToView={setProfileIndexToView}
                 closeProfileSelect={closeProfileSelect}
               />
             )
           })}
-          {indexInList === 0 ? (
+          {filteredProfiles.length === 0 ? (
             <div className={css(style.profileRow)}>No results match filter "{filterText}"</div>
           ) : null}
         </div>
@@ -178,6 +238,9 @@ const style = StyleSheet.create({
     borderLeft: '5px solid transparent',
     borderRight: '5px solid transparent',
     borderBottom: '5px solid black',
+  },
+  highlighted: {
+    background: Colors.PALE_DARK_BLUE,
   },
   padding: {
     height: paddingHeight,

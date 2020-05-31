@@ -1,10 +1,13 @@
 import {ApplicationProps} from './application'
 import {ViewMode} from '../store'
 import {h, JSX, Fragment} from 'preact'
-import {useCallback, useMemo, useState} from 'preact/hooks'
+import {useCallback, useState} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
 import {Sizes, Colors, FontFamily, FontSize, Duration} from './style'
 import {ProfileSelect} from './profile-select'
+import {ProfileGroupState} from '../store/profiles-state'
+import {Profile} from '../lib/profile'
+import {objectsHaveShallowEquality} from '../lib/utils'
 
 interface ToolbarProps extends ApplicationProps {
   browseForFile(): void
@@ -55,11 +58,33 @@ function ToolbarLeftContent(props: ToolbarProps) {
   )
 }
 
+const getCachedProfileList = (() => {
+  // TODO(jlfwong): It would be nice to just implement this as useMemo, but if
+  // we do that using profileGroup or profileGroup.profiles as the cache key,
+  // then it will invalidate whenever *anything* changes, because
+  // profileGroup.profiles is ProfileState[], which contains component state
+  // information for each tab for each profile. So whenever any property in any
+  // persisted view state changes for *any* view in *any* profile, the profiles
+  // list will get re-generated.
+  let cachedProfileList: Profile[] | null = null
+
+  return (profileGroup: ProfileGroupState): Profile[] | null => {
+    let nextProfileList = profileGroup?.profiles.map(p => p.profile) || null
+
+    if (
+      cachedProfileList === null ||
+      (nextProfileList != null && !objectsHaveShallowEquality(cachedProfileList, nextProfileList))
+    ) {
+      cachedProfileList = nextProfileList
+    }
+
+    return cachedProfileList
+  }
+})()
+
 function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
   const {activeProfileState, profileGroup} = props
-  const profiles = useMemo(() => Array.from(profileGroup?.profiles || []).map(p => p.profile), [
-    profileGroup?.profiles,
-  ])
+  const profiles = getCachedProfileList(profileGroup)
   const [profileSelectShown, setProfileSelectShown] = useState(false)
 
   const openProfileSelect = useCallback(() => {
