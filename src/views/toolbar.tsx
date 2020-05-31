@@ -1,9 +1,13 @@
 import {ApplicationProps} from './application'
 import {ViewMode} from '../store'
 import {h, JSX, Fragment} from 'preact'
-import {useCallback} from 'preact/hooks'
+import {useCallback, useState, useEffect} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
 import {Sizes, Colors, FontFamily, FontSize, Duration} from './style'
+import {ProfileSelect} from './profile-select'
+import {ProfileGroupState} from '../store/profiles-state'
+import {Profile} from '../lib/profile'
+import {objectsHaveShallowEquality} from '../lib/utils'
 
 interface ToolbarProps extends ApplicationProps {
   browseForFile(): void
@@ -54,44 +58,77 @@ function ToolbarLeftContent(props: ToolbarProps) {
   )
 }
 
+const getCachedProfileList = (() => {
+  // TODO(jlfwong): It would be nice to just implement this as useMemo, but if
+  // we do that using profileGroup or profileGroup.profiles as the cache key,
+  // then it will invalidate whenever *anything* changes, because
+  // profileGroup.profiles is ProfileState[], which contains component state
+  // information for each tab for each profile. So whenever any property in any
+  // persisted view state changes for *any* view in *any* profile, the profiles
+  // list will get re-generated.
+  let cachedProfileList: Profile[] | null = null
+
+  return (profileGroup: ProfileGroupState): Profile[] | null => {
+    let nextProfileList = profileGroup?.profiles.map(p => p.profile) || null
+
+    if (
+      cachedProfileList === null ||
+      (nextProfileList != null && !objectsHaveShallowEquality(cachedProfileList, nextProfileList))
+    ) {
+      cachedProfileList = nextProfileList
+    }
+
+    return cachedProfileList
+  }
+})()
+
 function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
   const {activeProfileState, profileGroup} = props
-  if (activeProfileState && profileGroup) {
-    const {index} = activeProfileState
+  const profiles = getCachedProfileList(profileGroup)
+  const [profileSelectShown, setProfileSelectShown] = useState(false)
+
+  const openProfileSelect = useCallback(() => {
+    setProfileSelectShown(true)
+  }, [setProfileSelectShown])
+
+  const closeProfileSelect = useCallback(() => {
+    setProfileSelectShown(false)
+  }, [setProfileSelectShown])
+
+  useEffect(() => {
+    const onWindowKeyPress = (ev: KeyboardEvent) => {
+      if (ev.key === 't') {
+        ev.preventDefault()
+        setProfileSelectShown(true)
+      }
+    }
+    window.addEventListener('keypress', onWindowKeyPress)
+    return () => {
+      window.removeEventListener('keypress', onWindowKeyPress)
+    }
+  }, [setProfileSelectShown])
+
+  if (activeProfileState && profileGroup && profiles) {
     if (profileGroup.profiles.length === 1) {
       return <Fragment>{activeProfileState.profile.getName()}</Fragment>
     } else {
-      function makeNavButton(content: string, disabled: boolean, onClick: () => void) {
-        return (
-          <button
-            disabled={disabled}
-            onClick={onClick}
-            className={css(
-              style.emoji,
-              style.toolbarProfileNavButton,
-              disabled && style.toolbarProfileNavButtonDisabled,
-            )}
-          >
-            {content}
-          </button>
-        )
-      }
-
-      const prevButton = makeNavButton('⬅️', index === 0, () =>
-        props.setProfileIndexToView(index - 1),
-      )
-      const nextButton = makeNavButton('➡️', index >= profileGroup.profiles.length - 1, () =>
-        props.setProfileIndexToView(index + 1),
-      )
-
       return (
-        <div className={css(style.toolbarCenter)}>
-          {prevButton}
-          {activeProfileState.profile.getName()}{' '}
-          <span className={css(style.toolbarProfileIndex)}>
-            ({activeProfileState.index + 1}/{profileGroup.profiles.length})
+        <div className={css(style.toolbarCenter)} onMouseLeave={closeProfileSelect}>
+          <span onMouseOver={openProfileSelect}>
+            {activeProfileState.profile.getName()}{' '}
+            <span className={css(style.toolbarProfileIndex)}>
+              ({activeProfileState.index + 1}/{profileGroup.profiles.length})
+            </span>
           </span>
-          {nextButton}
+          <div style={{display: profileSelectShown ? 'block' : 'none'}}>
+            <ProfileSelect
+              setProfileIndexToView={props.setProfileIndexToView}
+              indexToView={profileGroup.indexToView}
+              profiles={profiles}
+              closeProfileSelect={closeProfileSelect}
+              visible={profileSelectShown}
+            />
+          </div>
         </div>
       )
     }
@@ -176,26 +213,6 @@ const style = StyleSheet.create({
   },
   toolbarProfileIndex: {
     color: Colors.LIGHT_GRAY,
-  },
-  toolbarProfileNavButton: {
-    opacity: 0.8,
-    fontSize: FontSize.TITLE,
-    lineHeight: `${Sizes.TOOLBAR_TAB_HEIGHT}px`,
-    ':hover': {
-      opacity: 1.0,
-    },
-    background: 'none',
-    border: 'none',
-    padding: 0,
-    marginLeft: '0.3em',
-    marginRight: '0.3em',
-    transition: `all ${Duration.HOVER_CHANGE} ease-in`,
-  },
-  toolbarProfileNavButtonDisabled: {
-    opacity: 0.5,
-    ':hover': {
-      opacity: 0.5,
-    },
   },
   toolbarTab: {
     background: Colors.DARK_GRAY,
