@@ -1,7 +1,7 @@
 import {ApplicationProps} from './application'
 import {ViewMode} from '../store'
 import {h, JSX, Fragment} from 'preact'
-import {useCallback, useState} from 'preact/hooks'
+import {useCallback, useState, useEffect} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
 import {Sizes, Colors, FontFamily, FontSize, Duration} from './style'
 import {ProfileSelect} from './profile-select'
@@ -93,6 +93,21 @@ function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
 
   const closeProfileSelect = useCallback(() => {
     setProfileSelectShown(false)
+  }, [setProfileSelectShown])
+
+  const onKeyUp = useCallback((ev: KeyboardEvent) => {}, [setProfileSelectShown])
+
+  useEffect(() => {
+    const onWindowKeyPress = (ev: KeyboardEvent) => {
+      if (ev.key === 't') {
+        ev.preventDefault()
+        setProfileSelectShown(true)
+      }
+    }
+    window.addEventListener('keypress', onWindowKeyPress)
+    return () => {
+      window.removeEventListener('keypress', onWindowKeyPress)
+    }
   }, [setProfileSelectShown])
 
   if (activeProfileState && profileGroup && profiles) {
