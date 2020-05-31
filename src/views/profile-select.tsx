@@ -181,13 +181,76 @@ export function ProfileSelect({
     }
   }, [visible])
 
-  const onFilterKeyPress = useCallback(
+  // TODO(jlfwong): Hi-jacking the behavior of enter and the arrow keys won't
+  // work well for some composition methods (e.g. a Chinese character
+  // composition keyboard input method).
+  const onFilterKeyUp = useCallback(
     (ev: KeyboardEvent) => {
-      if (ev.key === 'Enter') {
-        if (hoveredProfileIndex != null) {
-          closeProfileSelect()
-          setProfileIndexToView(hoveredProfileIndex)
+      // Prevent the key-press from propagating to other keyboard shortcut
+      // handlers in other components.
+      ev.stopPropagation()
+
+      let newHoveredIndexInFilteredList: number | null = null
+
+      switch (ev.key) {
+        case 'Enter': {
+          if (hoveredProfileIndex != null) {
+            closeProfileSelect()
+            setProfileIndexToView(hoveredProfileIndex)
+          }
+          break
         }
+        case 'Escape': {
+          closeProfileSelect()
+          break
+        }
+        case 'ArrowDown': {
+          ev.preventDefault()
+          newHoveredIndexInFilteredList = 0
+          if (hoveredProfileIndex != null) {
+            const indexInFilteredList = filteredProfiles.findIndex(
+              p => p.indexInProfileGroup === hoveredProfileIndex,
+            )
+            if (indexInFilteredList !== -1) {
+              newHoveredIndexInFilteredList = indexInFilteredList + 1
+            }
+          }
+          break
+        }
+        case 'ArrowUp': {
+          ev.preventDefault()
+          newHoveredIndexInFilteredList = filteredProfiles.length - 1
+          if (hoveredProfileIndex != null) {
+            const indexInFilteredList = filteredProfiles.findIndex(
+              p => p.indexInProfileGroup === hoveredProfileIndex,
+            )
+            if (indexInFilteredList !== -1) {
+              newHoveredIndexInFilteredList = indexInFilteredList - 1
+            }
+          }
+
+          let destIndex = filteredProfiles.length - 1
+          if (hoveredProfileIndex != null) {
+            const indexInFilteredList = filteredProfiles.findIndex(
+              p => p.indexInProfileGroup === hoveredProfileIndex,
+            )
+            if (indexInFilteredList >= 0 && indexInFilteredList - 1 >= 0) {
+              destIndex = indexInFilteredList
+            }
+          }
+          break
+        }
+      }
+
+      if (
+        newHoveredIndexInFilteredList != null &&
+        newHoveredIndexInFilteredList >= 0 &&
+        newHoveredIndexInFilteredList < filteredProfiles.length
+      ) {
+        const indexInProfileGroup =
+          filteredProfiles[newHoveredIndexInFilteredList].indexInProfileGroup
+        setHoveredProfileIndex(indexInProfileGroup)
+        setPendingForcedScroll(true)
       }
     },
     [closeProfileSelect, setProfileIndexToView, hoveredProfileIndex],
@@ -241,9 +304,9 @@ export function ProfileSelect({
             placeholder={'Filter...'}
             value={filterText}
             onInput={onFilterTextChange}
-            onKeyDown={stopPropagation}
+            onKeyDown={onFilterKeyUp}
             onKeyUp={stopPropagation}
-            onKeyPress={onFilterKeyPress}
+            onKeyPress={stopPropagation}
           />
         </div>
         <div className={css(style.profileSelectScrolling)}>
