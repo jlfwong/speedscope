@@ -95,7 +95,7 @@ function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
     setProfileSelectShown(false)
   }, [setProfileSelectShown])
 
-  if (activeProfileState && profileGroup) {
+  if (activeProfileState && profileGroup && profiles) {
     const {index} = activeProfileState
     if (profileGroup.profiles.length === 1) {
       return <Fragment>{activeProfileState.profile.getName()}</Fragment>

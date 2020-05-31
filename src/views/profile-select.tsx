@@ -1,6 +1,6 @@
 import {Profile} from '../lib/profile'
-import {h, JSX, ComponentChild} from 'preact'
-import {useCallback, useState, useMemo} from 'preact/hooks'
+import {h, JSX, ComponentChild, Ref} from 'preact'
+import {useCallback, useState, useMemo, useEffect, useRef} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
 import {Colors, ZIndex, Sizes} from './style'
 import {fuzzyMatchStrings} from '../lib/fuzzy-find'
@@ -8,13 +8,15 @@ import {sortBy} from '../lib/utils'
 
 interface ProfileSelectRowProps {
   setProfileIndexToView: (profileIndex: number) => void
+  setHoveredProfileIndex: (profileIndex: number) => void
   profile: Profile
   matchedRanges: [number, number][]
+  hovered: boolean
   selected: boolean
   indexInProfileGroup: number
   indexInFilteredListView: number
   profileCount: number
-  selectIsVisible: boolean
+  nodeRef?: Ref<HTMLDivElement>
   closeProfileSelect: () => void
 }
 
@@ -33,47 +35,27 @@ function highlightRanges(text: string, ranges: [number, number][]): JSX.Element 
 
 export function ProfileSelectRow({
   setProfileIndexToView,
+  setHoveredProfileIndex,
   profile,
   selected,
+  hovered,
   profileCount,
-  selectIsVisible,
+  nodeRef,
   closeProfileSelect,
   indexInProfileGroup,
   matchedRanges,
-  indexInFilteredListView: indexInListView,
+  indexInFilteredListView,
 }: ProfileSelectRowProps) {
   const onMouseUp = useCallback(() => {
     closeProfileSelect()
     setProfileIndexToView(indexInProfileGroup)
   }, [closeProfileSelect, setProfileIndexToView, indexInProfileGroup])
 
-  const scrollIntoView = useCallback(
-    (node: HTMLElement | null) => {
-      if (!node) return
-      let shouldScrollIntoView = false
-
-      if (matchedRanges.length === 0 && selectIsVisible && selected) {
-        // When the given row has no matched ranges, it means there's no active
-        // filter query. If that's the case, then we should scroll whatever is
-        // currently selected into view.
-        shouldScrollIntoView = true
-      } else if (matchedRanges.length > 0 && indexInListView === 0) {
-        // When we *do* have filtered matches, we should make sure the best
-        // match is in view, even if we've previous scrolled.
-        shouldScrollIntoView = true
-      }
-
-      if (shouldScrollIntoView) {
-        requestAnimationFrame(() => {
-          node.scrollIntoView({
-            behavior: 'auto',
-            block: 'nearest',
-            inline: 'nearest',
-          })
-        })
-      }
+  const onMouseEnter = useCallback(
+    (ev: Event) => {
+      setHoveredProfileIndex(indexInProfileGroup)
     },
-    [selected, selectIsVisible, matchedRanges, indexInListView],
+    [setHoveredProfileIndex, indexInProfileGroup],
   )
 
   const name = profile.getName()
@@ -90,13 +72,15 @@ export function ProfileSelectRow({
   // on solving for that.
   return (
     <div
-      ref={scrollIntoView}
+      ref={nodeRef}
       onMouseUp={onMouseUp}
+      onMouseEnter={onMouseEnter}
       title={name}
       className={css(
         style.profileRow,
-        indexInListView % 2 === 0 && style.profileRowEven,
+        indexInFilteredListView % 2 === 0 && style.profileRowEven,
         selected && style.profileRowSelected,
+        hovered && style.profileRowHovered,
       )}
     >
       <span className={css(style.profileIndex)} style={{width: maxDigits + 'em'}}>
@@ -163,7 +147,7 @@ export function ProfileSelect({
     (node: HTMLInputElement | null) => {
       if (node) {
         if (visible) {
-          node.focus()
+          node.select()
         } else {
           node.blur()
         }
@@ -175,6 +159,70 @@ export function ProfileSelect({
   const filteredProfiles = useMemo(() => {
     return getSortedFilteredProfiles(profiles, filterText)
   }, [profiles, filterText])
+
+  const [hoveredProfileIndex, setHoveredProfileIndex] = useState<number | null>(0)
+
+  const selectedNodeRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    if (visible) {
+      // Whenever the profile select becomes visible...
+
+      // Clear any hovered element
+      setHoveredProfileIndex(null)
+
+      // And scroll the selected profile into view, if possible
+      if (selectedNodeRef.current !== null) {
+        selectedNodeRef.current.scrollIntoView({
+          behavior: 'auto',
+          block: 'nearest',
+          inline: 'nearest',
+        })
+      }
+    }
+  }, [visible])
+
+  const onFilterKeyPress = useCallback(
+    (ev: KeyboardEvent) => {
+      if (ev.key === 'Enter') {
+        if (hoveredProfileIndex != null) {
+          closeProfileSelect()
+          setProfileIndexToView(hoveredProfileIndex)
+        }
+      }
+    },
+    [closeProfileSelect, setProfileIndexToView, hoveredProfileIndex],
+  )
+
+  const [pendingForcedScroll, setPendingForcedScroll] = useState(false)
+  useEffect(() => {
+    // Whenever the list of filtered profiles changes, set the first element hovered.
+    if (filteredProfiles.length > 0) {
+      setHoveredProfileIndex(filteredProfiles[0].indexInProfileGroup)
+      setPendingForcedScroll(true)
+    }
+  }, [setHoveredProfileIndex, filteredProfiles])
+
+  const hoveredNodeRef = useCallback(
+    (hoveredNode: HTMLDivElement | null) => {
+      if (pendingForcedScroll && hoveredNode) {
+        hoveredNode.scrollIntoView({
+          behavior: 'auto',
+          block: 'nearest',
+          inline: 'nearest',
+        })
+        setPendingForcedScroll(false)
+      }
+    },
+    [pendingForcedScroll, setPendingForcedScroll],
+  )
+
+  const selectedHoveredRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      selectedNodeRef.current = node
+      hoveredNodeRef(node)
+    },
+    [selectedNodeRef, hoveredNodeRef],
+  )
 
   // We allow ProfileSelect to be aware of its own visibility in order to retain
   // its scroll offset state between times when it's hidden & shown, and also to
@@ -195,19 +243,31 @@ export function ProfileSelect({
             onInput={onFilterTextChange}
             onKeyDown={stopPropagation}
             onKeyUp={stopPropagation}
-            onKeyPress={stopPropagation}
+            onKeyPress={onFilterKeyPress}
           />
         </div>
         <div className={css(style.profileSelectScrolling)}>
           {filteredProfiles.map(({profile, matchedRanges, indexInProfileGroup}, indexInList) => {
+            let ref: Ref<HTMLDivElement> | undefined = undefined
+            const selected = indexInProfileGroup === indexToView
+            const hovered = indexInProfileGroup === hoveredProfileIndex
+            if (selected && hovered) {
+              ref = selectedHoveredRef
+            } else if (selected) {
+              ref = selectedNodeRef
+            } else if (hovered) {
+              ref = hoveredNodeRef
+            }
             return (
               <ProfileSelectRow
+                setHoveredProfileIndex={setHoveredProfileIndex}
                 indexInProfileGroup={indexInProfileGroup}
                 indexInFilteredListView={indexInList}
+                hovered={indexInProfileGroup == hoveredProfileIndex}
                 selected={indexInProfileGroup === indexToView}
                 profile={profile}
                 profileCount={profiles.length}
-                selectIsVisible={visible}
+                nodeRef={ref}
                 matchedRanges={matchedRanges}
                 setProfileIndexToView={setProfileIndexToView}
                 closeProfileSelect={closeProfileSelect}
@@ -257,9 +317,9 @@ const style = StyleSheet.create({
     whiteSpace: 'nowrap',
     textOverflow: 'ellipsis',
     cursor: 'pointer',
-    ':hover': {
-      border: `1px solid ${Colors.DARK_BLUE}`,
-    },
+  },
+  profileRowHovered: {
+    border: `1px solid ${Colors.DARK_BLUE}`,
   },
   profileRowSelected: {
     background: Colors.DARK_BLUE,
