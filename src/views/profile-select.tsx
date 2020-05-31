@@ -1,6 +1,6 @@
 import {Profile} from '../lib/profile'
 import {h} from 'preact'
-import {useCallback, useState, useEffect} from 'preact/hooks'
+import {useCallback, useState} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
 import {Colors, ZIndex, Sizes} from './style'
 
