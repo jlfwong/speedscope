@@ -228,16 +228,6 @@ export function ProfileSelect({
               newHoveredIndexInFilteredList = indexInFilteredList - 1
             }
           }
-
-          let destIndex = filteredProfiles.length - 1
-          if (hoveredProfileIndex != null) {
-            const indexInFilteredList = filteredProfiles.findIndex(
-              p => p.indexInProfileGroup === hoveredProfileIndex,
-            )
-            if (indexInFilteredList >= 0 && indexInFilteredList - 1 >= 0) {
-              destIndex = indexInFilteredList
-            }
-          }
           break
         }
       }
