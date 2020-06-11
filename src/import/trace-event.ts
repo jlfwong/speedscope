@@ -177,6 +177,20 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
       // out-of-order push/pops from the call-stack.
       if (a.ph === 'B' && b.ph === 'E') return 1
       if (a.ph === 'E' && b.ph === 'B') return -1
+
+      // If the two elements are both beginning, then the longer
+      // event should go first because it must wrap the shorter one
+      if(a.ph === 'B' && b.ph ==='B') {
+        if (a.dur > b.dur) return -1
+        if (a.dur < b.dur) return 1
+      }
+
+      // If the two elements are both ending, then the longer
+      // event should go second because it must wrap the shorter one
+      if(a.ph === 'E' && b.ph ==='E') {
+        if (a.dur > b.dur) return 1
+        if (a.dur < b.dur) return -1
+      }
     }
 
     // In all other cases, retain the original sort order.
