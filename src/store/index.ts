@@ -26,6 +26,7 @@ export interface ApplicationState {
   flattenRecursion: boolean
 
   viewMode: ViewMode
+  searchQuery: string
   dragActive: boolean
   loading: boolean
   error: boolean
@@ -55,6 +56,8 @@ export function createAppStore(initialState?: ApplicationState): redux.Store<App
     flattenRecursion: setter<boolean>(actions.setFlattenRecursion, false),
 
     viewMode: setter<ViewMode>(actions.setViewMode, ViewMode.CHRONO_FLAME_CHART),
+
+    searchQuery: setter<string>(actions.setSearchQuery, ''),
 
     glCanvas: setter<HTMLCanvasElement | null>(actions.setGLCanvas, null),
 

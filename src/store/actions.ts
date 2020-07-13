@@ -22,6 +22,9 @@ export namespace actions {
   // Set whether or not recursion should be flattened when viewing flamegraphs
   export const setFlattenRecursion = actionCreator<boolean>('setFlattenRecursion')
 
+  // Set the query used in top-level views
+  export const setSearchQuery = actionCreator<string>('setSearchQuery')
+
   // Set whether a file drag is currently active. Used to indicate that the
   // application is a valid drop target.
   export const setDragActive = actionCreator<boolean>('setDragActive')
