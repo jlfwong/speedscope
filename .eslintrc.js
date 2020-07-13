@@ -13,7 +13,7 @@ module.exports = {
     'react-hooks/exhaustive-deps': [
       'error',
       {
-        additionalHooks: '(useSelector|useAppSelector|useActionCreator)',
+        additionalHooks: '(useSelector|useAppSelector|useActionCreator|useWindowListener)',
       },
     ],
   },

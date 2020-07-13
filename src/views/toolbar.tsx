@@ -8,6 +8,7 @@ import {ProfileSelect} from './profile-select'
 import {ProfileGroupState} from '../store/profiles-state'
 import {Profile} from '../lib/profile'
 import {objectsHaveShallowEquality} from '../lib/utils'
+import {useWindowListener} from '../lib/preact-utils'
 
 interface ToolbarProps extends ApplicationProps {
   browseForFile(): void
@@ -107,6 +108,17 @@ function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
       window.removeEventListener('keypress', onWindowKeyPress)
     }
   }, [setProfileSelectShown])
+
+  useWindowListener(
+    'keypress',
+    (ev: KeyboardEvent) => {
+      if (ev.key === 't') {
+        ev.preventDefault()
+        setProfileSelectShown(true)
+      }
+    },
+    [setProfileSelectShown],
+  )
 
   if (activeProfileState && profileGroup && profiles) {
     if (profileGroup.profiles.length === 1) {

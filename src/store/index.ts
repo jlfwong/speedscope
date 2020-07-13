@@ -36,8 +36,10 @@ export interface ApplicationState {
   // The query used in top-level views
   //
   // An empty string indicates that the search is open by no filter is applied.
-  // null indicates that no search is active.
-  searchQuery: string | null
+  // searchIsActive is stored separately, because we may choose to persist the
+  // query even when the search input is closed.
+  searchQuery: string
+  searchIsActive: boolean
 
   // True when a file drag is currently active. Used to indicate that the
   // application is a valid drop target.
@@ -77,7 +79,8 @@ export function createAppStore(initialState?: ApplicationState): redux.Store<App
 
     viewMode: setter<ViewMode>(actions.setViewMode, ViewMode.CHRONO_FLAME_CHART),
 
-    searchQuery: setter<string | null>(actions.setSearchQuery, null),
+    searchQuery: setter<string>(actions.setSearchQuery, ''),
+    searchIsActive: setter<boolean>(actions.setSearchIsActive, false),
 
     glCanvas: setter<HTMLCanvasElement | null>(actions.setGLCanvas, null),
 
