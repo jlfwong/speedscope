@@ -4,7 +4,7 @@ import {Profile, Frame} from '../lib/profile'
 import {sortBy, formatPercent} from '../lib/utils'
 import {FontSize, Colors, Sizes, commonStyle} from './style'
 import {ColorChit} from './color-chit'
-import {ScrollableListView, ListItem, ScrollableListView2} from './scrollable-list-view'
+import {ScrollableListView, ListItem, ScrollableListView} from './scrollable-list-view'
 import {actions} from '../store/actions'
 import {createGetCSSColorForFrame, getFrameToColorBucket} from '../store/getters'
 import {ActiveProfileState} from './application'
@@ -348,11 +348,14 @@ export const ProfileTableView = memo(
             </tr>
           </thead>
         </table>
-        <ScrollableListView2
+        <ScrollableListView
           axis={'y'}
           items={listItems}
           className={css(style.scrollView)}
           renderItems={renderItems}
+          initialIndexInView={
+            selectedFrame == null ? null : rowList.findIndex(f => f.frame === selectedFrame)
+          }
         />
       </div>
     )

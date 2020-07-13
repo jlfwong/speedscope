@@ -32,6 +32,7 @@ export const SearchView = memo(
       (ev: KeyboardEvent) => {
         ev.stopPropagation()
 
+        // Hitting Esc should close the search box
         if (ev.key === 'Escape') {
           setSearchIsActive(false)
         }
@@ -59,7 +60,7 @@ export const SearchView = memo(
       return () => {
         window.removeEventListener('keydown', onWindowKeyDown)
       }
-    }, [searchQuery, setSearchQuery])
+    }, [setSearchIsActive])
 
     const focusInput = useCallback((node: HTMLInputElement | null) => {
       if (node) {
