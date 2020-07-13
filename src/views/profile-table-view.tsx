@@ -1,4 +1,4 @@
-import {h, Component, JSX} from 'preact'
+import {h, Component, JSX, ComponentChild} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 import {Profile, Frame} from '../lib/profile'
 import {sortBy, formatPercent} from '../lib/utils'
@@ -68,8 +68,13 @@ class SortIcon extends Component<SortIconProps, {}> {
   }
 }
 
-interface ProfileTableRowViewProps {
+interface ProfileTableRowInfo {
   frame: Frame
+  matchedRanges: [number, number][] | null
+}
+
+interface ProfileTableRowViewProps {
+  info: ProfileTableRowInfo
   index: number
   profile: Profile
   selectedFrame: Frame | null
@@ -77,8 +82,33 @@ interface ProfileTableRowViewProps {
   getCSSColorForFrame: (frame: Frame) => string
 }
 
-const ProfileTableRowView = (props: ProfileTableRowViewProps) => {
-  const {frame, profile, index, selectedFrame, setSelectedFrame, getCSSColorForFrame} = props
+function highlightRanges(
+  text: string,
+  ranges: [number, number][],
+  highlightedClassName: string,
+): JSX.Element {
+  const spans: ComponentChild[] = []
+  let last = 0
+  for (let range of ranges) {
+    spans.push(text.slice(last, range[0]))
+    spans.push(<span className={highlightedClassName}>{text.slice(range[0], range[1])}</span>)
+    last = range[1]
+  }
+  spans.push(text.slice(last))
+
+  return <span>{spans}</span>
+}
+
+const ProfileTableRowView = ({
+  info,
+  profile,
+  index,
+  selectedFrame,
+  setSelectedFrame,
+  getCSSColorForFrame,
+}: ProfileTableRowViewProps) => {
+  const {frame, matchedRanges} = info
+
   const totalWeight = frame.getTotalWeight()
   const selfWeight = frame.getSelfWeight()
   const totalPerc = (100.0 * totalWeight) / profile.getTotalNonIdleWeight()
@@ -108,7 +138,13 @@ const ProfileTableRowView = (props: ProfileTableRowViewProps) => {
       </td>
       <td title={frame.file} className={css(style.textCell)}>
         <ColorChit color={getCSSColorForFrame(frame)} />
-        {frame.name}
+        {matchedRanges
+          ? highlightRanges(
+              frame.name,
+              matchedRanges,
+              css(style.matched, selected && style.matchedSelected),
+            )
+          : frame.name}
       </td>
     </tr>
   )
@@ -170,34 +206,38 @@ export const ProfileTableView = memo(
       [sortMethod, setSortMethod],
     )
 
-    const frameList = useMemo((): Frame[] => {
-      let frameList: Frame[] = []
+    const rowList = useMemo((): {frame: Frame; matchedRanges: [number, number][] | null}[] => {
+      const rowList: ProfileTableRowInfo[] = []
 
-      profile.forEachFrame(f => frameList.push(f))
-
-      if (searchIsActive) {
-        frameList = frameList.filter(f => fuzzyMatchStrings(f.name, searchQuery) != null)
-      }
+      profile.forEachFrame(frame => {
+        let matchedRanges: [number, number][] | null = null
+        if (searchIsActive) {
+          const match = fuzzyMatchStrings(frame.name, searchQuery)
+          if (match == null) return
+          matchedRanges = match.matchedRanges
+        }
+        rowList.push({frame, matchedRanges})
+      })
 
       switch (sortMethod.field) {
         case SortField.SYMBOL_NAME: {
-          sortBy(frameList, f => f.name.toLowerCase())
+          sortBy(rowList, f => f.frame.name.toLowerCase())
           break
         }
         case SortField.SELF: {
-          sortBy(frameList, f => f.getSelfWeight())
+          sortBy(rowList, f => f.frame.getSelfWeight())
           break
         }
         case SortField.TOTAL: {
-          sortBy(frameList, f => f.getTotalWeight())
+          sortBy(rowList, f => f.frame.getTotalWeight())
           break
         }
       }
       if (sortMethod.direction === SortDirection.DESCENDING) {
-        frameList.reverse()
+        rowList.reverse()
       }
 
-      return frameList
+      return rowList
     }, [profile, sortMethod, searchQuery, searchIsActive])
 
     const listViewRef = useRef<ScrollableListView | null>(null)
@@ -206,11 +246,11 @@ export const ProfileTableView = memo(
         if (listView === listViewRef.current) return
         listViewRef.current = listView
         if (!selectedFrame || !listView) return
-        const index = frameList.indexOf(selectedFrame)
+        const index = rowList.findIndex(f => f.frame === selectedFrame)
         if (index === -1) return
         listView.scrollIndexIntoView(index)
       },
-      [listViewRef, selectedFrame, frameList],
+      [listViewRef, selectedFrame, rowList],
     )
 
     const renderItems = useCallback(
@@ -220,7 +260,7 @@ export const ProfileTableView = memo(
         for (let i = firstIndex; i <= lastIndex; i++) {
           rows.push(
             ProfileTableRowView({
-              frame: frameList[i],
+              info: rowList[i],
               index: i,
               profile: profile,
               selectedFrame: selectedFrame,
@@ -230,12 +270,38 @@ export const ProfileTableView = memo(
           )
         }
 
+        if (rows.length === 0) {
+          if (searchIsActive) {
+            rows.push(
+              <tr>
+                <td className={css(style.emptyState)}>
+                  No symbol names match query "{searchQuery}".
+                </td>
+              </tr>,
+            )
+          } else {
+            rows.push(
+              <tr>
+                <td className={css(style.emptyState)}>No symbols found.</td>
+              </tr>,
+            )
+          }
+        }
+
         return <table className={css(style.tableView)}>{rows}</table>
       },
-      [frameList, profile, selectedFrame, setSelectedFrame, getCSSColorForFrame],
+      [
+        rowList,
+        profile,
+        selectedFrame,
+        setSelectedFrame,
+        getCSSColorForFrame,
+        searchIsActive,
+        searchQuery,
+      ],
     )
 
-    const listItems: ListItem[] = frameList.map(f => ({size: Sizes.FRAME_HEIGHT}))
+    const listItems: ListItem[] = rowList.map(f => ({size: Sizes.FRAME_HEIGHT}))
 
     const onTotalClick = useCallback((ev: MouseEvent) => onSortClick(SortField.TOTAL, ev), [
       onSortClick,
@@ -357,6 +423,16 @@ const style = StyleSheet.create({
     position: 'absolute',
     background: Colors.GREEN,
     right: 0,
+  },
+  matched: {
+    borderBottom: `2px solid ${Colors.BLACK}`,
+  },
+  matchedSelected: {
+    borderColor: Colors.WHITE,
+  },
+  emptyState: {
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
 })
 
