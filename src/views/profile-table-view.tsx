@@ -4,7 +4,7 @@ import {Profile, Frame} from '../lib/profile'
 import {sortBy, formatPercent} from '../lib/utils'
 import {FontSize, Colors, Sizes, commonStyle} from './style'
 import {ColorChit} from './color-chit'
-import {ScrollableListView, ListItem} from './scrollable-list-view'
+import {ScrollableListView, ListItem, ScrollableListView2} from './scrollable-list-view'
 import {actions} from '../store/actions'
 import {createGetCSSColorForFrame, getFrameToColorBucket} from '../store/getters'
 import {ActiveProfileState} from './application'
@@ -301,7 +301,10 @@ export const ProfileTableView = memo(
       ],
     )
 
-    const listItems: ListItem[] = rowList.map(f => ({size: Sizes.FRAME_HEIGHT}))
+    const listItems: ListItem[] = useMemo(
+      () => rowList.map(f => ({size: Sizes.FRAME_HEIGHT})),
+      rowList,
+    )
 
     const onTotalClick = useCallback((ev: MouseEvent) => onSortClick(SortField.TOTAL, ev), [
       onSortClick,
@@ -346,7 +349,7 @@ export const ProfileTableView = memo(
             </tr>
           </thead>
         </table>
-        <ScrollableListView
+        <ScrollableListView2
           ref={listViewCallback}
           axis={'y'}
           items={listItems}
