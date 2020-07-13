@@ -12,6 +12,7 @@ import {useActionCreator} from '../lib/preact-redux'
 import {useAppSelector} from '../store'
 import {memo} from 'preact/compat'
 import {useCallback, useMemo, useRef} from 'preact/hooks'
+import {fuzzyMatchStrings} from '../lib/fuzzy-find'
 
 export enum SortField {
   SYMBOL_NAME,
@@ -120,166 +121,176 @@ interface ProfileTableViewProps {
   sortMethod: SortMethod
   setSelectedFrame: (frame: Frame | null) => void
   setSortMethod: (sortMethod: SortMethod) => void
+  searchQuery: string
+  searchIsActive: boolean
 }
 
-export const ProfileTableView = memo((props: ProfileTableViewProps) => {
-  const {
+export const ProfileTableView = memo(
+  ({
     profile,
     sortMethod,
     setSortMethod,
     selectedFrame,
     setSelectedFrame,
     getCSSColorForFrame,
-  } = props
+    searchQuery,
+    searchIsActive,
+  }: ProfileTableViewProps) => {
+    const onSortClick = useCallback(
+      (field: SortField, ev: MouseEvent) => {
+        ev.preventDefault()
 
-  const onSortClick = useCallback(
-    (field: SortField, ev: MouseEvent) => {
-      ev.preventDefault()
-
-      if (sortMethod.field == field) {
-        // Toggle
-        setSortMethod({
-          field,
-          direction:
-            sortMethod.direction === SortDirection.ASCENDING
-              ? SortDirection.DESCENDING
-              : SortDirection.ASCENDING,
-        })
-      } else {
-        // Set a sane default
-        switch (field) {
-          case SortField.SYMBOL_NAME: {
-            setSortMethod({field, direction: SortDirection.ASCENDING})
-            break
-          }
-          case SortField.SELF: {
-            setSortMethod({field, direction: SortDirection.DESCENDING})
-            break
-          }
-          case SortField.TOTAL: {
-            setSortMethod({field, direction: SortDirection.DESCENDING})
-            break
+        if (sortMethod.field == field) {
+          // Toggle
+          setSortMethod({
+            field,
+            direction:
+              sortMethod.direction === SortDirection.ASCENDING
+                ? SortDirection.DESCENDING
+                : SortDirection.ASCENDING,
+          })
+        } else {
+          // Set a sane default
+          switch (field) {
+            case SortField.SYMBOL_NAME: {
+              setSortMethod({field, direction: SortDirection.ASCENDING})
+              break
+            }
+            case SortField.SELF: {
+              setSortMethod({field, direction: SortDirection.DESCENDING})
+              break
+            }
+            case SortField.TOTAL: {
+              setSortMethod({field, direction: SortDirection.DESCENDING})
+              break
+            }
           }
         }
-      }
-    },
-    [sortMethod, setSortMethod],
-  )
+      },
+      [sortMethod, setSortMethod],
+    )
 
-  const frameList = useMemo((): Frame[] => {
-    const frameList: Frame[] = []
+    const frameList = useMemo((): Frame[] => {
+      let frameList: Frame[] = []
 
-    profile.forEachFrame(f => frameList.push(f))
+      profile.forEachFrame(f => frameList.push(f))
 
-    // TODO(jlfwong): This is pretty inefficient to do this on every render, but doesn't
-    // seem to be a bottleneck, so we'll leave it alone.
-    switch (sortMethod.field) {
-      case SortField.SYMBOL_NAME: {
-        sortBy(frameList, f => f.name.toLowerCase())
-        break
-      }
-      case SortField.SELF: {
-        sortBy(frameList, f => f.getSelfWeight())
-        break
-      }
-      case SortField.TOTAL: {
-        sortBy(frameList, f => f.getTotalWeight())
-        break
-      }
-    }
-    if (sortMethod.direction === SortDirection.DESCENDING) {
-      frameList.reverse()
-    }
-
-    return frameList
-  }, [profile, sortMethod])
-
-  const listViewRef = useRef<ScrollableListView | null>(null)
-  const listViewCallback = useCallback(
-    (listView: ScrollableListView | null) => {
-      if (listView === listViewRef.current) return
-      listViewRef.current = listView
-      if (!selectedFrame || !listView) return
-      const index = frameList.indexOf(selectedFrame)
-      if (index === -1) return
-      listView.scrollIndexIntoView(index)
-    },
-    [listViewRef, selectedFrame, frameList],
-  )
-
-  const renderItems = useCallback(
-    (firstIndex: number, lastIndex: number) => {
-      const rows: JSX.Element[] = []
-
-      for (let i = firstIndex; i <= lastIndex; i++) {
-        rows.push(
-          ProfileTableRowView({
-            frame: frameList[i],
-            index: i,
-            profile: profile,
-            selectedFrame: selectedFrame,
-            setSelectedFrame: setSelectedFrame,
-            getCSSColorForFrame: getCSSColorForFrame,
-          }),
-        )
+      if (searchIsActive) {
+        frameList = frameList.filter(f => fuzzyMatchStrings(f.name, searchQuery) != null)
       }
 
-      return <table className={css(style.tableView)}>{rows}</table>
-    },
-    [frameList, profile, selectedFrame, setSelectedFrame, getCSSColorForFrame],
-  )
+      switch (sortMethod.field) {
+        case SortField.SYMBOL_NAME: {
+          sortBy(frameList, f => f.name.toLowerCase())
+          break
+        }
+        case SortField.SELF: {
+          sortBy(frameList, f => f.getSelfWeight())
+          break
+        }
+        case SortField.TOTAL: {
+          sortBy(frameList, f => f.getTotalWeight())
+          break
+        }
+      }
+      if (sortMethod.direction === SortDirection.DESCENDING) {
+        frameList.reverse()
+      }
 
-  const listItems: ListItem[] = frameList.map(f => ({size: Sizes.FRAME_HEIGHT}))
+      return frameList
+    }, [profile, sortMethod, searchQuery, searchIsActive])
 
-  const onTotalClick = useCallback((ev: MouseEvent) => onSortClick(SortField.TOTAL, ev), [
-    onSortClick,
-  ])
-  const onSelfClick = useCallback((ev: MouseEvent) => onSortClick(SortField.SELF, ev), [
-    onSortClick,
-  ])
-  const onSymbolNameClick = useCallback(
-    (ev: MouseEvent) => onSortClick(SortField.SYMBOL_NAME, ev),
-    [onSortClick],
-  )
+    const listViewRef = useRef<ScrollableListView | null>(null)
+    const listViewCallback = useCallback(
+      (listView: ScrollableListView | null) => {
+        if (listView === listViewRef.current) return
+        listViewRef.current = listView
+        if (!selectedFrame || !listView) return
+        const index = frameList.indexOf(selectedFrame)
+        if (index === -1) return
+        listView.scrollIndexIntoView(index)
+      },
+      [listViewRef, selectedFrame, frameList],
+    )
 
-  return (
-    <div className={css(commonStyle.vbox, style.profileTableView)}>
-      <table className={css(style.tableView)}>
-        <thead className={css(style.tableHeader)}>
-          <tr>
-            <th className={css(style.numericCell)} onClick={onTotalClick}>
-              <SortIcon
-                activeDirection={sortMethod.field === SortField.TOTAL ? sortMethod.direction : null}
-              />
-              Total
-            </th>
-            <th className={css(style.numericCell)} onClick={onSelfClick}>
-              <SortIcon
-                activeDirection={sortMethod.field === SortField.SELF ? sortMethod.direction : null}
-              />
-              Self
-            </th>
-            <th className={css(style.textCell)} onClick={onSymbolNameClick}>
-              <SortIcon
-                activeDirection={
-                  sortMethod.field === SortField.SYMBOL_NAME ? sortMethod.direction : null
-                }
-              />
-              Symbol Name
-            </th>
-          </tr>
-        </thead>
-      </table>
-      <ScrollableListView
-        ref={listViewCallback}
-        axis={'y'}
-        items={listItems}
-        className={css(style.scrollView)}
-        renderItems={renderItems}
-      />
-    </div>
-  )
-})
+    const renderItems = useCallback(
+      (firstIndex: number, lastIndex: number) => {
+        const rows: JSX.Element[] = []
+
+        for (let i = firstIndex; i <= lastIndex; i++) {
+          rows.push(
+            ProfileTableRowView({
+              frame: frameList[i],
+              index: i,
+              profile: profile,
+              selectedFrame: selectedFrame,
+              setSelectedFrame: setSelectedFrame,
+              getCSSColorForFrame: getCSSColorForFrame,
+            }),
+          )
+        }
+
+        return <table className={css(style.tableView)}>{rows}</table>
+      },
+      [frameList, profile, selectedFrame, setSelectedFrame, getCSSColorForFrame],
+    )
+
+    const listItems: ListItem[] = frameList.map(f => ({size: Sizes.FRAME_HEIGHT}))
+
+    const onTotalClick = useCallback((ev: MouseEvent) => onSortClick(SortField.TOTAL, ev), [
+      onSortClick,
+    ])
+    const onSelfClick = useCallback((ev: MouseEvent) => onSortClick(SortField.SELF, ev), [
+      onSortClick,
+    ])
+    const onSymbolNameClick = useCallback(
+      (ev: MouseEvent) => onSortClick(SortField.SYMBOL_NAME, ev),
+      [onSortClick],
+    )
+
+    return (
+      <div className={css(commonStyle.vbox, style.profileTableView)}>
+        <table className={css(style.tableView)}>
+          <thead className={css(style.tableHeader)}>
+            <tr>
+              <th className={css(style.numericCell)} onClick={onTotalClick}>
+                <SortIcon
+                  activeDirection={
+                    sortMethod.field === SortField.TOTAL ? sortMethod.direction : null
+                  }
+                />
+                Total
+              </th>
+              <th className={css(style.numericCell)} onClick={onSelfClick}>
+                <SortIcon
+                  activeDirection={
+                    sortMethod.field === SortField.SELF ? sortMethod.direction : null
+                  }
+                />
+                Self
+              </th>
+              <th className={css(style.textCell)} onClick={onSymbolNameClick}>
+                <SortIcon
+                  activeDirection={
+                    sortMethod.field === SortField.SYMBOL_NAME ? sortMethod.direction : null
+                  }
+                />
+                Symbol Name
+              </th>
+            </tr>
+          </thead>
+        </table>
+        <ScrollableListView
+          ref={listViewCallback}
+          axis={'y'}
+          items={listItems}
+          className={css(style.scrollView)}
+          renderItems={renderItems}
+        />
+      </div>
+    )
+  },
+)
 
 const style = StyleSheet.create({
   profileTableView: {
@@ -372,6 +383,8 @@ export const ProfileTableViewContainer = memo((ownProps: ProfileTableViewContain
     [index],
   )
   const setSortMethod = useActionCreator(setTableSortMethod, [])
+  const searchIsActive = useAppSelector(state => state.searchIsActive, [])
+  const searchQuery = useAppSelector(state => state.searchQuery, [])
 
   return (
     <ProfileTableView
@@ -381,6 +394,8 @@ export const ProfileTableViewContainer = memo((ownProps: ProfileTableViewContain
       sortMethod={tableSortMethod}
       setSelectedFrame={setSelectedFrame}
       setSortMethod={setSortMethod}
+      searchIsActive={searchIsActive}
+      searchQuery={searchQuery}
     />
   )
 })
