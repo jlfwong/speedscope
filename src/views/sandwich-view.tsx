@@ -143,6 +143,8 @@ interface SandwichViewContainerProps {
   glCanvas: HTMLCanvasElement
 }
 
+const {setSearchQuery, setSearchIsActive} = actions
+
 export const SandwichViewContainer = memo((ownProps: SandwichViewContainerProps) => {
   const {activeProfileState, glCanvas} = ownProps
   const {sandwichViewState, index} = activeProfileState
@@ -160,10 +162,6 @@ export const SandwichViewContainer = memo((ownProps: SandwichViewContainerProps)
     },
     [dispatch, index],
   )
-  const searchQuery = useAppSelector(state => state.searchQuery, [])
-  const setSearchQuery = useActionCreator(actions.setSearchQuery, [])
-  const searchIsActive = useAppSelector(state => state.searchIsActive, [])
-  const setSearchIsActive = useActionCreator(actions.setSearchIsActive, [])
 
   return (
     <SandwichView
@@ -172,10 +170,10 @@ export const SandwichViewContainer = memo((ownProps: SandwichViewContainerProps)
       setSelectedFrame={setSelectedFrame}
       selectedFrame={callerCallee ? callerCallee.selectedFrame : null}
       profileIndex={index}
-      searchQuery={searchQuery}
-      setSearchQuery={setSearchQuery}
-      searchIsActive={searchIsActive}
-      setSearchIsActive={setSearchIsActive}
+      searchQuery={useAppSelector(state => state.searchQuery, [])}
+      setSearchQuery={useActionCreator(setSearchQuery, [])}
+      searchIsActive={useAppSelector(state => state.searchIsActive, [])}
+      setSearchIsActive={useActionCreator(setSearchIsActive, [])}
     />
   )
 })

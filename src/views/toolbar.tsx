@@ -8,7 +8,6 @@ import {ProfileSelect} from './profile-select'
 import {ProfileGroupState} from '../store/profiles-state'
 import {Profile} from '../lib/profile'
 import {objectsHaveShallowEquality} from '../lib/utils'
-import {useWindowListener} from '../lib/preact-utils'
 
 interface ToolbarProps extends ApplicationProps {
   browseForFile(): void
@@ -109,16 +108,18 @@ function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
     }
   }, [setProfileSelectShown])
 
-  useWindowListener(
-    'keypress',
-    (ev: KeyboardEvent) => {
+  useEffect(() => {
+    const onWindowKeyPress = (ev: KeyboardEvent) => {
       if (ev.key === 't') {
         ev.preventDefault()
         setProfileSelectShown(true)
       }
-    },
-    [setProfileSelectShown],
-  )
+    }
+    window.addEventListener('keypress', onWindowKeyPress)
+    return () => {
+      window.removeEventListener('keypress', onWindowKeyPress)
+    }
+  }, [setProfileSelectShown])
 
   if (activeProfileState && profileGroup && profiles) {
     if (profileGroup.profiles.length === 1) {

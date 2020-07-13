@@ -1,9 +1,8 @@
 import {StyleSheet, css} from 'aphrodite'
 import {h} from 'preact'
-import {useCallback, useRef} from 'preact/hooks'
+import {useCallback, useRef, useEffect} from 'preact/hooks'
 import {memo} from 'preact/compat'
 import {Sizes, Colors, FontSize} from './style'
-import {useWindowListener} from '../lib/preact-utils'
 
 function stopPropagation(ev: Event) {
   ev.stopPropagation()
@@ -37,12 +36,11 @@ export const SearchView = memo(
           setSearchIsActive(false)
         }
       },
-      [setSearchQuery],
+      [setSearchIsActive],
     )
 
-    useWindowListener(
-      'keydown',
-      (ev: KeyboardEvent) => {
+    useEffect(() => {
+      const onWindowKeyDown = (ev: KeyboardEvent) => {
         // Cmd+F or Ctrl+F open the search box
         if (ev.key == 'f' && (ev.metaKey || ev.ctrlKey)) {
           // Prevent the browser's search menu from appearing
@@ -55,9 +53,13 @@ export const SearchView = memo(
             setSearchIsActive(true)
           }
         }
-      },
-      [searchQuery, setSearchQuery],
-    )
+      }
+
+      window.addEventListener('keydown', onWindowKeyDown)
+      return () => {
+        window.removeEventListener('keydown', onWindowKeyDown)
+      }
+    }, [searchQuery, setSearchQuery])
 
     const focusInput = useCallback((node: HTMLInputElement | null) => {
       if (node) {

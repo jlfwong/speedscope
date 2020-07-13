@@ -2,8 +2,7 @@
 // renders only items within the viewport + a couple extra items.
 
 import {h, Component, JSX} from 'preact'
-import {useState, useCallback, useRef, useMemo} from 'preact/hooks'
-import {useWindowListener} from '../lib/preact-utils'
+import {useState, useCallback, useRef, useMemo, useEffect} from 'preact/hooks'
 
 export interface ListItem {
   size: number
@@ -140,31 +139,28 @@ export class ScrollableListView extends Component<
   }
 }
 
-interface ScrollableListViewHandle {
-  scrollItemIntoView(index: number): void
-}
-
 interface RangeResult {
   firstVisibleIndex: number
   lastVisibleIndex: number
   invisiblePrefixSize: number
 }
 
-// I would really like to convert this thing into a hooks component,
-// but I need pass the scrollItemIntoView thing back to the parent.
-//
-// This should be doable with useImperativeHandle, but the relevant
-// types aren't in the preact types yet, apparently?
-//
-// See: https://medium.com/@jrwebdev/react-hooks-in-typescript-88fce7001d0d
-export const ScrollableListView2: RefForwardingComponent = ({
+interface ScrollableListViewProps2 {
+  items: ListItem[]
+  axis: 'x' | 'y'
+  renderItems: (firstVisibleIndex: number, lastVisibleIndex: number) => JSX.Element | JSX.Element[]
+
+  className?: string
+}
+
+export const ScrollableListView2 = ({
   items,
   axis,
   renderItems,
   className,
-}: ScrollableListViewProps) => {
+}: ScrollableListViewProps2) => {
   const [viewportSize, setViewportSize] = useState<number | null>(null)
-  const [viewportScrollOffset, setViewportScrolloffset] = useState<number>(0)
+  const [viewportScrollOffset, setViewportScrollOffset] = useState<number>(0)
 
   const viewportRef = useRef<HTMLDivElement | null>(null)
 
@@ -174,18 +170,21 @@ export const ScrollableListView2: RefForwardingComponent = ({
   const viewportCallback = useCallback(
     (viewport: HTMLDivElement | null) => {
       if (viewport) {
-        setViewportSize(viewport.getBoundingClientRect()[widthOrHeight])
+        requestAnimationFrame(() => {
+          setViewportSize(viewport.getBoundingClientRect()[widthOrHeight])
+        })
       } else {
         setViewportSize(null)
       }
       viewportRef.current = viewport
     },
-    [setViewportSize],
+    [setViewportSize, widthOrHeight],
   )
 
   const rangeResult: RangeResult | null = useMemo(() => {
-    if (viewportRef.current == null || viewportSize == null || viewportScrollOffset == null)
+    if (viewportRef.current == null || viewportSize == null || viewportScrollOffset == null) {
       return null
+    }
 
     // We render items up to a quarter viewport height outside of the
     // viewport both above and below to prevent flickering.
@@ -228,11 +227,22 @@ export const ScrollableListView2: RefForwardingComponent = ({
 
   const onViewportScroll = useCallback(() => {
     if (viewportRef.current != null) {
-      setViewportSize(viewportRef.current[scrollTopOrScrollLeft])
+      setViewportScrollOffset(viewportRef.current[scrollTopOrScrollLeft])
     }
-  }, [])
+  }, [scrollTopOrScrollLeft])
 
-  useWindowListener('resize', onViewportScroll, [])
+  useEffect(() => {
+    const resizeListener = () => {
+      if (viewportRef.current != null) {
+        setViewportSize(viewportRef.current.getBoundingClientRect()[widthOrHeight])
+      }
+    }
+
+    window.addEventListener('resize', resizeListener)
+    return () => {
+      window.removeEventListener('resize', resizeListener)
+    }
+  }, [widthOrHeight])
 
   const visibleItems = useMemo(() => {
     return rangeResult
@@ -248,7 +258,7 @@ export const ScrollableListView2: RefForwardingComponent = ({
         </div>
       </div>
     )
-  }, [rangeResult, items])
+  }, [rangeResult?.invisiblePrefixSize, visibleItems, totalSize])
 
   return (
     <div className={className} ref={viewportCallback} onScroll={onViewportScroll}>

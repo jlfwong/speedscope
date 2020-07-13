@@ -301,10 +301,9 @@ export const ProfileTableView = memo(
       ],
     )
 
-    const listItems: ListItem[] = useMemo(
-      () => rowList.map(f => ({size: Sizes.FRAME_HEIGHT})),
+    const listItems: ListItem[] = useMemo(() => rowList.map(f => ({size: Sizes.FRAME_HEIGHT})), [
       rowList,
-    )
+    ])
 
     const onTotalClick = useCallback((ev: MouseEvent) => onSortClick(SortField.TOTAL, ev), [
       onSortClick,
@@ -350,7 +349,6 @@ export const ProfileTableView = memo(
           </thead>
         </table>
         <ScrollableListView2
-          ref={listViewCallback}
           axis={'y'}
           items={listItems}
           className={css(style.scrollView)}
