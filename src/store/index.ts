@@ -19,21 +19,41 @@ export const enum ViewMode {
 }
 
 export interface ApplicationState {
+  // The top-level profile group from which most other data will be derived
+  profileGroup: ProfileGroupState
+
+  // Parameters defined by the URL encoded k=v pairs after the # in the URL
   hashParams: HashParams
 
   glCanvas: HTMLCanvasElement | null
 
+  // Which top-level view should be displayed
+  viewMode: ViewMode
+
+  // True if recursion should be flattened when viewing flamegraphs
   flattenRecursion: boolean
 
-  viewMode: ViewMode
-  searchQuery: string
+  // The query used in top-level views
+  //
+  // An empty string indicates that the search is open by no filter is applied.
+  // null indicates that no search is active.
+  searchQuery: string | null
+
+  // True when a file drag is currently active. Used to indicate that the
+  // application is a valid drop target.
   dragActive: boolean
+
+  // True when the application is currently in a loading state. Used to
+  // display a loading progress bar.
   loading: boolean
+
+  // True when the application is an error state, e.g. because the profile
+  // imported was invalid.
   error: boolean
 
+  // The table sorting method using for the sandwich view, specifying the column
+  // to sort by, and the direction to sort that clumn.
   tableSortMethod: SortMethod
-
-  profileGroup: ProfileGroupState
 }
 
 const protocol = window.location.protocol
@@ -57,7 +77,7 @@ export function createAppStore(initialState?: ApplicationState): redux.Store<App
 
     viewMode: setter<ViewMode>(actions.setViewMode, ViewMode.CHRONO_FLAME_CHART),
 
-    searchQuery: setter<string>(actions.setSearchQuery, ''),
+    searchQuery: setter<string | null>(actions.setSearchQuery, null),
 
     glCanvas: setter<HTMLCanvasElement | null>(actions.setGLCanvas, null),
 
