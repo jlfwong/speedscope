@@ -4,14 +4,14 @@ import {Profile, Frame} from '../lib/profile'
 import {sortBy, formatPercent} from '../lib/utils'
 import {FontSize, Colors, Sizes, commonStyle} from './style'
 import {ColorChit} from './color-chit'
-import {ScrollableListView, ListItem, ScrollableListView} from './scrollable-list-view'
+import {ListItem, ScrollableListView} from './scrollable-list-view'
 import {actions} from '../store/actions'
 import {createGetCSSColorForFrame, getFrameToColorBucket} from '../store/getters'
 import {ActiveProfileState} from './application'
 import {useActionCreator} from '../lib/preact-redux'
 import {useAppSelector} from '../store'
 import {memo} from 'preact/compat'
-import {useCallback, useMemo, useRef} from 'preact/hooks'
+import {useCallback, useMemo} from 'preact/hooks'
 import {fuzzyMatchStrings} from '../lib/fuzzy-find'
 
 export enum SortField {
@@ -239,19 +239,6 @@ export const ProfileTableView = memo(
 
       return rowList
     }, [profile, sortMethod, searchQuery, searchIsActive])
-
-    const listViewRef = useRef<ScrollableListView | null>(null)
-    const listViewCallback = useCallback(
-      (listView: ScrollableListView | null) => {
-        if (listView === listViewRef.current) return
-        listViewRef.current = listView
-        if (!selectedFrame || !listView) return
-        const index = rowList.findIndex(f => f.frame === selectedFrame)
-        if (index === -1) return
-        listView.scrollIndexIntoView(index)
-      },
-      [listViewRef, selectedFrame, rowList],
-    )
 
     const renderItems = useCallback(
       (firstIndex: number, lastIndex: number) => {
