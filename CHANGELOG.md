@@ -1,5 +1,11 @@
 ## Unreleased
 
+## [1.7.0] - 2020-07-13
+
+### Added
+
+- Introduced filtering via Ctrl+F/Cmd+F into the sandwich view [[#293](https://github.com/jlfwong/speedscope/pull/293)]
+
 ## [1.6.0] - 2020-05-30
 
 ### Added
