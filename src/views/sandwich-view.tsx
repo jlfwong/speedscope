@@ -10,7 +10,9 @@ import {StatelessComponent} from '../lib/typed-redux'
 import {InvertedCallerFlamegraphView} from './inverted-caller-flamegraph-view'
 import {CalleeFlamegraphView} from './callee-flamegraph-view'
 import {ActiveProfileState} from './application'
-import {useDispatch} from '../lib/preact-redux'
+import {useDispatch, useActionCreator} from '../lib/preact-redux'
+import {SearchView} from './search-view'
+import {useAppSelector} from '../store'
 
 interface SandwichViewProps {
   selectedFrame: Frame | null
@@ -18,6 +20,10 @@ interface SandwichViewProps {
   activeProfileState: ActiveProfileState
   setSelectedFrame: (selectedFrame: Frame | null) => void
   glCanvas: HTMLCanvasElement
+  searchQuery: string
+  searchIsActive: boolean
+  setSearchQuery: (query: string | null) => void
+  setSearchIsActive: (active: boolean) => void
 }
 
 class SandwichView extends StatelessComponent<SandwichViewProps> {
@@ -39,7 +45,13 @@ class SandwichView extends StatelessComponent<SandwichViewProps> {
   }
 
   render() {
-    const {selectedFrame} = this.props
+    const {
+      selectedFrame,
+      searchIsActive,
+      setSearchIsActive,
+      searchQuery,
+      setSearchQuery,
+    } = this.props
     let flamegraphViews: JSX.Element | null = null
 
     if (selectedFrame) {
@@ -72,6 +84,12 @@ class SandwichView extends StatelessComponent<SandwichViewProps> {
       <div className={css(commonStyle.hbox, commonStyle.fillY)}>
         <div className={css(style.tableView)}>
           <ProfileTableViewContainer activeProfileState={this.props.activeProfileState} />
+          <SearchView
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            searchIsActive={searchIsActive}
+            setSearchIsActive={setSearchIsActive}
+          />
         </div>
         {flamegraphViews}
       </div>
@@ -81,6 +99,7 @@ class SandwichView extends StatelessComponent<SandwichViewProps> {
 
 const style = StyleSheet.create({
   tableView: {
+    position: 'relative',
     flex: 1,
   },
   panZoomViewWraper: {
@@ -124,6 +143,8 @@ interface SandwichViewContainerProps {
   glCanvas: HTMLCanvasElement
 }
 
+const {setSearchQuery, setSearchIsActive} = actions
+
 export const SandwichViewContainer = memo((ownProps: SandwichViewContainerProps) => {
   const {activeProfileState, glCanvas} = ownProps
   const {sandwichViewState, index} = activeProfileState
@@ -141,6 +162,7 @@ export const SandwichViewContainer = memo((ownProps: SandwichViewContainerProps)
     },
     [dispatch, index],
   )
+
   return (
     <SandwichView
       activeProfileState={activeProfileState}
@@ -148,6 +170,10 @@ export const SandwichViewContainer = memo((ownProps: SandwichViewContainerProps)
       setSelectedFrame={setSelectedFrame}
       selectedFrame={callerCallee ? callerCallee.selectedFrame : null}
       profileIndex={index}
+      searchQuery={useAppSelector(state => state.searchQuery, [])}
+      setSearchQuery={useActionCreator(setSearchQuery, [])}
+      searchIsActive={useAppSelector(state => state.searchIsActive, [])}
+      setSearchIsActive={useActionCreator(setSearchIsActive, [])}
     />
   )
 })

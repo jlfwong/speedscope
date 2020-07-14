@@ -12,7 +12,10 @@ import {objectsHaveShallowEquality} from '../lib/utils'
 
 export type ProfileGroupState = {
   name: string
+
+  // The index within the list of profiles currently being viewed
   indexToView: number
+
   profiles: ProfileState[]
 } | null
 
