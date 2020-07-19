@@ -40,10 +40,6 @@ export const getRowAtlas = memoizeByReference((canvasContext: CanvasContext) => 
   )
 })
 
-export const getProfileWithRecursionFlattened = memoizeByReference((profile: Profile) =>
-  profile.getProfileWithRecursionFlattened(),
-)
-
 export const getProfileToView = memoizeByShallowEquality(
   ({profile, flattenRecursion}: {profile: Profile; flattenRecursion: boolean}): Profile => {
     return flattenRecursion ? profile.getProfileWithRecursionFlattened() : profile
