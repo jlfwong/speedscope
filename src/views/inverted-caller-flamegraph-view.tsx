@@ -10,7 +10,6 @@ import {
   getCanvasContext,
   createGetColorBucketForFrame,
   createGetCSSColorForFrame,
-  getProfileWithRecursionFlattened,
   getFrameToColorBucket,
 } from '../store/getters'
 import {FlamechartID} from '../store/flamechart-view-state'
@@ -64,8 +63,6 @@ export const InvertedCallerFlamegraphView = memo((ownProps: FlamechartViewContai
   const {callerCallee} = sandwichViewState
   if (!callerCallee) throw new Error('callerCallee missing')
   const {selectedFrame} = callerCallee
-
-  profile = flattenRecursion ? getProfileWithRecursionFlattened(profile) : profile
 
   const frameToColorBucket = getFrameToColorBucket(profile)
   const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
