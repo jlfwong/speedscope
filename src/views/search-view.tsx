@@ -8,11 +8,11 @@ function stopPropagation(ev: Event) {
   ev.stopPropagation()
 }
 
-interface SearchViewProps {
+export interface SearchViewProps {
   searchQuery: string
   searchIsActive: boolean
 
-  setSearchQuery: (query: string | null) => void
+  setSearchQuery: (query: string) => void
   setSearchIsActive: (active: boolean) => void
 }
 
@@ -48,10 +48,17 @@ export const SearchView = memo(
           ev.preventDefault()
 
           if (inputRef.current) {
-            // If the search box is already open, then re-select it.
+            // If the search box is already open, then re-select it immediately.
             inputRef.current.select()
           } else {
+            // Otherwise, focus the search, then focus the input on the next
+            // frame, when the search box should have mounted.
             setSearchIsActive(true)
+            requestAnimationFrame(() => {
+              if (inputRef.current) {
+                inputRef.current.select()
+              }
+            })
           }
         }
       }
@@ -61,15 +68,6 @@ export const SearchView = memo(
         window.removeEventListener('keydown', onWindowKeyDown)
       }
     }, [setSearchIsActive])
-
-    const focusInput = useCallback((node: HTMLInputElement | null) => {
-      if (node) {
-        requestAnimationFrame(() => {
-          node.select()
-        })
-      }
-      inputRef.current = node
-    }, [])
 
     const close = useCallback(() => setSearchIsActive(false), [setSearchIsActive])
 
@@ -85,7 +83,7 @@ export const SearchView = memo(
           onKeyDown={onKeyDown}
           onKeyUp={stopPropagation}
           onKeyPress={stopPropagation}
-          ref={focusInput}
+          ref={inputRef}
         />
 
         <svg
