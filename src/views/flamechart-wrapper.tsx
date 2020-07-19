@@ -84,6 +84,12 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
           renderInverted={this.props.renderInverted}
           logicalSpaceViewportSize={this.props.logicalSpaceViewportSize}
           setLogicalSpaceViewportSize={this.setLogicalSpaceViewportSize}
+          /*
+           * TODO(jlfwong): When implementing search for the sandwich views,
+           * change these flags
+           * */
+          searchIsActive={false}
+          searchQuery={''}
         />
         {this.renderTooltip()}
       </div>
