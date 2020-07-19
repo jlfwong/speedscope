@@ -396,7 +396,11 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
         ),
       )
     }
-    this.props.setLogicalSpaceViewportSize(new Vec2(width, height))
+
+    const newSize = new Vec2(width, height)
+    if (!newSize.equals(logicalSpaceViewportSize)) {
+      this.props.setLogicalSpaceViewportSize(newSize)
+    }
   }
 
   onWindowResize = () => {
