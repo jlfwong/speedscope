@@ -50,7 +50,6 @@ export const ScrollableListView = ({
         requestAnimationFrame(() => {
           setViewportSize(viewport.getBoundingClientRect()[widthOrHeight])
           if (initialScroll.current != null) {
-            console.log('executing initial scroll to ', initialScroll.current)
             viewport.scrollTo({[leftOrTop]: initialScroll.current})
             initialScroll.current = null
           }
