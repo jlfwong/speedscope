@@ -113,7 +113,7 @@ export class FlamechartView extends StatelessComponent<FlamechartViewProps> {
           configSpaceViewportRect={this.props.configSpaceViewportRect}
           setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
           logicalSpaceViewportSize={this.props.logicalSpaceViewportSize}
-          setLogicalSpaceViewportBounds={this.setLogicalSpaceViewportSize}
+          setLogicalSpaceViewportSize={this.setLogicalSpaceViewportSize}
         />
         {this.renderTooltip()}
         {this.props.selectedNode && (

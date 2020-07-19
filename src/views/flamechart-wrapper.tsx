@@ -83,7 +83,7 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
           canvasContext={this.props.canvasContext}
           renderInverted={this.props.renderInverted}
           logicalSpaceViewportSize={this.props.logicalSpaceViewportSize}
-          setLogicalSpaceViewportBounds={this.setLogicalSpaceViewportSize}
+          setLogicalSpaceViewportSize={this.setLogicalSpaceViewportSize}
         />
         {this.renderTooltip()}
       </div>

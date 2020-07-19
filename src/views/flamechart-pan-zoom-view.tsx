@@ -47,7 +47,7 @@ export interface FlamechartPanZoomViewProps {
   setConfigSpaceViewportRect: (rect: Rect) => void
 
   logicalSpaceViewportSize: Vec2
-  setLogicalSpaceViewportBounds: (size: Vec2) => void
+  setLogicalSpaceViewportSize: (size: Vec2) => void
 }
 
 export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps, {}> {
@@ -396,7 +396,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
         ),
       )
     }
-    this.props.setLogicalSpaceViewportBounds(new Vec2(width, height))
+    this.props.setLogicalSpaceViewportSize(new Vec2(width, height))
   }
 
   onWindowResize = () => {
