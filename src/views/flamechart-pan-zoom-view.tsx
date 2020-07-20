@@ -4,7 +4,13 @@ import {Flamechart, FlamechartFrame} from '../lib/flamechart'
 import {CanvasContext} from '../gl/canvas-context'
 import {FlamechartRenderer} from '../gl/flamechart-renderer'
 import {Sizes, FontSize, Colors, FontFamily, commonStyle} from './style'
-import {cachedMeasureTextWidth, ELLIPSIS, trimTextMid} from '../lib/text-utils'
+import {
+  cachedMeasureTextWidth,
+  ELLIPSIS,
+  trimTextMid,
+  getIndexTypeInTrimmed,
+  IndexTypeInTrimmed,
+} from '../lib/text-utils'
 import {style} from './flamechart-style'
 import {h, Component} from 'preact'
 import {css} from 'aphrodite'
@@ -188,7 +194,6 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
     ctx.font = `${physicalViewSpaceFontSize}px/${physicalViewSpaceFrameHeight}px ${FontFamily.MONOSPACE}`
     ctx.textBaseline = 'alphabetic'
-    ctx.fillStyle = Colors.DARK_GRAY
 
     const minWidthToRender = cachedMeasureTextWidth(ctx, 'M' + ELLIPSIS + 'M')
     const minConfigSpaceWidthToRender = (
@@ -196,6 +201,15 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     ).x
 
     const LABEL_PADDING_PX = 5 * window.devicePixelRatio
+
+    const memoizedFuzzyMatch = memoizeByReference((frame: Frame): FuzzyMatch | null => {
+      return fuzzyMatchStrings(frame.name, this.props.searchQuery)
+    })
+    const frameMatchesSearchQuery = (frame: Frame): FuzzyMatch | null => {
+      if (!this.props.searchIsActive) return null
+      if (this.props.searchQuery.length === 0) return null
+      return memoizedFuzzyMatch(frame)
+    }
 
     const renderFrameLabelAndChildren = (frame: FlamechartFrame, depth = 0) => {
       const width = frame.end - frame.start
@@ -231,16 +245,168 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
         }
 
         if (physicalLabelBounds.width() > minWidthToRender) {
+          const match = frameMatchesSearchQuery(frame.node.frame)
+
           const trimmedText = trimTextMid(
             ctx,
             frame.node.frame.name,
             physicalLabelBounds.width() - 2 * LABEL_PADDING_PX,
           )
 
+          if (match) {
+            // These ranges are indices into the trimmedText, whereas
+            // match.matchedRanges are indices into the original frame name.
+            //
+            // We intentionally don't just re-run fuzzy matching on the trimmed
+            // text, beacuse if the search query is "helloWorld", the frame name
+            // is "application::helloWorld", and that gets trimmed down to
+            // "appl...oWorld", we still want "oWorld" to be highlighted, even
+            // though the string "appl...oWorld" is not matched by the query
+            // "helloWorld".
+            //
+            // There's a weird case to consider here: what if the trimmedText is
+            // also matched by the query, but results in a different match than
+            // the original query? Consider, e.g. the search string of "ab". The
+            // string "hello ab shabby" will be matched at the first "ab", but
+            // may be trimmed to "hello...shabby". In this case, should we
+            // highlight the "ab" hidden by the ellipsis, or the "ab" in
+            // "shabby"? The code below highlights the ellipsis so that the
+            // matched characters don't change as you zoom in and out.
+
+            const rangesToHighlightInTrimmedText: [number, number][] = []
+            const lengthLoss = frame.node.frame.name.length - trimmedText.trimmedString.length
+            let highlightedEllipsis = false
+
+            for (let [origStart, origEnd] of match.matchedRanges) {
+              let startPosType = getIndexTypeInTrimmed(trimmedText, origStart)
+              let endPosType = getIndexTypeInTrimmed(trimmedText, origEnd - 1)
+
+              switch (startPosType) {
+                case IndexTypeInTrimmed.IN_PREFIX: {
+                  switch (endPosType) {
+                    case IndexTypeInTrimmed.IN_PREFIX: {
+                      // The entire range fits in the prefix. Add it unmodified.
+                      rangesToHighlightInTrimmedText.push([origStart, origEnd])
+                      break
+                    }
+                    case IndexTypeInTrimmed.ELIDED: {
+                      // The range starts in the prefix, but ends in the elided
+                      // section. Add just the prefix + one char for the ellipsis.
+                      rangesToHighlightInTrimmedText.push([
+                        origStart,
+                        origStart + trimmedText.prefixLength + 1,
+                      ])
+                      highlightedEllipsis = true
+                      break
+                    }
+                    case IndexTypeInTrimmed.IN_SUFFIX: {
+                      // The range crosses from the prefix to the suffix.
+                      // Highlight everything including the ellipsis.
+                      rangesToHighlightInTrimmedText.push([origStart, origEnd - lengthLoss])
+                      break
+                    }
+                  }
+                  break
+                }
+                case IndexTypeInTrimmed.ELIDED: {
+                  switch (endPosType) {
+                    case IndexTypeInTrimmed.IN_PREFIX: {
+                      // This should be impossible
+                      throw new Error(
+                        'Unexpected highlight range starts in elided and ends in prefix',
+                      )
+                    }
+                    case IndexTypeInTrimmed.ELIDED: {
+                      // The match starts & ends within the elided section.
+                      if (!highlightedEllipsis) {
+                        rangesToHighlightInTrimmedText.push([
+                          trimmedText.prefixLength,
+                          trimmedText.prefixLength + 1,
+                        ])
+                        highlightedEllipsis = true
+                      }
+                      break
+                    }
+                    case IndexTypeInTrimmed.IN_SUFFIX: {
+                      // The match starts in elided, but ends in suffix.
+                      if (highlightedEllipsis) {
+                        rangesToHighlightInTrimmedText.push([
+                          trimmedText.trimmedLength - trimmedText.suffixLength,
+                          origEnd - lengthLoss,
+                        ])
+                      } else {
+                        rangesToHighlightInTrimmedText.push([
+                          trimmedText.prefixLength,
+                          origEnd - lengthLoss,
+                        ])
+                        highlightedEllipsis = true
+                      }
+                      break
+                    }
+                  }
+                  break
+                }
+                case IndexTypeInTrimmed.IN_SUFFIX: {
+                  switch (endPosType) {
+                    case IndexTypeInTrimmed.IN_PREFIX: {
+                      // This should be impossible
+                      throw new Error(
+                        'Unexpected highlight range starts in suffix and ends in prefix',
+                      )
+                    }
+                    case IndexTypeInTrimmed.ELIDED: {
+                      // This should be impossible
+                      throw new Error(
+                        'Unexpected highlight range starts in suffix and ends in elided',
+                      )
+                      break
+                    }
+                    case IndexTypeInTrimmed.IN_SUFFIX: {
+                      // Match starts & ends in suffix
+                      rangesToHighlightInTrimmedText.push([
+                        origStart - lengthLoss,
+                        origEnd - lengthLoss,
+                      ])
+                      break
+                    }
+                  }
+                  break
+                }
+              }
+            }
+
+            // Once we have the character ranges to highlight, we need to
+            // actually do the highlighting.
+            let lastEndIndex = 0
+            let left = physicalLabelBounds.left() + LABEL_PADDING_PX
+            ctx.fillStyle = Colors.YELLOW
+
+            ctx.beginPath()
+            const padding = (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2 - 2
+            for (let [startIndex, endIndex] of rangesToHighlightInTrimmedText) {
+              left += ctx.measureText(trimmedText.trimmedString.substring(lastEndIndex, startIndex))
+                .width
+              const highlightWidth = ctx.measureText(
+                trimmedText.trimmedString.substring(startIndex, endIndex),
+              ).width
+              ctx.rect(
+                left,
+                physicalLabelBounds.top() + padding,
+                highlightWidth,
+                physicalViewSpaceFrameHeight - 2 * padding,
+              )
+
+              left += highlightWidth
+              lastEndIndex = endIndex
+            }
+            ctx.fill()
+          }
+
           // Note that this is specifying the position of the starting text
           // baseline.
+          ctx.fillStyle = Colors.DARK_GRAY
           ctx.fillText(
-            trimmedText,
+            trimmedText.trimmedString,
             physicalLabelBounds.left() + LABEL_PADDING_PX,
             Math.round(
               physicalLabelBounds.bottom() -
@@ -265,9 +431,6 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
       configToPhysical.inverseTransformVector(new Vec2(1, 0)) || new Vec2(0, 0)
     ).x
 
-    const frameMatch = memoizeByReference((frame: Frame): FuzzyMatch | null => {
-      return fuzzyMatchStrings(frame.name, this.props.searchQuery)
-    })
     const renderSpecialFrameOutlines = (frame: FlamechartFrame, depth = 0) => {
       if (!this.props.selectedNode && !this.props.searchIsActive) return
       const width = frame.end - frame.start
@@ -289,12 +452,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
             outlineColor = Colors.PALE_DARK_BLUE
           }
         } else {
-          const frameMatchSearch =
-            this.props.searchIsActive &&
-            this.props.searchQuery.length > 0 &&
-            frameMatch(frame.node.frame)
-
-          if (frameMatchSearch) {
+          if (frameMatchesSearchQuery(frame.node.frame)) {
             outlineColor = Colors.YELLOW
           }
         }
