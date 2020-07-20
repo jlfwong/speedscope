@@ -8,11 +8,11 @@ function stopPropagation(ev: Event) {
   ev.stopPropagation()
 }
 
-interface SearchViewProps {
+export interface SearchViewProps {
   searchQuery: string
   searchIsActive: boolean
 
-  setSearchQuery: (query: string | null) => void
+  setSearchQuery: (query: string) => void
   setSearchIsActive: (active: boolean) => void
 }
 
@@ -36,6 +36,18 @@ export const SearchView = memo(
         if (ev.key === 'Escape') {
           setSearchIsActive(false)
         }
+
+        if (ev.key == 'f' && (ev.metaKey || ev.ctrlKey)) {
+          if (inputRef.current) {
+            // If the input is already focused, select all
+            inputRef.current.select()
+          }
+
+          // It seems like when an input is focused, the browser find menu pops
+          // up without this line. It seems like it's not sufficient to only
+          // preventDefault in the window keydown handler.
+          ev.preventDefault()
+        }
       },
       [setSearchIsActive],
     )
@@ -48,10 +60,17 @@ export const SearchView = memo(
           ev.preventDefault()
 
           if (inputRef.current) {
-            // If the search box is already open, then re-select it.
+            // If the search box is already open, then re-select it immediately.
             inputRef.current.select()
           } else {
+            // Otherwise, focus the search, then focus the input on the next
+            // frame, when the search box should have mounted.
             setSearchIsActive(true)
+            requestAnimationFrame(() => {
+              if (inputRef.current) {
+                inputRef.current.select()
+              }
+            })
           }
         }
       }
@@ -61,15 +80,6 @@ export const SearchView = memo(
         window.removeEventListener('keydown', onWindowKeyDown)
       }
     }, [setSearchIsActive])
-
-    const focusInput = useCallback((node: HTMLInputElement | null) => {
-      if (node) {
-        requestAnimationFrame(() => {
-          node.select()
-        })
-      }
-      inputRef.current = node
-    }, [])
 
     const close = useCallback(() => setSearchIsActive(false), [setSearchIsActive])
 
@@ -85,7 +95,7 @@ export const SearchView = memo(
           onKeyDown={onKeyDown}
           onKeyUp={stopPropagation}
           onKeyPress={stopPropagation}
-          ref={focusInput}
+          ref={inputRef}
         />
 
         <svg

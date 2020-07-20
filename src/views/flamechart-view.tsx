@@ -14,6 +14,7 @@ import {FlamechartPanZoomView} from './flamechart-pan-zoom-view'
 import {Hovertip} from './hovertip'
 import {FlamechartViewProps} from './flamechart-view-container'
 import {StatelessComponent} from '../lib/typed-redux'
+import {SearchView} from './search-view'
 
 export class FlamechartView extends StatelessComponent<FlamechartViewProps> {
   private configSpaceSize() {
@@ -114,6 +115,14 @@ export class FlamechartView extends StatelessComponent<FlamechartViewProps> {
           setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
           logicalSpaceViewportSize={this.props.logicalSpaceViewportSize}
           setLogicalSpaceViewportSize={this.setLogicalSpaceViewportSize}
+          searchQuery={this.props.searchQuery}
+          searchIsActive={this.props.searchIsActive}
+        />
+        <SearchView
+          searchQuery={this.props.searchQuery}
+          searchIsActive={this.props.searchIsActive}
+          setSearchQuery={this.props.setSearchQuery}
+          setSearchIsActive={this.props.setSearchIsActive}
         />
         {this.renderTooltip()}
         {this.props.selectedNode && (

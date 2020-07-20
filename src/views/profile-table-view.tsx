@@ -357,6 +357,7 @@ const style = StyleSheet.create({
   scrollView: {
     overflowY: 'auto',
     overflowX: 'hidden',
+    flexGrow: 1,
   },
   tableView: {
     width: '100%',

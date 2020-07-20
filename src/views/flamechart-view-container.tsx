@@ -18,6 +18,8 @@ import {ActiveProfileState} from './application'
 import {Vec2, Rect} from '../lib/math'
 import {actions} from '../store/actions'
 import {memo} from 'preact/compat'
+import {useAppSelector} from '../store'
+import {SearchViewProps} from './search-view'
 
 interface FlamechartSetters {
   setLogicalSpaceViewportSize: (logicalSpaceViewportSize: Vec2) => void
@@ -64,8 +66,23 @@ export type FlamechartViewProps = {
   flamechartRenderer: FlamechartRenderer
   renderInverted: boolean
   getCSSColorForFrame: (frame: Frame) => string
+  searchIsActive: boolean
+  searchQuery: string
+  setSearchQuery: (query: string) => void
+  setSearchIsActive: (active: boolean) => void
 } & FlamechartSetters &
   FlamechartViewState
+
+const {setSearchQuery, setSearchIsActive} = actions
+
+function useSearchViewProps(): SearchViewProps {
+  return {
+    searchIsActive: useAppSelector(state => state.searchIsActive, []),
+    setSearchQuery: useActionCreator(setSearchQuery, []),
+    searchQuery: useAppSelector(state => state.searchQuery, []),
+    setSearchIsActive: useActionCreator(setSearchIsActive, []),
+  }
+}
 
 export const getChronoViewFlamechart = memoizeByShallowEquality(
   ({
@@ -134,6 +151,7 @@ export const ChronoFlamechartView = memo((props: FlamechartViewContainerProps) =
       canvasContext={canvasContext}
       getCSSColorForFrame={getCSSColorForFrame}
       {...useFlamechartSetters(FlamechartID.CHRONO, index)}
+      {...useSearchViewProps()}
       {...chronoViewState}
     />
   )
@@ -185,6 +203,7 @@ export const LeftHeavyFlamechartView = memo((ownProps: FlamechartViewContainerPr
       canvasContext={canvasContext}
       getCSSColorForFrame={getCSSColorForFrame}
       {...useFlamechartSetters(FlamechartID.LEFT_HEAVY, index)}
+      {...useSearchViewProps()}
       {...leftHeavyViewState}
     />
   )
