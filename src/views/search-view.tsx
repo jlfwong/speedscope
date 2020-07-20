@@ -38,6 +38,11 @@ export const SearchView = memo(
         }
 
         if (ev.key == 'f' && (ev.metaKey || ev.ctrlKey)) {
+          if (inputRef.current) {
+            // If the input is already focused, select all
+            inputRef.current.select()
+          }
+
           // It seems like when an input is focused, the browser find menu pops
           // up without this line. It seems like it's not sufficient to only
           // preventDefault in the window keydown handler.
