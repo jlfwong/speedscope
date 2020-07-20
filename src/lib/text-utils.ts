@@ -46,10 +46,24 @@ export function getIndexTypeInTrimmed(
   }
 }
 
-function buildTrimmedText(text: string, length: number): TrimmedTextResult {
-  const prefixLength = Math.floor(length / 2)
+// Trim text, placing an ellipsis in the middle, with a slight bias towards
+// keeping text from the beginning rather than the end
+export function buildTrimmedText(text: string, length: number): TrimmedTextResult {
+  if (text.length <= length) {
+    return {
+      trimmedString: text,
+      trimmedLength: text.length,
+      prefixLength: text.length,
+      suffixLength: 0,
+      originalString: text,
+      originalLength: text.length,
+    }
+  }
+
+  let prefixLength = Math.floor(length / 2)
+  const suffixLength = length - prefixLength - 1
   const prefix = text.substr(0, prefixLength)
-  const suffix = text.substr(text.length - prefixLength, prefixLength)
+  const suffix = text.substr(text.length - suffixLength, suffixLength)
   const trimmedString = prefix + ELLIPSIS + suffix
   return {
     trimmedString,
@@ -61,20 +75,14 @@ function buildTrimmedText(text: string, length: number): TrimmedTextResult {
   }
 }
 
+// Trim text to fit within the given number of pixels on the canvas
 export function trimTextMid(
   ctx: CanvasRenderingContext2D,
   text: string,
   maxWidth: number,
 ): TrimmedTextResult {
   if (cachedMeasureTextWidth(ctx, text) <= maxWidth) {
-    return {
-      trimmedString: text,
-      trimmedLength: text.length,
-      prefixLength: text.length,
-      suffixLength: 0,
-      originalString: text,
-      originalLength: text.length,
-    }
+    return buildTrimmedText(text, text.length)
   }
   const [lo] = binarySearch(
     0,
