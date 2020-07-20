@@ -36,6 +36,13 @@ export const SearchView = memo(
         if (ev.key === 'Escape') {
           setSearchIsActive(false)
         }
+
+        if (ev.key == 'f' && (ev.metaKey || ev.ctrlKey)) {
+          // It seems like when an input is focused, the browser find menu pops
+          // up without this line. It seems like it's not sufficient to only
+          // preventDefault in the window keydown handler.
+          ev.preventDefault()
+        }
       },
       [setSearchIsActive],
     )
