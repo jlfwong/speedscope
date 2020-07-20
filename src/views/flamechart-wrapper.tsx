@@ -8,6 +8,17 @@ import {noop, formatPercent} from '../lib/utils'
 import {Hovertip} from './hovertip'
 import {FlamechartViewProps} from './flamechart-view-container'
 import {StatelessComponent} from '../lib/typed-redux'
+import {useCallback} from 'preact/hooks'
+import {SearchViewProps} from './search-view'
+
+export function useDummySearchProps(): SearchViewProps {
+  return {
+    searchIsActive: false,
+    searchQuery: '',
+    setSearchQuery: useCallback((q: string) => {}, []),
+    setSearchIsActive: useCallback((v: boolean) => {}, []),
+  }
+}
 
 export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
   private clampViewportToFlamegraph(viewportRect: Rect) {
@@ -84,12 +95,8 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
           renderInverted={this.props.renderInverted}
           logicalSpaceViewportSize={this.props.logicalSpaceViewportSize}
           setLogicalSpaceViewportSize={this.setLogicalSpaceViewportSize}
-          /*
-           * TODO(jlfwong): When implementing search for the sandwich views,
-           * change these flags
-           * */
-          searchIsActive={false}
-          searchQuery={''}
+          searchIsActive={this.props.searchIsActive}
+          searchQuery={this.props.searchQuery}
         />
         {this.renderTooltip()}
       </div>

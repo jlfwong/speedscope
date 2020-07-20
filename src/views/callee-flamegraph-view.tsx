@@ -13,7 +13,7 @@ import {
   getFrameToColorBucket,
 } from '../store/getters'
 import {FlamechartID} from '../store/flamechart-view-state'
-import {FlamechartWrapper} from './flamechart-wrapper'
+import {FlamechartWrapper, useDummySearchProps} from './flamechart-wrapper'
 import {useAppSelector} from '../store'
 import {h} from 'preact'
 import {memo} from 'preact/compat'
@@ -81,6 +81,11 @@ export const CalleeFlamegraphView = memo((ownProps: FlamechartViewContainerProps
       // This overrides the setSelectedNode specified in useFlamechartSettesr
       setSelectedNode={noop}
       {...callerCallee.calleeFlamegraph}
+      /*
+       * TODO(jlfwong): When implementing search for the sandwich views,
+       * change these flags
+       * */
+      {...useDummySearchProps()}
     />
   )
 })

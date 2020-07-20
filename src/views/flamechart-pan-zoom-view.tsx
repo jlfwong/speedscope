@@ -8,8 +8,6 @@ import {
   cachedMeasureTextWidth,
   ELLIPSIS,
   trimTextMid,
-  getIndexTypeInTrimmed,
-  IndexTypeInTrimmed,
   remapRangesToTrimmedText,
 } from '../lib/text-utils'
 import {style} from './flamechart-style'

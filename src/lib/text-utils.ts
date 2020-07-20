@@ -27,25 +27,6 @@ interface TrimmedTextResult {
   originalString: string
 }
 
-export enum IndexTypeInTrimmed {
-  IN_PREFIX,
-  IN_SUFFIX,
-  ELIDED,
-}
-
-export function getIndexTypeInTrimmed(
-  result: TrimmedTextResult,
-  index: number,
-): IndexTypeInTrimmed {
-  if (index < result.prefixLength) {
-    return IndexTypeInTrimmed.IN_PREFIX
-  } else if (index < result.originalLength - result.suffixLength) {
-    return IndexTypeInTrimmed.ELIDED
-  } else {
-    return IndexTypeInTrimmed.IN_SUFFIX
-  }
-}
-
 // Trim text, placing an ellipsis in the middle, with a slight bias towards
 // keeping text from the beginning rather than the end
 export function buildTrimmedText(text: string, length: number): TrimmedTextResult {
@@ -93,6 +74,22 @@ export function trimTextMid(
     maxWidth,
   )
   return buildTrimmedText(text, lo)
+}
+
+enum IndexTypeInTrimmed {
+  IN_PREFIX,
+  IN_SUFFIX,
+  ELIDED,
+}
+
+function getIndexTypeInTrimmed(result: TrimmedTextResult, index: number): IndexTypeInTrimmed {
+  if (index < result.prefixLength) {
+    return IndexTypeInTrimmed.IN_PREFIX
+  } else if (index < result.originalLength - result.suffixLength) {
+    return IndexTypeInTrimmed.ELIDED
+  } else {
+    return IndexTypeInTrimmed.IN_SUFFIX
+  }
 }
 
 export function remapRangesToTrimmedText(
