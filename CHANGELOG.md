@@ -1,5 +1,15 @@
 ## Unreleased
 
+## [1.8.0] - 2020-07-19
+
+### Added
+
+- Added search highlighting in time order & left heavy views [[#297](https://github.com/jlfwong/speedscope/pull/297)]
+
+### Fixed
+
+- Fix performance issues for the caller/callee flamegraphs in the sandwich view [[#296](https://github.com/jlfwong/speedscope/pull/296)]
+
 ## [1.7.0] - 2020-07-13
 
 ### Added
