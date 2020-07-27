@@ -287,7 +287,11 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
           // Note that this is specifying the position of the starting text
           // baseline.
-          ctx.fillStyle = Colors.DARK_GRAY
+          if (this.props.searchIsActive && this.props.searchQuery.length > 0 && !match) {
+            ctx.fillStyle = Colors.LIGHT_GRAY
+          } else {
+            ctx.fillStyle = Colors.DARK_GRAY
+          }
           ctx.fillText(
             trimmedText.trimmedString,
             physicalLabelBounds.left() + LABEL_PADDING_PX,
