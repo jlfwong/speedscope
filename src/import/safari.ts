@@ -66,14 +66,15 @@ interface SafariProfile {
 }
 
 function makeStack(frames: StackFrame[]): FrameInfo[] {
-  return frames.map(({ name, url, line, column }) =>
-    ({
+  return frames
+    .map(({name, url, line, column}) => ({
       key: `${name}:${url}:${line}:${column}`,
       file: url,
       line,
       col: column,
-      name: name || '(anonymous)'
-    })).reverse()
+      name: name || '(anonymous)',
+    }))
+    .reverse()
 }
 
 export function importFromSafari(contents: SafariProfile): Profile | null {
@@ -81,15 +82,12 @@ export function importFromSafari(contents: SafariProfile): Profile | null {
     console.warn(`Unknown Safari profile version ${contents.version}... Might be incompatible.`)
   }
 
-  const { recording } = contents
+  const {recording} = contents
   const duration = recording.sampleDurations.reduce((a, b) => a + b, 0)
   const profile = new StackListProfileBuilder(duration)
 
   recording.sampleStackTraces.forEach((sample, i) => {
-    profile.appendSampleWithWeight(
-      makeStack(sample.stackFrames),
-      recording.sampleDurations[i]
-    )
+    profile.appendSampleWithWeight(makeStack(sample.stackFrames), recording.sampleDurations[i])
   })
   profile.setValueFormatter(new TimeFormatter('seconds'))
   profile.setName(recording.displayName)
