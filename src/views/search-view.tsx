@@ -179,7 +179,7 @@ export const SearchView = memo(
         </span>
         {numResults != null && (
           <span className={css(style.resultCount)}>
-            {resultIndex || '?'}/{numResults}
+            {resultIndex == null ? '?' : resultIndex + 1}/{numResults}
           </span>
         )}
         <svg
