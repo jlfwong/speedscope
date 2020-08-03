@@ -250,12 +250,6 @@ export class Profile {
     this.frames.forEach(fn)
   }
 
-  forEachSample(fn: (sample: CallTreeNode, weight: number) => void) {
-    for (let i = 0; i < this.samples.length; i++) {
-      fn(this.samples[i], this.weights[i])
-    }
-  }
-
   getProfileWithRecursionFlattened(): Profile {
     const builder = new CallTreeProfileBuilder()
 
