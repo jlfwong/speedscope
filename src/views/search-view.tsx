@@ -15,6 +15,10 @@ function stopPropagation(ev: Event) {
 //
 // Consider making a container component to get more state calculation re-use,
 // and also decouple more of the logic in here.
+//
+// ProfileSearchResults may be a good candidate for using React context, though
+// to do that non-awkwardly might require refactoring some more components to
+// use hooks.
 export interface SearchViewProps {
   searchQuery: string
   searchIsActive: boolean
