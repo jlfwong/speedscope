@@ -296,10 +296,6 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
       }
     }
 
-    for (let frame of this.props.flamechart.getLayers()[0] || []) {
-      renderFrameLabelAndChildren(frame)
-    }
-
     const frameOutlineWidth = 2 * window.devicePixelRatio
     ctx.strokeStyle = Colors.PALE_DARK_BLUE
     ctx.lineWidth = frameOutlineWidth
@@ -321,37 +317,39 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
       if (configSpaceBounds.hasIntersectionWith(this.props.configSpaceViewportRect)) {
         let outlineColor: string | null = null
 
+        if (this.props.searchResults?.getMatchForFrame(frame.node.frame)) {
+          ctx.fillStyle = Colors.ORANGE
+
+          // TODO(jlfwong): This is really inefficient. Fix it!
+          const physicalRectBounds = configToPhysical.transformRect(configSpaceBounds)
+          ctx.fillRect(
+            Math.round(physicalRectBounds.left() + frameOutlineWidth / 2),
+            Math.round(physicalRectBounds.top() + frameOutlineWidth / 2),
+            Math.round(Math.max(0, physicalRectBounds.width() - frameOutlineWidth)),
+            Math.round(Math.max(0, physicalRectBounds.height() - frameOutlineWidth)),
+          )
+        }
+
         if (this.props.selectedNode != null && frame.node.frame === this.props.selectedNode.frame) {
           if (frame.node === this.props.selectedNode) {
             outlineColor = Colors.DARK_BLUE
           } else if (ctx.strokeStyle !== Colors.PALE_DARK_BLUE) {
             outlineColor = Colors.PALE_DARK_BLUE
           }
-        } else {
-          if (this.props.searchResults?.getMatchForFrame(frame.node.frame)) {
-            outlineColor = Colors.YELLOW
-          }
-        }
 
-        if (outlineColor != null) {
-          if (ctx.strokeStyle !== outlineColor) {
-            // If the outline color changed, stroke the existing path
-            // constructed by previous ctx.rect calls, then update the stroke
-            // style before drawing the next one.
-            ctx.stroke()
-            ctx.beginPath()
+          if (outlineColor != null) {
+            // TODO(jlfwong): This is really inefficient. Fix it!
+            const physicalRectBounds = configToPhysical.transformRect(configSpaceBounds)
             ctx.strokeStyle = outlineColor
+            ctx.strokeRect(
+              Math.round(physicalRectBounds.left() + 1 + frameOutlineWidth / 2),
+              Math.round(physicalRectBounds.top() + 1 + frameOutlineWidth / 2),
+              Math.round(Math.max(0, physicalRectBounds.width() - 2 - frameOutlineWidth)),
+              Math.round(Math.max(0, physicalRectBounds.height() - 2 - frameOutlineWidth)),
+            )
           }
-          const physicalRectBounds = configToPhysical.transformRect(configSpaceBounds)
-          ctx.rect(
-            Math.round(physicalRectBounds.left() + 1 + frameOutlineWidth / 2),
-            Math.round(physicalRectBounds.top() + 1 + frameOutlineWidth / 2),
-            Math.round(Math.max(0, physicalRectBounds.width() - 2 - frameOutlineWidth)),
-            Math.round(Math.max(0, physicalRectBounds.height() - 2 - frameOutlineWidth)),
-          )
         }
       }
-
       for (let child of frame.children) {
         renderSpecialFrameOutlines(child, depth + 1)
       }
@@ -362,6 +360,10 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
       renderSpecialFrameOutlines(frame)
     }
     ctx.stroke()
+
+    for (let frame of this.props.flamechart.getLayers()[0] || []) {
+      renderFrameLabelAndChildren(frame)
+    }
 
     this.renderTimeIndicators()
   }
