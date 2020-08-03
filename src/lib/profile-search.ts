@@ -6,6 +6,11 @@ export enum FlamechartType {
   LEFT_HEAVY_FLAME_GRAPH,
 }
 
+// TODO(jlfwong): Rather than operating on profiles using forEachCall &
+// forEachCallGrouped, I think what I really want to do is operate on Flamechart
+// objects instead. This will make it easier to set the config space viewport
+// bounds in order to zoom to fit the object on screen.
+
 // A utility class for storing cached search results to avoid recomputation when
 // the search results & profile did not change.
 export class ProfileSearchResults {
