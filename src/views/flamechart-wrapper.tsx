@@ -95,8 +95,7 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
           renderInverted={this.props.renderInverted}
           logicalSpaceViewportSize={this.props.logicalSpaceViewportSize}
           setLogicalSpaceViewportSize={this.setLogicalSpaceViewportSize}
-          searchIsActive={this.props.searchIsActive}
-          searchQuery={this.props.searchQuery}
+          searchResults={this.props.searchResults}
         />
         {this.renderTooltip()}
       </div>

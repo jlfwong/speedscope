@@ -17,9 +17,10 @@ import {
 import {ActiveProfileState} from './application'
 import {Vec2, Rect} from '../lib/math'
 import {actions} from '../store/actions'
-import {memo} from 'preact/compat'
+import {memo, useMemo} from 'preact/compat'
 import {useAppSelector} from '../store'
 import {SearchViewProps} from './search-view'
+import {ProfileSearchResults} from '../lib/profile-search'
 
 interface FlamechartSetters {
   setLogicalSpaceViewportSize: (logicalSpaceViewportSize: Vec2) => void
@@ -68,6 +69,7 @@ export type FlamechartViewProps = {
   getCSSColorForFrame: (frame: Frame) => string
   searchIsActive: boolean
   searchQuery: string
+  searchResults: ProfileSearchResults | null
   setSearchQuery: (query: string) => void
   setSearchIsActive: (active: boolean) => void
 } & FlamechartSetters &
@@ -82,6 +84,22 @@ function useSearchViewProps(): SearchViewProps {
     searchQuery: useAppSelector(state => state.searchQuery, []),
     setSearchIsActive: useActionCreator(setSearchIsActive, []),
   }
+}
+
+function useSearchResults(): ProfileSearchResults | null {
+  const searchIsActive = useAppSelector(state => state.searchIsActive, [])
+  const query = useAppSelector(state => state.searchQuery, [])
+  const profile = useAppSelector(
+    state => state.profileGroup?.profiles[state.profileGroup.indexToView].profile,
+    [],
+  )
+  return useMemo(
+    () =>
+      searchIsActive && query.length > 0 && profile
+        ? new ProfileSearchResults(profile, query)
+        : null,
+    [profile, query],
+  )
 }
 
 export const getChronoViewFlamechart = memoizeByShallowEquality(
@@ -150,6 +168,7 @@ export const ChronoFlamechartView = memo((props: FlamechartViewContainerProps) =
       flamechartRenderer={flamechartRenderer}
       canvasContext={canvasContext}
       getCSSColorForFrame={getCSSColorForFrame}
+      searchResults={useSearchResults()}
       {...useFlamechartSetters(FlamechartID.CHRONO, index)}
       {...useSearchViewProps()}
       {...chronoViewState}
@@ -202,6 +221,7 @@ export const LeftHeavyFlamechartView = memo((ownProps: FlamechartViewContainerPr
       flamechartRenderer={flamechartRenderer}
       canvasContext={canvasContext}
       getCSSColorForFrame={getCSSColorForFrame}
+      searchResults={useSearchResults()}
       {...useFlamechartSetters(FlamechartID.LEFT_HEAVY, index)}
       {...useSearchViewProps()}
       {...leftHeavyViewState}

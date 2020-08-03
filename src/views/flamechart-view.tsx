@@ -115,8 +115,7 @@ export class FlamechartView extends StatelessComponent<FlamechartViewProps> {
           setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
           logicalSpaceViewportSize={this.props.logicalSpaceViewportSize}
           setLogicalSpaceViewportSize={this.setLogicalSpaceViewportSize}
-          searchQuery={this.props.searchQuery}
-          searchIsActive={this.props.searchIsActive}
+          searchResults={this.props.searchResults}
         />
         <SearchView
           searchQuery={this.props.searchQuery}

@@ -1,5 +1,5 @@
 import {Rect, AffineTransform, Vec2, clamp} from '../lib/math'
-import {CallTreeNode, Frame} from '../lib/profile'
+import {CallTreeNode} from '../lib/profile'
 import {Flamechart, FlamechartFrame} from '../lib/flamechart'
 import {CanvasContext} from '../gl/canvas-context'
 import {FlamechartRenderer} from '../gl/flamechart-renderer'
@@ -13,8 +13,7 @@ import {
 import {style} from './flamechart-style'
 import {h, Component} from 'preact'
 import {css} from 'aphrodite'
-import {memoizeByReference} from '../lib/utils'
-import {FuzzyMatch, fuzzyMatchStrings} from '../lib/fuzzy-find'
+import {ProfileSearchResults} from '../lib/profile-search'
 
 interface FlamechartFrameLabel {
   configSpaceBounds: Rect
@@ -56,8 +55,7 @@ export interface FlamechartPanZoomViewProps {
   logicalSpaceViewportSize: Vec2
   setLogicalSpaceViewportSize: (size: Vec2) => void
 
-  searchIsActive: boolean
-  searchQuery: string
+  searchResults: ProfileSearchResults | null
 }
 
 export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps, {}> {
@@ -201,15 +199,6 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
     const LABEL_PADDING_PX = 5 * window.devicePixelRatio
 
-    const memoizedFuzzyMatch = memoizeByReference((frame: Frame): FuzzyMatch | null => {
-      return fuzzyMatchStrings(frame.name, this.props.searchQuery)
-    })
-    const frameMatchesSearchQuery = (frame: Frame): FuzzyMatch | null => {
-      if (!this.props.searchIsActive) return null
-      if (this.props.searchQuery.length === 0) return null
-      return memoizedFuzzyMatch(frame)
-    }
-
     const renderFrameLabelAndChildren = (frame: FlamechartFrame, depth = 0) => {
       const width = frame.end - frame.start
       const y = this.props.renderInverted ? this.configSpaceSize().y - 1 - depth : depth
@@ -244,7 +233,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
         }
 
         if (physicalLabelBounds.width() > minWidthToRender) {
-          const match = frameMatchesSearchQuery(frame.node.frame)
+          const match = this.props.searchResults?.getMatchForFrame(frame.node.frame)
 
           const trimmedText = trimTextMid(
             ctx,
@@ -287,7 +276,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
           // Note that this is specifying the position of the starting text
           // baseline.
-          if (this.props.searchIsActive && this.props.searchQuery.length > 0 && !match) {
+          if (this.props.searchResults != null && !match) {
             ctx.fillStyle = Colors.LIGHT_GRAY
           } else {
             ctx.fillStyle = Colors.DARK_GRAY
@@ -319,7 +308,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     ).x
 
     const renderSpecialFrameOutlines = (frame: FlamechartFrame, depth = 0) => {
-      if (!this.props.selectedNode && !this.props.searchIsActive) return
+      if (!this.props.selectedNode && this.props.searchResults == null) return
       const width = frame.end - frame.start
       const y = this.props.renderInverted ? this.configSpaceSize().y - 1 - depth : depth
       const configSpaceBounds = new Rect(new Vec2(frame.start, y), new Vec2(width, 1))
@@ -339,7 +328,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
             outlineColor = Colors.PALE_DARK_BLUE
           }
         } else {
-          if (frameMatchesSearchQuery(frame.node.frame)) {
+          if (this.props.searchResults?.getMatchForFrame(frame.node.frame)) {
             outlineColor = Colors.YELLOW
           }
         }
@@ -754,10 +743,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     if (this.props.flamechart !== nextProps.flamechart) {
       this.hoveredLabel = null
       this.renderCanvas()
-    } else if (
-      this.props.searchQuery !== nextProps.searchQuery ||
-      this.props.searchIsActive !== nextProps.searchIsActive
-    ) {
+    } else if (this.props.searchResults !== nextProps.searchResults) {
       this.renderCanvas()
     } else if (this.props.selectedNode !== nextProps.selectedNode) {
       this.renderCanvas()
