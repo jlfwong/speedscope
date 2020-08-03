@@ -5,6 +5,7 @@ import {memo} from 'preact/compat'
 import {Sizes, Colors, FontSize} from './style'
 import {ProfileSearchResults, FlamechartType} from '../lib/profile-search'
 import {ViewMode} from '../store'
+import {CallTreeNode} from '../lib/profile'
 
 function stopPropagation(ev: Event) {
   ev.stopPropagation()
@@ -18,6 +19,8 @@ export interface SearchViewProps {
 
   setSearchQuery: (query: string) => void
   setSearchIsActive: (active: boolean) => void
+
+  selectedNode: CallTreeNode | null
 }
 
 export const SearchView = memo(
@@ -28,6 +31,7 @@ export const SearchView = memo(
     setSearchIsActive,
     searchResults,
     viewMode,
+    selectedNode,
   }: SearchViewProps) => {
     const onInput = useCallback(
       (ev: Event) => {
@@ -111,6 +115,28 @@ export const SearchView = memo(
       }
     }, [searchResults, viewMode])
 
+    const resultIndex: number | null = useMemo(() => {
+      if (searchResults == null) return null
+      if (selectedNode == null) return null
+      switch (viewMode) {
+        case ViewMode.CHRONO_FLAME_CHART: {
+          return searchResults.getIndexInSearchResults(
+            FlamechartType.CHRONO_FLAME_CHART,
+            selectedNode,
+          )
+        }
+        case ViewMode.LEFT_HEAVY_FLAME_GRAPH: {
+          return searchResults.getIndexInSearchResults(
+            FlamechartType.LEFT_HEAVY_FLAME_GRAPH,
+            selectedNode,
+          )
+        }
+        case ViewMode.SANDWICH_VIEW: {
+          return null
+        }
+      }
+    }, [searchResults, selectedNode])
+
     return (
       <div className={css(style.searchView)}>
         <span className={css(style.icon)}>🔍</span>
@@ -125,7 +151,11 @@ export const SearchView = memo(
             ref={inputRef}
           />
         </span>
-        {numResults != null && <span className={css(style.resultCount)}>?/{numResults}</span>}
+        {numResults != null && (
+          <span className={css(style.resultCount)}>
+            {resultIndex || '?'}/{numResults}
+          </span>
+        )}
         <svg
           className={css(style.icon)}
           onClick={close}

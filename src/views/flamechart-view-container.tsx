@@ -14,11 +14,10 @@ import {
   createGetCSSColorForFrame,
   getFrameToColorBucket,
 } from '../store/getters'
-import {ActiveProfileState} from './application'
 import {Vec2, Rect} from '../lib/math'
 import {actions} from '../store/actions'
 import {memo, useMemo} from 'preact/compat'
-import {useAppSelector, ViewMode, useActiveProfileState} from '../store'
+import {useAppSelector, ViewMode, useActiveProfileState, ActiveProfileState} from '../store'
 import {SearchViewProps} from './search-view'
 import {ProfileSearchResults} from '../lib/profile-search'
 
@@ -81,22 +80,40 @@ const {setSearchQuery, setSearchIsActive} = actions
 function useSearchViewProps(): SearchViewProps {
   const searchIsActive = useAppSelector(state => state.searchIsActive, [])
   const searchQuery = useAppSelector(state => state.searchQuery, [])
-  const profile = useActiveProfileState()?.profile
+  const activeProfileState = useActiveProfileState()
+  const profile = activeProfileState?.profile
+  const viewMode = useAppSelector(state => state.viewMode, [])
+
   const searchResults = useMemo(
     () =>
       searchIsActive && searchQuery.length > 0 && profile
         ? new ProfileSearchResults(profile, searchQuery)
         : null,
-    [profile, searchQuery],
+    [profile, searchIsActive, searchQuery],
   )
+
+  const selectedNode: CallTreeNode | null = useMemo(() => {
+    switch (viewMode) {
+      case ViewMode.CHRONO_FLAME_CHART: {
+        return activeProfileState?.chronoViewState.selectedNode || null
+      }
+      case ViewMode.LEFT_HEAVY_FLAME_GRAPH: {
+        return activeProfileState?.leftHeavyViewState.selectedNode || null
+      }
+      case ViewMode.SANDWICH_VIEW: {
+        return null
+      }
+    }
+  }, [viewMode, activeProfileState])
 
   return {
     searchIsActive,
     searchQuery,
+    searchResults,
+    viewMode,
+    selectedNode,
     setSearchQuery: useActionCreator(setSearchQuery, []),
     setSearchIsActive: useActionCreator(setSearchIsActive, []),
-    searchResults,
-    viewMode: useAppSelector(state => state.viewMode, []),
   }
 }
 
