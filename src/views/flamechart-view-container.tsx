@@ -18,7 +18,7 @@ import {ActiveProfileState} from './application'
 import {Vec2, Rect} from '../lib/math'
 import {actions} from '../store/actions'
 import {memo, useMemo} from 'preact/compat'
-import {useAppSelector} from '../store'
+import {useAppSelector, ViewMode} from '../store'
 import {SearchViewProps} from './search-view'
 import {ProfileSearchResults} from '../lib/profile-search'
 
@@ -70,6 +70,7 @@ export type FlamechartViewProps = {
   searchIsActive: boolean
   searchQuery: string
   searchResults: ProfileSearchResults | null
+  viewMode: ViewMode
   setSearchQuery: (query: string) => void
   setSearchIsActive: (active: boolean) => void
 } & FlamechartSetters &
@@ -78,28 +79,28 @@ export type FlamechartViewProps = {
 const {setSearchQuery, setSearchIsActive} = actions
 
 function useSearchViewProps(): SearchViewProps {
-  return {
-    searchIsActive: useAppSelector(state => state.searchIsActive, []),
-    setSearchQuery: useActionCreator(setSearchQuery, []),
-    searchQuery: useAppSelector(state => state.searchQuery, []),
-    setSearchIsActive: useActionCreator(setSearchIsActive, []),
-  }
-}
-
-function useSearchResults(): ProfileSearchResults | null {
   const searchIsActive = useAppSelector(state => state.searchIsActive, [])
-  const query = useAppSelector(state => state.searchQuery, [])
+  const searchQuery = useAppSelector(state => state.searchQuery, [])
   const profile = useAppSelector(
     state => state.profileGroup?.profiles[state.profileGroup.indexToView].profile,
     [],
   )
-  return useMemo(
+  const searchResults = useMemo(
     () =>
-      searchIsActive && query.length > 0 && profile
-        ? new ProfileSearchResults(profile, query)
+      searchIsActive && searchQuery.length > 0 && profile
+        ? new ProfileSearchResults(profile, searchQuery)
         : null,
-    [profile, query],
+    [profile, searchQuery],
   )
+
+  return {
+    searchIsActive,
+    searchQuery,
+    setSearchQuery: useActionCreator(setSearchQuery, []),
+    setSearchIsActive: useActionCreator(setSearchIsActive, []),
+    searchResults,
+    viewMode: useAppSelector(state => state.viewMode, []),
+  }
 }
 
 export const getChronoViewFlamechart = memoizeByShallowEquality(
@@ -168,7 +169,6 @@ export const ChronoFlamechartView = memo((props: FlamechartViewContainerProps) =
       flamechartRenderer={flamechartRenderer}
       canvasContext={canvasContext}
       getCSSColorForFrame={getCSSColorForFrame}
-      searchResults={useSearchResults()}
       {...useFlamechartSetters(FlamechartID.CHRONO, index)}
       {...useSearchViewProps()}
       {...chronoViewState}
@@ -221,7 +221,6 @@ export const LeftHeavyFlamechartView = memo((ownProps: FlamechartViewContainerPr
       flamechartRenderer={flamechartRenderer}
       canvasContext={canvasContext}
       getCSSColorForFrame={getCSSColorForFrame}
-      searchResults={useSearchResults()}
       {...useFlamechartSetters(FlamechartID.LEFT_HEAVY, index)}
       {...useSearchViewProps()}
       {...leftHeavyViewState}

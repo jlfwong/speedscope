@@ -1,8 +1,10 @@
 import {StyleSheet, css} from 'aphrodite'
 import {h} from 'preact'
-import {useCallback, useRef, useEffect} from 'preact/hooks'
+import {useCallback, useRef, useEffect, useMemo} from 'preact/hooks'
 import {memo} from 'preact/compat'
 import {Sizes, Colors, FontSize} from './style'
+import {ProfileSearchResults, FlamechartType} from '../lib/profile-search'
+import {ViewMode} from '../store'
 
 function stopPropagation(ev: Event) {
   ev.stopPropagation()
@@ -11,13 +13,22 @@ function stopPropagation(ev: Event) {
 export interface SearchViewProps {
   searchQuery: string
   searchIsActive: boolean
+  searchResults: ProfileSearchResults | null
+  viewMode: ViewMode
 
   setSearchQuery: (query: string) => void
   setSearchIsActive: (active: boolean) => void
 }
 
 export const SearchView = memo(
-  ({searchQuery, setSearchQuery, searchIsActive, setSearchIsActive}: SearchViewProps) => {
+  ({
+    searchQuery,
+    setSearchQuery,
+    searchIsActive,
+    setSearchIsActive,
+    searchResults,
+    viewMode,
+  }: SearchViewProps) => {
     const onInput = useCallback(
       (ev: Event) => {
         const value = (ev.target as HTMLInputElement).value
@@ -85,20 +96,38 @@ export const SearchView = memo(
 
     if (!searchIsActive) return null
 
+    const numResults: number | null = useMemo(() => {
+      if (searchResults == null) return null
+      switch (viewMode) {
+        case ViewMode.CHRONO_FLAME_CHART: {
+          return searchResults.getMatchedCallTreeNodeCount(FlamechartType.CHRONO_FLAME_CHART)
+        }
+        case ViewMode.LEFT_HEAVY_FLAME_GRAPH: {
+          return searchResults.getMatchedCallTreeNodeCount(FlamechartType.LEFT_HEAVY_FLAME_GRAPH)
+        }
+        case ViewMode.SANDWICH_VIEW: {
+          return null
+        }
+      }
+    }, [searchResults, viewMode])
+
     return (
       <div className={css(style.searchView)}>
         <span className={css(style.icon)}>🔍</span>
-        <input
-          className={css(style.input)}
-          value={searchQuery}
-          onInput={onInput}
-          onKeyDown={onKeyDown}
-          onKeyUp={stopPropagation}
-          onKeyPress={stopPropagation}
-          ref={inputRef}
-        />
-
+        <span className={css(style.inputContainer)}>
+          <input
+            className={css(style.input)}
+            value={searchQuery}
+            onInput={onInput}
+            onKeyDown={onKeyDown}
+            onKeyUp={stopPropagation}
+            onKeyPress={stopPropagation}
+            ref={inputRef}
+          />
+        </span>
+        {numResults != null && <span className={css(style.resultCount)}>?/{numResults}</span>}
         <svg
+          className={css(style.icon)}
           onClick={close}
           width="16"
           height="16"
@@ -122,7 +151,7 @@ const style = StyleSheet.create({
     top: 0,
     right: 10,
     height: Sizes.TOOLBAR_HEIGHT,
-    width: 150,
+    width: 180,
     borderWidth: 2,
     borderColor: Colors.BLACK,
     borderStyle: 'solid',
@@ -131,12 +160,19 @@ const style = StyleSheet.create({
     background: Colors.DARK_GRAY,
     color: Colors.WHITE,
     display: 'flex',
+    alignItems: 'center',
+  },
+  inputContainer: {
+    flexShrink: 1,
+    flexGrow: 1,
+    display: 'flex',
   },
   input: {
+    width: '100%',
     border: 'none',
     background: 'none',
     fontSize: FontSize.LABEL,
-    flex: 1,
+    lineHeight: `${Sizes.TOOLBAR_HEIGHT}px`,
     color: Colors.WHITE,
     ':focus': {
       border: 'none',
@@ -147,10 +183,14 @@ const style = StyleSheet.create({
       background: Colors.DARK_BLUE,
     },
   },
+  resultCount: {
+    verticalAlign: 'middle',
+  },
   icon: {
+    flexShrink: 0,
     display: 'inline-block',
     verticalAlign: 'middle',
     paddingTop: '0px',
-    margin: '0 2px 0 4px',
+    margin: '0 2px 0 2px',
   },
 })
