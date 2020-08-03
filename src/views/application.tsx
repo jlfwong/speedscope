@@ -131,14 +131,6 @@ export class GLCanvas extends StatelessComponent<GLCanvasProps> {
   }
 }
 
-export interface ActiveProfileState {
-  profile: Profile
-  index: number
-  chronoViewState: FlamechartViewState
-  leftHeavyViewState: FlamechartViewState
-  sandwichViewState: SandwichViewState
-}
-
 export type ApplicationProps = ApplicationState & {
   setGLCanvas: (canvas: HTMLCanvasElement | null) => void
   setLoading: (loading: boolean) => void

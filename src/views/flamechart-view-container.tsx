@@ -18,7 +18,7 @@ import {ActiveProfileState} from './application'
 import {Vec2, Rect} from '../lib/math'
 import {actions} from '../store/actions'
 import {memo, useMemo} from 'preact/compat'
-import {useAppSelector, ViewMode} from '../store'
+import {useAppSelector, ViewMode, useActiveProfileState} from '../store'
 import {SearchViewProps} from './search-view'
 import {ProfileSearchResults} from '../lib/profile-search'
 
@@ -81,10 +81,7 @@ const {setSearchQuery, setSearchIsActive} = actions
 function useSearchViewProps(): SearchViewProps {
   const searchIsActive = useAppSelector(state => state.searchIsActive, [])
   const searchQuery = useAppSelector(state => state.searchQuery, [])
-  const profile = useAppSelector(
-    state => state.profileGroup?.profiles[state.profileGroup.indexToView].profile,
-    [],
-  )
+  const profile = useActiveProfileState()?.profile
   const searchResults = useMemo(
     () =>
       searchIsActive && searchQuery.length > 0 && profile
