@@ -125,6 +125,7 @@ export class FlamechartView extends StatelessComponent<FlamechartViewProps> {
           setSearchIsActive={this.props.setSearchIsActive}
           selectedNode={this.props.selectedNode}
           viewMode={this.props.viewMode}
+          setSelectedNode={this.props.setSelectedNode}
         />
         {this.renderTooltip()}
         {this.props.selectedNode && (

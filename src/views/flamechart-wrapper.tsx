@@ -10,6 +10,7 @@ import {FlamechartViewProps} from './flamechart-view-container'
 import {StatelessComponent} from '../lib/typed-redux'
 import {useCallback} from 'preact/hooks'
 import {SearchViewProps} from './search-view'
+import {ViewMode} from '../store'
 
 export function useDummySearchProps(): SearchViewProps {
   return {
@@ -17,6 +18,10 @@ export function useDummySearchProps(): SearchViewProps {
     searchQuery: '',
     setSearchQuery: useCallback((q: string) => {}, []),
     setSearchIsActive: useCallback((v: boolean) => {}, []),
+    searchResults: null,
+    selectedNode: null,
+    setSelectedNode: null,
+    viewMode: ViewMode.SANDWICH_VIEW,
   }
 }
 

@@ -78,14 +78,14 @@ export const CalleeFlamegraphView = memo((ownProps: FlamechartViewContainerProps
       canvasContext={canvasContext}
       getCSSColorForFrame={getCSSColorForFrame}
       {...useFlamechartSetters(FlamechartID.SANDWICH_CALLEES, index)}
-      // This overrides the setSelectedNode specified in useFlamechartSettesr
-      setSelectedNode={noop}
       {...callerCallee.calleeFlamegraph}
       /*
        * TODO(jlfwong): When implementing search for the sandwich views,
        * change these flags
        * */
       {...useDummySearchProps()}
+      // This overrides the setSelectedNode specified in useFlamechartSettesr
+      setSelectedNode={noop}
     />
   )
 })

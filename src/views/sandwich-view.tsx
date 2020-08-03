@@ -9,10 +9,9 @@ import {actions} from '../store/actions'
 import {StatelessComponent} from '../lib/typed-redux'
 import {InvertedCallerFlamegraphView} from './inverted-caller-flamegraph-view'
 import {CalleeFlamegraphView} from './callee-flamegraph-view'
-import {ActiveProfileState} from './application'
 import {useDispatch, useActionCreator} from '../lib/preact-redux'
 import {SearchView} from './search-view'
-import {useAppSelector} from '../store'
+import {useAppSelector, ActiveProfileState, ViewMode} from '../store'
 
 interface SandwichViewProps {
   selectedFrame: Frame | null
@@ -89,6 +88,10 @@ class SandwichView extends StatelessComponent<SandwichViewProps> {
             setSearchQuery={setSearchQuery}
             searchIsActive={searchIsActive}
             setSearchIsActive={setSearchIsActive}
+            searchResults={null}
+            selectedNode={null}
+            setSelectedNode={null}
+            viewMode={ViewMode.SANDWICH_VIEW}
           />
         </div>
         {flamegraphViews}

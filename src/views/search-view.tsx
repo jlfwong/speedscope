@@ -11,6 +11,10 @@ function stopPropagation(ev: Event) {
   ev.stopPropagation()
 }
 
+// TODO(jlfwong): This is getting to be a lot.
+//
+// Consider making a container component to get more state calculation re-use,
+// and also decouple more of the logic in here.
 export interface SearchViewProps {
   searchQuery: string
   searchIsActive: boolean
@@ -21,6 +25,7 @@ export interface SearchViewProps {
   setSearchIsActive: (active: boolean) => void
 
   selectedNode: CallTreeNode | null
+  setSelectedNode: ((node: CallTreeNode | null) => void) | null
 }
 
 export const SearchView = memo(
@@ -32,6 +37,7 @@ export const SearchView = memo(
     searchResults,
     viewMode,
     selectedNode,
+    setSelectedNode,
   }: SearchViewProps) => {
     const onInput = useCallback(
       (ev: Event) => {
@@ -43,6 +49,57 @@ export const SearchView = memo(
 
     const inputRef = useRef<HTMLInputElement | null>(null)
 
+    const close = useCallback(() => setSearchIsActive(false), [setSearchIsActive])
+
+    const flamechartType: FlamechartType | null = useMemo(() => {
+      switch (viewMode) {
+        case ViewMode.CHRONO_FLAME_CHART: {
+          return FlamechartType.CHRONO_FLAME_CHART
+        }
+        case ViewMode.LEFT_HEAVY_FLAME_GRAPH: {
+          return FlamechartType.LEFT_HEAVY_FLAME_GRAPH
+        }
+        case ViewMode.SANDWICH_VIEW: {
+          return null
+        }
+      }
+    }, [viewMode])
+
+    const numResults: number | null = useMemo(() => {
+      if (searchResults == null) return null
+      return flamechartType != null
+        ? searchResults.getMatchedCallTreeNodeCount(flamechartType)
+        : null
+    }, [searchResults, flamechartType])
+
+    const resultIndex: number | null = useMemo(() => {
+      if (searchResults == null) return null
+      if (selectedNode == null) return null
+      return flamechartType != null
+        ? searchResults.getIndexInSearchResults(flamechartType, selectedNode)
+        : null
+    }, [searchResults, selectedNode, flamechartType])
+
+    const selectPrevOrNextResult = useCallback(
+      (ev: KeyboardEvent) => {
+        if (!setSelectedNode) return
+        if (!searchResults?.getResultAtIndex) return
+        if (flamechartType == null) return
+        if (numResults == null || numResults === 0) return
+
+        let index: number
+        if (ev.shiftKey) {
+          index = resultIndex == null ? numResults - 1 : resultIndex - 1
+          if (index < 0) index = numResults - 1
+        } else {
+          index = resultIndex == null ? 0 : resultIndex + 1
+          if (index >= numResults) index = 0
+        }
+        setSelectedNode(searchResults?.getResultAtIndex(flamechartType, index))
+      },
+      [setSelectedNode, flamechartType, numResults, resultIndex, searchResults?.getResultAtIndex],
+    )
+
     const onKeyDown = useCallback(
       (ev: KeyboardEvent) => {
         ev.stopPropagation()
@@ -50,6 +107,10 @@ export const SearchView = memo(
         // Hitting Esc should close the search box
         if (ev.key === 'Escape') {
           setSearchIsActive(false)
+        }
+
+        if (ev.key === 'Enter') {
+          selectPrevOrNextResult(ev)
         }
 
         if (ev.key == 'f' && (ev.metaKey || ev.ctrlKey)) {
@@ -64,7 +125,7 @@ export const SearchView = memo(
           ev.preventDefault()
         }
       },
-      [setSearchIsActive],
+      [setSearchIsActive, selectPrevOrNextResult],
     )
 
     useEffect(() => {
@@ -96,46 +157,7 @@ export const SearchView = memo(
       }
     }, [setSearchIsActive])
 
-    const close = useCallback(() => setSearchIsActive(false), [setSearchIsActive])
-
     if (!searchIsActive) return null
-
-    const numResults: number | null = useMemo(() => {
-      if (searchResults == null) return null
-      switch (viewMode) {
-        case ViewMode.CHRONO_FLAME_CHART: {
-          return searchResults.getMatchedCallTreeNodeCount(FlamechartType.CHRONO_FLAME_CHART)
-        }
-        case ViewMode.LEFT_HEAVY_FLAME_GRAPH: {
-          return searchResults.getMatchedCallTreeNodeCount(FlamechartType.LEFT_HEAVY_FLAME_GRAPH)
-        }
-        case ViewMode.SANDWICH_VIEW: {
-          return null
-        }
-      }
-    }, [searchResults, viewMode])
-
-    const resultIndex: number | null = useMemo(() => {
-      if (searchResults == null) return null
-      if (selectedNode == null) return null
-      switch (viewMode) {
-        case ViewMode.CHRONO_FLAME_CHART: {
-          return searchResults.getIndexInSearchResults(
-            FlamechartType.CHRONO_FLAME_CHART,
-            selectedNode,
-          )
-        }
-        case ViewMode.LEFT_HEAVY_FLAME_GRAPH: {
-          return searchResults.getIndexInSearchResults(
-            FlamechartType.LEFT_HEAVY_FLAME_GRAPH,
-            selectedNode,
-          )
-        }
-        case ViewMode.SANDWICH_VIEW: {
-          return null
-        }
-      }
-    }, [searchResults, selectedNode])
 
     return (
       <div className={css(style.searchView)}>

@@ -76,4 +76,12 @@ export class ProfileSearchResults {
     const index = this.getNodeMatches(type).indexOf(node)
     return index !== -1 ? index : null
   }
+
+  getResultAtIndex(type: FlamechartType, index: number): CallTreeNode {
+    const matches = this.getNodeMatches(type)
+    if (index < 0 || index >= matches.length) {
+      throw new Error(`Index ${index} out of bounds in list of ${matches.length} matches.`)
+    }
+    return matches[index]
+  }
 }

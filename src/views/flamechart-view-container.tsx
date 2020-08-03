@@ -77,7 +77,7 @@ export type FlamechartViewProps = {
 
 const {setSearchQuery, setSearchIsActive} = actions
 
-function useSearchViewProps(): SearchViewProps {
+function useSearchViewProps(): Omit<SearchViewProps, 'setSelectedNode'> {
   const searchIsActive = useAppSelector(state => state.searchIsActive, [])
   const searchQuery = useAppSelector(state => state.searchQuery, [])
   const activeProfileState = useActiveProfileState()
@@ -104,7 +104,11 @@ function useSearchViewProps(): SearchViewProps {
         return null
       }
     }
-  }, [viewMode, activeProfileState])
+  }, [
+    viewMode,
+    activeProfileState?.chronoViewState.selectedNode,
+    activeProfileState?.leftHeavyViewState.selectedNode,
+  ])
 
   return {
     searchIsActive,

@@ -87,14 +87,14 @@ export const InvertedCallerFlamegraphView = memo((ownProps: FlamechartViewContai
       canvasContext={canvasContext}
       getCSSColorForFrame={getCSSColorForFrame}
       {...useFlamechartSetters(FlamechartID.SANDWICH_INVERTED_CALLERS, index)}
-      // This overrides the setSelectedNode specified in useFlamechartSettesr
-      setSelectedNode={noop}
       {...callerCallee.invertedCallerFlamegraph}
       /*
        * TODO(jlfwong): When implementing search for the sandwich views,
        * change these flags
        * */
       {...useDummySearchProps()}
+      // This overrides the setSelectedNode specified in useFlamechartSettesr
+      setSelectedNode={noop}
     />
   )
 })
