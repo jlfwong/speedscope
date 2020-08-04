@@ -14,12 +14,11 @@ import {
   createGetCSSColorForFrame,
   getFrameToColorBucket,
 } from '../store/getters'
-import {ActiveProfileState} from './application'
 import {Vec2, Rect} from '../lib/math'
 import {actions} from '../store/actions'
 import {memo} from 'preact/compat'
-import {useAppSelector} from '../store'
-import {SearchViewProps} from './search-view'
+import {ActiveProfileState} from '../store'
+import {FlamechartSearchContextProvider} from './flamechart-search-view'
 
 interface FlamechartSetters {
   setLogicalSpaceViewportSize: (logicalSpaceViewportSize: Vec2) => void
@@ -66,23 +65,8 @@ export type FlamechartViewProps = {
   flamechartRenderer: FlamechartRenderer
   renderInverted: boolean
   getCSSColorForFrame: (frame: Frame) => string
-  searchIsActive: boolean
-  searchQuery: string
-  setSearchQuery: (query: string) => void
-  setSearchIsActive: (active: boolean) => void
 } & FlamechartSetters &
   FlamechartViewState
-
-const {setSearchQuery, setSearchIsActive} = actions
-
-function useSearchViewProps(): SearchViewProps {
-  return {
-    searchIsActive: useAppSelector(state => state.searchIsActive, []),
-    setSearchQuery: useActionCreator(setSearchQuery, []),
-    searchQuery: useAppSelector(state => state.searchQuery, []),
-    setSearchIsActive: useActionCreator(setSearchIsActive, []),
-  }
-}
 
 export const getChronoViewFlamechart = memoizeByShallowEquality(
   ({
@@ -143,17 +127,26 @@ export const ChronoFlamechartView = memo((props: FlamechartViewContainerProps) =
     flamechart,
   })
 
+  const setters = useFlamechartSetters(FlamechartID.CHRONO, index)
+
   return (
-    <FlamechartView
-      renderInverted={false}
+    <FlamechartSearchContextProvider
       flamechart={flamechart}
-      flamechartRenderer={flamechartRenderer}
-      canvasContext={canvasContext}
-      getCSSColorForFrame={getCSSColorForFrame}
-      {...useFlamechartSetters(FlamechartID.CHRONO, index)}
-      {...useSearchViewProps()}
-      {...chronoViewState}
-    />
+      selectedNode={chronoViewState.selectedNode}
+      setSelectedNode={setters.setSelectedNode}
+      configSpaceViewportRect={chronoViewState.configSpaceViewportRect}
+      setConfigSpaceViewportRect={setters.setConfigSpaceViewportRect}
+    >
+      <FlamechartView
+        renderInverted={false}
+        flamechart={flamechart}
+        flamechartRenderer={flamechartRenderer}
+        canvasContext={canvasContext}
+        getCSSColorForFrame={getCSSColorForFrame}
+        {...chronoViewState}
+        {...setters}
+      />
+    </FlamechartSearchContextProvider>
   )
 })
 
@@ -195,16 +188,25 @@ export const LeftHeavyFlamechartView = memo((ownProps: FlamechartViewContainerPr
     flamechart,
   })
 
+  const setters = useFlamechartSetters(FlamechartID.LEFT_HEAVY, index)
+
   return (
-    <FlamechartView
-      renderInverted={false}
+    <FlamechartSearchContextProvider
       flamechart={flamechart}
-      flamechartRenderer={flamechartRenderer}
-      canvasContext={canvasContext}
-      getCSSColorForFrame={getCSSColorForFrame}
-      {...useFlamechartSetters(FlamechartID.LEFT_HEAVY, index)}
-      {...useSearchViewProps()}
-      {...leftHeavyViewState}
-    />
+      selectedNode={leftHeavyViewState.selectedNode}
+      setSelectedNode={setters.setSelectedNode}
+      configSpaceViewportRect={leftHeavyViewState.configSpaceViewportRect}
+      setConfigSpaceViewportRect={setters.setConfigSpaceViewportRect}
+    >
+      <FlamechartView
+        renderInverted={false}
+        flamechart={flamechart}
+        flamechartRenderer={flamechartRenderer}
+        canvasContext={canvasContext}
+        getCSSColorForFrame={getCSSColorForFrame}
+        {...leftHeavyViewState}
+        {...setters}
+      />
+    </FlamechartSearchContextProvider>
   )
 })

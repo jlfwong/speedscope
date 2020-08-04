@@ -2,16 +2,14 @@ import {h} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 import {FileSystemDirectoryEntry} from '../import/file-system-entry'
 
-import {Profile, ProfileGroup} from '../lib/profile'
+import {ProfileGroup} from '../lib/profile'
 import {FontFamily, FontSize, Colors, Duration} from './style'
 import {importEmscriptenSymbolMap} from '../lib/emscripten'
 import {SandwichViewContainer} from './sandwich-view'
 import {saveToFile} from '../lib/file-format'
-import {ApplicationState, ViewMode, canUseXHR} from '../store'
+import {ApplicationState, ViewMode, canUseXHR, ActiveProfileState} from '../store'
 import {StatelessComponent} from '../lib/typed-redux'
 import {LeftHeavyFlamechartView, ChronoFlamechartView} from './flamechart-view-container'
-import {SandwichViewState} from '../store/sandwich-view-state'
-import {FlamechartViewState} from '../store/flamechart-view-state'
 import {CanvasContext} from '../gl/canvas-context'
 import {Graphics} from '../gl/graphics'
 import {Toolbar} from './toolbar'
@@ -129,14 +127,6 @@ export class GLCanvas extends StatelessComponent<GLCanvasProps> {
       </div>
     )
   }
-}
-
-export interface ActiveProfileState {
-  profile: Profile
-  index: number
-  chronoViewState: FlamechartViewState
-  leftHeavyViewState: FlamechartViewState
-  sandwichViewState: SandwichViewState
 }
 
 export type ApplicationProps = ApplicationState & {

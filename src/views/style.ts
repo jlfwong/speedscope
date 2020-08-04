@@ -23,6 +23,7 @@ export enum Colors {
   GREEN = '#6FCF97',
   TRANSPARENT_GREEN = 'rgba(111, 207, 151, 0.2)',
   YELLOW = '#FEDC62',
+  ORANGE = '#FFAC02',
 }
 
 export enum Sizes {
