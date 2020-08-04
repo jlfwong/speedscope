@@ -1,7 +1,7 @@
 import {h, Component, JSX, ComponentChild} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 import {Profile, Frame} from '../lib/profile'
-import {sortBy, formatPercent} from '../lib/utils'
+import {formatPercent} from '../lib/utils'
 import {FontSize, Colors, Sizes, commonStyle} from './style'
 import {ColorChit} from './color-chit'
 import {ListItem, ScrollableListView} from './scrollable-list-view'
@@ -10,8 +10,8 @@ import {createGetCSSColorForFrame, getFrameToColorBucket} from '../store/getters
 import {useActionCreator} from '../lib/preact-redux'
 import {useAppSelector, ActiveProfileState} from '../store'
 import {memo} from 'preact/compat'
-import {useCallback, useMemo} from 'preact/hooks'
-import {fuzzyMatchStrings} from '../lib/fuzzy-find'
+import {useCallback, useMemo, useContext} from 'preact/hooks'
+import {SandwichViewContext} from './sandwich-view'
 
 export enum SortField {
   SYMBOL_NAME,
@@ -67,13 +67,9 @@ class SortIcon extends Component<SortIconProps, {}> {
   }
 }
 
-interface ProfileTableRowInfo {
+interface ProfileTableRowViewProps {
   frame: Frame
   matchedRanges: [number, number][] | null
-}
-
-interface ProfileTableRowViewProps {
-  info: ProfileTableRowInfo
   index: number
   profile: Profile
   selectedFrame: Frame | null
@@ -99,15 +95,14 @@ function highlightRanges(
 }
 
 const ProfileTableRowView = ({
-  info,
+  frame,
+  matchedRanges,
   profile,
   index,
   selectedFrame,
   setSelectedFrame,
   getCSSColorForFrame,
 }: ProfileTableRowViewProps) => {
-  const {frame, matchedRanges} = info
-
   const totalWeight = frame.getTotalWeight()
   const selfWeight = frame.getSelfWeight()
   const totalPerc = (100.0 * totalWeight) / profile.getTotalNonIdleWeight()
@@ -205,48 +200,21 @@ export const ProfileTableView = memo(
       [sortMethod, setSortMethod],
     )
 
-    const rowList = useMemo((): {frame: Frame; matchedRanges: [number, number][] | null}[] => {
-      const rowList: ProfileTableRowInfo[] = []
-
-      profile.forEachFrame(frame => {
-        let matchedRanges: [number, number][] | null = null
-        if (searchIsActive) {
-          const match = fuzzyMatchStrings(frame.name, searchQuery)
-          if (match == null) return
-          matchedRanges = match.matchedRanges
-        }
-        rowList.push({frame, matchedRanges})
-      })
-
-      switch (sortMethod.field) {
-        case SortField.SYMBOL_NAME: {
-          sortBy(rowList, f => f.frame.name.toLowerCase())
-          break
-        }
-        case SortField.SELF: {
-          sortBy(rowList, f => f.frame.getSelfWeight())
-          break
-        }
-        case SortField.TOTAL: {
-          sortBy(rowList, f => f.frame.getTotalWeight())
-          break
-        }
-      }
-      if (sortMethod.direction === SortDirection.DESCENDING) {
-        rowList.reverse()
-      }
-
-      return rowList
-    }, [profile, sortMethod, searchQuery, searchIsActive])
+    const sandwichContext = useContext(SandwichViewContext)
 
     const renderItems = useCallback(
       (firstIndex: number, lastIndex: number) => {
+        if (!sandwichContext) return null
+
         const rows: JSX.Element[] = []
 
         for (let i = firstIndex; i <= lastIndex; i++) {
+          const frame = sandwichContext.rowList[i]
+          const match = sandwichContext.getSearchMatchForFrame(frame)
           rows.push(
             ProfileTableRowView({
-              info: rowList[i],
+              frame,
+              matchedRanges: match == null ? null : match.matchedRanges,
               index: i,
               profile: profile,
               selectedFrame: selectedFrame,
@@ -277,7 +245,7 @@ export const ProfileTableView = memo(
         return <table className={css(style.tableView)}>{rows}</table>
       },
       [
-        rowList,
+        sandwichContext,
         profile,
         selectedFrame,
         setSelectedFrame,
@@ -287,9 +255,13 @@ export const ProfileTableView = memo(
       ],
     )
 
-    const listItems: ListItem[] = useMemo(() => rowList.map(f => ({size: Sizes.FRAME_HEIGHT})), [
-      rowList,
-    ])
+    const listItems: ListItem[] = useMemo(
+      () =>
+        sandwichContext == null
+          ? []
+          : sandwichContext.rowList.map(f => ({size: Sizes.FRAME_HEIGHT})),
+      [sandwichContext],
+    )
 
     const onTotalClick = useCallback((ev: MouseEvent) => onSortClick(SortField.TOTAL, ev), [
       onSortClick,
@@ -340,7 +312,7 @@ export const ProfileTableView = memo(
           className={css(style.scrollView)}
           renderItems={renderItems}
           initialIndexInView={
-            selectedFrame == null ? null : rowList.findIndex(f => f.frame === selectedFrame)
+            selectedFrame == null ? null : sandwichContext?.getIndexForFrame(selectedFrame)
           }
         />
       </div>

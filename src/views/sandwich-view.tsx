@@ -1,17 +1,20 @@
 import {Frame} from '../lib/profile'
 import {StyleSheet, css} from 'aphrodite'
-import {ProfileTableViewContainer} from './profile-table-view'
-import {h, JSX} from 'preact'
+import {ProfileTableViewContainer, SortField, SortDirection} from './profile-table-view'
+import {h, JSX, createContext} from 'preact'
 import {memo} from 'preact/compat'
-import {useCallback} from 'preact/hooks'
+import {useCallback, useMemo, useContext} from 'preact/hooks'
 import {commonStyle, Sizes, Colors, FontSize} from './style'
 import {actions} from '../store/actions'
 import {StatelessComponent} from '../lib/typed-redux'
 import {InvertedCallerFlamegraphView} from './inverted-caller-flamegraph-view'
 import {CalleeFlamegraphView} from './callee-flamegraph-view'
-import {useDispatch, useActionCreator} from '../lib/preact-redux'
+import {useDispatch} from '../lib/preact-redux'
 import {SandwichSearchView} from './sandwich-search-view'
 import {useAppSelector, ActiveProfileState} from '../store'
+import {sortBy} from '../lib/utils'
+import {ProfileSearchContext} from './search-view'
+import {FuzzyMatch} from '../lib/fuzzy-find'
 
 interface SandwichViewProps {
   selectedFrame: Frame | null
@@ -19,10 +22,6 @@ interface SandwichViewProps {
   activeProfileState: ActiveProfileState
   setSelectedFrame: (selectedFrame: Frame | null) => void
   glCanvas: HTMLCanvasElement
-  searchQuery: string
-  searchIsActive: boolean
-  setSearchQuery: (query: string | null) => void
-  setSearchIsActive: (active: boolean) => void
 }
 
 class SandwichView extends StatelessComponent<SandwichViewProps> {
@@ -131,7 +130,13 @@ interface SandwichViewContainerProps {
   glCanvas: HTMLCanvasElement
 }
 
-const {setSearchQuery, setSearchIsActive} = actions
+interface SandwichViewContextData {
+  rowList: Frame[]
+  getIndexForFrame: (frame: Frame) => number | null
+  getSearchMatchForFrame: (frame: Frame) => FuzzyMatch | null
+}
+
+export const SandwichViewContext = createContext<SandwichViewContextData | null>(null)
 
 export const SandwichViewContainer = memo((ownProps: SandwichViewContainerProps) => {
   const {activeProfileState, glCanvas} = ownProps
@@ -151,17 +156,64 @@ export const SandwichViewContainer = memo((ownProps: SandwichViewContainerProps)
     [dispatch, index],
   )
 
+  const profile = activeProfileState.profile
+  const tableSortMethod = useAppSelector(state => state.tableSortMethod, [])
+  const profileSearchResults = useContext(ProfileSearchContext)
+
+  const sandwichViewContextData: SandwichViewContextData | null = useMemo(() => {
+    const rowList: Frame[] = []
+    const indexByFrame = new Map<Frame, number>()
+
+    profile.forEachFrame(frame => {
+      if (profileSearchResults && !profileSearchResults.getMatchForFrame(frame)) {
+        return
+      }
+      rowList.push(frame)
+    })
+
+    switch (tableSortMethod.field) {
+      case SortField.SYMBOL_NAME: {
+        sortBy(rowList, f => f.name.toLowerCase())
+        break
+      }
+      case SortField.SELF: {
+        sortBy(rowList, f => f.getSelfWeight())
+        break
+      }
+      case SortField.TOTAL: {
+        sortBy(rowList, f => f.getTotalWeight())
+        break
+      }
+    }
+    if (tableSortMethod.direction === SortDirection.DESCENDING) {
+      rowList.reverse()
+    }
+
+    for (let i = 0; i < rowList.length; i++) {
+      indexByFrame.set(rowList[i], i)
+    }
+
+    return {
+      rowList,
+      getIndexForFrame: (frame: Frame): number | null => {
+        const idx = indexByFrame.get(frame)
+        return idx == null ? null : idx
+      },
+      getSearchMatchForFrame: (frame: Frame): FuzzyMatch | null => {
+        return profileSearchResults == null ? null : profileSearchResults.getMatchForFrame(frame)
+      },
+    }
+  }, [profile, profileSearchResults, tableSortMethod])
+
   return (
-    <SandwichView
-      activeProfileState={activeProfileState}
-      glCanvas={glCanvas}
-      setSelectedFrame={setSelectedFrame}
-      selectedFrame={callerCallee ? callerCallee.selectedFrame : null}
-      profileIndex={index}
-      searchQuery={useAppSelector(state => state.searchQuery, [])}
-      setSearchQuery={useActionCreator(setSearchQuery, [])}
-      searchIsActive={useAppSelector(state => state.searchIsActive, [])}
-      setSearchIsActive={useActionCreator(setSearchIsActive, [])}
-    />
+    <SandwichViewContext.Provider value={sandwichViewContextData}>
+      <SandwichView
+        activeProfileState={activeProfileState}
+        glCanvas={glCanvas}
+        setSelectedFrame={setSelectedFrame}
+        selectedFrame={callerCallee ? callerCallee.selectedFrame : null}
+        profileIndex={index}
+      />
+    </SandwichViewContext.Provider>
   )
 })
