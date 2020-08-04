@@ -3,13 +3,17 @@ import {h, createContext, ComponentChildren} from 'preact'
 import {useCallback, useRef, useEffect, useMemo, useContext} from 'preact/hooks'
 import {memo} from 'preact/compat'
 import {Sizes, Colors, FontSize} from './style'
-import {FlamechartSearchResults, ProfileSearchResults} from '../lib/profile-search'
+import {
+  FlamechartSearchResults,
+  ProfileSearchResults,
+  FlamechartSearchMatch,
+} from '../lib/profile-search'
 import {CallTreeNode, Profile} from '../lib/profile'
 import {useActiveProfileState, useAppSelector} from '../store'
 import {Flamechart} from '../lib/flamechart'
 import {useActionCreator} from '../lib/preact-redux'
 import {actions} from '../store/actions'
-import {Rect} from '../lib/math'
+import {Rect, Vec2} from '../lib/math'
 
 function stopPropagation(ev: Event) {
   ev.stopPropagation()
@@ -47,6 +51,7 @@ export interface FlamechartSearchProps {
 
 interface FlamechartSearchData {
   results: FlamechartSearchResults | null
+  flamechart: Flamechart
   selectedNode: CallTreeNode | null
   setSelectedNode: (node: CallTreeNode | null) => void
   configSpaceViewportRect: Rect
@@ -73,6 +78,7 @@ export const FlamechartSearchContextProvider = ({
     <FlamechartSearchContext.Provider
       value={{
         results: flamechartSearchResults,
+        flamechart,
         selectedNode,
         setSelectedNode,
         configSpaceViewportRect,
@@ -93,9 +99,17 @@ export const SearchView = memo(() => {
   const setSearchIsActive = useActionCreator(setSearchIsActiveAction, [])
 
   const flamechartData = useContext(FlamechartSearchContext)
+
+  // TODO(jlfwong): This pattern is pretty gross, but I really don't want values
+  // that can be undefined or null.
   const searchResults = flamechartData == null ? null : flamechartData.results
   const selectedNode = flamechartData == null ? null : flamechartData.selectedNode
   const setSelectedNode = flamechartData == null ? null : flamechartData.setSelectedNode
+  const configSpaceViewportRect =
+    flamechartData == null ? null : flamechartData.configSpaceViewportRect
+  const setConfigSpaceViewportRect =
+    flamechartData == null ? null : flamechartData.setConfigSpaceViewportRect
+  const flamechart = flamechartData == null ? null : flamechartData.flamechart
 
   const onInput = useCallback(
     (ev: Event) => {
@@ -116,9 +130,36 @@ export const SearchView = memo(() => {
     return searchResults.indexOf(selectedNode)
   }, [searchResults, selectedNode])
 
+  const selectAndZoomToMatch = useCallback(
+    (match: FlamechartSearchMatch) => {
+      if (!setSelectedNode) return
+      if (!flamechart) return
+      if (!configSpaceViewportRect) return
+      if (!setConfigSpaceViewportRect) return
+
+      // After the node is selected, we want to set the viewport so that the new
+      // node can be seen clearly.
+      //
+      // TODO(jlfwong): The lack of animation here can be kind of jarring. It
+      // would be nice to have some easier way for people to orient themselves
+      // after the viewport shifted.
+      const configSpaceResultBounds = match.configSpaceBounds
+
+      const viewportRect = new Rect(
+        configSpaceResultBounds.origin.minus(new Vec2(0, 1)),
+        configSpaceResultBounds.size.withY(configSpaceViewportRect.height()),
+      )
+
+      setSelectedNode(match.node)
+      setConfigSpaceViewportRect(
+        flamechart.getClampedConfigSpaceViewportRect({configSpaceViewportRect: viewportRect}),
+      )
+    },
+    [configSpaceViewportRect, setConfigSpaceViewportRect, setSelectedNode, flamechart],
+  )
+
   const selectPrevOrNextResult = useCallback(
     (ev: KeyboardEvent) => {
-      if (!setSelectedNode) return
       if (!searchResults?.at) return
       if (numResults == null || numResults === 0) return
 
@@ -131,11 +172,9 @@ export const SearchView = memo(() => {
         if (index >= numResults) index = 0
       }
       const result = searchResults.at(index)
-      setSelectedNode(result.node)
-
-      // TODO(jlfwong): Zoom to fit the node into the viewport
+      selectAndZoomToMatch(result)
     },
-    [setSelectedNode, numResults, resultIndex, searchResults, searchResults?.at],
+    [numResults, resultIndex, searchResults, searchResults?.at, selectAndZoomToMatch],
   )
 
   const onKeyDown = useCallback(
