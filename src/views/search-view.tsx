@@ -1,5 +1,5 @@
 import {StyleSheet, css} from 'aphrodite'
-import {h, createContext, ComponentChildren} from 'preact'
+import {h, createContext, ComponentChildren, Fragment} from 'preact'
 import {useCallback, useRef, useEffect, useMemo, useContext} from 'preact/hooks'
 import {memo} from 'preact/compat'
 import {Sizes, Colors, FontSize} from './style'
@@ -158,23 +158,35 @@ export const SearchView = memo(() => {
     [configSpaceViewportRect, setConfigSpaceViewportRect, setSelectedNode, flamechart],
   )
 
+  const selectPrev = useCallback(() => {
+    if (!searchResults?.at) return
+    if (numResults == null || numResults === 0) return
+
+    let index = resultIndex == null ? numResults - 1 : resultIndex - 1
+    if (index < 0) index = numResults - 1
+    const result = searchResults.at(index)
+    selectAndZoomToMatch(result)
+  }, [numResults, resultIndex, searchResults, searchResults?.at, selectAndZoomToMatch])
+
+  const selectNext = useCallback(() => {
+    if (!searchResults?.at) return
+    if (numResults == null || numResults === 0) return
+
+    let index = resultIndex == null ? 0 : resultIndex + 1
+    if (index >= numResults) index = 0
+    const result = searchResults.at(index)
+    selectAndZoomToMatch(result)
+  }, [numResults, resultIndex, searchResults, searchResults?.at, selectAndZoomToMatch])
+
   const selectPrevOrNextResult = useCallback(
     (ev: KeyboardEvent) => {
-      if (!searchResults?.at) return
-      if (numResults == null || numResults === 0) return
-
-      let index: number
       if (ev.shiftKey) {
-        index = resultIndex == null ? numResults - 1 : resultIndex - 1
-        if (index < 0) index = numResults - 1
+        selectPrev()
       } else {
-        index = resultIndex == null ? 0 : resultIndex + 1
-        if (index >= numResults) index = 0
+        selectNext()
       }
-      const result = searchResults.at(index)
-      selectAndZoomToMatch(result)
     },
-    [numResults, resultIndex, searchResults, searchResults?.at, selectAndZoomToMatch],
+    [selectPrev, selectNext],
   )
 
   const onKeyDown = useCallback(
@@ -255,6 +267,16 @@ export const SearchView = memo(() => {
           {resultIndex == null ? '?' : resultIndex + 1}/{numResults}
         </span>
       )}
+      {setSelectedNode != null && numResults != null && (
+        <Fragment>
+          <button className={css(style.icon, style.button)} onClick={selectPrev}>
+            ⬅️
+          </button>
+          <button className={css(style.icon, style.button)} onClick={selectNext}>
+            ➡️
+          </button>
+        </Fragment>
+      )}
       <svg
         className={css(style.icon)}
         onClick={close}
@@ -279,7 +301,7 @@ const style = StyleSheet.create({
     top: 0,
     right: 10,
     height: Sizes.TOOLBAR_HEIGHT,
-    width: 180,
+    width: 16 * 13,
     borderWidth: 2,
     borderColor: Colors.BLACK,
     borderStyle: 'solid',
@@ -316,9 +338,18 @@ const style = StyleSheet.create({
   },
   icon: {
     flexShrink: 0,
-    display: 'inline-block',
     verticalAlign: 'middle',
-    paddingTop: '0px',
-    margin: '0 2px 0 2px',
+    height: '100%',
+    margin: '0px 2px 0px 2px',
+    fontSize: FontSize.LABEL,
+  },
+  button: {
+    display: 'inline',
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    ':focus': {
+      outline: 'none',
+    },
   },
 })

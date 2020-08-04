@@ -77,7 +77,7 @@ class SandwichView extends StatelessComponent<SandwichViewProps> {
       <div className={css(commonStyle.hbox, commonStyle.fillY)}>
         <div className={css(style.tableView)}>
           <ProfileTableViewContainer activeProfileState={this.props.activeProfileState} />
-          <SearchView selectedNode={null} setSelectedNode={null} />
+          <SearchView />
         </div>
         {flamegraphViews}
       </div>

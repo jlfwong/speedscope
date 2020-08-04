@@ -120,10 +120,7 @@ export class FlamechartView extends StatelessComponent<FlamechartViewProps> {
                 setLogicalSpaceViewportSize={this.setLogicalSpaceViewportSize}
                 searchResults={searchResults}
               />
-              <SearchView
-                selectedNode={this.props.selectedNode}
-                setSelectedNode={this.props.setSelectedNode}
-              />
+              <SearchView />
             </Fragment>
           )}
         </ProfileSearchContext.Consumer>
