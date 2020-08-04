@@ -18,7 +18,7 @@ import {Vec2, Rect} from '../lib/math'
 import {actions} from '../store/actions'
 import {memo} from 'preact/compat'
 import {ActiveProfileState} from '../store'
-import {FlamechartSearchContextProvider} from './search-view'
+import {FlamechartSearchContextProvider} from './flamechart-search-view'
 
 interface FlamechartSetters {
   setLogicalSpaceViewportSize: (logicalSpaceViewportSize: Vec2) => void

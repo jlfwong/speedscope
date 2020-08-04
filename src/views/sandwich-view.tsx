@@ -10,7 +10,7 @@ import {StatelessComponent} from '../lib/typed-redux'
 import {InvertedCallerFlamegraphView} from './inverted-caller-flamegraph-view'
 import {CalleeFlamegraphView} from './callee-flamegraph-view'
 import {useDispatch, useActionCreator} from '../lib/preact-redux'
-import {SearchView} from './search-view'
+import {SandwichSearchView} from './sandwich-search-view'
 import {useAppSelector, ActiveProfileState} from '../store'
 
 interface SandwichViewProps {
@@ -77,7 +77,7 @@ class SandwichView extends StatelessComponent<SandwichViewProps> {
       <div className={css(commonStyle.hbox, commonStyle.fillY)}>
         <div className={css(style.tableView)}>
           <ProfileTableViewContainer activeProfileState={this.props.activeProfileState} />
-          <SearchView />
+          <SandwichSearchView />
         </div>
         {flamegraphViews}
       </div>
