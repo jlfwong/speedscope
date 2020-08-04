@@ -112,24 +112,32 @@ export const FlamechartSearchView = memo(() => {
     [configSpaceViewportRect, setConfigSpaceViewportRect, setSelectedNode, flamechart],
   )
 
-  const selectPrev = useCallback(() => {
-    if (!searchResults?.at) return
-    if (numResults == null || numResults === 0) return
+  const {selectPrev, selectNext} = useMemo(() => {
+    if (numResults == null || numResults === 0 || searchResults == null) {
+      return {selectPrev: () => {}, selectNext: () => {}}
+    }
 
-    let index = resultIndex == null ? numResults - 1 : resultIndex - 1
-    if (index < 0) index = numResults - 1
-    const result = searchResults.at(index)
-    selectAndZoomToMatch(result)
-  }, [numResults, resultIndex, searchResults, searchResults?.at, selectAndZoomToMatch])
+    return {
+      selectPrev: () => {
+        if (!searchResults?.at) return
+        if (numResults == null || numResults === 0) return
 
-  const selectNext = useCallback(() => {
-    if (!searchResults?.at) return
-    if (numResults == null || numResults === 0) return
+        let index = resultIndex == null ? numResults - 1 : resultIndex - 1
+        if (index < 0) index = numResults - 1
+        const result = searchResults.at(index)
+        selectAndZoomToMatch(result)
+      },
 
-    let index = resultIndex == null ? 0 : resultIndex + 1
-    if (index >= numResults) index = 0
-    const result = searchResults.at(index)
-    selectAndZoomToMatch(result)
+      selectNext: () => {
+        if (!searchResults?.at) return
+        if (numResults == null || numResults === 0) return
+
+        let index = resultIndex == null ? 0 : resultIndex + 1
+        if (index >= numResults) index = 0
+        const result = searchResults.at(index)
+        selectAndZoomToMatch(result)
+      },
+    }
   }, [numResults, resultIndex, searchResults, searchResults?.at, selectAndZoomToMatch])
 
   return (

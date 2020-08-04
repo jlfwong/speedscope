@@ -132,6 +132,8 @@ interface SandwichViewContainerProps {
 
 interface SandwichViewContextData {
   rowList: Frame[]
+  selectedFrame: Frame | null
+  setSelectedFrame: (frame: Frame | null) => void
   getIndexForFrame: (frame: Frame) => number | null
   getSearchMatchForFrame: (frame: Frame) => FuzzyMatch | null
 }
@@ -160,9 +162,10 @@ export const SandwichViewContainer = memo((ownProps: SandwichViewContainerProps)
   const tableSortMethod = useAppSelector(state => state.tableSortMethod, [])
   const profileSearchResults = useContext(ProfileSearchContext)
 
-  const sandwichViewContextData: SandwichViewContextData | null = useMemo(() => {
+  const selectedFrame = callerCallee ? callerCallee.selectedFrame : null
+
+  const rowList: Frame[] = useMemo(() => {
     const rowList: Frame[] = []
-    const indexByFrame = new Map<Frame, number>()
 
     profile.forEachFrame(frame => {
       if (profileSearchResults && !profileSearchResults.getMatchForFrame(frame)) {
@@ -189,29 +192,42 @@ export const SandwichViewContainer = memo((ownProps: SandwichViewContainerProps)
       rowList.reverse()
     }
 
+    return rowList
+  }, [profile, profileSearchResults, tableSortMethod])
+
+  const getIndexForFrame: (frame: Frame) => number | null = useMemo(() => {
+    const indexByFrame = new Map<Frame, number>()
     for (let i = 0; i < rowList.length; i++) {
       indexByFrame.set(rowList[i], i)
     }
-
-    return {
-      rowList,
-      getIndexForFrame: (frame: Frame): number | null => {
-        const idx = indexByFrame.get(frame)
-        return idx == null ? null : idx
-      },
-      getSearchMatchForFrame: (frame: Frame): FuzzyMatch | null => {
-        return profileSearchResults == null ? null : profileSearchResults.getMatchForFrame(frame)
-      },
+    return (frame: Frame) => {
+      const index = indexByFrame.get(frame)
+      return index == null ? null : index
     }
-  }, [profile, profileSearchResults, tableSortMethod])
+  }, [rowList])
+
+  const getSearchMatchForFrame: (frame: Frame) => FuzzyMatch | null = useMemo(() => {
+    return (frame: Frame) => {
+      if (profileSearchResults == null) return null
+      return profileSearchResults.getMatchForFrame(frame)
+    }
+  }, [profileSearchResults])
+
+  const contextData: SandwichViewContextData = {
+    rowList,
+    selectedFrame,
+    setSelectedFrame,
+    getIndexForFrame,
+    getSearchMatchForFrame,
+  }
 
   return (
-    <SandwichViewContext.Provider value={sandwichViewContextData}>
+    <SandwichViewContext.Provider value={contextData}>
       <SandwichView
         activeProfileState={activeProfileState}
         glCanvas={glCanvas}
         setSelectedFrame={setSelectedFrame}
-        selectedFrame={callerCallee ? callerCallee.selectedFrame : null}
+        selectedFrame={selectedFrame}
         profileIndex={index}
       />
     </SandwichViewContext.Provider>
