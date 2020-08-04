@@ -9,20 +9,16 @@ import {useActiveProfileState, useAppSelector} from '../store'
 import {Flamechart} from '../lib/flamechart'
 import {useActionCreator} from '../lib/preact-redux'
 import {actions} from '../store/actions'
+import {Rect} from '../lib/math'
 
 function stopPropagation(ev: Event) {
   ev.stopPropagation()
 }
 
-export interface SearchViewProps {
-  selectedNode: CallTreeNode | null
-  setSelectedNode: ((node: CallTreeNode | null) => void) | null
-}
+export const ProfileSearchContext = createContext<ProfileSearchResults | null>(null)
+export const FlamechartSearchContext = createContext<FlamechartSearchData | null>(null)
 
-export const ProfileSearchResultsContext = createContext<ProfileSearchResults | null>(null)
-export const FlamechartSearchResultsContext = createContext<FlamechartSearchResults | null>(null)
-
-export const ProfileSearchResultsContextProvider = ({children}: {children: ComponentChildren}) => {
+export const ProfileSearchContextProvider = ({children}: {children: ComponentChildren}) => {
   const activeProfileState = useActiveProfileState()
   const profile: Profile | null = activeProfileState ? activeProfileState.profile : null
   const searchIsActive = useAppSelector(state => state.searchIsActive, [])
@@ -36,20 +32,36 @@ export const ProfileSearchResultsContextProvider = ({children}: {children: Compo
   }, [searchIsActive, searchQuery, profile])
 
   return (
-    <ProfileSearchResultsContext.Provider value={searchResults}>
-      {children}
-    </ProfileSearchResultsContext.Provider>
+    <ProfileSearchContext.Provider value={searchResults}>{children}</ProfileSearchContext.Provider>
   )
 }
 
-export const FlamechartSearchResultsContextProvider = ({
-  flamechart,
-  children,
-}: {
+export interface FlamechartSearchProps {
   flamechart: Flamechart
+  selectedNode: CallTreeNode | null
+  setSelectedNode: (node: CallTreeNode | null) => void
+  configSpaceViewportRect: Rect
+  setConfigSpaceViewportRect: (rect: Rect) => void
   children: ComponentChildren
-}) => {
-  const profileSearchResults: ProfileSearchResults | null = useContext(ProfileSearchResultsContext)
+}
+
+interface FlamechartSearchData {
+  results: FlamechartSearchResults | null
+  selectedNode: CallTreeNode | null
+  setSelectedNode: (node: CallTreeNode | null) => void
+  configSpaceViewportRect: Rect
+  setConfigSpaceViewportRect: (rect: Rect) => void
+}
+
+export const FlamechartSearchContextProvider = ({
+  flamechart,
+  selectedNode,
+  setSelectedNode,
+  configSpaceViewportRect,
+  setConfigSpaceViewportRect,
+  children,
+}: FlamechartSearchProps) => {
+  const profileSearchResults: ProfileSearchResults | null = useContext(ProfileSearchContext)
   const flamechartSearchResults: FlamechartSearchResults | null = useMemo(() => {
     if (profileSearchResults == null) {
       return null
@@ -58,21 +70,32 @@ export const FlamechartSearchResultsContextProvider = ({
   }, [flamechart, profileSearchResults])
 
   return (
-    <FlamechartSearchResultsContext.Provider value={flamechartSearchResults}>
+    <FlamechartSearchContext.Provider
+      value={{
+        results: flamechartSearchResults,
+        selectedNode,
+        setSelectedNode,
+        configSpaceViewportRect,
+        setConfigSpaceViewportRect,
+      }}
+    >
       {children}
-    </FlamechartSearchResultsContext.Provider>
+    </FlamechartSearchContext.Provider>
   )
 }
 
 const {setSearchQuery: setSearchQueryAction, setSearchIsActive: setSearchIsActiveAction} = actions
 
-export const SearchView = memo(({selectedNode, setSelectedNode}: SearchViewProps) => {
+export const SearchView = memo(() => {
   const searchQuery = useAppSelector(state => state.searchQuery, [])
   const searchIsActive = useAppSelector(state => state.searchIsActive, [])
   const setSearchQuery = useActionCreator(setSearchQueryAction, [])
   const setSearchIsActive = useActionCreator(setSearchIsActiveAction, [])
 
-  const searchResults = useContext(FlamechartSearchResultsContext)
+  const flamechartData = useContext(FlamechartSearchContext)
+  const searchResults = flamechartData == null ? null : flamechartData.results
+  const selectedNode = flamechartData == null ? null : flamechartData.selectedNode
+  const setSelectedNode = flamechartData == null ? null : flamechartData.setSelectedNode
 
   const onInput = useCallback(
     (ev: Event) => {

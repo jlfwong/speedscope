@@ -5,7 +5,7 @@ import {actions} from '../store/actions'
 import {useActionCreator} from '../lib/preact-redux'
 import {memo} from 'preact/compat'
 import {useAppSelector, useActiveProfileState} from '../store'
-import {ProfileSearchResultsContextProvider} from './search-view'
+import {ProfileSearchContextProvider} from './search-view'
 
 const {
   setLoading,
@@ -26,7 +26,7 @@ export const ApplicationContainer = memo(() => {
   )
 
   return (
-    <ProfileSearchResultsContextProvider>
+    <ProfileSearchContextProvider>
       <Application
         activeProfileState={useActiveProfileState()}
         canvasContext={canvasContext}
@@ -40,6 +40,6 @@ export const ApplicationContainer = memo(() => {
         setProfileIndexToView={useActionCreator(setProfileIndexToView, [])}
         {...appState}
       />
-    </ProfileSearchResultsContextProvider>
+    </ProfileSearchContextProvider>
   )
 })

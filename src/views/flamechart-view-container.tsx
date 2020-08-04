@@ -18,7 +18,7 @@ import {Vec2, Rect} from '../lib/math'
 import {actions} from '../store/actions'
 import {memo} from 'preact/compat'
 import {ActiveProfileState} from '../store'
-import {FlamechartSearchResultsContextProvider} from './search-view'
+import {FlamechartSearchContextProvider} from './search-view'
 
 interface FlamechartSetters {
   setLogicalSpaceViewportSize: (logicalSpaceViewportSize: Vec2) => void
@@ -127,18 +127,26 @@ export const ChronoFlamechartView = memo((props: FlamechartViewContainerProps) =
     flamechart,
   })
 
+  const setters = useFlamechartSetters(FlamechartID.CHRONO, index)
+
   return (
-    <FlamechartSearchResultsContextProvider flamechart={flamechart}>
+    <FlamechartSearchContextProvider
+      flamechart={flamechart}
+      selectedNode={chronoViewState.selectedNode}
+      setSelectedNode={setters.setSelectedNode}
+      configSpaceViewportRect={chronoViewState.configSpaceViewportRect}
+      setConfigSpaceViewportRect={setters.setConfigSpaceViewportRect}
+    >
       <FlamechartView
         renderInverted={false}
         flamechart={flamechart}
         flamechartRenderer={flamechartRenderer}
         canvasContext={canvasContext}
         getCSSColorForFrame={getCSSColorForFrame}
-        {...useFlamechartSetters(FlamechartID.CHRONO, index)}
         {...chronoViewState}
+        {...setters}
       />
-    </FlamechartSearchResultsContextProvider>
+    </FlamechartSearchContextProvider>
   )
 })
 
@@ -180,17 +188,25 @@ export const LeftHeavyFlamechartView = memo((ownProps: FlamechartViewContainerPr
     flamechart,
   })
 
+  const setters = useFlamechartSetters(FlamechartID.LEFT_HEAVY, index)
+
   return (
-    <FlamechartSearchResultsContextProvider flamechart={flamechart}>
+    <FlamechartSearchContextProvider
+      flamechart={flamechart}
+      selectedNode={leftHeavyViewState.selectedNode}
+      setSelectedNode={setters.setSelectedNode}
+      configSpaceViewportRect={leftHeavyViewState.configSpaceViewportRect}
+      setConfigSpaceViewportRect={setters.setConfigSpaceViewportRect}
+    >
       <FlamechartView
         renderInverted={false}
         flamechart={flamechart}
         flamechartRenderer={flamechartRenderer}
         canvasContext={canvasContext}
         getCSSColorForFrame={getCSSColorForFrame}
-        {...useFlamechartSetters(FlamechartID.LEFT_HEAVY, index)}
         {...leftHeavyViewState}
+        {...setters}
       />
-    </FlamechartSearchResultsContextProvider>
+    </FlamechartSearchContextProvider>
   )
 })
