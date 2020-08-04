@@ -1,4 +1,4 @@
-import {h} from 'preact'
+import {h, Fragment} from 'preact'
 import {css} from 'aphrodite'
 
 import {CallTreeNode} from '../lib/profile'
@@ -14,7 +14,7 @@ import {FlamechartPanZoomView} from './flamechart-pan-zoom-view'
 import {Hovertip} from './hovertip'
 import {FlamechartViewProps} from './flamechart-view-container'
 import {StatelessComponent} from '../lib/typed-redux'
-import {SearchView} from './search-view'
+import {SearchView, ProfileSearchResultsContext} from './search-view'
 
 export class FlamechartView extends StatelessComponent<FlamechartViewProps> {
   private configSpaceSize() {
@@ -102,31 +102,31 @@ export class FlamechartView extends StatelessComponent<FlamechartViewProps> {
           canvasContext={this.props.canvasContext}
           setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
         />
-        <FlamechartPanZoomView
-          canvasContext={this.props.canvasContext}
-          flamechart={this.props.flamechart}
-          flamechartRenderer={this.props.flamechartRenderer}
-          renderInverted={false}
-          onNodeHover={this.onNodeHover}
-          onNodeSelect={this.onNodeClick}
-          selectedNode={this.props.selectedNode}
-          transformViewport={this.transformViewport}
-          configSpaceViewportRect={this.props.configSpaceViewportRect}
-          setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
-          logicalSpaceViewportSize={this.props.logicalSpaceViewportSize}
-          setLogicalSpaceViewportSize={this.setLogicalSpaceViewportSize}
-          searchResults={this.props.searchResults}
-        />
-        <SearchView
-          searchResults={this.props.searchResults}
-          searchQuery={this.props.searchQuery}
-          searchIsActive={this.props.searchIsActive}
-          setSearchQuery={this.props.setSearchQuery}
-          setSearchIsActive={this.props.setSearchIsActive}
-          selectedNode={this.props.selectedNode}
-          viewMode={this.props.viewMode}
-          setSelectedNode={this.props.setSelectedNode}
-        />
+        <ProfileSearchResultsContext.Consumer>
+          {searchResults => (
+            <Fragment>
+              <FlamechartPanZoomView
+                canvasContext={this.props.canvasContext}
+                flamechart={this.props.flamechart}
+                flamechartRenderer={this.props.flamechartRenderer}
+                renderInverted={false}
+                onNodeHover={this.onNodeHover}
+                onNodeSelect={this.onNodeClick}
+                selectedNode={this.props.selectedNode}
+                transformViewport={this.transformViewport}
+                configSpaceViewportRect={this.props.configSpaceViewportRect}
+                setConfigSpaceViewportRect={this.setConfigSpaceViewportRect}
+                logicalSpaceViewportSize={this.props.logicalSpaceViewportSize}
+                setLogicalSpaceViewportSize={this.setLogicalSpaceViewportSize}
+                searchResults={searchResults}
+              />
+              <SearchView
+                selectedNode={this.props.selectedNode}
+                setSelectedNode={this.props.setSelectedNode}
+              />
+            </Fragment>
+          )}
+        </ProfileSearchResultsContext.Consumer>
         {this.renderTooltip()}
         {this.props.selectedNode && (
           <FlamechartDetailView

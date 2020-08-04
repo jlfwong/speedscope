@@ -16,10 +16,9 @@ import {
 } from '../store/getters'
 import {Vec2, Rect} from '../lib/math'
 import {actions} from '../store/actions'
-import {memo, useMemo} from 'preact/compat'
-import {useAppSelector, ViewMode, useActiveProfileState, ActiveProfileState} from '../store'
-import {SearchViewProps} from './search-view'
-import {ProfileSearchResults} from '../lib/profile-search'
+import {memo} from 'preact/compat'
+import {ActiveProfileState} from '../store'
+import {FlamechartSearchResultsContextProvider} from './search-view'
 
 interface FlamechartSetters {
   setLogicalSpaceViewportSize: (logicalSpaceViewportSize: Vec2) => void
@@ -66,60 +65,8 @@ export type FlamechartViewProps = {
   flamechartRenderer: FlamechartRenderer
   renderInverted: boolean
   getCSSColorForFrame: (frame: Frame) => string
-  searchIsActive: boolean
-  searchQuery: string
-  searchResults: ProfileSearchResults | null
-  viewMode: ViewMode
-  setSearchQuery: (query: string) => void
-  setSearchIsActive: (active: boolean) => void
 } & FlamechartSetters &
   FlamechartViewState
-
-const {setSearchQuery, setSearchIsActive} = actions
-
-function useSearchViewProps(): Omit<SearchViewProps, 'setSelectedNode'> {
-  const searchIsActive = useAppSelector(state => state.searchIsActive, [])
-  const searchQuery = useAppSelector(state => state.searchQuery, [])
-  const activeProfileState = useActiveProfileState()
-  const profile = activeProfileState?.profile
-  const viewMode = useAppSelector(state => state.viewMode, [])
-
-  const searchResults = useMemo(
-    () =>
-      searchIsActive && searchQuery.length > 0 && profile
-        ? new ProfileSearchResults(profile, searchQuery)
-        : null,
-    [profile, searchIsActive, searchQuery],
-  )
-
-  const selectedNode: CallTreeNode | null = useMemo(() => {
-    switch (viewMode) {
-      case ViewMode.CHRONO_FLAME_CHART: {
-        return activeProfileState?.chronoViewState.selectedNode || null
-      }
-      case ViewMode.LEFT_HEAVY_FLAME_GRAPH: {
-        return activeProfileState?.leftHeavyViewState.selectedNode || null
-      }
-      case ViewMode.SANDWICH_VIEW: {
-        return null
-      }
-    }
-  }, [
-    viewMode,
-    activeProfileState?.chronoViewState.selectedNode,
-    activeProfileState?.leftHeavyViewState.selectedNode,
-  ])
-
-  return {
-    searchIsActive,
-    searchQuery,
-    searchResults,
-    viewMode,
-    selectedNode,
-    setSearchQuery: useActionCreator(setSearchQuery, []),
-    setSearchIsActive: useActionCreator(setSearchIsActive, []),
-  }
-}
 
 export const getChronoViewFlamechart = memoizeByShallowEquality(
   ({
@@ -181,16 +128,17 @@ export const ChronoFlamechartView = memo((props: FlamechartViewContainerProps) =
   })
 
   return (
-    <FlamechartView
-      renderInverted={false}
-      flamechart={flamechart}
-      flamechartRenderer={flamechartRenderer}
-      canvasContext={canvasContext}
-      getCSSColorForFrame={getCSSColorForFrame}
-      {...useFlamechartSetters(FlamechartID.CHRONO, index)}
-      {...useSearchViewProps()}
-      {...chronoViewState}
-    />
+    <FlamechartSearchResultsContextProvider flamechart={flamechart}>
+      <FlamechartView
+        renderInverted={false}
+        flamechart={flamechart}
+        flamechartRenderer={flamechartRenderer}
+        canvasContext={canvasContext}
+        getCSSColorForFrame={getCSSColorForFrame}
+        {...useFlamechartSetters(FlamechartID.CHRONO, index)}
+        {...chronoViewState}
+      />
+    </FlamechartSearchResultsContextProvider>
   )
 })
 
@@ -233,15 +181,16 @@ export const LeftHeavyFlamechartView = memo((ownProps: FlamechartViewContainerPr
   })
 
   return (
-    <FlamechartView
-      renderInverted={false}
-      flamechart={flamechart}
-      flamechartRenderer={flamechartRenderer}
-      canvasContext={canvasContext}
-      getCSSColorForFrame={getCSSColorForFrame}
-      {...useFlamechartSetters(FlamechartID.LEFT_HEAVY, index)}
-      {...useSearchViewProps()}
-      {...leftHeavyViewState}
-    />
+    <FlamechartSearchResultsContextProvider flamechart={flamechart}>
+      <FlamechartView
+        renderInverted={false}
+        flamechart={flamechart}
+        flamechartRenderer={flamechartRenderer}
+        canvasContext={canvasContext}
+        getCSSColorForFrame={getCSSColorForFrame}
+        {...useFlamechartSetters(FlamechartID.LEFT_HEAVY, index)}
+        {...leftHeavyViewState}
+      />
+    </FlamechartSearchResultsContextProvider>
   )
 })

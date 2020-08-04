@@ -11,7 +11,7 @@ import {InvertedCallerFlamegraphView} from './inverted-caller-flamegraph-view'
 import {CalleeFlamegraphView} from './callee-flamegraph-view'
 import {useDispatch, useActionCreator} from '../lib/preact-redux'
 import {SearchView} from './search-view'
-import {useAppSelector, ActiveProfileState, ViewMode} from '../store'
+import {useAppSelector, ActiveProfileState} from '../store'
 
 interface SandwichViewProps {
   selectedFrame: Frame | null
@@ -44,13 +44,7 @@ class SandwichView extends StatelessComponent<SandwichViewProps> {
   }
 
   render() {
-    const {
-      selectedFrame,
-      searchIsActive,
-      setSearchIsActive,
-      searchQuery,
-      setSearchQuery,
-    } = this.props
+    const {selectedFrame} = this.props
     let flamegraphViews: JSX.Element | null = null
 
     if (selectedFrame) {
@@ -83,16 +77,7 @@ class SandwichView extends StatelessComponent<SandwichViewProps> {
       <div className={css(commonStyle.hbox, commonStyle.fillY)}>
         <div className={css(style.tableView)}>
           <ProfileTableViewContainer activeProfileState={this.props.activeProfileState} />
-          <SearchView
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            searchIsActive={searchIsActive}
-            setSearchIsActive={setSearchIsActive}
-            searchResults={null}
-            selectedNode={null}
-            setSelectedNode={null}
-            viewMode={ViewMode.SANDWICH_VIEW}
-          />
+          <SearchView selectedNode={null} setSelectedNode={null} />
         </div>
         {flamegraphViews}
       </div>

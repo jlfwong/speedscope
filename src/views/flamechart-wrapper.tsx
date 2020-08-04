@@ -8,22 +8,6 @@ import {noop, formatPercent} from '../lib/utils'
 import {Hovertip} from './hovertip'
 import {FlamechartViewProps} from './flamechart-view-container'
 import {StatelessComponent} from '../lib/typed-redux'
-import {useCallback} from 'preact/hooks'
-import {SearchViewProps} from './search-view'
-import {ViewMode} from '../store'
-
-export function useDummySearchProps(): SearchViewProps {
-  return {
-    searchIsActive: false,
-    searchQuery: '',
-    setSearchQuery: useCallback((q: string) => {}, []),
-    setSearchIsActive: useCallback((v: boolean) => {}, []),
-    searchResults: null,
-    selectedNode: null,
-    setSelectedNode: null,
-    viewMode: ViewMode.SANDWICH_VIEW,
-  }
-}
 
 export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
   private clampViewportToFlamegraph(viewportRect: Rect) {
@@ -100,7 +84,7 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
           renderInverted={this.props.renderInverted}
           logicalSpaceViewportSize={this.props.logicalSpaceViewportSize}
           setLogicalSpaceViewportSize={this.setLogicalSpaceViewportSize}
-          searchResults={this.props.searchResults}
+          searchResults={null}
         />
         {this.renderTooltip()}
       </div>

@@ -14,7 +14,7 @@ import {
 } from '../store/getters'
 import {FlamechartID} from '../store/flamechart-view-state'
 import {useAppSelector} from '../store'
-import {FlamechartWrapper, useDummySearchProps} from './flamechart-wrapper'
+import {FlamechartWrapper} from './flamechart-wrapper'
 import {h} from 'preact'
 import {memo} from 'preact/compat'
 
@@ -88,11 +88,6 @@ export const InvertedCallerFlamegraphView = memo((ownProps: FlamechartViewContai
       getCSSColorForFrame={getCSSColorForFrame}
       {...useFlamechartSetters(FlamechartID.SANDWICH_INVERTED_CALLERS, index)}
       {...callerCallee.invertedCallerFlamegraph}
-      /*
-       * TODO(jlfwong): When implementing search for the sandwich views,
-       * change these flags
-       * */
-      {...useDummySearchProps()}
       // This overrides the setSelectedNode specified in useFlamechartSettesr
       setSelectedNode={noop}
     />

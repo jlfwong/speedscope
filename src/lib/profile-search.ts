@@ -1,5 +1,7 @@
 import {Profile, Frame, CallTreeNode} from './profile'
 import {FuzzyMatch, fuzzyMatchStrings} from './fuzzy-find'
+import {Flamechart, FlamechartFrame} from './flamechart'
+import {Rect, Vec2} from './math'
 
 export enum FlamechartType {
   CHRONO_FLAME_CHART,
@@ -28,62 +30,63 @@ export class ProfileSearchResults {
     }
     return this.matches.get(frame) || null
   }
+}
 
-  private appendOrderNodeMatches: CallTreeNode[] | null = null
-  private getAppendOrderNodeMatches(): CallTreeNode[] {
-    if (this.appendOrderNodeMatches == null) {
-      this.appendOrderNodeMatches = []
-      const openFrame = (node: CallTreeNode) => {
-        if (this.getMatchForFrame(node.frame)) {
-          this.appendOrderNodeMatches!.push(node)
+interface FlamechartSearchMatch {
+  configSpaceBounds: Rect
+  node: CallTreeNode
+}
+
+interface CachedFlamechartResult {
+  matches: FlamechartSearchMatch[]
+  indexForNode: Map<CallTreeNode, number>
+}
+
+export class FlamechartSearchResults {
+  constructor(readonly flamechart: Flamechart, readonly profileResults: ProfileSearchResults) {}
+
+  private matches: CachedFlamechartResult | null = null
+  private getResults(): CachedFlamechartResult {
+    if (this.matches == null) {
+      const matches: FlamechartSearchMatch[] = []
+      const indexForNode = new Map<CallTreeNode, number>()
+      const visit = (frame: FlamechartFrame, depth: number) => {
+        const {node} = frame
+        if (this.profileResults.getMatchForFrame(node.frame)) {
+          const configSpaceBounds = new Rect(
+            new Vec2(frame.start, depth),
+            new Vec2(frame.end - frame.start, 1),
+          )
+          indexForNode.set(node, matches.length)
+          matches.push({configSpaceBounds, node})
         }
+
+        frame.children.forEach(child => {
+          visit(child, depth + 1)
+        })
       }
-      const closeFrame = (frame: CallTreeNode) => {}
-      this.profile.forEachCall(openFrame, closeFrame)
+
+      const layers = this.flamechart.getLayers()
+      if (layers.length > 0) {
+        layers[0].forEach(frame => visit(frame, 1))
+      }
+
+      this.matches = {matches, indexForNode}
     }
-    return this.appendOrderNodeMatches
+    return this.matches
   }
 
-  private groupedNodeMatches: CallTreeNode[] | null = null
-  private getGroupedNodesMatches(): CallTreeNode[] {
-    if (this.groupedNodeMatches == null) {
-      this.groupedNodeMatches = []
-      const openFrame = (node: CallTreeNode) => {
-        if (this.getMatchForFrame(node.frame)) {
-          this.groupedNodeMatches!.push(node)
-        }
-      }
-      const closeFrame = (frame: CallTreeNode) => {}
-      this.profile.forEachCallGrouped(openFrame, closeFrame)
-    }
-    return this.groupedNodeMatches
+  count(): number {
+    return this.getResults().matches.length
   }
 
-  private getNodeMatches(type: FlamechartType): CallTreeNode[] {
-    switch (type) {
-      case FlamechartType.CHRONO_FLAME_CHART: {
-        return this.getAppendOrderNodeMatches()
-      }
-      case FlamechartType.LEFT_HEAVY_FLAME_GRAPH: {
-        return this.getGroupedNodesMatches()
-      }
-    }
+  indexOf(node: CallTreeNode): number | null {
+    const result = this.getResults().indexForNode.get(node)
+    return result === undefined ? null : result
   }
 
-  // Returns the number of call tree nodes matched in the given flamechart type.
-  getMatchedCallTreeNodeCount(type: FlamechartType): number {
-    return this.getNodeMatches(type).length
-  }
-
-  // Returns the index into the ordered call tree node list, or null if there's
-  // no match.
-  getIndexInSearchResults(type: FlamechartType, node: CallTreeNode): number | null {
-    const index = this.getNodeMatches(type).indexOf(node)
-    return index !== -1 ? index : null
-  }
-
-  getResultAtIndex(type: FlamechartType, index: number): CallTreeNode {
-    const matches = this.getNodeMatches(type)
+  at(index: number): FlamechartSearchMatch {
+    const matches = this.getResults().matches
     if (index < 0 || index >= matches.length) {
       throw new Error(`Index ${index} out of bounds in list of ${matches.length} matches.`)
     }
