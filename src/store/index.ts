@@ -11,6 +11,10 @@ import {HashParams, getHashParams} from '../lib/hash-params'
 import {ProfileGroupState, profileGroup} from './profiles-state'
 import {SortMethod, SortField, SortDirection} from '../views/profile-table-view'
 import {useSelector} from '../lib/preact-redux'
+import {Profile} from '../lib/profile'
+import {FlamechartViewState} from './flamechart-view-state'
+import {SandwichViewState} from './sandwich-view-state'
+import {getProfileToView} from './getters'
 
 export const enum ViewMode {
   CHRONO_FLAME_CHART,
@@ -100,4 +104,31 @@ export function createAppStore(initialState?: ApplicationState): redux.Store<App
 export function useAppSelector<T>(selector: (t: ApplicationState) => T, cacheArgs: any[]): T {
   /* eslint-disable react-hooks/exhaustive-deps */
   return useSelector(selector, cacheArgs)
+}
+
+export interface ActiveProfileState {
+  profile: Profile
+  index: number
+  chronoViewState: FlamechartViewState
+  leftHeavyViewState: FlamechartViewState
+  sandwichViewState: SandwichViewState
+}
+
+export function useActiveProfileState(): ActiveProfileState | null {
+  return useAppSelector(state => {
+    const {profileGroup} = state
+    if (!profileGroup) return null
+    if (profileGroup.indexToView >= profileGroup.profiles.length) return null
+
+    const index = profileGroup.indexToView
+    const profileState = profileGroup.profiles[index]
+    return {
+      ...profileGroup.profiles[profileGroup.indexToView],
+      profile: getProfileToView({
+        profile: profileState.profile,
+        flattenRecursion: state.flattenRecursion,
+      }),
+      index: profileGroup.indexToView,
+    }
+  }, [])
 }

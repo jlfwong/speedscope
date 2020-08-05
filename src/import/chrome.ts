@@ -224,6 +224,10 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile): Profile {
   // Ref: https://github.com/v8/v8/blob/44bd8fd7/src/inspector/js_protocol.json#L1485
   let elapsed = chromeProfile.timeDeltas[0]
 
+  // Prevents negative time deltas from causing bad data. See
+  // https://github.com/jlfwong/speedscope/pull/305 for details.
+  let lastValidElapsed = elapsed
+
   let lastNodeId = NaN
 
   // The chrome CPU profile format doesn't collapse identical samples. We'll do that
@@ -232,22 +236,26 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile): Profile {
     const nodeId = chromeProfile.samples[i]
     if (nodeId != lastNodeId) {
       samples.push(nodeId)
-      sampleTimes.push(elapsed)
+      if (elapsed < lastValidElapsed) {
+        sampleTimes.push(lastValidElapsed)
+      } else {
+        sampleTimes.push(elapsed)
+        lastValidElapsed = elapsed
+      }
     }
 
     if (i === chromeProfile.samples.length - 1) {
       if (!isNaN(lastNodeId)) {
         samples.push(lastNodeId)
-        sampleTimes.push(elapsed)
+        if (elapsed < lastValidElapsed) {
+          sampleTimes.push(lastValidElapsed)
+        } else {
+          sampleTimes.push(elapsed)
+          lastValidElapsed = elapsed
+        }
       }
     } else {
-      let timeDelta = chromeProfile.timeDeltas[i + 1]
-      if (timeDelta < 0) {
-        // This is super noisy, but can be helpful when debugging strange data
-        // console.warn('Substituting zero for unexpected time delta:', timeDelta, 'at index', i)
-        timeDelta = 0
-      }
-
+      const timeDelta = chromeProfile.timeDeltas[i + 1]
       elapsed += timeDelta
       lastNodeId = nodeId
     }

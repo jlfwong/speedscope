@@ -8,30 +8,14 @@ import {noop, formatPercent} from '../lib/utils'
 import {Hovertip} from './hovertip'
 import {FlamechartViewProps} from './flamechart-view-container'
 import {StatelessComponent} from '../lib/typed-redux'
-import {useCallback} from 'preact/hooks'
-import {SearchViewProps} from './search-view'
-
-export function useDummySearchProps(): SearchViewProps {
-  return {
-    searchIsActive: false,
-    searchQuery: '',
-    setSearchQuery: useCallback((q: string) => {}, []),
-    setSearchIsActive: useCallback((v: boolean) => {}, []),
-  }
-}
 
 export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
   private clampViewportToFlamegraph(viewportRect: Rect) {
     const {flamechart, renderInverted} = this.props
-    const configSpaceSize = new Vec2(flamechart.getTotalWeight(), flamechart.getLayers().length)
-    const width = this.props.flamechart.getClampedViewportWidth(viewportRect.size.x)
-    const size = viewportRect.size.withX(width)
-    const origin = Vec2.clamp(
-      viewportRect.origin,
-      new Vec2(0, renderInverted ? 0 : -1),
-      Vec2.max(Vec2.zero, configSpaceSize.minus(size).plus(new Vec2(0, 1))),
-    )
-    return new Rect(origin, viewportRect.size.withX(width))
+    return flamechart.getClampedConfigSpaceViewportRect({
+      configSpaceViewportRect: viewportRect,
+      renderInverted,
+    })
   }
   private setConfigSpaceViewportRect = (configSpaceViewportRect: Rect) => {
     this.props.setConfigSpaceViewportRect(this.clampViewportToFlamegraph(configSpaceViewportRect))
@@ -95,8 +79,7 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
           renderInverted={this.props.renderInverted}
           logicalSpaceViewportSize={this.props.logicalSpaceViewportSize}
           setLogicalSpaceViewportSize={this.setLogicalSpaceViewportSize}
-          searchIsActive={this.props.searchIsActive}
-          searchQuery={this.props.searchQuery}
+          searchResults={null}
         />
         {this.renderTooltip()}
       </div>

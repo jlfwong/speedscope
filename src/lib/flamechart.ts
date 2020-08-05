@@ -1,7 +1,7 @@
 import {Frame, CallTreeNode} from './profile'
 
 import {lastOf} from './utils'
-import {clamp} from './math'
+import {clamp, Rect, Vec2} from './math'
 
 export interface FlamechartFrame {
   node: CallTreeNode
@@ -88,6 +88,27 @@ export class Flamechart {
     const minWidth = clamp(3 * this.getMinFrameWidth(), maxWidth / maxZoom, maxWidth)
 
     return clamp(viewportWidth, minWidth, maxWidth)
+  }
+
+  // Given a desired config-space viewport rectangle, clamp the rectangle so
+  // that it fits within the given flamechart. This prevents the viewport from
+  // extending past the bounds of the flamechart or zooming in too far.
+  getClampedConfigSpaceViewportRect({
+    configSpaceViewportRect,
+    renderInverted,
+  }: {
+    configSpaceViewportRect: Rect
+    renderInverted?: boolean
+  }) {
+    const configSpaceSize = new Vec2(this.getTotalWeight(), this.getLayers().length)
+    const width = this.getClampedViewportWidth(configSpaceViewportRect.size.x)
+    const size = configSpaceViewportRect.size.withX(width)
+    const origin = Vec2.clamp(
+      configSpaceViewportRect.origin,
+      new Vec2(0, renderInverted ? 0 : -1),
+      Vec2.max(Vec2.zero, configSpaceSize.minus(size).plus(new Vec2(0, 1))),
+    )
+    return new Rect(origin, configSpaceViewportRect.size.withX(width))
   }
 
   constructor(private source: FlamechartDataSource) {

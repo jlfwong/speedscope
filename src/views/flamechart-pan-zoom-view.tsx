@@ -1,5 +1,5 @@
 import {Rect, AffineTransform, Vec2, clamp} from '../lib/math'
-import {CallTreeNode, Frame} from '../lib/profile'
+import {CallTreeNode} from '../lib/profile'
 import {Flamechart, FlamechartFrame} from '../lib/flamechart'
 import {CanvasContext} from '../gl/canvas-context'
 import {FlamechartRenderer} from '../gl/flamechart-renderer'
@@ -13,8 +13,8 @@ import {
 import {style} from './flamechart-style'
 import {h, Component} from 'preact'
 import {css} from 'aphrodite'
-import {memoizeByReference} from '../lib/utils'
-import {FuzzyMatch, fuzzyMatchStrings} from '../lib/fuzzy-find'
+import {ProfileSearchResults} from '../lib/profile-search'
+import {BatchCanvasTextRenderer, BatchCanvasRectRenderer} from '../lib/canvas-2d-batch-renderers'
 
 interface FlamechartFrameLabel {
   configSpaceBounds: Rect
@@ -56,8 +56,7 @@ export interface FlamechartPanZoomViewProps {
   logicalSpaceViewportSize: Vec2
   setLogicalSpaceViewportSize: (size: Vec2) => void
 
-  searchIsActive: boolean
-  searchQuery: string
+  searchResults: ProfileSearchResults | null
 }
 
 export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps, {}> {
@@ -173,24 +172,6 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
     ctx.clearRect(0, 0, physicalViewSize.x, physicalViewSize.y)
 
-    if (this.hoveredLabel) {
-      let color = Colors.DARK_GRAY
-      if (this.props.selectedNode === this.hoveredLabel.node) {
-        color = Colors.DARK_BLUE
-      }
-
-      ctx.lineWidth = 2 * devicePixelRatio
-      ctx.strokeStyle = color
-
-      const physicalViewBounds = configToPhysical.transformRect(this.hoveredLabel.configSpaceBounds)
-      ctx.strokeRect(
-        Math.round(physicalViewBounds.left()),
-        Math.round(physicalViewBounds.top()),
-        Math.round(Math.max(0, physicalViewBounds.width())),
-        Math.round(Math.max(0, physicalViewBounds.height())),
-      )
-    }
-
     ctx.font = `${physicalViewSpaceFontSize}px/${physicalViewSpaceFrameHeight}px ${FontFamily.MONOSPACE}`
     ctx.textBaseline = 'alphabetic'
 
@@ -201,14 +182,12 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
     const LABEL_PADDING_PX = 5 * window.devicePixelRatio
 
-    const memoizedFuzzyMatch = memoizeByReference((frame: Frame): FuzzyMatch | null => {
-      return fuzzyMatchStrings(frame.name, this.props.searchQuery)
-    })
-    const frameMatchesSearchQuery = (frame: Frame): FuzzyMatch | null => {
-      if (!this.props.searchIsActive) return null
-      if (this.props.searchQuery.length === 0) return null
-      return memoizedFuzzyMatch(frame)
-    }
+    const labelBatch = new BatchCanvasTextRenderer()
+    const fadedLabelBatch = new BatchCanvasTextRenderer()
+    const matchedTextHighlightBatch = new BatchCanvasRectRenderer()
+    const directlySelectedOutlineBatch = new BatchCanvasRectRenderer()
+    const indirectlySelectedOutlineBatch = new BatchCanvasRectRenderer()
+    const matchedFrameBatch = new BatchCanvasRectRenderer()
 
     const renderFrameLabelAndChildren = (frame: FlamechartFrame, depth = 0) => {
       const width = frame.end - frame.start
@@ -244,7 +223,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
         }
 
         if (physicalLabelBounds.width() > minWidthToRender) {
-          const match = frameMatchesSearchQuery(frame.node.frame)
+          const match = this.props.searchResults?.getMatchForFrame(frame.node.frame)
 
           const trimmedText = trimTextMid(
             ctx,
@@ -262,44 +241,40 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
             // actually do the highlighting.
             let lastEndIndex = 0
             let left = physicalLabelBounds.left() + LABEL_PADDING_PX
-            ctx.fillStyle = Colors.YELLOW
 
-            ctx.beginPath()
             const padding = (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2 - 2
             for (let [startIndex, endIndex] of rangesToHighlightInTrimmedText) {
-              left += ctx.measureText(trimmedText.trimmedString.substring(lastEndIndex, startIndex))
-                .width
-              const highlightWidth = ctx.measureText(
-                trimmedText.trimmedString.substring(startIndex, endIndex),
-              ).width
-              ctx.rect(
-                left,
-                physicalLabelBounds.top() + padding,
-                highlightWidth,
-                physicalViewSpaceFrameHeight - 2 * padding,
+              left += cachedMeasureTextWidth(
+                ctx,
+                trimmedText.trimmedString.substring(lastEndIndex, startIndex),
               )
+              const highlightWidth = cachedMeasureTextWidth(
+                ctx,
+                trimmedText.trimmedString.substring(startIndex, endIndex),
+              )
+              matchedTextHighlightBatch.rect({
+                x: left,
+                y: physicalLabelBounds.top() + padding,
+                w: highlightWidth,
+                h: physicalViewSpaceFrameHeight - 2 * padding,
+              })
 
               left += highlightWidth
               lastEndIndex = endIndex
             }
-            ctx.fill()
           }
 
-          // Note that this is specifying the position of the starting text
-          // baseline.
-          if (this.props.searchIsActive && this.props.searchQuery.length > 0 && !match) {
-            ctx.fillStyle = Colors.LIGHT_GRAY
-          } else {
-            ctx.fillStyle = Colors.DARK_GRAY
-          }
-          ctx.fillText(
-            trimmedText.trimmedString,
-            physicalLabelBounds.left() + LABEL_PADDING_PX,
-            Math.round(
+          const batch = this.props.searchResults != null && !match ? fadedLabelBatch : labelBatch
+          batch.text({
+            text: trimmedText.trimmedString,
+
+            // This is specifying the position of the starting text baseline.
+            x: physicalLabelBounds.left() + LABEL_PADDING_PX,
+            y: Math.round(
               physicalLabelBounds.bottom() -
                 (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2,
             ),
-          )
+          })
         }
       }
       for (let child of frame.children) {
@@ -307,19 +282,14 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
       }
     }
 
-    for (let frame of this.props.flamechart.getLayers()[0] || []) {
-      renderFrameLabelAndChildren(frame)
-    }
-
     const frameOutlineWidth = 2 * window.devicePixelRatio
     ctx.strokeStyle = Colors.PALE_DARK_BLUE
-    ctx.lineWidth = frameOutlineWidth
     const minConfigSpaceWidthToRenderOutline = (
       configToPhysical.inverseTransformVector(new Vec2(1, 0)) || new Vec2(0, 0)
     ).x
 
     const renderSpecialFrameOutlines = (frame: FlamechartFrame, depth = 0) => {
-      if (!this.props.selectedNode && !this.props.searchIsActive) return
+      if (!this.props.selectedNode && this.props.searchResults == null) return
       const width = frame.end - frame.start
       const y = this.props.renderInverted ? this.configSpaceSize().y - 1 - depth : depth
       const configSpaceBounds = new Rect(new Vec2(frame.start, y), new Vec2(width, 1))
@@ -330,49 +300,68 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
       if (configSpaceBounds.top() > this.props.configSpaceViewportRect.bottom()) return
 
       if (configSpaceBounds.hasIntersectionWith(this.props.configSpaceViewportRect)) {
-        let outlineColor: string | null = null
+        if (this.props.searchResults?.getMatchForFrame(frame.node.frame)) {
+          const physicalRectBounds = configToPhysical.transformRect(configSpaceBounds)
+          matchedFrameBatch.rect({
+            x: Math.round(physicalRectBounds.left() + frameOutlineWidth / 2),
+            y: Math.round(physicalRectBounds.top() + frameOutlineWidth / 2),
+            w: Math.round(Math.max(0, physicalRectBounds.width() - frameOutlineWidth)),
+            h: Math.round(Math.max(0, physicalRectBounds.height() - frameOutlineWidth)),
+          })
+        }
 
         if (this.props.selectedNode != null && frame.node.frame === this.props.selectedNode.frame) {
-          if (frame.node === this.props.selectedNode) {
-            outlineColor = Colors.DARK_BLUE
-          } else if (ctx.strokeStyle !== Colors.PALE_DARK_BLUE) {
-            outlineColor = Colors.PALE_DARK_BLUE
-          }
-        } else {
-          if (frameMatchesSearchQuery(frame.node.frame)) {
-            outlineColor = Colors.YELLOW
-          }
-        }
+          let batch =
+            frame.node === this.props.selectedNode
+              ? directlySelectedOutlineBatch
+              : indirectlySelectedOutlineBatch
 
-        if (outlineColor != null) {
-          if (ctx.strokeStyle !== outlineColor) {
-            // If the outline color changed, stroke the existing path
-            // constructed by previous ctx.rect calls, then update the stroke
-            // style before drawing the next one.
-            ctx.stroke()
-            ctx.beginPath()
-            ctx.strokeStyle = outlineColor
-          }
           const physicalRectBounds = configToPhysical.transformRect(configSpaceBounds)
-          ctx.rect(
-            Math.round(physicalRectBounds.left() + 1 + frameOutlineWidth / 2),
-            Math.round(physicalRectBounds.top() + 1 + frameOutlineWidth / 2),
-            Math.round(Math.max(0, physicalRectBounds.width() - 2 - frameOutlineWidth)),
-            Math.round(Math.max(0, physicalRectBounds.height() - 2 - frameOutlineWidth)),
-          )
+          batch.rect({
+            x: Math.round(physicalRectBounds.left() + 1 + frameOutlineWidth / 2),
+            y: Math.round(physicalRectBounds.top() + 1 + frameOutlineWidth / 2),
+            w: Math.round(Math.max(0, physicalRectBounds.width() - 2 - frameOutlineWidth)),
+            h: Math.round(Math.max(0, physicalRectBounds.height() - 2 - frameOutlineWidth)),
+          })
         }
       }
-
       for (let child of frame.children) {
         renderSpecialFrameOutlines(child, depth + 1)
       }
     }
 
-    ctx.beginPath()
     for (let frame of this.props.flamechart.getLayers()[0] || []) {
       renderSpecialFrameOutlines(frame)
     }
-    ctx.stroke()
+
+    for (let frame of this.props.flamechart.getLayers()[0] || []) {
+      renderFrameLabelAndChildren(frame)
+    }
+
+    matchedFrameBatch.fill(ctx, Colors.ORANGE)
+    matchedTextHighlightBatch.fill(ctx, Colors.YELLOW)
+    fadedLabelBatch.fill(ctx, Colors.LIGHT_GRAY)
+    labelBatch.fill(ctx, Colors.BLACK)
+    indirectlySelectedOutlineBatch.stroke(ctx, Colors.PALE_DARK_BLUE, frameOutlineWidth)
+    directlySelectedOutlineBatch.stroke(ctx, Colors.DARK_BLUE, frameOutlineWidth)
+
+    if (this.hoveredLabel) {
+      let color = Colors.DARK_GRAY
+      if (this.props.selectedNode === this.hoveredLabel.node) {
+        color = Colors.DARK_BLUE
+      }
+
+      ctx.lineWidth = 2 * devicePixelRatio
+      ctx.strokeStyle = color
+
+      const physicalViewBounds = configToPhysical.transformRect(this.hoveredLabel.configSpaceBounds)
+      ctx.strokeRect(
+        Math.round(physicalViewBounds.left()),
+        Math.round(physicalViewBounds.top()),
+        Math.round(Math.max(0, physicalViewBounds.width())),
+        Math.round(Math.max(0, physicalViewBounds.height())),
+      )
+    }
 
     this.renderTimeIndicators()
   }
@@ -754,10 +743,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     if (this.props.flamechart !== nextProps.flamechart) {
       this.hoveredLabel = null
       this.renderCanvas()
-    } else if (
-      this.props.searchQuery !== nextProps.searchQuery ||
-      this.props.searchIsActive !== nextProps.searchIsActive
-    ) {
+    } else if (this.props.searchResults !== nextProps.searchResults) {
       this.renderCanvas()
     } else if (this.props.selectedNode !== nextProps.selectedNode) {
       this.renderCanvas()
