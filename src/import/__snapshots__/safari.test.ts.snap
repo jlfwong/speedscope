@@ -79,7 +79,9 @@ Object {
   "name": "GrabaciÃ³n de Control temporal 1",
   "stacks": Array [
     "injectModule;(anonymous) 1.00ms",
+    " 39.93ms",
     "(program);alpha;delta;gamma 10.83ms",
+    " 2.46ms",
     "(program);alpha;delta 3.09ms",
     "(program);alpha;beta;gamma 4.64ms",
     "(program);alpha;delta;gamma 1.55ms",
@@ -88,6 +90,7 @@ Object {
     "(program);alpha;beta;gamma 4.64ms",
     "(program);alpha;delta;gamma 1.55ms",
     "(program);alpha;beta;gamma 1.55ms",
+    " 253.50ms",
     "firstOpenSearchURLString 517.42µs",
   ],
 }

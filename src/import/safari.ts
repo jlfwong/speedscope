@@ -83,12 +83,36 @@ export function importFromSafari(contents: SafariProfile): Profile | null {
   }
 
   const {recording} = contents
-  const duration = recording.sampleDurations.reduce((a, b) => a + b, 0)
-  const profile = new StackListProfileBuilder(duration)
+  const {sampleStackTraces, sampleDurations}=recording
 
-  recording.sampleStackTraces.forEach((sample, i) => {
-    profile.appendSampleWithWeight(makeStack(sample.stackFrames), recording.sampleDurations[i])
+  const count = sampleStackTraces.length
+  if (count < 1) {
+    console.warn('Empty profile')
+    return null
+  }
+
+  const profileDuration = sampleStackTraces[count - 1].timestamp - sampleStackTraces[0].timestamp + sampleDurations[0]
+  const profile = new StackListProfileBuilder(profileDuration)
+
+  let previousEndTime = Number.MAX_VALUE
+
+  sampleStackTraces.forEach((sample, i) => {
+    const endTime = sample.timestamp
+    const duration = sampleDurations[i]
+    const startTime = endTime - duration
+    const idleDurationBefore = startTime - previousEndTime
+
+    // FIXME: 2ms is a lot, but Safari's timestamps and durations don't line up very well and will create
+    // phantom idle time
+    if (idleDurationBefore > 0.002) {
+      profile.appendSampleWithWeight([], idleDurationBefore)
+    }
+
+    profile.appendSampleWithWeight(makeStack(sample.stackFrames), duration)
+
+    previousEndTime = endTime
   })
+
   profile.setValueFormatter(new TimeFormatter('seconds'))
   profile.setName(recording.displayName)
   return profile.build()
