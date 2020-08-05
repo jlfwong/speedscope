@@ -224,6 +224,9 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile): Profile {
   // Ref: https://github.com/v8/v8/blob/44bd8fd7/src/inspector/js_protocol.json#L1485
   let elapsed = chromeProfile.timeDeltas[0]
 
+  // Prevents negative time deltas from causing bad data.
+  let lastElapsed = elapsed
+
   let lastNodeId = NaN
 
   // The chrome CPU profile format doesn't collapse identical samples. We'll do that
@@ -232,21 +235,30 @@ export function importFromChromeCPUProfile(chromeProfile: CPUProfile): Profile {
     const nodeId = chromeProfile.samples[i]
     if (nodeId != lastNodeId) {
       samples.push(nodeId)
-      sampleTimes.push(elapsed)
+      if (elapsed < lastElapsed) {
+        sampleTimes.push(lastElapsed)
+      } else {
+        sampleTimes.push(elapsed)
+        lastElapsed = elapsed
+      }
     }
 
     if (i === chromeProfile.samples.length - 1) {
       if (!isNaN(lastNodeId)) {
         samples.push(lastNodeId)
-        sampleTimes.push(elapsed)
+        if (elapsed < lastElapsed) {
+          sampleTimes.push(lastElapsed)
+        } else {
+          sampleTimes.push(elapsed)
+          lastElapsed = elapsed
+        }
       }
     } else {
-      let timeDelta = chromeProfile.timeDeltas[i + 1]
-      if (timeDelta < 0) {
-        // This is super noisy, but can be helpful when debugging strange data
-        // console.warn('Substituting zero for unexpected time delta:', timeDelta, 'at index', i)
-        timeDelta = 0
-      }
+      const timeDelta = chromeProfile.timeDeltas[i + 1]
+      // This is super noisy, but can be helpful when debugging strange data
+      // if (timeDelta < 0) {
+      //   console.warn('Substituting zero for unexpected time delta:', timeDelta, 'at index', i)
+      // }
 
       elapsed += timeDelta
       lastNodeId = nodeId
