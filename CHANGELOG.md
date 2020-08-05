@@ -1,5 +1,15 @@
 ## Unreleased
 
+## [1.9.0] - 2020-08-05
+
+### Added
+
+- Provide prev/next buttons to cycle through search results, make search results more visually prominen [[#304](https://github.com/jlfwong/speedscope/pull/304)]
+
+### Fixed
+
+- Fix accumulated errors in Chrome profile imports caused by zeroed negative timeDeltas [[#305](https://github.com/jlfwong/speedscope/pull/305)] (by [@taneliang](https://github.com/taneliang))
+
 ## [1.8.0] - 2020-07-19
 
 ### Added
