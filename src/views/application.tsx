@@ -13,6 +13,7 @@ import {LeftHeavyFlamechartView, ChronoFlamechartView} from './flamechart-view-c
 import {CanvasContext} from '../gl/canvas-context'
 import {Graphics} from '../gl/graphics'
 import {Toolbar} from './toolbar'
+import {importJavascriptSymbolMap} from '../lib/js-source-map'
 
 const importModule = import('../import')
 // Force eager loading of the module
@@ -223,11 +224,29 @@ export class Application extends StatelessComponent<ApplicationProps> {
         reader.readAsText(file)
         const fileContents = await fileContentsPromise
 
-        const map = importEmscriptenSymbolMap(fileContents)
-        if (map) {
+        const emscriptenMap = importEmscriptenSymbolMap(fileContents)
+        if (emscriptenMap) {
           const {profile, index} = this.props.activeProfileState
           console.log('Importing as emscripten symbol map')
-          profile.remapNames(name => map.get(name) || name)
+          profile.remapNames(name => emscriptenMap.get(name) || name)
+          return {
+            name: this.props.profileGroup.name || 'profile',
+            indexToView: index,
+            profiles: [profile],
+          }
+        }
+
+        const jsMap = await importJavascriptSymbolMap(fileContents)
+        if (jsMap) {
+          const {profile, index} = this.props.activeProfileState
+          console.log('Importing as javascript symbol map')
+          profile.remapNamesForLineAndColumn(frame => {
+            console.log(frame.line, frame.col, jsMap.get(frame.line ?? -1)?.get(frame.col ?? -1))
+            if (frame.line != null && frame.col != null) {
+              return jsMap.get(frame.line)?.get(frame.col) || frame.name
+            }
+            return frame.name
+          })
           return {
             name: this.props.profileGroup.name || 'profile',
             indexToView: index,

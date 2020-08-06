@@ -80,6 +80,7 @@
   },
   "dependencies": {
     "opn": "5.3.0",
-    "react": "^16.13.1"
+    "react": "^16.13.1",
+    "source-map": "^0.7.3"
   }
 }

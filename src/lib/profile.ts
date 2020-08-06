@@ -413,6 +413,14 @@ export class Profile {
       frame.name = callback(frame.name)
     }
   }
+
+  remapNamesForLineAndColumn(
+    callback: (data: {line?: number; col?: number; name: string}) => string,
+  ) {
+    for (let frame of this.frames) {
+      frame.name = callback(frame)
+    }
+  }
 }
 
 export class StackListProfileBuilder extends Profile {
