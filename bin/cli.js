@@ -4,7 +4,7 @@ const fs = require('fs')
 const os = require('os')
 const stream = require('stream')
 
-const opn = require('opn')
+const open = require('open')
 
 const helpString = `Usage: speedscope [filepath]
 
@@ -89,7 +89,7 @@ async function main() {
 
   console.log('Opening', urlToOpen, 'in your default browser')
 
-  await opn(urlToOpen, {wait: false})
+  await open(urlToOpen, {wait: true})
 }
 
 main()
