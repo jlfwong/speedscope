@@ -89,7 +89,11 @@ async function main() {
 
   console.log('Opening', urlToOpen, 'in your default browser')
 
-  await open(urlToOpen, {wait: true})
+  // We'd like to avoid blocking the terminal on the browsing closing,
+  // but for some reason this doesn't work at all on Windows if we
+  // don't use wait: true.
+  const wait = process.platform === "win32";
+  await open(urlToOpen, {wait})
 }
 
 main()
