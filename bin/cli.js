@@ -4,7 +4,7 @@ const fs = require('fs')
 const os = require('os')
 const stream = require('stream')
 
-const opn = require('opn')
+const open = require('open')
 
 const helpString = `Usage: speedscope [filepath]
 
@@ -89,7 +89,11 @@ async function main() {
 
   console.log('Opening', urlToOpen, 'in your default browser')
 
-  await opn(urlToOpen, {wait: false})
+  // We'd like to avoid blocking the terminal on the browsing closing,
+  // but for some reason this doesn't work at all on Windows if we
+  // don't use wait: true.
+  const wait = process.platform === "win32";
+  await open(urlToOpen, {wait})
 }
 
 main()
