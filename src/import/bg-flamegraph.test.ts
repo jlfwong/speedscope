@@ -7,3 +7,11 @@ test('importFromBGFlameGraph', async () => {
 test('importFromBGFlameGraph with CRLF', async () => {
   await checkProfileSnapshot('./sample/profiles/stackcollapse/simple-crlf.txt')
 })
+
+test('importFromBGFlameGraph with UTF-16, Little Endian', async () => {
+  await checkProfileSnapshot('./sample/profiles/stackcollapse/simple-utf16-le.txt')
+})
+
+test('importFromBGFlameGraph with UTF-16, Big Endian', async () => {
+  await checkProfileSnapshot('./sample/profiles/stackcollapse/simple-utf16-be.txt')
+})

@@ -52,8 +52,19 @@ export class MaybeCompressedDataReader implements ProfileDataSource {
   async readAsText(): Promise<string> {
     const buffer = await this.readAsArrayBuffer()
 
+    // By default, we assume the file is utf-8 encoded.
     let encoding = 'utf-8'
+
     const array = new Uint8Array(buffer)
+    if (array.length > 2) {
+      if (array[0] === 0xff && array[1] === 0xfe) {
+        // UTF-16, Little Endian encoding
+        encoding = 'utf-16le'
+      } else if (array[0] === 0xfe && array[1] === 0xff) {
+        // UTF-16, Big Endian encoding
+        encoding = 'utf-16be'
+      }
+    }
 
     if (typeof TextDecoder !== 'undefined') {
       const decoder = new TextDecoder(encoding)
@@ -62,11 +73,7 @@ export class MaybeCompressedDataReader implements ProfileDataSource {
       // JavaScript strings are UTF-16 encoded, but we're reading data from disk
       // that we're going to blindly assume it's ASCII encoded. This codepath
       // only exists for older browser support.
-      if (encoding !== 'utf-8') {
-        throw new Error(
-          `This file uses a ${encoding} text encoding, but does not support the TextDecoder interface.`,
-        )
-      }
+      console.warn('This browser does not support TextDecoder. Decoding text as ASCII.')
       let ret: string = ''
       for (let i = 0; i < array.length; i++) {
         ret += String.fromCharCode(array[i])
