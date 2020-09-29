@@ -16,7 +16,7 @@
 // Because we're not going to use this in our actual build, it's okay for this
 // to be inefficient.
 
-(function () {
+;(function () {
   const nodeVersion = process.versions.node
   const versionParts = nodeVersion.split('.')
   const majorVersion = parseInt(versionParts[0], 10)
@@ -48,4 +48,10 @@
     this.splice(0, this.length, ...arrayWithIndices.map(x => x[0]))
     return this
   }
+})()
+;(function () {
+  // TextDecoder is a global API in browsers, but an imported API in node.
+  //
+  // Let's emulate it being a global API during tests.
+  global.TextDecoder = require('util').TextDecoder
 })()
