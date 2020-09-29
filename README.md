@@ -36,6 +36,7 @@ speedscope is designed to ingest profiles from a variety of different profilers 
 - JavaScript
   - [Importing from Chrome](https://github.com/jlfwong/speedscope/wiki/Importing-from-Chrome)
   - [Importing from Firefox](https://github.com/jlfwong/speedscope/wiki/Importing-from-Firefox)
+  - [Importing from Safari](https://github.com/jlfwong/speedscope/wiki/Importing-from-Safari)
   - [Importing from Node.js](https://github.com/jlfwong/speedscope/wiki/Importing-from-Node.js)
 - Ruby
   - [Importing from stackprof](https://github.com/jlfwong/speedscope/wiki/Importing-from-stackprof-(ruby))

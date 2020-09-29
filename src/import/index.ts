@@ -15,6 +15,7 @@ import {importSpeedscopeProfiles} from '../lib/file-format'
 import {importFromV8ProfLog} from './v8proflog'
 import {importFromLinuxPerf} from './linux-tools-perf'
 import {importFromHaskell} from './haskell'
+import {importFromSafari} from './safari'
 import {ProfileDataSource, TextProfileDataSource, MaybeCompressedDataReader} from './utils'
 import {importAsPprofProfile} from './pprof'
 import {decodeBase64} from '../lib/utils'
@@ -131,6 +132,9 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
   } else if (fileName.endsWith('.heapprofile')) {
     console.log('Importing as Chrome Heap Profile')
     return toGroup(importFromChromeHeapProfile(JSON.parse(contents)))
+  } else if (fileName.endsWith('-recording.json')) {
+    console.log('Importing as Safari profile')
+    return toGroup(importFromSafari(JSON.parse(contents)))
   }
 
   // Second pass: Try to guess what file format it is based on structure
@@ -169,6 +173,9 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     } else if ('rts_arguments' in parsed && 'initial_capabilities' in parsed) {
       console.log('Importing as Haskell GHC JSON Profile')
       return importFromHaskell(parsed)
+    } else if ('recording' in parsed && 'sampleStackTraces' in parsed.recording) {
+      console.log('Importing as Safari profile')
+      return toGroup(importFromSafari(JSON.parse(contents)))
     }
   } else {
     // Format is not JSON

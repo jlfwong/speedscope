@@ -1,0 +1,101 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`importFromSafari 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": 13,
+      "file": "__InjectedScript_InjectedScriptSource.js",
+      "key": "injectModule:__InjectedScript_InjectedScriptSource.js:109:13",
+      "line": 109,
+      "name": "injectModule",
+      "selfWeight": 0,
+      "totalWeight": 0.001,
+    },
+    Frame {
+      "col": 10,
+      "file": "__InjectedScript_CommandLineAPIModuleSource.js",
+      "key": ":__InjectedScript_CommandLineAPIModuleSource.js:2:10",
+      "line": 2,
+      "name": "(anonymous)",
+      "selfWeight": 0.001,
+      "totalWeight": 0.001,
+    },
+    Frame {
+      "col": 1,
+      "file": "file:///speedscope/sample/programs/javascript/simple.js",
+      "key": "(program):file:///speedscope/sample/programs/javascript/simple.js:1:1",
+      "line": 1,
+      "name": "(program)",
+      "selfWeight": 0,
+      "totalWeight": 0.03248933597933502,
+    },
+    Frame {
+      "col": 15,
+      "file": "file:///speedscope/sample/programs/javascript/simple.js",
+      "key": "alpha:file:///speedscope/sample/programs/javascript/simple.js:1:15",
+      "line": 1,
+      "name": "alpha",
+      "selfWeight": 0,
+      "totalWeight": 0.03248933597933502,
+    },
+    Frame {
+      "col": 15,
+      "file": "file:///speedscope/sample/programs/javascript/simple.js",
+      "key": "delta:file:///speedscope/sample/programs/javascript/simple.js:14:15",
+      "line": 14,
+      "name": "delta",
+      "selfWeight": 0.003094222474222382,
+      "totalWeight": 0.020112446082445484,
+    },
+    Frame {
+      "col": 15,
+      "file": "file:///speedscope/sample/programs/javascript/simple.js",
+      "key": "gamma:file:///speedscope/sample/programs/javascript/simple.js:20:15",
+      "line": 20,
+      "name": "gamma",
+      "selfWeight": 0.029395113505112636,
+      "totalWeight": 0.029395113505112636,
+    },
+    Frame {
+      "col": 14,
+      "file": "file:///speedscope/sample/programs/javascript/simple.js",
+      "key": "beta:file:///speedscope/sample/programs/javascript/simple.js:8:14",
+      "line": 8,
+      "name": "beta",
+      "selfWeight": 0,
+      "totalWeight": 0.012376889896889526,
+    },
+    Frame {
+      "col": 102,
+      "file": "",
+      "key": "firstOpenSearchURLString::4:102",
+      "line": 4,
+      "name": "firstOpenSearchURLString",
+      "selfWeight": 0.0005174240213818848,
+      "totalWeight": 0.0005174240213818848,
+    },
+  ],
+  "name": "GrabaciÃ³n de Control temporal 1",
+  "stacks": Array [
+    "injectModule;(anonymous) 1.00ms",
+    " 39.93ms",
+    "(program);alpha;delta;gamma 10.83ms",
+    " 2.46ms",
+    "(program);alpha;delta 3.09ms",
+    "(program);alpha;beta;gamma 4.64ms",
+    "(program);alpha;delta;gamma 1.55ms",
+    "(program);alpha;beta;gamma 1.55ms",
+    "(program);alpha;delta;gamma 3.09ms",
+    "(program);alpha;beta;gamma 4.64ms",
+    "(program);alpha;delta;gamma 1.55ms",
+    "(program);alpha;beta;gamma 1.55ms",
+    " 253.50ms",
+    "firstOpenSearchURLString 517.42µs",
+  ],
+}
+`;
+
+exports[`importFromSafari: indexToView 1`] = `0`;
+
+exports[`importFromSafari: profileGroup.name 1`] = `"GrabaciÃ³n de Control temporal 1"`;
