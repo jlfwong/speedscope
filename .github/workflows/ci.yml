@@ -5,9 +5,11 @@ on: [push]
 jobs:
   test:
     runs-on: ubuntu-latest
+
     strategy:
       matrix:
         node-version: [10.x, 12.x, 13.x]
+
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
@@ -16,18 +18,22 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm install
       - run: npm test
-    - name: Coveralls Parallel
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.github_token }}
-        flag-name: run-${{ matrix.node-version }}
-        parallel: true
+        env:
+          CI: true
+
+      - name: Coveralls Parallel
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.github_token }}
+          flag-name: run-${{ matrix.node-version }}
+          parallel: true
+
   finish:
     needs: test
     runs-on: ubuntu-latest
     steps:
-    - name: Coveralls Finished
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.github_token }}
-        parallel-finished: true
+      - name: Coveralls Finished
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.github_token }}
+          parallel-finished: true
