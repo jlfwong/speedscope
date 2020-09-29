@@ -50,6 +50,7 @@
     "prettier": "2.0.4",
     "protobufjs": "6.8.8",
     "redux": "^4.0.5",
+    "source-map": "0.7.3",
     "ts-jest": "24.3.0",
     "typescript": "3.9.2",
     "typescript-eslint-parser": "17.0.1",
