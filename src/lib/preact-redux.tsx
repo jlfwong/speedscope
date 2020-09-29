@@ -1,7 +1,7 @@
 /**
  * As of Preact 10.x, they no longer have an officially supported preact-redux library.
  * It's possible to use react-redux with some hacks, but these hacks cause npm run pack
- * to error out because of (intentinoally) unmet peer dependencies.
+ * to error out because of (intentionally) unmet peer dependencies.
  *
  * I could stack more hacks to fix this problem, but I'd rather just drop the dependency
  * and remove the need to do any dependency hacking by writing the very small part of
