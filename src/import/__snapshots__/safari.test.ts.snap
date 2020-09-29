@@ -76,7 +76,7 @@ Object {
       "totalWeight": 0.0005174240213818848,
     },
   ],
-  "name": "GrabaciÃ³n de Control temporal 1",
+  "name": "Grabación de Control temporal 1",
   "stacks": Array [
     "injectModule;(anonymous) 1.00ms",
     " 39.93ms",
@@ -98,4 +98,4 @@ Object {
 
 exports[`importFromSafari: indexToView 1`] = `0`;
 
-exports[`importFromSafari: profileGroup.name 1`] = `"GrabaciÃ³n de Control temporal 1"`;
+exports[`importFromSafari: profileGroup.name 1`] = `"Grabación de Control temporal 1"`;
