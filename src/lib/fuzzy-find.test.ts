@@ -43,7 +43,7 @@ describe('fuzzyMatchStrings', () => {
   })
 
   test('full text match', () => {
-    assertMatch('hello', 'hello', '[hello]z')
+    assertMatch('hello', 'hello', '[hello]')
     assertMatch('multiple words', 'multiple words', '[multiple words]')
   })
 
