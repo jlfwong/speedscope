@@ -83,7 +83,7 @@ export function importFromSafari(contents: SafariProfile): Profile | null {
   }
 
   const {recording} = contents
-  const {sampleStackTraces, sampleDurations}=recording
+  const {sampleStackTraces, sampleDurations} = recording
 
   const count = sampleStackTraces.length
   if (count < 1) {
@@ -91,7 +91,8 @@ export function importFromSafari(contents: SafariProfile): Profile | null {
     return null
   }
 
-  const profileDuration = sampleStackTraces[count - 1].timestamp - sampleStackTraces[0].timestamp + sampleDurations[0]
+  const profileDuration =
+    sampleStackTraces[count - 1].timestamp - sampleStackTraces[0].timestamp + sampleDurations[0]
   const profile = new StackListProfileBuilder(profileDuration)
 
   let previousEndTime = Number.MAX_VALUE
