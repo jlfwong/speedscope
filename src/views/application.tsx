@@ -2,9 +2,9 @@ import {h} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 import {FileSystemDirectoryEntry} from '../import/file-system-entry'
 
-import {ProfileGroup} from '../lib/profile'
+import {ProfileGroup, SymbolRemapper} from '../lib/profile'
 import {FontFamily, FontSize, Colors, Duration} from './style'
-import {importEmscriptenSymbolMap} from '../lib/emscripten'
+import {importEmscriptenSymbolMap as importEmscriptenSymbolRemapper} from '../lib/emscripten'
 import {SandwichViewContainer} from './sandwich-view'
 import {saveToFile} from '../lib/file-format'
 import {ApplicationState, ViewMode, canUseXHR, ActiveProfileState} from '../store'
@@ -13,6 +13,7 @@ import {LeftHeavyFlamechartView, ChronoFlamechartView} from './flamechart-view-c
 import {CanvasContext} from '../gl/canvas-context'
 import {Graphics} from '../gl/graphics'
 import {Toolbar} from './toolbar'
+import {importJavaScriptSourceMapSymbolRemapper} from '../lib/js-source-map'
 
 const importModule = import('../import')
 // Force eager loading of the module
@@ -223,11 +224,23 @@ export class Application extends StatelessComponent<ApplicationProps> {
         reader.readAsText(file)
         const fileContents = await fileContentsPromise
 
-        const map = importEmscriptenSymbolMap(fileContents)
-        if (map) {
-          const {profile, index} = this.props.activeProfileState
+        let symbolRemapper: SymbolRemapper | null = null
+
+        const emscriptenSymbolRemapper = importEmscriptenSymbolRemapper(fileContents)
+        if (emscriptenSymbolRemapper) {
           console.log('Importing as emscripten symbol map')
-          profile.remapNames(name => map.get(name) || name)
+          symbolRemapper = emscriptenSymbolRemapper
+        }
+
+        const jsSourceMapRemapper = await importJavaScriptSourceMapSymbolRemapper(fileContents)
+        if (!symbolRemapper && jsSourceMapRemapper) {
+          console.log('Importing as JavaScript source map')
+          symbolRemapper = jsSourceMapRemapper
+        }
+
+        if (symbolRemapper != null) {
+          const {profile, index} = this.props.activeProfileState
+          profile.remapSymbols(symbolRemapper)
           return {
             name: this.props.profileGroup.name || 'profile',
             indexToView: index,

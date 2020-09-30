@@ -1,7 +1,8 @@
-type EmscriptenSymbolMap = Map<string, string>
-
 // Returns `input` with hex escapes expanded (e.g. `\20` becomes ` `.)
 //
+
+import {Frame, SymbolRemapper} from './profile'
+
 // NOTE: This will fail to ignore escaped backslahes (e.g. `\\20`).
 function unescapeHex(input: string): string {
   return input.replace(/\\([a-fA-F0-9]{2})/g, (_match, group) => {
@@ -15,7 +16,7 @@ function unescapeHex(input: string): string {
 // have the associated symbol map. To do this, first drop the profile into speedscope
 // and then drop the symbol map. After the second drop, the symbols will be remapped to
 // their original names.
-export function importEmscriptenSymbolMap(contents: string): EmscriptenSymbolMap | null {
+export function importEmscriptenSymbolMap(contents: string): SymbolRemapper | null {
   const lines = contents.split('\n')
   if (!lines.length) return null
 
@@ -23,7 +24,7 @@ export function importEmscriptenSymbolMap(contents: string): EmscriptenSymbolMap
   if (lines[lines.length - 1] === '') lines.pop()
   if (!lines.length) return null
 
-  const map: EmscriptenSymbolMap = new Map()
+  const map = new Map<string, string>()
   const intRegex = /^(\d+):(.+)$/
   const idRegex = /^([\$\w]+):([\$\w-]+)$/
 
@@ -45,5 +46,11 @@ export function importEmscriptenSymbolMap(contents: string): EmscriptenSymbolMap
     return null
   }
 
-  return map
+  return (frame: Frame) => {
+    if (!map.has(frame.name)) {
+      return null
+    }
+
+    return {name: map.get(frame.name)}
+  }
 }

@@ -17,12 +17,16 @@ export interface FrameInfo {
   // call stack frame.
   file?: string
 
-  // Line in the given file where this frame occurs
+  // Line in the given file where this frame occurs, 1-based.
   line?: number
 
-  // Column in the file
+  // Column in the file, 1-based.
   col?: number
 }
+
+export type SymbolRemapper = (
+  frame: Frame,
+) => {name?: string; file?: string; line?: number; col?: number} | null
 
 export class HasWeights {
   private selfWeight = 0
@@ -408,9 +412,25 @@ export class Profile {
     }
   }
 
-  remapNames(callback: (name: string) => string) {
+  remapSymbols(callback: SymbolRemapper) {
     for (let frame of this.frames) {
-      frame.name = callback(frame.name)
+      const remapped = callback(frame)
+      if (remapped == null) {
+        continue
+      }
+      const {name, file, line, col} = remapped
+      if (name != null) {
+        frame.name = name
+      }
+      if (file != null) {
+        frame.file = file
+      }
+      if (line != null) {
+        frame.line = line
+      }
+      if (col != null) {
+        frame.col = col
+      }
     }
   }
 }
