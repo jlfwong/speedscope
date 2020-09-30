@@ -1,5 +1,17 @@
 ## Unreleased
 
+## [1.10.0] - 2020-09-29
+
+### Added
+
+- Support for importing profiles from Safari [[#300](https://github.com/jlfwong/speedscope/pull/300)] (by [@radex](https://github.com/radex))
+
+### Fixed
+
+- Fixed browser not opening on Windows when using the CLI [[#307](https://github.com/jlfwong/speedscope/pull/307)] (by [@spillerrec](https://github.com/spillerrec))
+- Fixed import of UTF-16 encoded files w/ BOM [[#314](https://github.com/jlfwong/speedscope/pull/314)]
+- Removed accidental dependency on React [[#315](https://github.com/jlfwong/speedscope/pull/315)]
+
 ## [1.9.0] - 2020-08-05
 
 ### Added
