@@ -68,9 +68,9 @@ class StackTraceView extends Component<StackTraceViewProps, {}> {
 
       if (frame.file) {
         let pos = frame.file
-        if (frame.line) {
+        if (frame.line != null) {
           pos += `:${frame.line}`
-          if (frame.col) {
+          if (frame.col != null) {
             pos += `:${frame.col}`
           }
         }
