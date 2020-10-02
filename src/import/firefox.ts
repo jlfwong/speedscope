@@ -176,7 +176,7 @@ export function importFromFirefox(firefoxProfile: FirefoxProfile): Profile {
         const frameData = thread.frameTable.data[f]
         const location = thread.stringTable[frameData[0]]
 
-        const match = /(.*)\s+\((.*?):?(\d+)?\)$/.exec(location)
+        const match = /(.*)\s+\((.*?)(?::(\d+))?(?::(\d+))?\)$/.exec(location)
 
         if (!match) return null
 
@@ -194,6 +194,7 @@ export function importFromFirefox(firefoxProfile: FirefoxProfile): Profile {
           name: match[1]!,
           file: match[2]!,
           line: match[3] ? parseInt(match[3]) : undefined,
+          col: match[4] ? parseInt(match[4]) : undefined,
         }))
       })
       .filter(f => f != null) as FrameInfo[]
