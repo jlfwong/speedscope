@@ -170,8 +170,17 @@ function frameInfoForCallFrame(callFrame: CPUProfileCallFrame) {
   return getOrInsert(callFrameToFrameInfo, callFrame, callFrame => {
     const name = callFrame.functionName || '(anonymous)'
     const file = callFrame.url
-    const line = callFrame.lineNumber
-    const col = callFrame.columnNumber
+
+    // In Chrome profiles, line numbers & column numbers are both 0-indexed.
+    //
+    // We're going to normalize these to be 1-based to avoid needing to normalize
+    // these at the presentation layer.
+    let line = callFrame.lineNumber
+    if (line != null) line++
+
+    let col = callFrame.columnNumber
+    if (col != null) col++
+
     return {
       key: `${name}:${file}:${line}:${col}`,
       name,

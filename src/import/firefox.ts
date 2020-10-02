@@ -176,7 +176,7 @@ export function importFromFirefox(firefoxProfile: FirefoxProfile): Profile {
         const frameData = thread.frameTable.data[f]
         const location = thread.stringTable[frameData[0]]
 
-        const match = /(.*)\s+\((.*?):?(\d+)?\)$/.exec(location)
+        const match = /(.*)\s+\((.*?)(?::(\d+))?(?::(\d+))?\)$/.exec(location)
 
         if (!match) return null
 
@@ -193,7 +193,11 @@ export function importFromFirefox(firefoxProfile: FirefoxProfile): Profile {
           key: location,
           name: match[1]!,
           file: match[2]!,
+
+          // In Firefox profiles, line numbers are 1-based, but columns are
+          // 0-based. Let's normalize both to be 1-based.
           line: match[3] ? parseInt(match[3]) : undefined,
+          col: match[4] ? parseInt(match[4]) + 1 : undefined,
         }))
       })
       .filter(f => f != null) as FrameInfo[]
