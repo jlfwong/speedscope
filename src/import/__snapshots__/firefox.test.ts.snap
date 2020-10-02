@@ -64,7 +64,7 @@ exports[`importFromFirefox ignore self-hosted 1`] = `
 Object {
   "frames": Array [
     Frame {
-      "col": 14,
+      "col": 15,
       "file": "http://localhost:8000/simple.js",
       "key": "alpha (http://localhost:8000/simple.js:1:14)",
       "line": 1,
@@ -73,7 +73,7 @@ Object {
       "totalWeight": 26.983816999942064,
     },
     Frame {
-      "col": 14,
+      "col": 15,
       "file": "http://localhost:8000/simple.js",
       "key": "delta (http://localhost:8000/simple.js:14:14)",
       "line": 14,
@@ -82,7 +82,7 @@ Object {
       "totalWeight": 11.946324001066387,
     },
     Frame {
-      "col": 14,
+      "col": 15,
       "file": "http://localhost:8000/simple.js",
       "key": "gamma (http://localhost:8000/simple.js:20:14)",
       "line": 20,
@@ -91,7 +91,7 @@ Object {
       "totalWeight": 26.983816999942064,
     },
     Frame {
-      "col": 13,
+      "col": 14,
       "file": "http://localhost:8000/simple.js",
       "key": "beta (http://localhost:8000/simple.js:8:13)",
       "line": 8,
