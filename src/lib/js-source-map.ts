@@ -22,7 +22,11 @@
 // use esbuild rather than parcel at all, so for now I'm just punting on this by
 // using an old-version of source-map which doesn't depend on wasm.
 
-import {SourceMapConsumer, MappingItem, RawSourceMap} from 'source-map'
+// This is rarely used, so let's load it async to avoid bloating the initial
+// bundle.
+import type {MappingItem, RawSourceMap, SourceMapConsumer} from 'source-map'
+const sourceMapModule = import('source-map')
+
 import {Frame, SymbolRemapper} from './profile'
 import {findIndexBisect} from './utils'
 
@@ -31,12 +35,14 @@ const DEBUG = false
 export async function importJavaScriptSourceMapSymbolRemapper(
   contentsString: string,
 ): Promise<SymbolRemapper | null> {
+  const sourceMap = await sourceMapModule
+
   let consumer: SourceMapConsumer | null = null
   let contents: RawSourceMap | null = null
 
   try {
     contents = JSON.parse(contentsString)
-    consumer = new SourceMapConsumer(contents!)
+    consumer = new sourceMap.SourceMapConsumer(contents!)
   } catch (e) {
     return null
   }
@@ -59,7 +65,7 @@ export async function importJavaScriptSourceMapSymbolRemapper(
 
     // We're going to binary search through these later, so make sure they're
     // sorted by their order in the generated file.
-    SourceMapConsumer.GENERATED_ORDER,
+    sourceMap.SourceMapConsumer.GENERATED_ORDER,
   )
 
   return (frame: Frame) => {

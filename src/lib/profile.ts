@@ -3,9 +3,6 @@ import {ValueFormatter, RawValueFormatter} from './value-formatters'
 import {FileFormat} from './file-format-spec'
 const demangleCppModule = import('./demangle-cpp')
 
-// Force eager loading of the module
-demangleCppModule.then(() => {})
-
 export interface FrameInfo {
   key: string | number
 
