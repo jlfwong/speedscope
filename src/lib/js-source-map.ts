@@ -1,53 +1,69 @@
-// TODO(jlfwong): lazy-load these, or this entire file
-import * as sourcemap from 'source-map'
-import {MappingItem} from 'source-map'
+// This file contains code to allow profiles to be remapped by JavaScript source maps.
+//
+// As of writing, this is using an out-of-date version of source-map, because the
+// source-map library migrated to using web-assembly. This requires loading the
+// web-assembly ball. The easiest way to do this is to load it from a third-party
+// URL, but I want speedscope to work standalone offline. This means that the remaining
+// options require some way of having a local URL that corresponds the .wasm file.
+//
+// Also as of writing, speedscope is bundled with Parcel v1. Trying to import
+// a .wasm file in Parcel v1 tries to load the wasm module itself, which is not
+// what I'm trying to do -- I want SourceMapConsumer.initialize to be the thing
+// booting the WebAssembly, not Parcel itself.
+//
+// One way of getting around this problem is to modify the build system to
+// copy the .wasm file from node_modules/source-map/lib/mappings.wasm. I could do
+// this, but it's a bit of a pain.
+//
+// Another would be to use something like
+// import("url:../node_modules/source-map/lib/mappings.wasm"), and then pass the
+// resulting URL to SourceMapConsumer.initialize. This is also kind of a pain,
+// because I can only do that if I upgrade to Parcel v2. Ultimately, I'd like to
+// use esbuild rather than parcel at all, so for now I'm just punting on this by
+// using an old-version of source-map which doesn't depend on wasm.
+
+import {SourceMapConsumer, MappingItem, RawSourceMap} from 'source-map'
 import {Frame, SymbolRemapper} from './profile'
 import {findIndexBisect} from './utils'
-
-// Looks like the d.ts description doens't properly define `initialize`
-// @ts-ignore
-
-// TODO(jlfwong): Modify this so it works offline
-sourcemap.SourceMapConsumer.initialize({
-  'lib/mappings.wasm': 'https://unpkg.com/source-map@0.7.3/lib/mappings.wasm',
-})
 
 const DEBUG = false
 
 export async function importJavaScriptSourceMapSymbolRemapper(
   contentsString: string,
 ): Promise<SymbolRemapper | null> {
-  const contents = JSON.parse(contentsString)
-
-  const mappingItems: MappingItem[] = []
+  let consumer: SourceMapConsumer | null = null
+  let contents: RawSourceMap | null = null
 
   try {
-    await sourcemap.SourceMapConsumer.with(contents, null, consumer => {
-      consumer.eachMapping(
-        function (m: MappingItem) {
-          // The sourcemap library uses 1-based line numbers, and 0-based column
-          // numbers. speedscope uses 1-based line-numbers, and 1-based column
-          // numbers for its in-memory representation, so we'll normalize that
-          // here too.
-          mappingItems.push({
-            ...m,
-            generatedColumn: m.generatedColumn + 1,
-            originalColumn: m.originalColumn + 1,
-          })
-        },
-        {},
-
-        // We're going to binary search through these later, so make sure they're
-        // sorted by their order in the generated file.
-        sourcemap.SourceMapConsumer.GENERATED_ORDER,
-      )
-    })
+    contents = JSON.parse(contentsString)
+    consumer = new SourceMapConsumer(contents!)
   } catch (e) {
     return null
   }
 
+  const mappingItems: MappingItem[] = []
+
+  consumer.eachMapping(
+    function (m: MappingItem) {
+      // The sourcemap library uses 1-based line numbers, and 0-based column
+      // numbers. speedscope uses 1-based line-numbers, and 1-based column
+      // numbers for its in-memory representation, so we'll normalize that
+      // here too.
+      mappingItems.push({
+        ...m,
+        generatedColumn: m.generatedColumn + 1,
+        originalColumn: m.originalColumn + 1,
+      })
+    },
+    {},
+
+    // We're going to binary search through these later, so make sure they're
+    // sorted by their order in the generated file.
+    SourceMapConsumer.GENERATED_ORDER,
+  )
+
   return (frame: Frame) => {
-    if (contents.file && !frame.file?.endsWith(contents.file)) {
+    if (contents?.file && !frame.file?.endsWith(contents!.file)) {
       // If the source map has a "file" field, and the given stack frame
       // doesn't match, then this is not the file we're remapping.
       return null
