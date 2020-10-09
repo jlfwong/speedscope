@@ -69,11 +69,17 @@ export async function importJavaScriptSourceMapSymbolRemapper(
     sourceMap.SourceMapConsumer.GENERATED_ORDER,
   )
 
-  // Try to figure out which file we're remapping here.
-  const fileBeingRemapped = contents?.file ?? sourceMapFileName.replace(/(?:\.map|.json)*$/g, "")
+  const sourceMapFileNameWithoutExt = sourceMapFileName.replace(/\.[^/]*$/, "")
 
   return (frame: Frame) => {
-    if (fileBeingRemapped && !frame.file?.endsWith(fileBeingRemapped)) {
+    let fileMatches = false
+    if (contents?.file && contents?.file === frame.file) {
+      fileMatches = true
+    } else if (("/" + frame.file?.replace(/\.[^/]*$/, "")).endsWith("/" + sourceMapFileNameWithoutExt)) {
+      fileMatches = true
+    }
+    if (!fileMatches) {
+      // The source-map doesn't apply to the file this frame is defined in.
       return null
     }
 
@@ -136,6 +142,24 @@ export async function importJavaScriptSourceMapSymbolRemapper(
 
     if (item.name != null) {
       frameInfo.name = item.name
+    } else if (item.source != null) {
+      // HACK: If the item name isn't specified, but the source is present, then
+      // we're going to try to guess what the name is by using the originalLine
+      // and originalColumn.
+      const content = consumer?.sourceContentFor(item.source, /*returnNullOnMissing: */ true)
+      if (content) {
+        const lines = content.split("\n")
+        const line = lines[item.originalLine - 1]
+        if (line) {
+          // It's possible this source map entry will contain stuff other than
+          // the name, so let's only consider word-ish characters that are part
+          // of the prefix.
+          const identifierMatch = /\w+/.exec(line.substr(item.originalColumn - 1))
+          if (identifierMatch) {
+            frameInfo.name = identifierMatch[0]
+          }
+        }
+      }
     }
 
     if (item.source != null) {
@@ -145,7 +169,7 @@ export async function importJavaScriptSourceMapSymbolRemapper(
     }
 
     if (DEBUG) {
-      console.groupCollapsed(`Remapping ${frame.name} -> ${item.name}`)
+      console.groupCollapsed(`Remapping "${frame.name}" -> "${frameInfo.name}"`)
       console.log('before', {...frame})
       console.log('item @ index', item)
       console.log('item @ index + 1', mappingItems[mappingIndex + 1])
