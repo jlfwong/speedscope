@@ -34,6 +34,7 @@ const DEBUG = false
 
 export async function importJavaScriptSourceMapSymbolRemapper(
   contentsString: string,
+  sourceMapFileName: string
 ): Promise<SymbolRemapper | null> {
   const sourceMap = await sourceMapModule
 
@@ -68,10 +69,11 @@ export async function importJavaScriptSourceMapSymbolRemapper(
     sourceMap.SourceMapConsumer.GENERATED_ORDER,
   )
 
+  // Try to figure out which file we're remapping here.
+  const fileBeingRemapped = contents?.file ?? sourceMapFileName.replace(/(?:\.map|.json)*$/g, "")
+
   return (frame: Frame) => {
-    if (contents?.file && !frame.file?.endsWith(contents!.file)) {
-      // If the source map has a "file" field, and the given stack frame
-      // doesn't match, then this is not the file we're remapping.
+    if (fileBeingRemapped && !frame.file?.endsWith(fileBeingRemapped)) {
       return null
     }
 
@@ -118,6 +120,12 @@ export async function importJavaScriptSourceMapSymbolRemapper(
       // There are no symbols following the given profile frame symbol, so try
       // to apply the very last mapping.
       mappingIndex = mappingItems.length - 1
+    } else if (mappingIndex === 0) {
+      // If the very first index in mappingItems is beyond the location in the
+      // profile, it means the name we're looking for doesn't have a
+      // corresponding entry in the source-map (this can happen if the
+      // source-map isn't the right source-map)
+      return null
     } else {
       mappingIndex--
     }

@@ -238,7 +238,10 @@ export class Application extends StatelessComponent<ApplicationProps> {
           symbolRemapper = emscriptenSymbolRemapper
         }
 
-        const jsSourceMapRemapper = await importJavaScriptSourceMapSymbolRemapper(fileContents)
+        const jsSourceMapRemapper = await importJavaScriptSourceMapSymbolRemapper(
+          fileContents,
+          file.name,
+        )
         if (!symbolRemapper && jsSourceMapRemapper) {
           console.log('Importing as JavaScript source map')
           symbolRemapper = jsSourceMapRemapper
