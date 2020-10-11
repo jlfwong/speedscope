@@ -45,7 +45,7 @@ speedscope is designed to ingest profiles from a variety of different profilers 
 - Python
   - [Importing from py-spy](https://github.com/jlfwong/speedscope/wiki/Importing-from-py-spy-(python))
   - [pyspeedscope](https://github.com/windelbouwman/pyspeedscope)
-  - [Importing from Austin](https://github.com/p403n1x87/austin#speedscope)
+  - [Importing from Austin](https://github.com/P403n1x87/austin-python#format-conversion)
 - Go
   - [Importing from pprof](https://github.com/jlfwong/speedscope/wiki/Importing-from-pprof-(go))  
 - Rust
