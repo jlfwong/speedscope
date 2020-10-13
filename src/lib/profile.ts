@@ -3,9 +3,6 @@ import {ValueFormatter, RawValueFormatter} from './value-formatters'
 import {FileFormat} from './file-format-spec'
 const demangleCppModule = import('./demangle-cpp')
 
-// Force eager loading of the module
-demangleCppModule.then(() => {})
-
 export interface FrameInfo {
   key: string | number
 
@@ -17,12 +14,16 @@ export interface FrameInfo {
   // call stack frame.
   file?: string
 
-  // Line in the given file where this frame occurs
+  // Line in the given file where this frame occurs, 1-based.
   line?: number
 
-  // Column in the file
+  // Column in the file, 1-based.
   col?: number
 }
+
+export type SymbolRemapper = (
+  frame: Frame,
+) => {name?: string; file?: string; line?: number; col?: number} | null
 
 export class HasWeights {
   private selfWeight = 0
@@ -142,6 +143,12 @@ export class Profile {
 
   constructor(totalWeight: number = 0) {
     this.totalWeight = totalWeight
+  }
+
+  shallowClone(): Profile {
+    const profile = new Profile(this.totalWeight)
+    Object.assign(profile, this)
+    return profile
   }
 
   formatValue(v: number) {
@@ -408,9 +415,25 @@ export class Profile {
     }
   }
 
-  remapNames(callback: (name: string) => string) {
+  remapSymbols(callback: SymbolRemapper) {
     for (let frame of this.frames) {
-      frame.name = callback(frame.name)
+      const remapped = callback(frame)
+      if (remapped == null) {
+        continue
+      }
+      const {name, file, line, col} = remapped
+      if (name != null) {
+        frame.name = name
+      }
+      if (file != null) {
+        frame.file = file
+      }
+      if (line != null) {
+        frame.line = line
+      }
+      if (col != null) {
+        frame.col = col
+      }
     }
   }
 }

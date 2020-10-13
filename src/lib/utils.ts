@@ -105,7 +105,7 @@ export function triangle(x: number) {
   return 2.0 * Math.abs(fract(x) - 0.5) - 1.0
 }
 
-export function binarySearch(
+export function findValueBisect(
   lo: number,
   hi: number,
   f: (val: number) => number,
@@ -120,6 +120,39 @@ export function binarySearch(
     if (val < target) lo = mid
     else hi = mid
   }
+}
+
+// Similar to Array.prototype.findIndex, except uses a binary search.
+//
+// This assumes that the condition transitions exactly once from false to true
+// in the list, e.g. the following is a valid input:
+//
+//  ls        = [a, b, c, d]
+//  ls.map(f) = [false, false, true, true]
+//
+// The following is an invalid input:
+//
+//  ls        = [a, b, c, d]
+//  ls.map(f) = [false, true, false, true]
+export function findIndexBisect<T>(ls: T[], f: (val: T) => boolean): number {
+  if (ls.length === 0) return -1
+
+  let lo = 0
+  let hi = ls.length - 1
+
+  while (hi !== lo) {
+    const mid = Math.floor((lo + hi) / 2)
+
+    if (f(ls[mid])) {
+      // The desired index is <= mid
+      hi = mid
+    } else {
+      // The desired index is > mid
+      lo = mid + 1
+    }
+  }
+
+  return f(ls[hi]) ? hi : -1
 }
 
 export function noop(...args: any[]) {}

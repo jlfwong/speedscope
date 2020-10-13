@@ -1,0 +1,23 @@
+{
+  "name": "speedscope-sourcemap-test-project",
+  "version": "1.0.0",
+  "description": "",
+  "private": "true",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run parcel && npm run webpack && npm run esbuild",
+    "parcel": "parcel build -o parcel/typescript-source-map-test typescript-source-map-test.ts",
+    "webpack": "webpack",
+    "esbuild": "esbuild --sourcemap --minify --bundle --outdir=dist/esbuild typescript-source-map-test.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "esbuild": "^0.7.14",
+    "parcel": "^1.12.4",
+    "ts-loader": "^8.0.4",
+    "typescript": "^4.0.3",
+    "webpack": "^5.0.0",
+    "webpack-cli": "^4.0.0"
+  }
+}

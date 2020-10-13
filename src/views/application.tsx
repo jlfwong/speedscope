@@ -2,9 +2,9 @@ import {h} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 import {FileSystemDirectoryEntry} from '../import/file-system-entry'
 
-import {ProfileGroup} from '../lib/profile'
+import {ProfileGroup, SymbolRemapper} from '../lib/profile'
 import {FontFamily, FontSize, Colors, Duration} from './style'
-import {importEmscriptenSymbolMap} from '../lib/emscripten'
+import {importEmscriptenSymbolMap as importEmscriptenSymbolRemapper} from '../lib/emscripten'
 import {SandwichViewContainer} from './sandwich-view'
 import {saveToFile} from '../lib/file-format'
 import {ApplicationState, ViewMode, canUseXHR, ActiveProfileState} from '../store'
@@ -13,10 +13,17 @@ import {LeftHeavyFlamechartView, ChronoFlamechartView} from './flamechart-view-c
 import {CanvasContext} from '../gl/canvas-context'
 import {Graphics} from '../gl/graphics'
 import {Toolbar} from './toolbar'
+import {importJavaScriptSourceMapSymbolRemapper} from '../lib/js-source-map'
 
 const importModule = import('../import')
-// Force eager loading of the module
+
+// Force eager loading of a few code-split modules.
+//
+// We put them all in one place so we can directly control the relative priority
+// of these.
 importModule.then(() => {})
+import('../lib/demangle-cpp').then(() => {})
+import('source-map').then(() => {})
 
 async function importProfilesFromText(
   fileName: string,
@@ -223,15 +230,36 @@ export class Application extends StatelessComponent<ApplicationProps> {
         reader.readAsText(file)
         const fileContents = await fileContentsPromise
 
-        const map = importEmscriptenSymbolMap(fileContents)
-        if (map) {
-          const {profile, index} = this.props.activeProfileState
+        let symbolRemapper: SymbolRemapper | null = null
+
+        const emscriptenSymbolRemapper = importEmscriptenSymbolRemapper(fileContents)
+        if (emscriptenSymbolRemapper) {
           console.log('Importing as emscripten symbol map')
-          profile.remapNames(name => map.get(name) || name)
+          symbolRemapper = emscriptenSymbolRemapper
+        }
+
+        const jsSourceMapRemapper = await importJavaScriptSourceMapSymbolRemapper(
+          fileContents,
+          file.name,
+        )
+        if (!symbolRemapper && jsSourceMapRemapper) {
+          console.log('Importing as JavaScript source map')
+          symbolRemapper = jsSourceMapRemapper
+        }
+
+        if (symbolRemapper != null) {
           return {
             name: this.props.profileGroup.name || 'profile',
-            indexToView: index,
-            profiles: [profile],
+            indexToView: this.props.profileGroup.indexToView,
+            profiles: this.props.profileGroup.profiles.map(profileState => {
+              // We do a shallow clone here to invalidate certain caches keyed
+              // on a reference to the profile group under the assumption that
+              // profiles are immutable. Symbol remapping is (at time of
+              // writing) the only exception to that immutability.
+              const p = profileState.profile.shallowClone()
+              p.remapSymbols(symbolRemapper!)
+              return p
+            }),
           }
         }
       }

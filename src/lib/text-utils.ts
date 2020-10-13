@@ -1,4 +1,4 @@
-import {binarySearch} from './utils'
+import {findValueBisect} from './utils'
 
 export const ELLIPSIS = '\u2026'
 
@@ -65,7 +65,7 @@ export function trimTextMid(
   if (cachedMeasureTextWidth(ctx, text) <= maxWidth) {
     return buildTrimmedText(text, text.length)
   }
-  const [lo] = binarySearch(
+  const [lo] = findValueBisect(
     0,
     text.length,
     n => {

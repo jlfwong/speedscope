@@ -9,11 +9,12 @@ import {
   zeroPad,
   formatPercent,
   KeyedSet,
-  binarySearch,
+  findValueBisect,
   memoizeByReference,
   memoizeByShallowEquality,
   objectsHaveShallowEquality,
   decodeBase64,
+  findIndexBisect,
 } from './utils'
 
 import * as jsc from 'jsverify'
@@ -109,11 +110,47 @@ test('formatPercent', () => {
   expect(formatPercent(100)).toBe('100%')
 })
 
-test('binarySearch', () => {
-  const [lo, hi] = binarySearch(0, 10, n => Math.log(n), 1, 0.0001)
+test('findValueBisect', () => {
+  const [lo, hi] = findValueBisect(0, 10, n => Math.log(n), 1, 0.0001)
   expect(lo).toBeCloseTo(Math.E, 4)
   expect(lo).toBeLessThan(Math.E)
   expect(hi).toBeGreaterThan(Math.E)
+})
+
+test('findIndexBisect', () => {
+  const check = (haystack: number[], needle: number) => {
+    const condition = (v: number) => v > needle
+    expect(findIndexBisect(haystack, condition)).toEqual(haystack.findIndex(condition))
+  }
+
+  check([], 0)
+
+  check([0], 0)
+  check([0], -1)
+  check([0], 1)
+
+  check([0, 1], 0)
+  check([0, 1], 1)
+  check([0, 1], 2)
+
+  check([0, 1, 2], 2)
+  check([0, 1, 2], 2)
+  check([0, 1, 2], 2)
+  check([0, 1, 2], 2)
+
+  check([3, 5, 5, 7], 1)
+  check([3, 5, 5, 7], 2)
+  check([3, 5, 5, 7], 5)
+  check([3, 5, 5, 7], 7)
+  check([3, 5, 5, 7], 11)
+
+  jsc.assertForall(jsc.array(jsc.int8), jsc.int8, (haystack: number[], needle: number) => {
+    haystack.sort((a, b) => a - b)
+
+    const fn = (v: number) => v > needle
+    expect(findIndexBisect(haystack, fn)).toEqual(haystack.findIndex(fn))
+    return true
+  })
 })
 
 test('memoizeByReference', () => {
