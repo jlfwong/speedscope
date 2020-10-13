@@ -34,7 +34,7 @@ const DEBUG = false
 
 export async function importJavaScriptSourceMapSymbolRemapper(
   contentsString: string,
-  sourceMapFileName: string
+  sourceMapFileName: string,
 ): Promise<SymbolRemapper | null> {
   const sourceMap = await sourceMapModule
 
@@ -69,13 +69,15 @@ export async function importJavaScriptSourceMapSymbolRemapper(
     sourceMap.SourceMapConsumer.GENERATED_ORDER,
   )
 
-  const sourceMapFileNameWithoutExt = sourceMapFileName.replace(/\.[^/]*$/, "")
+  const sourceMapFileNameWithoutExt = sourceMapFileName.replace(/\.[^/]*$/, '')
 
   return (frame: Frame) => {
     let fileMatches = false
     if (contents?.file && contents?.file === frame.file) {
       fileMatches = true
-    } else if (("/" + frame.file?.replace(/\.[^/]*$/, "")).endsWith("/" + sourceMapFileNameWithoutExt)) {
+    } else if (
+      ('/' + frame.file?.replace(/\.[^/]*$/, '')).endsWith('/' + sourceMapFileNameWithoutExt)
+    ) {
       fileMatches = true
     }
     if (!fileMatches) {
@@ -136,47 +138,78 @@ export async function importJavaScriptSourceMapSymbolRemapper(
       mappingIndex--
     }
 
-    const item = mappingItems[mappingIndex]
+    const sourceMapItem = mappingItems[mappingIndex]
+    const remappedFrameInfo: {name?: string; file?: string; line?: number; col?: number} = {}
 
-    let frameInfo: {name?: string; file?: string; line?: number; col?: number} = {}
-
-    if (item.name != null) {
-      frameInfo.name = item.name
-    } else if (item.source != null) {
+    if (sourceMapItem.name != null) {
+      remappedFrameInfo.name = sourceMapItem.name
+    } else if (sourceMapItem.source != null) {
       // HACK: If the item name isn't specified, but the source is present, then
       // we're going to try to guess what the name is by using the originalLine
       // and originalColumn.
-      const content = consumer?.sourceContentFor(item.source, /*returnNullOnMissing: */ true)
+
+      // The second argument here is "returnNullOnMissing". Without this, it
+      // throws instead of returning null.
+      const content = consumer?.sourceContentFor(sourceMapItem.source, true)
       if (content) {
-        const lines = content.split("\n")
-        const line = lines[item.originalLine - 1]
+        const lines = content.split('\n')
+        const line = lines[sourceMapItem.originalLine - 1]
         if (line) {
           // It's possible this source map entry will contain stuff other than
           // the name, so let's only consider word-ish characters that are part
           // of the prefix.
-          const identifierMatch = /\w+/.exec(line.substr(item.originalColumn - 1))
+          const identifierMatch = /\w+/.exec(line.substr(sourceMapItem.originalColumn - 1))
           if (identifierMatch) {
-            frameInfo.name = identifierMatch[0]
+            remappedFrameInfo.name = identifierMatch[0]
           }
         }
       }
     }
 
-    if (item.source != null) {
-      frameInfo.file = item.source
-      frameInfo.line = item.originalLine
-      frameInfo.col = item.originalColumn
+    switch (remappedFrameInfo.name) {
+      case 'constructor': {
+        // If the name was remapped to "constructor", then let's use the
+        // original name, since "constructor" isn't very helpful.
+        //
+        // TODO(jlfwong): Search backwards for the class keyword and see if we
+        // can guess the right name.
+        remappedFrameInfo.name = frame.name + ' constructor'
+        break
+      }
+
+      case 'function': {
+        // If the name is just "function", it probably means we either messed up
+        // the remapping, or that we matched an anonymous function. In either
+        // case, this isn't helpful, so put this back.
+        remappedFrameInfo.name = frame.name
+        break
+      }
+
+      case 'const':
+      case 'export': {
+        // If we got this, we probably just did a bad job leveraging the hack
+        // looking through the source code. Let's fall-back to whatever the
+        // original name was.
+        remappedFrameInfo.name = frame.name
+        break
+      }
+    }
+
+    if (sourceMapItem.source != null) {
+      remappedFrameInfo.file = sourceMapItem.source
+      remappedFrameInfo.line = sourceMapItem.originalLine
+      remappedFrameInfo.col = sourceMapItem.originalColumn
     }
 
     if (DEBUG) {
-      console.groupCollapsed(`Remapping "${frame.name}" -> "${frameInfo.name}"`)
+      console.groupCollapsed(`Remapping "${frame.name}" -> "${remappedFrameInfo.name}"`)
       console.log('before', {...frame})
-      console.log('item @ index', item)
+      console.log('item @ index', sourceMapItem)
       console.log('item @ index + 1', mappingItems[mappingIndex + 1])
-      console.log('after', frameInfo)
+      console.log('after', remappedFrameInfo)
       console.groupEnd()
     }
 
-    return frameInfo
+    return remappedFrameInfo
   }
 }
