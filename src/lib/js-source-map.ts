@@ -195,6 +195,18 @@ export async function importJavaScriptSourceMapSymbolRemapper(
       }
     }
 
+    if (remappedFrameInfo.name && frame.name.includes(remappedFrameInfo.name)) {
+      // If the remapped name is a substring of the original name, the original
+      // name probably contains more useful information. In that case, just use
+      // the original name instead.
+      //
+      // This can happen, for example, when remapping method names. If a
+      // call stack says the symbol name is "n.zap" and we remapped it to a
+      // function just called "zap", we might as well use the original name
+      // instead.
+      remappedFrameInfo.name = frame.name
+    }
+
     if (sourceMapItem.source != null) {
       remappedFrameInfo.file = sourceMapItem.source
       remappedFrameInfo.line = sourceMapItem.originalLine
