@@ -248,12 +248,18 @@ export class Application extends StatelessComponent<ApplicationProps> {
         }
 
         if (symbolRemapper != null) {
-          const {profile, index} = this.props.activeProfileState
-          profile.remapSymbols(symbolRemapper)
           return {
             name: this.props.profileGroup.name || 'profile',
-            indexToView: index,
-            profiles: [profile],
+            indexToView: this.props.profileGroup.indexToView,
+            profiles: this.props.profileGroup.profiles.map(profileState => {
+              // We do a shallow clone here to invalidate certain caches keyed
+              // on a reference to the profile group under the assumption that
+              // profiles are immutable. Symbol remapping is (at time of
+              // writing) the only exception to that immutability.
+              const p = profileState.profile.shallowClone()
+              p.remapSymbols(symbolRemapper!)
+              return p
+            }),
           }
         }
       }

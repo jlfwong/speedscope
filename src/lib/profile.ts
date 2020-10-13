@@ -145,6 +145,12 @@ export class Profile {
     this.totalWeight = totalWeight
   }
 
+  shallowClone(): Profile {
+    const profile = new Profile(this.totalWeight)
+    Object.assign(profile, this)
+    return profile
+  }
+
   formatValue(v: number) {
     return this.valueFormatter.format(v)
   }
