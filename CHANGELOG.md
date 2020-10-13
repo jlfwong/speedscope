@@ -1,5 +1,15 @@
 ## Unreleased
 
+## [1.11.0] - 2020-10-13
+
+### Added
+
+- Support remapping profiles using source maps [[#317](https://github.com/jlfwong/speedscope/pull/317)]
+
+### Fixed
+
+- Fix line & column numbers in imports from Chrome & Firefox [[#318](https://github.com/jlfwong/speedscope/pull/318)]
+
 ## [1.10.0] - 2020-09-29
 
 ### Added
