@@ -1,4 +1,9 @@
-## Unreleased
+## [1.11.1] - 2020-10-25
+
+### Fixed
+
+- Fix trace-event import for many cases where there are 'ts' collisions [[#322](https://github.com/jlfwong/speedscope/pull/322)]
+- Fix import of trace event files where B/E events' args don't match [[#321](https://github.com/jlfwong/speedscope/pull/321)]
 
 ## [1.11.0] - 2020-10-13
 
