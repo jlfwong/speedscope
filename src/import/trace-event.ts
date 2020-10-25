@@ -64,7 +64,7 @@ interface XTraceEvent extends TraceEvent {
 
 // The trace format supports a number of event types that we ignore.
 type ImportableTraceEvent = BTraceEvent | ETraceEvent | XTraceEvent
-type DurationEvent = BTraceEvent | ETraceEvent
+type DurationEvent = {ev: BTraceEvent | ETraceEvent; sortIndex: number}
 
 function filterIgnoredEventTypes(events: TraceEvent[]): ImportableTraceEvent[] {
   const ret: ImportableTraceEvent[] = []
@@ -81,14 +81,16 @@ function filterIgnoredEventTypes(events: TraceEvent[]): ImportableTraceEvent[] {
 
 function convertToDurationEvents(events: ImportableTraceEvent[]): DurationEvent[] {
   const ret: DurationEvent[] = []
-  for (let ev of events) {
+  for (let i = 0; i < events.length; i++) {
+    const ev = events[i]
+
     switch (ev.ph) {
       case 'B':
-        ret.push(ev)
+        ret.push({ev, sortIndex: i})
         break
 
       case 'E':
-        ret.push(ev)
+        ret.push({ev, sortIndex: i})
         break
 
       case 'X':
@@ -101,8 +103,35 @@ function convertToDurationEvents(events: ImportableTraceEvent[]): DurationEvent[
           continue
         }
 
-        ret.push({...ev, ph: 'B'} as BTraceEvent)
-        ret.push({...ev, ph: 'E', ts: ev.ts + dur} as ETraceEvent)
+        // We convert 'X' events into 'B' & 'E' event pairs. We need to be careful
+        // with how we handle pairs of 'X' events with exactly the same ts & dur.
+        //
+        // For example, consider the following two events:
+        //
+        //  { "pid": 0, "tid": 0, "ph": "X", "ts": 0, "dur": 10, "name": "A" },
+        //  { "pid": 0, "tid": 0, "ph": "X", "ts": 0, "dur": 10, "name": "B" },
+        //
+        // The equivalent resulting event sequence we want is:
+        //
+        //  { "pid": 0, "tid": 0, "ph": "B", "ts": 0, "name": "A" },
+        //  { "pid": 0, "tid": 0, "ph": "B", "ts": 0, "name": "B" },
+        //  { "pid": 0, "tid": 0, "ph": "E", "ts": 10, "name": "B" },
+        //  { "pid": 0, "tid": 0, "ph": "E", "ts": 10, "name": "A" },
+        //
+        // Note that this is *not* equivalent to the following:
+        //
+        //  { "pid": 0, "tid": 0, "ph": "B", "ts": 0, "name": "B" },
+        //  { "pid": 0, "tid": 0, "ph": "B", "ts": 0, "name": "A" },
+        //  { "pid": 0, "tid": 0, "ph": "E", "ts": 10, "name": "A" },
+        //  { "pid": 0, "tid": 0, "ph": "E", "ts": 10, "name": "B" },
+        //
+        // To support this, we need to carefully manage the sort order of pairs of
+        // 'B' events, and do so differently than how we manage the corresponding
+        // 'E' events
+        const eventB = {...ev, ph: 'B'} as BTraceEvent
+        const eventE = {...ev, ph: 'E', ts: ev.ts + dur} as ETraceEvent
+        ret.push({ev: eventB, sortIndex: i})
+        ret.push({ev: eventE, sortIndex: -i})
         break
 
       default:
@@ -163,37 +192,43 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
   const threadNamesByPidTid = getThreadNamesByPidTid(events)
 
   durationEvents.sort((a, b) => {
-    if (a.ts < b.ts) return -1
-    if (a.ts > b.ts) return 1
-    if (a.pid < b.pid) return -1
-    if (a.pid > b.pid) return 1
-    if (a.tid < b.tid) return -1
-    if (a.tid > b.tid) return 1
+    const aEv = a.ev
+    const bEv = b.ev
+    if (aEv.pid < bEv.pid) return -1
+    if (aEv.pid > bEv.pid) return 1
+    if (aEv.tid < bEv.tid) return -1
+    if (aEv.tid > bEv.tid) return 1
+    if (aEv.ts < bEv.ts) return -1
+    if (aEv.ts > bEv.ts) return 1
 
     // We have to be careful with events that have the same timestamp
     // and the same pid/tid
-    const aKey = keyForEvent(a)
-    const bKey = keyForEvent(b)
+    const aKey = keyForEvent(aEv)
+    const bKey = keyForEvent(bEv)
     if (aKey === bKey) {
       // If the two elements have the same key, we need to process the begin
       // event before the end event. This will be a zero-duration event.
-      if (a.ph === 'B' && b.ph === 'E') return -1
-      if (a.ph === 'E' && b.ph === 'B') return 1
+      if (aEv.ph === 'B' && bEv.ph === 'E') return -1
+      if (aEv.ph === 'E' && bEv.ph === 'B') return 1
     } else {
       // If the two elements have *different* keys, we want to process
       // the end of an event before the beginning of the event to prevent
       // out-of-order push/pops from the call-stack.
-      if (a.ph === 'B' && b.ph === 'E') return 1
-      if (a.ph === 'E' && b.ph === 'B') return -1
+      if (aEv.ph === 'B' && bEv.ph === 'E') return 1
+      if (aEv.ph === 'E' && bEv.ph === 'B') return -1
     }
 
-    // In all other cases, retain the original sort order.
+    if (a.sortIndex < b.sortIndex) return -1
+    if (a.sortIndex > b.sortIndex) return 1
     return 0
   })
 
   if (durationEvents.length > 0) {
-    const firstTs = durationEvents[0].ts
-    for (let ev of durationEvents) {
+    let firstTs = Number.MAX_VALUE
+    for (let {ev} of durationEvents) {
+      firstTs = Math.min(firstTs, ev.ts)
+    }
+    for (let {ev} of durationEvents) {
       ev.ts -= firstTs
     }
   }
@@ -225,7 +260,7 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
     return state
   }
 
-  for (let ev of durationEvents) {
+  for (let {ev} of durationEvents) {
     const {profile, eventStack} = getOrCreateProfileState(ev.pid, ev.tid)
     const frameInfo = frameInfoForEvent(ev)
     switch (ev.ph) {

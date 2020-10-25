@@ -204,8 +204,8 @@ Object {
       "key": "alpha",
       "line": undefined,
       "name": "alpha",
-      "selfWeight": 1,
-      "totalWeight": 6,
+      "selfWeight": 8,
+      "totalWeight": 10,
     },
     Frame {
       "col": undefined,
@@ -213,8 +213,8 @@ Object {
       "key": "beta",
       "line": undefined,
       "name": "beta",
-      "selfWeight": 4,
-      "totalWeight": 5,
+      "selfWeight": 1,
+      "totalWeight": 2,
     },
     Frame {
       "col": undefined,
@@ -230,8 +230,9 @@ Object {
   "stacks": Array [
     "alpha 1.00µs",
     "alpha;beta;gamma 1.00µs",
-    "alpha;beta 3.00µs",
-    "alpha;beta;gamma;beta 1.00µs",
+    "alpha 3.00µs",
+    "alpha;gamma;beta 1.00µs",
+    "alpha 4.00µs",
   ],
 }
 `;
