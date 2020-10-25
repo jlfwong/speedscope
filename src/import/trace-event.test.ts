@@ -71,3 +71,7 @@ test('importTraceEvents end event with empty stack', async () => {
 test('importTraceEvents only begin events', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/only-begin-events.json')
 })
+
+test('importTraceEvents zero duration events', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/zero-duration-events.json')
+})

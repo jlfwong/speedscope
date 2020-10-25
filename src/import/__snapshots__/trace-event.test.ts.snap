@@ -867,3 +867,54 @@ Object {
 exports[`importTraceEvents unbalanced name: indexToView 1`] = `0`;
 
 exports[`importTraceEvents unbalanced name: profileGroup.name 1`] = `"unbalanced-name.json"`;
+
+exports[`importTraceEvents zero duration events 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "A",
+      "line": undefined,
+      "name": "A",
+      "selfWeight": 10,
+      "totalWeight": 10,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "B",
+      "line": undefined,
+      "name": "B",
+      "selfWeight": 0,
+      "totalWeight": 0,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "C",
+      "line": undefined,
+      "name": "C",
+      "selfWeight": 0,
+      "totalWeight": 0,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "D",
+      "line": undefined,
+      "name": "D",
+      "selfWeight": 0,
+      "totalWeight": 0,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "A 10.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents zero duration events: indexToView 1`] = `0`;
+
+exports[`importTraceEvents zero duration events: profileGroup.name 1`] = `"zero-duration-events.json"`;
