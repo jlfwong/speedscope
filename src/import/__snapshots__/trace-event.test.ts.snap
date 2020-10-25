@@ -44,8 +44,8 @@ Object {
       "key": "A",
       "line": undefined,
       "name": "A",
-      "selfWeight": 11,
-      "totalWeight": 21,
+      "selfWeight": 10,
+      "totalWeight": 20,
     },
     Frame {
       "col": undefined,
@@ -60,8 +60,8 @@ Object {
   "name": "pid 0, tid 0",
   "stacks": Array [
     "A;B 10.00µs",
-    "A 1.00µs",
-    "A;B;A 10.00µs",
+    " 1.00µs",
+    "B;A 10.00µs",
   ],
 }
 `;
