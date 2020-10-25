@@ -35,6 +35,41 @@ exports[`importTraceEvents bad E events: indexToView 1`] = `0`;
 
 exports[`importTraceEvents bad E events: profileGroup.name 1`] = `"too-many-end-events.json"`;
 
+exports[`importTraceEvents event matching-x 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "A",
+      "line": undefined,
+      "name": "A",
+      "selfWeight": 11,
+      "totalWeight": 21,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "B",
+      "line": undefined,
+      "name": "B",
+      "selfWeight": 10,
+      "totalWeight": 20,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "A;B 10.00µs",
+    "A 1.00µs",
+    "A;B;A 10.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents event matching-x: indexToView 1`] = `0`;
+
+exports[`importTraceEvents event matching-x: profileGroup.name 1`] = `"matching-x.json"`;
+
 exports[`importTraceEvents event re-ordering 1`] = `
 Object {
   "frames": Array [

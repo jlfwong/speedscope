@@ -31,3 +31,13 @@ test('importTraceEvents bad E events', async () => {
 test('importTraceEvents event re-ordering', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/must-retain-original-order.json')
 })
+
+test('importTraceEvents event matching-x', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/matching-x.json')
+})
+
+test('importTraceEvents event mismatched', async () => {
+  // The B & E event pairs here are mismatched. This should warn, but still
+  // import.
+  await checkProfileSnapshot('./sample/profiles/trace-event/mismatched.json')
+})
