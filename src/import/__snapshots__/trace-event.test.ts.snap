@@ -137,6 +137,30 @@ exports[`importTraceEvents event re-ordering: indexToView 1`] = `0`;
 
 exports[`importTraceEvents event re-ordering: profileGroup.name 1`] = `"must-retain-original-order.json"`;
 
+exports[`importTraceEvents mismatched args 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "A {\\"x\\":1}",
+      "line": undefined,
+      "name": "A {\\"x\\":1}",
+      "selfWeight": 10,
+      "totalWeight": 10,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "A {\\"x\\":1} 10.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents mismatched args: indexToView 1`] = `0`;
+
+exports[`importTraceEvents mismatched args: profileGroup.name 1`] = `"mismatched-args.json"`;
+
 exports[`importTraceEvents mismatched name 1`] = `
 Object {
   "frames": Array [
@@ -707,6 +731,41 @@ exports[`importTraceEvents simple object: profileGroup.name 1`] = `"simple-objec
 exports[`importTraceEvents simple: indexToView 1`] = `0`;
 
 exports[`importTraceEvents simple: profileGroup.name 1`] = `"simple.json"`;
+
+exports[`importTraceEvents unbalanced args 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "A {\\"x\\":1}",
+      "line": undefined,
+      "name": "A {\\"x\\":1}",
+      "selfWeight": 2,
+      "totalWeight": 10,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "A {\\"x\\":2}",
+      "line": undefined,
+      "name": "A {\\"x\\":2}",
+      "selfWeight": 8,
+      "totalWeight": 8,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "A {\\"x\\":1} 1.00µs",
+    "A {\\"x\\":1};A {\\"x\\":2} 8.00µs",
+    "A {\\"x\\":1} 1.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents unbalanced args: indexToView 1`] = `0`;
+
+exports[`importTraceEvents unbalanced args: profileGroup.name 1`] = `"unbalanced-args.json"`;
 
 exports[`importTraceEvents unbalanced name 1`] = `
 Object {
