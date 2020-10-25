@@ -35,6 +35,50 @@ exports[`importTraceEvents bad E events: indexToView 1`] = `0`;
 
 exports[`importTraceEvents bad E events: profileGroup.name 1`] = `"too-many-end-events.json"`;
 
+exports[`importTraceEvents end-non-top-of-stack 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "A {\\"x\\":1}",
+      "line": undefined,
+      "name": "A {\\"x\\":1}",
+      "selfWeight": 1,
+      "totalWeight": 11,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "B {\\"x\\":2}",
+      "line": undefined,
+      "name": "B {\\"x\\":2}",
+      "selfWeight": 9,
+      "totalWeight": 10,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "Z {\\"x\\":1}",
+      "line": undefined,
+      "name": "Z {\\"x\\":1}",
+      "selfWeight": 1,
+      "totalWeight": 1,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "A {\\"x\\":1} 1.00µs",
+    "A {\\"x\\":1};B {\\"x\\":2} 9.00µs",
+    "A {\\"x\\":1};B {\\"x\\":2};Z {\\"x\\":1} 1.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents end-non-top-of-stack: indexToView 1`] = `0`;
+
+exports[`importTraceEvents end-non-top-of-stack: profileGroup.name 1`] = `"end-non-top-of-stack.json"`;
+
 exports[`importTraceEvents event re-ordering 1`] = `
 Object {
   "frames": Array [
@@ -92,6 +136,28 @@ Object {
 exports[`importTraceEvents event re-ordering: indexToView 1`] = `0`;
 
 exports[`importTraceEvents event re-ordering: profileGroup.name 1`] = `"must-retain-original-order.json"`;
+
+exports[`importTraceEvents mismatched name 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "alpha",
+      "line": undefined,
+      "name": "alpha",
+      "selfWeight": 0,
+      "totalWeight": 0,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [],
+}
+`;
+
+exports[`importTraceEvents mismatched name: indexToView 1`] = `0`;
+
+exports[`importTraceEvents mismatched name: profileGroup.name 1`] = `"mismatched-name.json"`;
 
 exports[`importTraceEvents multiprocess 1`] = `
 Object {
@@ -256,6 +322,121 @@ Object {
 exports[`importTraceEvents multiprocess: indexToView 1`] = `0`;
 
 exports[`importTraceEvents multiprocess: profileGroup.name 1`] = `"multiprocess.json"`;
+
+exports[`importTraceEvents not enough end events 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "A {\\"x\\":1}",
+      "line": undefined,
+      "name": "A {\\"x\\":1}",
+      "selfWeight": 2,
+      "totalWeight": 11,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "A {\\"x\\":2}",
+      "line": undefined,
+      "name": "A {\\"x\\":2}",
+      "selfWeight": 9,
+      "totalWeight": 10,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "A {\\"x\\":1} 1.00µs",
+    "A {\\"x\\":1};A {\\"x\\":2} 9.00µs",
+    "A {\\"x\\":1};A {\\"x\\":2};A {\\"x\\":1} 1.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents not enough end events: indexToView 1`] = `0`;
+
+exports[`importTraceEvents not enough end events: profileGroup.name 1`] = `"not-enough-end-events.json"`;
+
+exports[`importTraceEvents not out-of-order 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "A",
+      "line": undefined,
+      "name": "A",
+      "selfWeight": 2,
+      "totalWeight": 10,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "B",
+      "line": undefined,
+      "name": "B",
+      "selfWeight": 2,
+      "totalWeight": 8,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "C",
+      "line": undefined,
+      "name": "C",
+      "selfWeight": 6,
+      "totalWeight": 6,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "A 1.00µs",
+    "A;B 1.00µs",
+    "A;B;C 6.00µs",
+    "A;B 1.00µs",
+    "A 1.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents not out-of-order unbalanced name 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "alpha",
+      "line": undefined,
+      "name": "alpha",
+      "selfWeight": 1,
+      "totalWeight": 10,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "beta",
+      "line": undefined,
+      "name": "beta",
+      "selfWeight": 9,
+      "totalWeight": 9,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "alpha 1.00µs",
+    "alpha;beta 9.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents not out-of-order unbalanced name: indexToView 1`] = `0`;
+
+exports[`importTraceEvents not out-of-order unbalanced name: profileGroup.name 1`] = `"out-of-order-unbalanced-name.json"`;
+
+exports[`importTraceEvents not out-of-order: indexToView 1`] = `0`;
+
+exports[`importTraceEvents not out-of-order: profileGroup.name 1`] = `"out-of-order.json"`;
 
 exports[`importTraceEvents partial json import 1`] = `
 Object {
@@ -526,3 +707,37 @@ exports[`importTraceEvents simple object: profileGroup.name 1`] = `"simple-objec
 exports[`importTraceEvents simple: indexToView 1`] = `0`;
 
 exports[`importTraceEvents simple: profileGroup.name 1`] = `"simple.json"`;
+
+exports[`importTraceEvents unbalanced name 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "alpha",
+      "line": undefined,
+      "name": "alpha",
+      "selfWeight": 1,
+      "totalWeight": 10,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "beta",
+      "line": undefined,
+      "name": "beta",
+      "selfWeight": 9,
+      "totalWeight": 9,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "alpha 1.00µs",
+    "alpha;beta 9.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents unbalanced name: indexToView 1`] = `0`;
+
+exports[`importTraceEvents unbalanced name: profileGroup.name 1`] = `"unbalanced-name.json"`;

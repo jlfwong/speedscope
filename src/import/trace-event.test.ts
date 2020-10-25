@@ -31,3 +31,35 @@ test('importTraceEvents bad E events', async () => {
 test('importTraceEvents event re-ordering', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/must-retain-original-order.json')
 })
+
+test('importTraceEvents end-non-top-of-stack', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/end-non-top-of-stack.json')
+})
+
+test('importTraceEvents mismatched args', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/mismatched-args.json')
+})
+
+test('importTraceEvents mismatched name', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/mismatched-name.json')
+})
+
+test('importTraceEvents not enough end events', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/not-enough-end-events.json')
+})
+
+test('importTraceEvents not out-of-order unbalanced name', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/out-of-order-unbalanced-name.json')
+})
+
+test('importTraceEvents not out-of-order', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/out-of-order.json')
+})
+
+test('importTraceEvents unbalanced name', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/unbalanced-name.json')
+})
+
+test('importTraceEvents unbalanced args', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/unbalanced-args.json')
+})
