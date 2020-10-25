@@ -75,3 +75,27 @@ test('importTraceEvents only begin events', async () => {
 test('importTraceEvents zero duration events', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/zero-duration-events.json')
 })
+
+test('importTraceEvents matching x', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/matching-x.json')
+})
+
+test('importTraceEvents x events matching start', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/x-events-matching-start.json')
+})
+
+test('importTraceEvents x events matching end', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/x-events-matching-end.json')
+})
+
+test('importTraceEvents BEX interaction', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/bex-interaction.json')
+})
+
+test('importTraceEvents invalid x nesting', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/invalid-x-nesting.json')
+})
+
+test('importTraceEvents event reordering name match', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/event-reordering-name-match.json')
+})

@@ -1,5 +1,142 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`importTraceEvents BEX interaction 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "A",
+      "line": undefined,
+      "name": "A",
+      "selfWeight": 0,
+      "totalWeight": 2,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "B",
+      "line": undefined,
+      "name": "B",
+      "selfWeight": 2,
+      "totalWeight": 2,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "D",
+      "line": undefined,
+      "name": "D",
+      "selfWeight": 0,
+      "totalWeight": 2,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "C",
+      "line": undefined,
+      "name": "C",
+      "selfWeight": 2,
+      "totalWeight": 2,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "F",
+      "line": undefined,
+      "name": "F",
+      "selfWeight": 1,
+      "totalWeight": 2,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "E",
+      "line": undefined,
+      "name": "E",
+      "selfWeight": 1,
+      "totalWeight": 1,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "G",
+      "line": undefined,
+      "name": "G",
+      "selfWeight": 1,
+      "totalWeight": 2,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "H",
+      "line": undefined,
+      "name": "H",
+      "selfWeight": 1,
+      "totalWeight": 1,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "J",
+      "line": undefined,
+      "name": "J",
+      "selfWeight": 1,
+      "totalWeight": 2,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "I",
+      "line": undefined,
+      "name": "I",
+      "selfWeight": 1,
+      "totalWeight": 1,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "K",
+      "line": undefined,
+      "name": "K",
+      "selfWeight": 1,
+      "totalWeight": 2,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "L",
+      "line": undefined,
+      "name": "L",
+      "selfWeight": 1,
+      "totalWeight": 1,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "A;B 2.00µs",
+    " 8.00µs",
+    "D;C 2.00µs",
+    " 8.00µs",
+    "F;E 1.00µs",
+    "F 1.00µs",
+    " 8.00µs",
+    "G;H 1.00µs",
+    "G 1.00µs",
+    " 8.00µs",
+    "J 1.00µs",
+    "J;I 1.00µs",
+    " 8.00µs",
+    "K 1.00µs",
+    "K;L 1.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents BEX interaction: indexToView 1`] = `0`;
+
+exports[`importTraceEvents BEX interaction: profileGroup.name 1`] = `"bex-interaction.json"`;
+
 exports[`importTraceEvents bad E events 1`] = `
 Object {
   "frames": Array [
@@ -160,6 +297,130 @@ Object {
 exports[`importTraceEvents event re-ordering: indexToView 1`] = `0`;
 
 exports[`importTraceEvents event re-ordering: profileGroup.name 1`] = `"must-retain-original-order.json"`;
+
+exports[`importTraceEvents event reordering name match 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "alpha {\\"x\\":0}",
+      "line": undefined,
+      "name": "alpha {\\"x\\":0}",
+      "selfWeight": 9,
+      "totalWeight": 10,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "beta {\\"x\\":0}",
+      "line": undefined,
+      "name": "beta {\\"x\\":0}",
+      "selfWeight": 0,
+      "totalWeight": 1,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "gamma {\\"x\\":0}",
+      "line": undefined,
+      "name": "gamma {\\"x\\":0}",
+      "selfWeight": 1,
+      "totalWeight": 1,
+    },
+  ],
+  "name": "pid 0, tid 1",
+  "stacks": Array [
+    "alpha {\\"x\\":0} 1.00µs",
+    "alpha {\\"x\\":0};beta {\\"x\\":0};gamma {\\"x\\":0} 1.00µs",
+    "alpha {\\"x\\":0} 8.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents event reordering name match: indexToView 1`] = `0`;
+
+exports[`importTraceEvents event reordering name match: profileGroup.name 1`] = `"event-reordering-name-match.json"`;
+
+exports[`importTraceEvents invalid x nesting 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "alpha",
+      "line": undefined,
+      "name": "alpha",
+      "selfWeight": 5,
+      "totalWeight": 15,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "beta",
+      "line": undefined,
+      "name": "beta",
+      "selfWeight": 10,
+      "totalWeight": 10,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "alpha 5.00µs",
+    "alpha;beta 10.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents invalid x nesting: indexToView 1`] = `0`;
+
+exports[`importTraceEvents invalid x nesting: profileGroup.name 1`] = `"invalid-x-nesting.json"`;
+
+exports[`importTraceEvents matching x 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "alpha",
+      "line": undefined,
+      "name": "alpha",
+      "selfWeight": 8,
+      "totalWeight": 10,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "beta",
+      "line": undefined,
+      "name": "beta",
+      "selfWeight": 1,
+      "totalWeight": 2,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "gamma",
+      "line": undefined,
+      "name": "gamma",
+      "selfWeight": 1,
+      "totalWeight": 2,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "alpha 1.00µs",
+    "alpha;beta;gamma 1.00µs",
+    "alpha 3.00µs",
+    "alpha;gamma;beta 1.00µs",
+    "alpha 4.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents matching x: indexToView 1`] = `0`;
+
+exports[`importTraceEvents matching x: profileGroup.name 1`] = `"matching-x.json"`;
 
 exports[`importTraceEvents mismatched args 1`] = `
 Object {
@@ -867,6 +1128,114 @@ Object {
 exports[`importTraceEvents unbalanced name: indexToView 1`] = `0`;
 
 exports[`importTraceEvents unbalanced name: profileGroup.name 1`] = `"unbalanced-name.json"`;
+
+exports[`importTraceEvents x events matching end 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "alpha",
+      "line": undefined,
+      "name": "alpha",
+      "selfWeight": 12,
+      "totalWeight": 20,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "beta",
+      "line": undefined,
+      "name": "beta",
+      "selfWeight": 4,
+      "totalWeight": 6,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "gamma",
+      "line": undefined,
+      "name": "gamma",
+      "selfWeight": 4,
+      "totalWeight": 6,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "alpha 1.00µs",
+    "alpha;beta 1.00µs",
+    "alpha;beta;gamma 1.00µs",
+    "alpha 2.00µs",
+    "alpha;gamma 1.00µs",
+    "alpha;gamma;beta 1.00µs",
+    "alpha 2.00µs",
+    "alpha;beta 1.00µs",
+    "alpha;beta;gamma 1.00µs",
+    "alpha 3.00µs",
+    "alpha;gamma 1.00µs",
+    "alpha;gamma;beta 1.00µs",
+    "alpha 4.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents x events matching end: indexToView 1`] = `0`;
+
+exports[`importTraceEvents x events matching end: profileGroup.name 1`] = `"x-events-matching-end.json"`;
+
+exports[`importTraceEvents x events matching start 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "alpha",
+      "line": undefined,
+      "name": "alpha",
+      "selfWeight": 12,
+      "totalWeight": 20,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "beta",
+      "line": undefined,
+      "name": "beta",
+      "selfWeight": 4,
+      "totalWeight": 6,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "gamma",
+      "line": undefined,
+      "name": "gamma",
+      "selfWeight": 4,
+      "totalWeight": 6,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "alpha 1.00µs",
+    "alpha;beta;gamma 1.00µs",
+    "alpha;beta 1.00µs",
+    "alpha 2.00µs",
+    "alpha;gamma;beta 1.00µs",
+    "alpha;gamma 1.00µs",
+    "alpha 2.00µs",
+    "alpha;gamma;beta 1.00µs",
+    "alpha;gamma 1.00µs",
+    "alpha 2.00µs",
+    "alpha;beta;gamma 1.00µs",
+    "alpha;beta 1.00µs",
+    "alpha 5.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents x events matching start: indexToView 1`] = `0`;
+
+exports[`importTraceEvents x events matching start: profileGroup.name 1`] = `"x-events-matching-start.json"`;
 
 exports[`importTraceEvents zero duration events 1`] = `
 Object {
