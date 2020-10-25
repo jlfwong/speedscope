@@ -298,6 +298,50 @@ exports[`importTraceEvents event re-ordering: indexToView 1`] = `0`;
 
 exports[`importTraceEvents event re-ordering: profileGroup.name 1`] = `"must-retain-original-order.json"`;
 
+exports[`importTraceEvents event reordering name match 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "alpha {\\"x\\":0}",
+      "line": undefined,
+      "name": "alpha {\\"x\\":0}",
+      "selfWeight": 9,
+      "totalWeight": 10,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "beta {\\"x\\":0}",
+      "line": undefined,
+      "name": "beta {\\"x\\":0}",
+      "selfWeight": 0,
+      "totalWeight": 1,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "gamma {\\"x\\":0}",
+      "line": undefined,
+      "name": "gamma {\\"x\\":0}",
+      "selfWeight": 1,
+      "totalWeight": 1,
+    },
+  ],
+  "name": "pid 0, tid 1",
+  "stacks": Array [
+    "alpha {\\"x\\":0} 1.00µs",
+    "alpha {\\"x\\":0};beta {\\"x\\":0};gamma {\\"x\\":0} 1.00µs",
+    "alpha {\\"x\\":0} 8.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents event reordering name match: indexToView 1`] = `0`;
+
+exports[`importTraceEvents event reordering name match: profileGroup.name 1`] = `"event-reordering-name-match.json"`;
+
 exports[`importTraceEvents invalid x nesting 1`] = `
 Object {
   "frames": Array [

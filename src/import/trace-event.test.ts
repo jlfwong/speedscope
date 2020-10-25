@@ -95,3 +95,7 @@ test('importTraceEvents BEX interaction', async () => {
 test('importTraceEvents invalid x nesting', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/invalid-x-nesting.json')
 })
+
+test('importTraceEvents event reordering name match', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/event-reordering-name-match.json')
+})
