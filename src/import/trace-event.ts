@@ -143,6 +143,14 @@ function keyForEvent(event: TraceEvent): string {
   return name
 }
 
+function frameInfoForEvent(event: TraceEvent): FrameInfo {
+  const key = keyForEvent(event)
+  return {
+    name: key,
+    key: key,
+  }
+}
+
 type TraceEventProfileState = {profile: CallTreeProfileBuilder; eventStack: BTraceEvent[]}
 
 function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
@@ -219,11 +227,7 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
 
   for (let ev of durationEvents) {
     const {profile, eventStack} = getOrCreateProfileState(ev.pid, ev.tid)
-    const key = keyForEvent(ev)
-    const frameInfo: FrameInfo = {
-      key: key,
-      name: key,
-    }
+    const frameInfo = frameInfoForEvent(ev)
     switch (ev.ph) {
       case 'B':
         eventStack.push(ev)
@@ -231,18 +235,46 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
         break
 
       case 'E':
-        const lastEvent = lastOf(eventStack)
-        if (lastEvent != null && lastEvent.name === ev.name) {
-          profile.leaveFrame(frameInfo, ev.ts)
-          eventStack.pop()
-        } else {
+        const topFrame = lastOf(eventStack)
+        if (topFrame == null) {
           console.warn(
-            'Event discarded because it did not match top-of-stack. Discarded event:',
-            ev,
-            'Top of stack:',
-            lastEvent,
+            `ts=${ev.ts}: Request to end "${frameInfo?.key}" when stack is empty. Doing nothing instead.`,
+          )
+          break
+        }
+
+        const topFrameInfo = frameInfoForEvent(topFrame)
+
+        // We treat mismatched names & mismatched keys differently, because it's
+        // unclear from the spec what to do when you receive an "E" event when
+        // the corresponding "B" event is not at the top of the stack, and also
+        // unclear whether "B" and "E" events should be matched just based on
+        // "name", or should also includes all of "args".
+        //
+        // Based on
+        // https://github.com/catapult-project/catapult/blob/7874beb5c5a18ed8ba1264fac8dc4e857be23e35/tracing/tracing/extras/importer/trace_event_importer.html#L531-L542,
+        // it seems like chrome://tracing warns on mismatching names, but
+        // doesn't warn on mismatching args.
+        //
+        // As a rough compromise, if the names mismatch, we assume this is
+        // definitely a mistake, and discard the event. If the names match, but
+        // the args mismatch, we assume the args aren't supposed to match, and
+        // warn, but close the top-of-stack frame anyway.
+        if (ev.name !== topFrame.name) {
+          console.warn(
+            `ts=${ev.ts}: Request to end "${frameInfo.key}" when "${topFrameInfo.key}" was on the top of the stack. Doing nothing instead.`,
+          )
+          break
+        }
+
+        if (frameInfo.key !== topFrameInfo.key) {
+          console.warn(
+            `ts=${ev.ts}: Request to end "${frameInfo.key}" when "${topFrameInfo.key}" was on the top of the stack. Ending "${topFrameInfo.key} instead.`,
           )
         }
+
+        profile.leaveFrame(topFrameInfo, ev.ts)
+        eventStack.pop()
         break
 
       default:
@@ -258,7 +290,23 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
   const profilePairs = Array.from(stateByPidTid.entries())
   sortBy(profilePairs, p => p[0])
 
-  return {name: '', indexToView: 0, profiles: profilePairs.map(p => p[1].profile)}
+  return {
+    name: '',
+    indexToView: 0,
+    profiles: profilePairs.map(p => {
+      const {eventStack, profile} = p[1]
+      if (eventStack.length > 0) {
+        for (let i = eventStack.length - 1; i >= 0; i--) {
+          const frame = frameInfoForEvent(eventStack[i])
+          console.warn(
+            `Frame "${frame.key}" was still open at end of profile. Closing automatically.`,
+          )
+          profile.leaveFrame(frame, profile.getTotalWeight())
+        }
+      }
+      return profile.build()
+    }),
+  }
 }
 
 function isTraceEventList(maybeEventList: any): maybeEventList is TraceEvent[] {

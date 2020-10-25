@@ -621,6 +621,7 @@ export class CallTreeProfileBuilder extends Profile {
     const frameCount = this.framesInStack.get(frame) || 0
     this.framesInStack.set(frame, frameCount + 1)
     this.lastValue = value
+    this.totalWeight = Math.max(this.totalWeight, this.lastValue)
   }
 
   private _leaveFrame(frame: Frame, value: number, useAppendOrder: boolean) {
