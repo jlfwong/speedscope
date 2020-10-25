@@ -290,7 +290,23 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
   const profilePairs = Array.from(stateByPidTid.entries())
   sortBy(profilePairs, p => p[0])
 
-  return {name: '', indexToView: 0, profiles: profilePairs.map(p => p[1].profile)}
+  return {
+    name: '',
+    indexToView: 0,
+    profiles: profilePairs.map(p => {
+      const {eventStack, profile} = p[1]
+      if (eventStack.length > 0) {
+        for (let i = eventStack.length - 1; i >= 0; i--) {
+          const frame = frameInfoForEvent(eventStack[i])
+          console.warn(
+            `Frame "${frame.key}" was still open at end of profile. Closing automatically.`,
+          )
+          profile.leaveFrame(frame, profile.getTotalWeight())
+        }
+      }
+      return profile.build()
+    }),
+  }
 }
 
 function isTraceEventList(maybeEventList: any): maybeEventList is TraceEvent[] {
