@@ -103,36 +103,12 @@ function selectQueueToTakeFromNext(
   // If we got here, the 'B' event queue and the 'E' event queue have events at
   // the front with equal timestamps.
 
-  const bFrameInfo = frameInfoForEvent(bFront)
-
-  // If there are any events in the 'E' queue for the current ts that don't
-  // match the front of the 'B' queue, process those first. We want to end
-  // frames before we begin next different frames.
+  // If the front of the 'E' queue matches the front of the 'B' queue by name,
+  // then it means we have a zero duration event. Process the 'B' queue first
+  // to ensure it opens before we try to close it.
   //
-  // If they *do* match the front of the 'B' queue, however, we want to process
-  // the 'B' event first, since it's a valid zero-duration event.
-  for (let i = 0; i < eEventQueue.length; i++) {
-    const e = eEventQueue[i]
-
-    if (e.ts > bts) {
-      // Only consider 'E' events with the same ts as the front of the queue.
-      break
-    }
-
-    const eFrameInfo = frameInfoForEvent(e)
-
-    if (eFrameInfo.name !== bFrameInfo.name) {
-      if (i != 0) {
-        // Swap the unmatched event to the front of the queue.
-        const temp = eEventQueue[0]
-        eEventQueue[0] = e
-        eEventQueue[i] = temp
-      }
-      return 'E'
-    }
-  }
-
-  return 'B'
+  // Otherwise, process the 'E' queue first.
+  return bFront.name === eFront.name ? 'B' : 'E'
 }
 
 function convertToEventQueues(events: ImportableTraceEvent[]): [BTraceEvent[], ETraceEvent[]] {
