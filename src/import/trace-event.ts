@@ -1,5 +1,5 @@
-import {sortBy, zeroPad, lastOf} from '../lib/utils'
-import {ProfileGroup, CallTreeProfileBuilder, FrameInfo} from '../lib/profile'
+import {sortBy, zeroPad, getOrInsert, lastOf} from '../lib/utils'
+import {ProfileGroup, CallTreeProfileBuilder, FrameInfo, Profile} from '../lib/profile'
 import {TimeFormatter} from '../lib/value-formatters'
 
 // This file concerns import from the "Trace Event Format", authored by Google
@@ -64,7 +64,159 @@ interface XTraceEvent extends TraceEvent {
 
 // The trace format supports a number of event types that we ignore.
 type ImportableTraceEvent = BTraceEvent | ETraceEvent | XTraceEvent
-type DurationEvent = {ev: BTraceEvent | ETraceEvent; sortIndex: number}
+
+function pidTidKey(pid: number, tid: number): string {
+  // We zero-pad the PID and TID to make sorting them by pid/tid pair later easier.
+  return `${zeroPad('' + pid, 10)}:${zeroPad('' + tid, 10)}`
+}
+
+function partitionByPidTid(events: ImportableTraceEvent[]): Map<string, ImportableTraceEvent[]> {
+  const map = new Map<string, ImportableTraceEvent[]>()
+
+  for (let ev of events) {
+    const list = getOrInsert(map, pidTidKey(ev.pid, ev.tid), () => [])
+    list.push(ev)
+  }
+
+  return map
+}
+
+function selectQueueToTakeFromNext(
+  bEventQueue: BTraceEvent[],
+  eEventQueue: ETraceEvent[],
+): 'B' | 'E' {
+  if (bEventQueue.length === 0 && eEventQueue.length === 0) {
+    throw new Error('This method should not be given both queues empty')
+  }
+  if (eEventQueue.length === 0) return 'B'
+  if (bEventQueue.length === 0) return 'E'
+
+  const bFront = bEventQueue[0]
+  const eFront = eEventQueue[0]
+
+  const bts = bFront.ts
+  const ets = eFront.ts
+
+  if (bts < ets) return 'B'
+  if (ets < bts) return 'E'
+
+  // If we got here, the 'B' event queue and the 'E' event queue have events at
+  // the front with equal timestamps.
+
+  const bFrameInfo = frameInfoForEvent(bFront)
+
+  // If there are any events in the 'E' queue for the current ts that don't
+  // match the front of the 'B' queue, process those first. We want to end
+  // frames before we begin next different frames.
+  //
+  // If they *do* match the front of the 'B' queue, however, we want to process
+  // the 'B' event first, since it's a valid zero-duration event.
+  for (let i = 0; i < eEventQueue.length; i++) {
+    const e = eEventQueue[i]
+
+    if (e.ts > bts) {
+      // Only consider 'E' events with the same ts as the front of the queue.
+      break
+    }
+
+    const eFrameInfo = frameInfoForEvent(e)
+
+    if (eFrameInfo.name !== bFrameInfo.name) {
+      if (i != 0) {
+        // Swap the unmatched event to the front of the queue.
+        const temp = eEventQueue[0]
+        eEventQueue[0] = e
+        eEventQueue[i] = temp
+      }
+      return 'E'
+    }
+  }
+
+  return 'B'
+}
+
+function convertToEventQueues(events: ImportableTraceEvent[]): [BTraceEvent[], ETraceEvent[]] {
+  const beginEvents: BTraceEvent[] = []
+  const endEvents: ETraceEvent[] = []
+
+  // Rebase all of the timestamps on the lowest timestamp
+  if (events.length > 0) {
+    let firstTs = Number.MAX_SAFE_INTEGER
+    for (let ev of events) {
+      firstTs = Math.min(firstTs, ev.ts)
+    }
+    for (let ev of events) {
+      ev.ts -= firstTs
+    }
+  }
+
+  // Next, combine B, E, and X events into two timestamp ordered queues.
+  const xEvents: XTraceEvent[] = []
+  for (let ev of events) {
+    switch (ev.ph) {
+      case 'B': {
+        beginEvents.push(ev)
+        break
+      }
+
+      case 'E': {
+        endEvents.push(ev)
+        break
+      }
+
+      case 'X': {
+        xEvents.push(ev)
+        break
+      }
+
+      default: {
+        const _exhaustiveCheck: never = ev
+        return _exhaustiveCheck
+      }
+    }
+  }
+
+  function dur(x: XTraceEvent): number {
+    return x.dur ?? x.tdur ?? 0
+  }
+
+  xEvents.sort((a, b) => {
+    if (a.ts < b.ts) return -1
+    if (a.ts > b.ts) return 1
+
+    // Super weird special case: if we have two 'X' events with the same 'ts'
+    // but different 'dur' the only valid interpretation is to put the one with
+    // the longer 'dur' first, because you can't nest longer things in shorter
+    // things.
+    const aDur = dur(a)
+    const bDur = dur(b)
+    if (aDur > bDur) return -1
+    if (aDur < bDur) return 1
+
+    // Otherwise, retain the original order by relying upon a stable sort here.
+    return 0
+  })
+
+  for (let x of xEvents) {
+    const xDur = dur(x)
+    beginEvents.push({...x, ph: 'B'} as BTraceEvent)
+    endEvents.push({...x, ph: 'E', ts: x.ts + xDur} as ETraceEvent)
+  }
+
+  function compareTimestamps(a: TraceEvent, b: TraceEvent) {
+    if (a.ts < b.ts) return -1
+    if (a.ts > b.ts) return 1
+
+    // Important: if the timestamps are the same, return zero. We're going to
+    // rely upon a stable sort here.
+    return 0
+  }
+
+  beginEvents.sort(compareTimestamps)
+  endEvents.sort(compareTimestamps)
+
+  return [beginEvents, endEvents]
+}
 
 function filterIgnoredEventTypes(events: TraceEvent[]): ImportableTraceEvent[] {
   const ret: ImportableTraceEvent[] = []
@@ -74,69 +226,6 @@ function filterIgnoredEventTypes(events: TraceEvent[]): ImportableTraceEvent[] {
       case 'E':
       case 'X':
         ret.push(ev as ImportableTraceEvent)
-    }
-  }
-  return ret
-}
-
-function convertToDurationEvents(events: ImportableTraceEvent[]): DurationEvent[] {
-  const ret: DurationEvent[] = []
-  for (let i = 0; i < events.length; i++) {
-    const ev = events[i]
-
-    switch (ev.ph) {
-      case 'B':
-        ret.push({ev, sortIndex: i})
-        break
-
-      case 'E':
-        ret.push({ev, sortIndex: i})
-        break
-
-      case 'X':
-        let dur: number | null = null
-        if (ev.dur != null) dur = ev.dur
-        else if (ev.tdur != null) dur = ev.tdur
-
-        if (dur == null) {
-          console.warn('Found a complete event (X) with no duration. Skipping: ', ev)
-          continue
-        }
-
-        // We convert 'X' events into 'B' & 'E' event pairs. We need to be careful
-        // with how we handle pairs of 'X' events with exactly the same ts & dur.
-        //
-        // For example, consider the following two events:
-        //
-        //  { "pid": 0, "tid": 0, "ph": "X", "ts": 0, "dur": 10, "name": "A" },
-        //  { "pid": 0, "tid": 0, "ph": "X", "ts": 0, "dur": 10, "name": "B" },
-        //
-        // The equivalent resulting event sequence we want is:
-        //
-        //  { "pid": 0, "tid": 0, "ph": "B", "ts": 0, "name": "A" },
-        //  { "pid": 0, "tid": 0, "ph": "B", "ts": 0, "name": "B" },
-        //  { "pid": 0, "tid": 0, "ph": "E", "ts": 10, "name": "B" },
-        //  { "pid": 0, "tid": 0, "ph": "E", "ts": 10, "name": "A" },
-        //
-        // Note that this is *not* equivalent to the following:
-        //
-        //  { "pid": 0, "tid": 0, "ph": "B", "ts": 0, "name": "B" },
-        //  { "pid": 0, "tid": 0, "ph": "B", "ts": 0, "name": "A" },
-        //  { "pid": 0, "tid": 0, "ph": "E", "ts": 10, "name": "A" },
-        //  { "pid": 0, "tid": 0, "ph": "E", "ts": 10, "name": "B" },
-        //
-        // To support this, we need to carefully manage the sort order of pairs of
-        // 'B' events, and do so differently than how we manage the corresponding
-        // 'E' events
-        const eventB = {...ev, ph: 'B'} as BTraceEvent
-        const eventE = {...ev, ph: 'E', ts: ev.ts + dur} as ETraceEvent
-        ret.push({ev: eventB, sortIndex: i})
-        ret.push({ev: eventE, sortIndex: -i})
-        break
-
-      default:
-        const _exhaustiveCheck: never = ev
-        return _exhaustiveCheck
     }
   }
   return ret
@@ -157,8 +246,7 @@ function getThreadNamesByPidTid(events: TraceEvent[]): Map<string, string> {
 
   for (let ev of events) {
     if (ev.ph === 'M' && ev.name === 'thread_name' && ev.args && ev.args.name) {
-      const key = `${ev.pid}:${ev.tid}`
-      threadNameByPidTid.set(key, ev.args.name)
+      threadNameByPidTid.set(pidTidKey(ev.pid, ev.tid), ev.args.name)
     }
   }
   return threadNameByPidTid
@@ -180,72 +268,25 @@ function frameInfoForEvent(event: TraceEvent): FrameInfo {
   }
 }
 
-type TraceEventProfileState = {profile: CallTreeProfileBuilder; eventStack: BTraceEvent[]}
-
 function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
-  const stateByPidTid = new Map<string, TraceEventProfileState>()
-
   const importableEvents = filterIgnoredEventTypes(events)
-  const durationEvents = convertToDurationEvents(importableEvents)
+  const partitioned = partitionByPidTid(importableEvents)
 
   const processNamesByPid = getProcessNamesByPid(events)
   const threadNamesByPidTid = getThreadNamesByPidTid(events)
 
-  durationEvents.sort((a, b) => {
-    const aEv = a.ev
-    const bEv = b.ev
-    if (aEv.pid < bEv.pid) return -1
-    if (aEv.pid > bEv.pid) return 1
-    if (aEv.tid < bEv.tid) return -1
-    if (aEv.tid > bEv.tid) return 1
-    if (aEv.ts < bEv.ts) return -1
-    if (aEv.ts > bEv.ts) return 1
+  const profilePairs: [string, Profile][] = []
 
-    // We have to be careful with events that have the same timestamp
-    // and the same pid/tid
-    const aKey = keyForEvent(aEv)
-    const bKey = keyForEvent(bEv)
-    if (aKey === bKey) {
-      // If the two elements have the same key, we need to process the begin
-      // event before the end event. This will be a zero-duration event.
-      if (aEv.ph === 'B' && bEv.ph === 'E') return -1
-      if (aEv.ph === 'E' && bEv.ph === 'B') return 1
-    } else {
-      // If the two elements have *different* keys, we want to process
-      // the end of an event before the beginning of the event to prevent
-      // out-of-order push/pops from the call-stack.
-      if (aEv.ph === 'B' && bEv.ph === 'E') return 1
-      if (aEv.ph === 'E' && bEv.ph === 'B') return -1
-    }
+  partitioned.forEach(eventsForThread => {
+    if (eventsForThread.length === 0) return
 
-    if (a.sortIndex < b.sortIndex) return -1
-    if (a.sortIndex > b.sortIndex) return 1
-    return 0
-  })
+    const {pid, tid} = eventsForThread[0]
 
-  if (durationEvents.length > 0) {
-    let firstTs = Number.MAX_VALUE
-    for (let {ev} of durationEvents) {
-      firstTs = Math.min(firstTs, ev.ts)
-    }
-    for (let {ev} of durationEvents) {
-      ev.ts -= firstTs
-    }
-  }
-
-  function getOrCreateProfileState(pid: number, tid: number): TraceEventProfileState {
-    // We zero-pad the PID and TID to make sorting them by pid/tid pair later easier.
-    const pidTid = `${zeroPad('' + pid, 10)}:${zeroPad('' + tid, 10)}`
-
-    let state = stateByPidTid.get(pidTid)
-    if (state != null) return state
-    let profile = new CallTreeProfileBuilder()
-    state = {profile, eventStack: []}
+    const profile = new CallTreeProfileBuilder()
     profile.setValueFormatter(new TimeFormatter('microseconds'))
-    stateByPidTid.set(pidTid, state)
 
     const processName = processNamesByPid.get(pid)
-    const threadName = threadNamesByPidTid.get(`${pid}:${tid}`)
+    const threadName = threadNamesByPidTid.get(pidTidKey(pid, tid))
 
     if (processName != null && threadName != null) {
       profile.setName(`${processName} (pid ${pid}), ${threadName} (tid ${tid})`)
@@ -257,90 +298,153 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
       profile.setName(`pid ${pid}, tid ${tid}`)
     }
 
-    return state
-  }
+    // The trace event format is hard to deal with because it specifically
+    // allows events to be recorded out of order, *but* event ordering is still
+    // important for events with the same timestamp. Because of this, rather
+    // than thinking about the entire event stream as a single queue of events,
+    // we're going to first construct two time-ordered lists of events:
+    //
+    // 1. ts ordered queue of 'B' events
+    // 2. ts ordered queue of 'E' events
+    //
+    // We deal with 'X' events by converting them to one entry in the 'B' event
+    // queue and one entry in the 'E' event queue.
+    //
+    // The high level goal is to deal with 'B' events in 'ts' order, breaking
+    // ties by the order the events occurred in the file, and deal with 'E'
+    // events in 'ts' order, breaking ties in whatever order causes the 'E'
+    // events to match whatever is on the top of the stack.
+    const [bEventQueue, eEventQueue] = convertToEventQueues(eventsForThread)
 
-  for (let {ev} of durationEvents) {
-    const {profile, eventStack} = getOrCreateProfileState(ev.pid, ev.tid)
-    const frameInfo = frameInfoForEvent(ev)
-    switch (ev.ph) {
-      case 'B':
-        eventStack.push(ev)
-        profile.enterFrame(frameInfo, ev.ts)
-        break
-
-      case 'E':
-        const topFrame = lastOf(eventStack)
-        if (topFrame == null) {
-          console.warn(
-            `ts=${ev.ts}: Request to end "${frameInfo?.key}" when stack is empty. Doing nothing instead.`,
-          )
-          break
-        }
-
-        const topFrameInfo = frameInfoForEvent(topFrame)
-
-        // We treat mismatched names & mismatched keys differently, because it's
-        // unclear from the spec what to do when you receive an "E" event when
-        // the corresponding "B" event is not at the top of the stack, and also
-        // unclear whether "B" and "E" events should be matched just based on
-        // "name", or should also includes all of "args".
-        //
-        // Based on
-        // https://github.com/catapult-project/catapult/blob/7874beb5c5a18ed8ba1264fac8dc4e857be23e35/tracing/tracing/extras/importer/trace_event_importer.html#L531-L542,
-        // it seems like chrome://tracing warns on mismatching names, but
-        // doesn't warn on mismatching args.
-        //
-        // As a rough compromise, if the names mismatch, we assume this is
-        // definitely a mistake, and discard the event. If the names match, but
-        // the args mismatch, we assume the args aren't supposed to match, and
-        // warn, but close the top-of-stack frame anyway.
-        if (ev.name !== topFrame.name) {
-          console.warn(
-            `ts=${ev.ts}: Request to end "${frameInfo.key}" when "${topFrameInfo.key}" was on the top of the stack. Doing nothing instead.`,
-          )
-          break
-        }
-
-        if (frameInfo.key !== topFrameInfo.key) {
-          console.warn(
-            `ts=${ev.ts}: Request to end "${frameInfo.key}" when "${topFrameInfo.key}" was on the top of the stack. Ending "${topFrameInfo.key} instead.`,
-          )
-        }
-
-        profile.leaveFrame(topFrameInfo, ev.ts)
-        eventStack.pop()
-        break
-
-      default:
-        const _exhaustiveCheck: never = ev
-        return _exhaustiveCheck
+    const frameStack: BTraceEvent[] = []
+    const enterFrame = (b: BTraceEvent) => {
+      frameStack.push(b)
+      profile.enterFrame(frameInfoForEvent(b), b.ts)
     }
-  }
+
+    const tryToLeaveFrame = (e: ETraceEvent) => {
+      const b = lastOf(frameStack)
+
+      if (b == null) {
+        console.warn(
+          `Tried to end frame "${
+            frameInfoForEvent(e).key
+          }", but the stack was empty. Doing nothing instead.`,
+        )
+        return
+      }
+
+      const eFrameInfo = frameInfoForEvent(e)
+      const bFrameInfo = frameInfoForEvent(b)
+
+      if (e.name !== b.name) {
+        console.warn(
+          `ts=${e.ts}: Tried to end "${eFrameInfo.key}" when "${bFrameInfo.key}" was on the top of the stack. Doing nothing instead.`,
+        )
+        return
+      }
+
+      if (eFrameInfo.key !== bFrameInfo.key) {
+        console.warn(
+          `ts=${e.ts}: Tried to end "${eFrameInfo.key}" when "${bFrameInfo.key}" was on the top of the stack. Ending ${bFrameInfo.key} instead.`,
+        )
+      }
+
+      frameStack.pop()
+      profile.leaveFrame(bFrameInfo, e.ts)
+    }
+
+    while (bEventQueue.length > 0 || eEventQueue.length > 0) {
+      const queueName = selectQueueToTakeFromNext(bEventQueue, eEventQueue)
+      switch (queueName) {
+        case 'B': {
+          enterFrame(bEventQueue.shift()!)
+          break
+        }
+        case 'E': {
+          // Before we take the first event in the 'E' queue, let's first see if
+          // there are any e events that exactly match the top of the stack.
+          // We'll prioritize first by key, then by name if we can't find a key
+          // match.
+          const stackTop = lastOf(frameStack)
+          if (stackTop != null) {
+            const bFrameInfo = frameInfoForEvent(stackTop)
+
+            let swapped: boolean = false
+
+            for (let i = 1; i < eEventQueue.length; i++) {
+              const eEvent = eEventQueue[i]
+              if (eEvent.ts > eEventQueue[0].ts) {
+                // Only consider 'E' events with the same ts as the front of the queue.
+                break
+              }
+
+              const eFrameInfo = frameInfoForEvent(eEvent)
+              if (bFrameInfo.key === eFrameInfo.key) {
+                // We have a match! Process this one first.
+                const temp = eEventQueue[0]
+                eEventQueue[0] = eEventQueue[i]
+                eEventQueue[i] = temp
+                swapped = true
+                break
+              }
+            }
+
+            if (!swapped) {
+              // There was no key match, let's see if we can find a name match
+              for (let i = 1; i < eEventQueue.length; i++) {
+                const eEvent = eEventQueue[i]
+                if (eEvent.ts > eEventQueue[0].ts) {
+                  // Only consider 'E' events with the same ts as the front of the queue.
+                  break
+                }
+
+                if (eEvent.name === stackTop.name) {
+                  // We have a match! Process this one first.
+                  const temp = eEventQueue[0]
+                  eEventQueue[0] = eEventQueue[i]
+                  eEventQueue[i] = temp
+                  swapped = true
+                  break
+                }
+              }
+            }
+
+            // If swapped is still false at this point, it means we're about to
+            // pop a stack frame that doesn't even match by name. Bummer.
+          }
+
+          const e = eEventQueue.shift()!
+
+          tryToLeaveFrame(e)
+          break
+        }
+
+        default:
+          const _exhaustiveCheck: never = queueName
+          return _exhaustiveCheck
+      }
+    }
+
+    for (let i = frameStack.length - 1; i >= 0; i--) {
+      const frame = frameInfoForEvent(frameStack[i])
+      console.warn(`Frame "${frame.key}" was still open at end of profile. Closing automatically.`)
+      profile.leaveFrame(frame, profile.getTotalWeight())
+    }
+
+    profilePairs.push([pidTidKey(pid, tid), profile.build()])
+  })
 
   // For now, we just sort processes by pid & tid.
   // TODO: The standard specifies that metadata events with the name
   // "process_sort_index" and "thread_sort_index" can be used to influence the
   // order, but for simplicity we'll ignore that until someone complains :)
-  const profilePairs = Array.from(stateByPidTid.entries())
   sortBy(profilePairs, p => p[0])
 
   return {
     name: '',
     indexToView: 0,
-    profiles: profilePairs.map(p => {
-      const {eventStack, profile} = p[1]
-      if (eventStack.length > 0) {
-        for (let i = eventStack.length - 1; i >= 0; i--) {
-          const frame = frameInfoForEvent(eventStack[i])
-          console.warn(
-            `Frame "${frame.key}" was still open at end of profile. Closing automatically.`,
-          )
-          profile.leaveFrame(frame, profile.getTotalWeight())
-        }
-      }
-      return profile.build()
-    }),
+    profiles: profilePairs.map(p => p[1]),
   }
 }
 

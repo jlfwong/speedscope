@@ -1,0 +1,15 @@
+[
+  { "pid": 0, "tid": 0, "ph": "X", "ts": 0, "dur": 20, "name": "alpha" },
+
+  { "pid": 0, "tid": 0, "ph": "X", "ts": 1, "dur": 2, "name": "beta" },
+  { "pid": 0, "tid": 0, "ph": "X", "ts": 1, "dur": 1, "name": "gamma" },
+
+  { "pid": 0, "tid": 0, "ph": "X", "ts": 5, "dur": 2, "name": "gamma" },
+  { "pid": 0, "tid": 0, "ph": "X", "ts": 5, "dur": 1, "name": "beta" },
+
+  { "pid": 0, "tid": 0, "ph": "X", "ts": 9, "dur": 1, "name": "beta" },
+  { "pid": 0, "tid": 0, "ph": "X", "ts": 9, "dur": 2, "name": "gamma" },
+
+  { "pid": 0, "tid": 0, "ph": "X", "ts": 13, "dur": 1, "name": "gamma" },
+  { "pid": 0, "tid": 0, "ph": "X", "ts": 13, "dur": 2, "name": "beta" }
+]
