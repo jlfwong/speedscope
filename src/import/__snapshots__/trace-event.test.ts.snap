@@ -70,6 +70,62 @@ exports[`importTraceEvents event matching-x: indexToView 1`] = `0`;
 
 exports[`importTraceEvents event matching-x: profileGroup.name 1`] = `"matching-x.json"`;
 
+exports[`importTraceEvents event mismatched 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "alpha",
+      "line": undefined,
+      "name": "alpha",
+      "selfWeight": 10,
+      "totalWeight": 31,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "beta",
+      "line": undefined,
+      "name": "beta",
+      "selfWeight": 10,
+      "totalWeight": 10,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "A {\\"x\\":1}",
+      "line": undefined,
+      "name": "A {\\"x\\":1}",
+      "selfWeight": 2,
+      "totalWeight": 11,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "A {\\"x\\":2}",
+      "line": undefined,
+      "name": "A {\\"x\\":2}",
+      "selfWeight": 9,
+      "totalWeight": 9,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "alpha 1.00µs",
+    "alpha;beta 10.00µs",
+    "alpha 9.00µs",
+    "alpha;A {\\"x\\":1} 1.00µs",
+    "alpha;A {\\"x\\":1};A {\\"x\\":2} 9.00µs",
+    "alpha;A {\\"x\\":1} 1.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents event mismatched: indexToView 1`] = `0`;
+
+exports[`importTraceEvents event mismatched: profileGroup.name 1`] = `"mismatched.json"`;
+
 exports[`importTraceEvents event re-ordering 1`] = `
 Object {
   "frames": Array [
