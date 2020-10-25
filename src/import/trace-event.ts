@@ -267,7 +267,7 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
           break
         }
 
-        if (topFrame == null) {
+        if (frameInfo.key !== topFrameInfo.key) {
           console.warn(
             `ts=${ev.ts}: Request to end "${frameInfo.key}" when "${topFrameInfo.key}" was on the top of the stack. Ending "${topFrameInfo.key} instead.`,
           )

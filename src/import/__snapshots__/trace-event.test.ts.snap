@@ -35,6 +35,30 @@ exports[`importTraceEvents bad E events: indexToView 1`] = `0`;
 
 exports[`importTraceEvents bad E events: profileGroup.name 1`] = `"too-many-end-events.json"`;
 
+exports[`importTraceEvents end event with empty stack 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "alpha",
+      "line": undefined,
+      "name": "alpha",
+      "selfWeight": 1,
+      "totalWeight": 1,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "alpha 1.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents end event with empty stack: indexToView 1`] = `0`;
+
+exports[`importTraceEvents end event with empty stack: profileGroup.name 1`] = `"end-event-with-empty-stack.json"`;
+
 exports[`importTraceEvents end-non-top-of-stack 1`] = `
 Object {
   "frames": Array [
