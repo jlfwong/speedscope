@@ -67,3 +67,7 @@ test('importTraceEvents unbalanced args', async () => {
 test('importTraceEvents end event with empty stack', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/end-event-with-empty-stack.json')
 })
+
+test('importTraceEvents only begin events', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/only-begin-events.json')
+})

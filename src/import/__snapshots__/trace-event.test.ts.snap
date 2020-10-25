@@ -486,6 +486,49 @@ exports[`importTraceEvents not out-of-order: indexToView 1`] = `0`;
 
 exports[`importTraceEvents not out-of-order: profileGroup.name 1`] = `"out-of-order.json"`;
 
+exports[`importTraceEvents only begin events 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "A {\\"x\\":1}",
+      "line": undefined,
+      "name": "A {\\"x\\":1}",
+      "selfWeight": 1,
+      "totalWeight": 2,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "B {\\"x\\":2}",
+      "line": undefined,
+      "name": "B {\\"x\\":2}",
+      "selfWeight": 1,
+      "totalWeight": 1,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "C {\\"x\\":2}",
+      "line": undefined,
+      "name": "C {\\"x\\":2}",
+      "selfWeight": 0,
+      "totalWeight": 0,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "A {\\"x\\":1} 1.00µs",
+    "A {\\"x\\":1};B {\\"x\\":2} 1.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents only begin events: indexToView 1`] = `0`;
+
+exports[`importTraceEvents only begin events: profileGroup.name 1`] = `"only-begin-events.json"`;
+
 exports[`importTraceEvents partial json import 1`] = `
 Object {
   "frames": Array [
