@@ -75,3 +75,11 @@ test('importTraceEvents only begin events', async () => {
 test('importTraceEvents zero duration events', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/zero-duration-events.json')
 })
+
+test('importTraceEvents matching x', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/matching-x.json')
+})
+
+test('importTraceEvents invalid x nesting', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/invalid-x-nesting.json')
+})

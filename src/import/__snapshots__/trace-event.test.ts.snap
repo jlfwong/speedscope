@@ -161,6 +161,85 @@ exports[`importTraceEvents event re-ordering: indexToView 1`] = `0`;
 
 exports[`importTraceEvents event re-ordering: profileGroup.name 1`] = `"must-retain-original-order.json"`;
 
+exports[`importTraceEvents invalid x nesting 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "alpha",
+      "line": undefined,
+      "name": "alpha",
+      "selfWeight": 5,
+      "totalWeight": 15,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "beta",
+      "line": undefined,
+      "name": "beta",
+      "selfWeight": 10,
+      "totalWeight": 10,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "alpha 5.00µs",
+    "alpha;beta 10.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents invalid x nesting: indexToView 1`] = `0`;
+
+exports[`importTraceEvents invalid x nesting: profileGroup.name 1`] = `"invalid-x-nesting.json"`;
+
+exports[`importTraceEvents matching x 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "alpha",
+      "line": undefined,
+      "name": "alpha",
+      "selfWeight": 1,
+      "totalWeight": 6,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "beta",
+      "line": undefined,
+      "name": "beta",
+      "selfWeight": 4,
+      "totalWeight": 5,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "gamma",
+      "line": undefined,
+      "name": "gamma",
+      "selfWeight": 1,
+      "totalWeight": 2,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "alpha 1.00µs",
+    "alpha;beta;gamma 1.00µs",
+    "alpha;beta 3.00µs",
+    "alpha;beta;gamma;beta 1.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents matching x: indexToView 1`] = `0`;
+
+exports[`importTraceEvents matching x: profileGroup.name 1`] = `"matching-x.json"`;
+
 exports[`importTraceEvents mismatched args 1`] = `
 Object {
   "frames": Array [
