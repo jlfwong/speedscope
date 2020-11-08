@@ -375,7 +375,7 @@ const style = StyleSheet.create({
   },
   hBarDisplay: {
     position: 'absolute',
-    background: Colors.TRANSPARENT_GREEN,
+    background: defaultTheme.bgWeightColor,
     bottom: 2,
     height: 2,
     width: `calc(100% - ${2 * Sizes.FRAME_HEIGHT}px)`,
