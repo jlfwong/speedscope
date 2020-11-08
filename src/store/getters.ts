@@ -13,20 +13,26 @@ export const createGetColorBucketForFrame = memoizeByReference(
   },
 )
 
-export const createGetCSSColorForFrame = memoizeByReference((theme: Theme) => {
-  return memoizeByReference((frameToColorBucket: Map<number | string, number>) => {
+export const createGetCSSColorForFrame = memoizeByShallowEquality(
+  ({
+    theme,
+    frameToColorBucket,
+  }: {
+    theme: Theme
+    frameToColorBucket: Map<number | string, number>
+  }) => {
     const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
     return (frame: Frame): string => {
       const t = getColorBucketForFrame(frame) / 255
       return theme.colorForBucket(t).toCSS()
     }
-  })
-})
+  },
+)
 
-export const getCanvasContext = memoizeByReference((theme: Theme) =>
-  memoizeByReference((canvas: HTMLCanvasElement) => {
+export const getCanvasContext = memoizeByShallowEquality(
+  ({theme, canvas}: {theme: Theme; canvas: HTMLCanvasElement}) => {
     return new CanvasContext(canvas, theme)
-  }),
+  },
 )
 
 export const getRowAtlas = memoizeByReference((canvasContext: CanvasContext) => {

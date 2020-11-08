@@ -63,8 +63,8 @@ export const CalleeFlamegraphView = memo((ownProps: FlamechartViewContainerProps
 
   const frameToColorBucket = getFrameToColorBucket(profile)
   const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
-  const getCSSColorForFrame = createGetCSSColorForFrame(theme)(frameToColorBucket)
-  const canvasContext = getCanvasContext(theme)(glCanvas)
+  const getCSSColorForFrame = createGetCSSColorForFrame({theme, frameToColorBucket})
+  const canvasContext = getCanvasContext({theme, canvas: glCanvas})
 
   const flamechart = getCalleeFlamegraph({
     calleeProfile: getCalleeProfile({profile, frame: selectedFrame, flattenRecursion}),

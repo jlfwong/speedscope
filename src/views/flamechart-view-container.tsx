@@ -120,10 +120,10 @@ export const ChronoFlamechartView = memo((props: FlamechartViewContainerProps) =
 
   const theme = useTheme()
 
-  const canvasContext = getCanvasContext(theme)(glCanvas)
+  const canvasContext = getCanvasContext({theme, canvas: glCanvas})
   const frameToColorBucket = getFrameToColorBucket(profile)
   const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
-  const getCSSColorForFrame = createGetCSSColorForFrame(theme)(frameToColorBucket)
+  const getCSSColorForFrame = createGetCSSColorForFrame({theme, frameToColorBucket})
 
   const flamechart = getChronoViewFlamechart({profile, getColorBucketForFrame})
   const flamechartRenderer = getChronoViewFlamechartRenderer({
@@ -181,10 +181,10 @@ export const LeftHeavyFlamechartView = memo((ownProps: FlamechartViewContainerPr
 
   const theme = useTheme()
 
-  const canvasContext = getCanvasContext(theme)(glCanvas)
+  const canvasContext = getCanvasContext({theme, canvas: glCanvas})
   const frameToColorBucket = getFrameToColorBucket(profile)
   const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
-  const getCSSColorForFrame = createGetCSSColorForFrame(theme)(frameToColorBucket)
+  const getCSSColorForFrame = createGetCSSColorForFrame({theme, frameToColorBucket})
 
   const flamechart = getLeftHeavyFlamechart({
     profile,

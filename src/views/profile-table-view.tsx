@@ -437,7 +437,7 @@ export const ProfileTableViewContainer = memo((ownProps: ProfileTableViewContain
   const {callerCallee} = sandwichViewState
   const selectedFrame = callerCallee ? callerCallee.selectedFrame : null
   const frameToColorBucket = getFrameToColorBucket(profile)
-  const getCSSColorForFrame = createGetCSSColorForFrame(theme)(frameToColorBucket)
+  const getCSSColorForFrame = createGetCSSColorForFrame({theme, frameToColorBucket})
 
   const setSelectedFrame = useActionCreator(
     (selectedFrame: Frame | null) => {
