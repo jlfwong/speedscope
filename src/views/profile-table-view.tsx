@@ -2,7 +2,7 @@ import {h, Component, JSX, ComponentChild} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 import {Profile, Frame} from '../lib/profile'
 import {formatPercent} from '../lib/utils'
-import {FontSize, Colors, Sizes, commonStyle} from './style'
+import {FontSize, Colors, Sizes, commonStyle, defaultTheme} from './style'
 import {ColorChit} from './color-chit'
 import {ListItem, ScrollableListView} from './scrollable-list-view'
 import {actions} from '../store/actions'
@@ -322,7 +322,7 @@ export const ProfileTableView = memo(
 
 const style = StyleSheet.create({
   profileTableView: {
-    background: Colors.WHITE,
+    background: defaultTheme.bgPrimaryColor,
     height: '100%',
   },
   scrollView: {
@@ -333,10 +333,10 @@ const style = StyleSheet.create({
   tableView: {
     width: '100%',
     fontSize: FontSize.LABEL,
-    background: Colors.WHITE,
+    background: defaultTheme.bgPrimaryColor,
   },
   tableHeader: {
-    borderBottom: `2px solid ${Colors.LIGHT_GRAY}`,
+    borderBottom: `2px solid ${defaultTheme.bgSecondaryColor}`,
     textAlign: 'left',
     color: Colors.GRAY,
     userSelect: 'none',
@@ -350,11 +350,11 @@ const style = StyleSheet.create({
     height: Sizes.FRAME_HEIGHT,
   },
   tableRowEven: {
-    background: Colors.OFF_WHITE,
+    background: defaultTheme.bgSecondaryColor,
   },
   tableRowSelected: {
     background: Colors.DARK_BLUE,
-    color: Colors.WHITE,
+    color: defaultTheme.altFgPrimaryColor,
   },
   numericCell: {
     textOverflow: 'ellipsis',
@@ -391,7 +391,7 @@ const style = StyleSheet.create({
     borderBottom: `2px solid ${Colors.BLACK}`,
   },
   matchedSelected: {
-    borderColor: Colors.WHITE,
+    borderColor: defaultTheme.altFgPrimaryColor,
   },
   emptyState: {
     textAlign: 'center',

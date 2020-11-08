@@ -1,5 +1,5 @@
 import {Vec2} from '../lib/math'
-import {Sizes, Colors, FontSize, FontFamily, ZIndex} from './style'
+import {Sizes, Colors, FontSize, FontFamily, ZIndex, defaultTheme} from './style'
 import {css, StyleSheet} from 'aphrodite'
 import {h, Component} from 'preact'
 
@@ -42,7 +42,7 @@ const HOVERTIP_PADDING = 2
 const style = StyleSheet.create({
   hoverTip: {
     position: 'absolute',
-    background: Colors.WHITE,
+    background: defaultTheme.bgPrimaryColor,
     border: '1px solid black',
     maxWidth: Sizes.TOOLTIP_WIDTH_MAX,
     paddingTop: HOVERTIP_PADDING,

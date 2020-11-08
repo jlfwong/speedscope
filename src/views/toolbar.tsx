@@ -3,7 +3,7 @@ import {ViewMode} from '../store'
 import {h, JSX, Fragment} from 'preact'
 import {useCallback, useState, useEffect} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
-import {Sizes, Colors, FontFamily, FontSize, Duration} from './style'
+import {Sizes, Colors, FontFamily, FontSize, Duration, defaultTheme} from './style'
 import {ProfileSelect} from './profile-select'
 import {ProfileGroupState} from '../store/profiles-state'
 import {Profile} from '../lib/profile'
@@ -195,7 +195,7 @@ const style = StyleSheet.create({
     height: Sizes.TOOLBAR_HEIGHT,
     flexShrink: 0,
     background: Colors.BLACK,
-    color: Colors.WHITE,
+    color: defaultTheme.altFgPrimaryColor,
     textAlign: 'center',
     fontFamily: FontFamily.MONOSPACE,
     fontSize: FontSize.TITLE,

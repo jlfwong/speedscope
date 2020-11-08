@@ -2,7 +2,7 @@ import {Profile} from '../lib/profile'
 import {h, JSX, ComponentChild, Ref} from 'preact'
 import {useCallback, useState, useMemo, useEffect, useRef} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
-import {Colors, ZIndex, Sizes} from './style'
+import {Colors, ZIndex, Sizes, defaultTheme} from './style'
 import {fuzzyMatchStrings} from '../lib/fuzzy-find'
 import {sortBy} from '../lib/utils'
 
@@ -390,7 +390,7 @@ const style = StyleSheet.create({
     width: '100%',
     paddingBottom: 10,
     background: Colors.BLACK,
-    color: Colors.WHITE,
+    color: defaultTheme.altFgPrimaryColor,
   },
   profileSelectOuter: {
     width: '100%',

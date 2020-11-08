@@ -1,5 +1,5 @@
 import {StyleSheet} from 'aphrodite'
-import {FontSize, Colors, Sizes} from './style'
+import {FontSize, Colors, Sizes, defaultTheme} from './style'
 
 export const style = StyleSheet.create({
   hoverCount: {
@@ -29,7 +29,7 @@ export const style = StyleSheet.create({
     borderTop: `${Sizes.SEPARATOR_HEIGHT}px solid ${Colors.LIGHT_GRAY}`,
     fontSize: FontSize.LABEL,
     position: 'absolute',
-    background: Colors.WHITE,
+    background: defaultTheme.bgPrimaryColor,
     width: '100vw',
     bottom: 0,
   },
@@ -66,11 +66,11 @@ export const style = StyleSheet.create({
   },
   thisInstanceCell: {
     background: Colors.DARK_BLUE,
-    color: Colors.WHITE,
+    color: defaultTheme.altFgPrimaryColor,
   },
   allInstancesCell: {
     background: Colors.PALE_DARK_BLUE,
-    color: Colors.WHITE,
+    color: defaultTheme.altFgPrimaryColor,
   },
   barDisplay: {
     position: 'absolute',

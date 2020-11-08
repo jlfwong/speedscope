@@ -3,7 +3,7 @@ import {StyleSheet, css} from 'aphrodite'
 import {FileSystemDirectoryEntry} from '../import/file-system-entry'
 
 import {ProfileGroup, SymbolRemapper} from '../lib/profile'
-import {FontFamily, FontSize, Colors, Duration} from './style'
+import {FontFamily, FontSize, Colors, Duration, defaultTheme} from './style'
 import {importEmscriptenSymbolMap as importEmscriptenSymbolRemapper} from '../lib/emscripten'
 import {SandwichViewContainer} from './sandwich-view'
 import {saveToFile} from '../lib/file-format'
@@ -656,15 +656,15 @@ const style = StyleSheet.create({
     textAlign: 'center',
     fontSize: FontSize.BIG_BUTTON,
     lineHeight: '72px',
-    background: Colors.DARK_BLUE,
-    color: Colors.WHITE,
+    background: defaultTheme.selectionPrimaryColor,
+    color: defaultTheme.altFgPrimaryColor,
     transition: `all ${Duration.HOVER_CHANGE} ease-in`,
     ':hover': {
-      background: Colors.BRIGHT_BLUE,
+      background: defaultTheme.accentColor,
     },
   },
   link: {
-    color: Colors.BRIGHT_BLUE,
+    color: defaultTheme.accentColor,
     cursor: 'pointer',
     textDecoration: 'none',
   },
