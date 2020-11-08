@@ -17,6 +17,7 @@ import {FlamechartWrapper} from './flamechart-wrapper'
 import {useAppSelector} from '../store'
 import {h} from 'preact'
 import {memo} from 'preact/compat'
+import { useTheme } from './themes/theme'
 
 const getCalleeProfile = memoizeByShallowEquality<
   {
@@ -52,6 +53,7 @@ export const CalleeFlamegraphView = memo((ownProps: FlamechartViewContainerProps
   const {index, profile, sandwichViewState} = activeProfileState
   const flattenRecursion = useAppSelector(state => state.flattenRecursion, [])
   const glCanvas = useAppSelector(state => state.glCanvas, [])
+  const theme = useTheme()
 
   if (!profile) throw new Error('profile missing')
   if (!glCanvas) throw new Error('glCanvas missing')
@@ -61,8 +63,8 @@ export const CalleeFlamegraphView = memo((ownProps: FlamechartViewContainerProps
 
   const frameToColorBucket = getFrameToColorBucket(profile)
   const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
-  const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
-  const canvasContext = getCanvasContext(glCanvas)
+  const getCSSColorForFrame = createGetCSSColorForFrame(theme)(frameToColorBucket)
+  const canvasContext = getCanvasContext(theme)(glCanvas)
 
   const flamechart = getCalleeFlamegraph({
     calleeProfile: getCalleeProfile({profile, frame: selectedFrame, flattenRecursion}),
@@ -72,6 +74,7 @@ export const CalleeFlamegraphView = memo((ownProps: FlamechartViewContainerProps
 
   return (
     <FlamechartWrapper
+      theme={theme}
       renderInverted={false}
       flamechart={flamechart}
       flamechartRenderer={flamechartRenderer}

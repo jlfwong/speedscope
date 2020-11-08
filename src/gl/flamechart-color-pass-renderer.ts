@@ -1,5 +1,5 @@
 import {Vec2, Rect, AffineTransform} from '../lib/math'
-import {defaultTheme} from '../views/style'
+import {Theme} from '../views/themes/theme'
 import {Graphics} from './graphics'
 import {setUniformAffineTransform} from './utils'
 
@@ -102,7 +102,7 @@ export class FlamechartColorPassRenderer {
   private material: Graphics.Material
   private buffer: Graphics.VertexBuffer
 
-  constructor(private gl: Graphics.Context) {
+  constructor(private gl: Graphics.Context, private theme: Theme) {
     const vertices = [
       {pos: [-1, 1], uv: [0, 1]},
       {pos: [1, 1], uv: [1, 1]},
@@ -119,7 +119,7 @@ export class FlamechartColorPassRenderer {
 
     this.buffer = gl.createVertexBuffer(vertexFormat.stride * vertices.length)
     this.buffer.uploadFloats(floats)
-    this.material = gl.createMaterial(vertexFormat, vert, frag(defaultTheme.colorForBucketGLSL))
+    this.material = gl.createMaterial(vertexFormat, vert, frag(theme.colorForBucketGLSL))
   }
 
   render(props: FlamechartColorPassRenderProps) {

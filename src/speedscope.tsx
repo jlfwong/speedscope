@@ -2,6 +2,9 @@ import {h, render} from 'preact'
 import {createAppStore} from './store'
 import {ApplicationContainer} from './views/application-container'
 import {Provider} from './lib/preact-redux'
+import { ThemeContext } from './views/themes/theme'
+import { darkTheme } from './views/themes/dark-theme'
+import { lightTheme } from './views/themes/light-theme'
 
 console.log(`speedscope v${require('../package.json').version}`)
 
@@ -20,7 +23,9 @@ const store = lastStore ? createAppStore(lastStore.getState()) : createAppStore(
 
 render(
   <Provider store={store}>
-    <ApplicationContainer />
+    <ThemeContext.Provider value={darkTheme}>
+      <ApplicationContainer />
+    </ThemeContext.Provider>
   </Provider>,
   document.body,
   document.body.lastElementChild || undefined,

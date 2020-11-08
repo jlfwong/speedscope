@@ -5,7 +5,7 @@ import {Rect, Vec2} from '../lib/math'
 import {ViewportRectangleRenderer} from './overlay-rectangle-renderer'
 import {FlamechartColorPassRenderer} from './flamechart-color-pass-renderer'
 import {Color} from '../lib/color'
-import {defaultTheme} from '../views/style'
+import {Theme} from '../views/themes/theme'
 
 type FrameCallback = () => void
 
@@ -15,13 +15,15 @@ export class CanvasContext {
   public readonly textureRenderer: TextureRenderer
   public readonly viewportRectangleRenderer: ViewportRectangleRenderer
   public readonly flamechartColorPassRenderer: FlamechartColorPassRenderer
+  public readonly theme: Theme
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, theme: Theme) {
     this.gl = new WebGL.Context(canvas)
     this.rectangleBatchRenderer = new RectangleBatchRenderer(this.gl)
     this.textureRenderer = new TextureRenderer(this.gl)
-    this.viewportRectangleRenderer = new ViewportRectangleRenderer(this.gl)
-    this.flamechartColorPassRenderer = new FlamechartColorPassRenderer(this.gl)
+    this.viewportRectangleRenderer = new ViewportRectangleRenderer(this.gl, theme)
+    this.flamechartColorPassRenderer = new FlamechartColorPassRenderer(this.gl, theme)
+    this.theme = theme
 
     const webGLInfo = this.gl.getWebGLInfo()
     if (webGLInfo) {
@@ -50,7 +52,7 @@ export class CanvasContext {
   private onBeforeFrame = () => {
     this.animationFrameRequest = null
     this.gl.setViewport(0, 0, this.gl.renderTargetWidthInPixels, this.gl.renderTargetHeightInPixels)
-    const color = Color.fromCSSHex(defaultTheme.bgPrimaryColor)
+    const color = Color.fromCSSHex(this.theme.bgPrimaryColor)
     this.gl.clear(new Graphics.Color(color.r, color.g, color.b, color.a))
 
     for (const handler of this.beforeFrameHandlers) {

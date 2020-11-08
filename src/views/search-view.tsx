@@ -2,12 +2,13 @@ import {StyleSheet, css} from 'aphrodite'
 import {h, createContext, ComponentChildren, Fragment} from 'preact'
 import {useCallback, useRef, useEffect, useMemo} from 'preact/hooks'
 import {memo} from 'preact/compat'
-import {Sizes, FontSize, defaultTheme} from './style'
+import {Sizes, FontSize} from './style'
 import {ProfileSearchResults} from '../lib/profile-search'
 import {Profile} from '../lib/profile'
 import {useActiveProfileState, useAppSelector} from '../store'
 import {useActionCreator} from '../lib/preact-redux'
 import {actions} from '../store/actions'
+import { useTheme, withTheme } from './themes/theme'
 
 function stopPropagation(ev: Event) {
   ev.stopPropagation()
@@ -44,6 +45,8 @@ interface SearchViewProps {
 
 export const SearchView = memo(
   ({numResults, resultIndex, selectNext, selectPrev}: SearchViewProps) => {
+    const theme = useTheme()
+    const style = getStyle(theme)
     const searchQuery = useAppSelector(state => state.searchQuery, [])
     const searchIsActive = useAppSelector(state => state.searchIsActive, [])
     const setSearchQuery = useActionCreator(setSearchQueryAction, [])
@@ -169,7 +172,7 @@ export const SearchView = memo(
         >
           <path
             d="M4.99999 4.16217L11.6427 10.8048M11.6427 4.16217L4.99999 10.8048"
-            stroke={defaultTheme.altFgSecondaryColor}
+            stroke={theme.altFgSecondaryColor}
           />
         </svg>
       </div>
@@ -177,7 +180,7 @@ export const SearchView = memo(
   },
 )
 
-const style = StyleSheet.create({
+const getStyle = withTheme(theme => StyleSheet.create({
   searchView: {
     position: 'absolute',
     top: 0,
@@ -185,12 +188,12 @@ const style = StyleSheet.create({
     height: Sizes.TOOLBAR_HEIGHT,
     width: 16 * 13,
     borderWidth: 2,
-    borderColor: defaultTheme.altFgPrimaryColor,
+    borderColor: theme.altFgPrimaryColor,
     borderStyle: 'solid',
     fontSize: FontSize.LABEL,
     boxSizing: 'border-box',
-    background: defaultTheme.altBgSecondaryColor,
-    color: defaultTheme.altFgPrimaryColor,
+    background: theme.altBgSecondaryColor,
+    color: theme.altFgPrimaryColor,
     display: 'flex',
     alignItems: 'center',
   },
@@ -205,14 +208,14 @@ const style = StyleSheet.create({
     background: 'none',
     fontSize: FontSize.LABEL,
     lineHeight: `${Sizes.TOOLBAR_HEIGHT}px`,
-    color: defaultTheme.altFgPrimaryColor,
+    color: theme.altFgPrimaryColor,
     ':focus': {
       border: 'none',
       outline: 'none',
     },
     '::selection': {
-      color: defaultTheme.altFgPrimaryColor,
-      background: defaultTheme.selectionPrimaryColor,
+      color: theme.altFgPrimaryColor,
+      background: theme.selectionPrimaryColor,
     },
   },
   resultCount: {
@@ -234,4 +237,4 @@ const style = StyleSheet.create({
       outline: 'none',
     },
   },
-})
+}))

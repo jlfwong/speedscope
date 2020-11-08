@@ -1,13 +1,14 @@
 import {CallTreeNode} from '../lib/profile'
 import {StyleSheet, css} from 'aphrodite'
 import {h} from 'preact'
-import {commonStyle, defaultTheme} from './style'
+import {commonStyle} from './style'
 import {Rect, AffineTransform, Vec2} from '../lib/math'
 import {FlamechartPanZoomView} from './flamechart-pan-zoom-view'
 import {noop, formatPercent} from '../lib/utils'
 import {Hovertip} from './hovertip'
 import {FlamechartViewProps} from './flamechart-view-container'
 import {StatelessComponent} from '../lib/typed-redux'
+import { withTheme } from './themes/theme'
 
 export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
   private clampViewportToFlamegraph(viewportRect: Rect) {
@@ -39,6 +40,8 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
     if (!hover) return null
     const {width, height, left, top} = this.container.getBoundingClientRect()
     const offset = new Vec2(hover.event.clientX - left, hover.event.clientY - top)
+    const style = getStyle(this.props.theme)
+
     return (
       <Hovertip containerSize={new Vec2(width, height)} offset={offset}>
         <span className={css(style.hoverCount)}>
@@ -67,6 +70,7 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
         ref={this.containerRef}
       >
         <FlamechartPanZoomView
+          theme={this.props.theme}
           selectedNode={null}
           onNodeHover={this.setNodeHover}
           onNodeSelect={noop}
@@ -87,8 +91,8 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
   }
 }
 
-export const style = StyleSheet.create({
+export const getStyle = withTheme(theme => StyleSheet.create({
   hoverCount: {
-    color: defaultTheme.weightColor,
+    color: theme.weightColor,
   },
-})
+}))

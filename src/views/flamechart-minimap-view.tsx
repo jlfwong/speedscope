@@ -3,13 +3,16 @@ import {css} from 'aphrodite'
 import {Flamechart} from '../lib/flamechart'
 import {Rect, Vec2, AffineTransform, clamp} from '../lib/math'
 import {FlamechartRenderer} from '../gl/flamechart-renderer'
-import {style} from './flamechart-style'
-import {FontFamily, FontSize, Sizes, commonStyle, defaultTheme} from './style'
+import {getFlamechartStyle} from './flamechart-style'
+import {FontFamily, FontSize, Sizes, commonStyle} from './style'
 import {CanvasContext} from '../gl/canvas-context'
 import {cachedMeasureTextWidth} from '../lib/text-utils'
 import { Color } from '../lib/color'
+import { Theme } from './themes/theme'
 
 interface FlamechartMinimapViewProps {
+  theme: Theme
+
   flamechart: Flamechart
   configSpaceViewportRect: Rect
 
@@ -39,6 +42,10 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       this.overlayCanvas ? this.overlayCanvas.width : 0,
       this.overlayCanvas ? this.overlayCanvas.height : 0,
     )
+  }
+
+  private getStyle() {
+    return getFlamechartStyle(this.props.theme)
   }
 
   private minimapOrigin() {
@@ -133,8 +140,10 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       interval *= 2
     }
 
+    const theme = this.props.theme
+
     {
-      ctx.fillStyle = Color.fromCSSHex(defaultTheme.bgPrimaryColor).withAlpha(0.8).toCSS()
+      ctx.fillStyle = Color.fromCSSHex(theme.bgPrimaryColor).withAlpha(0.8).toCSS()
       ctx.fillRect(0, 0, physicalViewSize.x, physicalViewSpaceFrameHeight)
       ctx.textBaseline = 'top'
 
@@ -144,9 +153,9 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
         const labelText = this.props.flamechart.formatValue(x)
         const textWidth = Math.ceil(cachedMeasureTextWidth(ctx, labelText))
 
-        ctx.fillStyle = defaultTheme.fgPrimaryColor
+        ctx.fillStyle = theme.fgPrimaryColor
         ctx.fillText(labelText, pos - textWidth - labelPaddingPx, labelPaddingPx)
-        ctx.fillStyle = defaultTheme.fgSecondaryColor
+        ctx.fillStyle = theme.fgSecondaryColor
         ctx.fillRect(pos, 0, 1, physicalViewSize.y)
       }
     }
@@ -408,6 +417,8 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   }
 
   render() {
+    const style = this.getStyle()
+
     return (
       <div
         ref={this.containerRef}

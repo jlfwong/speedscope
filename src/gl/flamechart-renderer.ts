@@ -7,7 +7,6 @@ import {RowAtlas} from './row-atlas'
 import {Graphics} from './graphics'
 import {FlamechartColorPassRenderer} from './flamechart-color-pass-renderer'
 import {renderInto} from './utils'
-import {defaultTheme} from '../views/style'
 
 const MAX_BATCH_SIZE = 10000
 

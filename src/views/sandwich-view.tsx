@@ -4,7 +4,7 @@ import {ProfileTableViewContainer, SortField, SortDirection} from './profile-tab
 import {h, JSX, createContext} from 'preact'
 import {memo} from 'preact/compat'
 import {useCallback, useMemo, useContext} from 'preact/hooks'
-import {commonStyle, Sizes, FontSize, defaultTheme} from './style'
+import {commonStyle, Sizes, FontSize} from './style'
 import {actions} from '../store/actions'
 import {StatelessComponent} from '../lib/typed-redux'
 import {InvertedCallerFlamegraphView} from './inverted-caller-flamegraph-view'
@@ -15,10 +15,12 @@ import {useAppSelector, ActiveProfileState} from '../store'
 import {sortBy} from '../lib/utils'
 import {ProfileSearchContext} from './search-view'
 import {FuzzyMatch} from '../lib/fuzzy-find'
+import { Theme, useTheme, withTheme } from './themes/theme'
 
 interface SandwichViewProps {
   selectedFrame: Frame | null
   profileIndex: number
+  theme: Theme
   activeProfileState: ActiveProfileState
   setSelectedFrame: (selectedFrame: Frame | null) => void
   glCanvas: HTMLCanvasElement
@@ -43,6 +45,8 @@ class SandwichView extends StatelessComponent<SandwichViewProps> {
   }
 
   render() {
+    const style = getStyle(this.props.theme)
+
     const {selectedFrame} = this.props
     let flamegraphViews: JSX.Element | null = null
 
@@ -84,7 +88,7 @@ class SandwichView extends StatelessComponent<SandwichViewProps> {
   }
 }
 
-const style = StyleSheet.create({
+const getStyle = withTheme(theme => StyleSheet.create({
   tableView: {
     position: 'relative',
     flex: 1,
@@ -99,7 +103,7 @@ const style = StyleSheet.create({
     alignItems: 'flex-start',
     fontSize: FontSize.TITLE,
     width: FontSize.TITLE * 1.2,
-    borderRight: `1px solid ${defaultTheme.fgSecondaryColor}`,
+    borderRight: `1px solid ${theme.fgSecondaryColor}`,
   },
   flamechartLabelParentBottom: {
     justifyContent: 'flex-start',
@@ -117,13 +121,13 @@ const style = StyleSheet.create({
   },
   callersAndCallees: {
     flex: 1,
-    borderLeft: `${Sizes.SEPARATOR_HEIGHT}px solid ${defaultTheme.fgSecondaryColor}`,
+    borderLeft: `${Sizes.SEPARATOR_HEIGHT}px solid ${theme.fgSecondaryColor}`,
   },
   divider: {
     height: 2,
-    background: defaultTheme.fgSecondaryColor,
+    background: theme.fgSecondaryColor,
   },
-})
+}))
 
 interface SandwichViewContainerProps {
   activeProfileState: ActiveProfileState
@@ -145,6 +149,7 @@ export const SandwichViewContainer = memo((ownProps: SandwichViewContainerProps)
   const {sandwichViewState, index} = activeProfileState
   const {callerCallee} = sandwichViewState
 
+  const theme = useTheme()
   const dispatch = useDispatch()
   const setSelectedFrame = useCallback(
     (selectedFrame: Frame | null) => {
@@ -224,6 +229,7 @@ export const SandwichViewContainer = memo((ownProps: SandwichViewContainerProps)
   return (
     <SandwichViewContext.Provider value={contextData}>
       <SandwichView
+        theme={theme}
         activeProfileState={activeProfileState}
         glCanvas={glCanvas}
         setSelectedFrame={setSelectedFrame}

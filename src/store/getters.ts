@@ -3,7 +3,7 @@ import {memoizeByReference, memoizeByShallowEquality} from '../lib/utils'
 import {RowAtlas} from '../gl/row-atlas'
 import {CanvasContext} from '../gl/canvas-context'
 import {FlamechartRowAtlasKey} from '../gl/flamechart-renderer'
-import {defaultTheme} from '../views/style'
+import {Theme} from '../views/themes/theme'
 
 export const createGetColorBucketForFrame = memoizeByReference(
   (frameToColorBucket: Map<number | string, number>) => {
@@ -13,19 +13,21 @@ export const createGetColorBucketForFrame = memoizeByReference(
   },
 )
 
-export const createGetCSSColorForFrame = memoizeByReference(
-  (frameToColorBucket: Map<number | string, number>) => {
+export const createGetCSSColorForFrame = memoizeByReference((theme: Theme) => {
+  return memoizeByReference((frameToColorBucket: Map<number | string, number>) => {
     const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
     return (frame: Frame): string => {
       const t = getColorBucketForFrame(frame) / 255
-      return defaultTheme.colorForBucket(t).toCSS()
+      return theme.colorForBucket(t).toCSS()
     }
-  },
-)
-
-export const getCanvasContext = memoizeByReference((canvas: HTMLCanvasElement) => {
-  return new CanvasContext(canvas)
+  })
 })
+
+export const getCanvasContext = memoizeByReference((theme: Theme) =>
+  memoizeByReference((canvas: HTMLCanvasElement) => {
+    return new CanvasContext(canvas, theme)
+  }),
+)
 
 export const getRowAtlas = memoizeByReference((canvasContext: CanvasContext) => {
   return new RowAtlas<FlamechartRowAtlasKey>(

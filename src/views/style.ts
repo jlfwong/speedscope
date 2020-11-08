@@ -1,7 +1,4 @@
 import {StyleSheet} from 'aphrodite'
-import {Color} from '../lib/color'
-import {darkTheme} from './themes/dark-theme'
-import {lightTheme} from './themes/light-theme'
 
 export enum FontFamily {
   MONOSPACE = '"Source Code Pro", Courier, monospace',
@@ -12,31 +9,6 @@ export enum FontSize {
   TITLE = 12,
   BIG_BUTTON = 36,
 }
-
-export interface Theme {
-  fgPrimaryColor: string
-  fgSecondaryColor: string
-  bgPrimaryColor: string
-  bgSecondaryColor: string
-
-  altFgPrimaryColor: string
-  altFgSecondaryColor: string
-  altBgPrimaryColor: string
-  altBgSecondaryColor: string
-
-  selectionPrimaryColor: string
-  selectionSecondaryColor: string
-
-  weightColor: string
-
-  searchMatchPrimaryColor: string
-  searchMatchSecondaryColor: string
-
-  colorForBucket: (t: number) => Color
-  colorForBucketGLSL: string
-}
-
-export const defaultTheme = lightTheme
 
 export enum Sizes {
   MINIMAP_HEIGHT = 100,

@@ -3,11 +3,12 @@ import {ViewMode} from '../store'
 import {h, JSX, Fragment} from 'preact'
 import {useCallback, useState, useEffect} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
-import {Sizes, FontFamily, FontSize, Duration, defaultTheme} from './style'
+import {Sizes, FontFamily, FontSize, Duration} from './style'
 import {ProfileSelect} from './profile-select'
 import {ProfileGroupState} from '../store/profiles-state'
 import {Profile} from '../lib/profile'
 import {objectsHaveShallowEquality} from '../lib/utils'
+import { useTheme, withTheme } from './themes/theme'
 
 interface ToolbarProps extends ApplicationProps {
   browseForFile(): void
@@ -19,6 +20,7 @@ function useSetViewMode(setViewMode: (viewMode: ViewMode) => void, viewMode: Vie
 }
 
 function ToolbarLeftContent(props: ToolbarProps) {
+  const style = getStyle(useTheme())
   const setChronoFlameChart = useSetViewMode(props.setViewMode, ViewMode.CHRONO_FLAME_CHART)
   const setLeftHeavyFlameGraph = useSetViewMode(props.setViewMode, ViewMode.LEFT_HEAVY_FLAME_GRAPH)
   const setSandwichView = useSetViewMode(props.setViewMode, ViewMode.SANDWICH_VIEW)
@@ -83,6 +85,8 @@ const getCachedProfileList = (() => {
 })()
 
 function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
+  const style = getStyle(useTheme())
+
   const {activeProfileState, profileGroup} = props
   const profiles = getCachedProfileList(profileGroup)
   const [profileSelectShown, setProfileSelectShown] = useState(false)
@@ -150,6 +154,8 @@ function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
 }
 
 function ToolbarRightContent(props: ToolbarProps) {
+  const style = getStyle(useTheme())
+
   const importFile = (
     <div className={css(style.toolbarTab)} onClick={props.browseForFile}>
       <span className={css(style.emoji)}>⤵️</span>Import
@@ -181,6 +187,7 @@ function ToolbarRightContent(props: ToolbarProps) {
 }
 
 export function Toolbar(props: ToolbarProps) {
+  const style = getStyle(useTheme())
   return (
     <div className={css(style.toolbar)}>
       <ToolbarLeftContent {...props} />
@@ -190,12 +197,12 @@ export function Toolbar(props: ToolbarProps) {
   )
 }
 
-const style = StyleSheet.create({
+const getStyle = withTheme(theme => StyleSheet.create({
   toolbar: {
     height: Sizes.TOOLBAR_HEIGHT,
     flexShrink: 0,
-    background: defaultTheme.altBgPrimaryColor,
-    color: defaultTheme.altFgPrimaryColor,
+    background: theme.altBgPrimaryColor,
+    color: theme.altFgPrimaryColor,
     textAlign: 'center',
     fontFamily: FontFamily.MONOSPACE,
     fontSize: FontSize.TITLE,
@@ -225,10 +232,10 @@ const style = StyleSheet.create({
     textAlign: 'right',
   },
   toolbarProfileIndex: {
-    color: defaultTheme.altFgSecondaryColor,
+    color: theme.altFgSecondaryColor,
   },
   toolbarTab: {
-    background: defaultTheme.altBgSecondaryColor,
+    background: theme.altBgSecondaryColor,
     marginTop: Sizes.SEPARATOR_HEIGHT,
     height: Sizes.TOOLBAR_TAB_HEIGHT,
     lineHeight: `${Sizes.TOOLBAR_TAB_HEIGHT}px`,
@@ -238,13 +245,13 @@ const style = StyleSheet.create({
     marginLeft: 2,
     transition: `all ${Duration.HOVER_CHANGE} ease-in`,
     ':hover': {
-      background: defaultTheme.selectionSecondaryColor,
+      background: theme.selectionSecondaryColor,
     },
   },
   toolbarTabActive: {
-    background: defaultTheme.selectionPrimaryColor,
+    background: theme.selectionPrimaryColor,
     ':hover': {
-      background: defaultTheme.selectionPrimaryColor,
+      background: theme.selectionPrimaryColor,
     },
   },
   emoji: {
@@ -257,4 +264,4 @@ const style = StyleSheet.create({
     textDecoration: 'none',
     color: 'inherit',
   },
-})
+}))

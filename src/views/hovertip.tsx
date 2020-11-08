@@ -1,16 +1,19 @@
 import {Vec2} from '../lib/math'
-import {Sizes, FontSize, FontFamily, ZIndex, defaultTheme} from './style'
+import {Sizes, FontSize, FontFamily, ZIndex} from './style'
 import {css, StyleSheet} from 'aphrodite'
-import {h, Component} from 'preact'
+import {ComponentChildren, h} from 'preact'
+import { useTheme, withTheme } from './themes/theme'
 
 interface HovertipProps {
   containerSize: Vec2
   offset: Vec2
+  children?: ComponentChildren
 }
 
-export class Hovertip extends Component<HovertipProps, {}> {
-  render() {
-    const {containerSize, offset} = this.props
+export function Hovertip(props: HovertipProps) {
+    const style = getStyle(useTheme())
+
+    const {containerSize, offset} = props
     const width = containerSize.x
     const height = containerSize.y
 
@@ -31,18 +34,17 @@ export class Hovertip extends Component<HovertipProps, {}> {
 
     return (
       <div className={css(style.hoverTip)} style={positionStyle}>
-        <div className={css(style.hoverTipRow)}>{this.props.children}</div>
+        <div className={css(style.hoverTipRow)}>{props.children}</div>
       </div>
     )
-  }
 }
 
 const HOVERTIP_PADDING = 2
 
-const style = StyleSheet.create({
+const getStyle = withTheme(theme => StyleSheet.create({
   hoverTip: {
     position: 'absolute',
-    background: defaultTheme.bgPrimaryColor,
+    background: theme.bgPrimaryColor,
     border: '1px solid black',
     maxWidth: Sizes.TOOLTIP_WIDTH_MAX,
     paddingTop: HOVERTIP_PADDING,
@@ -61,4 +63,4 @@ const style = StyleSheet.create({
     paddingRight: HOVERTIP_PADDING,
     maxWidth: Sizes.TOOLTIP_WIDTH_MAX,
   },
-})
+}))

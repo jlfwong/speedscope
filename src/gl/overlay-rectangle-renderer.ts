@@ -1,6 +1,6 @@
 import {Color} from '../lib/color'
 import {AffineTransform, Rect} from '../lib/math'
-import {defaultTheme, Theme} from '../views/style'
+import {Theme} from '../views/themes/theme'
 import {Graphics} from './graphics'
 import {setUniformAffineTransform, setUniformVec2} from './utils'
 
@@ -70,7 +70,7 @@ export class ViewportRectangleRenderer {
   private material: Graphics.Material
   private buffer: Graphics.VertexBuffer
 
-  constructor(private gl: Graphics.Context) {
+  constructor(private gl: Graphics.Context, theme: Theme) {
     const vertices = [
       [-1, 1],
       [1, 1],
@@ -84,7 +84,7 @@ export class ViewportRectangleRenderer {
     }
     this.buffer = gl.createVertexBuffer(vertexFormat.stride * vertices.length)
     this.buffer.upload(new Uint8Array(new Float32Array(floats).buffer))
-    this.material = gl.createMaterial(vertexFormat, vert, frag(defaultTheme))
+    this.material = gl.createMaterial(vertexFormat, vert, frag(theme))
   }
 
   render(props: ViewportRectangleRendererProps) {
