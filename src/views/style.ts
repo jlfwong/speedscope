@@ -26,6 +26,52 @@ export enum Colors {
   ORANGE = '#FFAC02',
 }
 
+interface Theme {
+  fgPrimaryColor: string
+  fgSecondaryColor: string
+  bgPrimaryColor: string
+  bgSecondaryColor: string
+
+  altFgPrimaryColor: string
+  altFgSecondaryColor: string
+  altBgPrimaryColor: string
+  altBgSecondaryColor: string
+
+  accentColor: string
+
+  selectionPrimaryColor: string
+  selectionSecondaryColor: string
+
+  fgWeightColor: string
+  bgWeightColor: string
+
+  searchMatchPrimaryColor: string
+  searchMatchSecondaryColor: string
+}
+
+export const defaultTheme: Theme = {
+  fgPrimaryColor: Colors.BLACK,
+  fgSecondaryColor: Colors.LIGHT_GRAY,
+  bgPrimaryColor: Colors.WHITE,
+  bgSecondaryColor: Colors.OFF_WHITE,
+
+  altFgPrimaryColor: Colors.WHITE,
+  altFgSecondaryColor: Colors.LIGHT_GRAY,
+  altBgPrimaryColor: Colors.BLACK,
+  altBgSecondaryColor: Colors.DARK_GRAY,
+
+  accentColor: Colors.BRIGHT_BLUE,
+
+  selectionPrimaryColor: Colors.DARK_BLUE,
+  selectionSecondaryColor: Colors.PALE_DARK_BLUE,
+
+  fgWeightColor: Colors.GREEN,
+  bgWeightColor: Colors.TRANSPARENT_GREEN,
+
+  searchMatchPrimaryColor: Colors.ORANGE,
+  searchMatchSecondaryColor: Colors.YELLOW,
+}
+
 export enum Sizes {
   MINIMAP_HEIGHT = 100,
   DETAIL_VIEW_HEIGHT = 150,
