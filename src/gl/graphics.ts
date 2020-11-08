@@ -83,6 +83,15 @@ export namespace Graphics {
       public alphaF: number,
     ) {}
 
+    equals(other: Color): boolean {
+      return (
+        this.redF === other.redF &&
+        this.greenF === other.greenF &&
+        this.blueF === other.blueF &&
+        this.alphaF === other.alphaF
+      )
+    }
+
     static TRANSPARENT = new Color(0, 0, 0, 0)
   }
 
@@ -482,7 +491,7 @@ export namespace WebGL {
       this._updateRenderTargetAndViewport()
       this._updateBlendState()
 
-      if (color != this._currentClearColor) {
+      if (!color.equals(this._currentClearColor)) {
         this._gl.clearColor(color.redF, color.greenF, color.blueF, color.alphaF)
         this._currentClearColor = color
       }
