@@ -20,6 +20,28 @@ enum Colors {
   ORANGE = '#FFAC02',
 }
 
+const C_0 = 0.25
+const C_d = 0.2
+const L_0 = 0.8
+const L_d = 0.15
+
+const colorForBucket = (t: number) => {
+  const x = triangle(30.0 * t)
+  const H = 360.0 * (0.9 * t)
+  const C = C_0 + C_d * x
+  const L = L_0 - L_d * x
+  return Color.fromLumaChromaHue(L, C, H)
+}
+const colorForBucketGLSL = `
+  vec3 colorForBucket(float t) {
+    float x = triangle(30.0 * t);
+    float H = 360.0 * (0.9 * t);
+    float C = ${C_0.toFixed(1)} + ${C_d.toFixed(1)} * x;
+    float L = ${L_0.toFixed(1)} - ${L_d.toFixed(1)} * x;
+    return hcl2rgb(H, C, L);
+  }
+`
+
 export const lightTheme: Theme = ({
   fgPrimaryColor: Colors.BLACK,
   fgSecondaryColor: Colors.LIGHT_GRAY,
@@ -41,21 +63,6 @@ export const lightTheme: Theme = ({
   searchMatchPrimaryColor: Colors.ORANGE,
   searchMatchSecondaryColor: Colors.YELLOW,
 
-  colorForBucket: (t: number) => {
-    const x = triangle(30.0 * t)
-    const H = 360.0 * (0.9 * t)
-    const C = 0.25 + 0.2 * x
-    const L = 0.8 - 0.15 * x
-    return Color.fromLumaChromaHue(L, C, H)
-  },
-
-  colorForBucketGLSL: `
-    vec3 colorForBucket(float t) {
-      float x = triangle(30.0 * t);
-      float H = 360.0 * (0.9 * t);
-      float C = 0.25 + 0.2 * x;
-      float L = 0.80 - 0.15 * x;
-      return hcl2rgb(H, C, L);
-    }
-  `,
+  colorForBucket,
+  colorForBucketGLSL,
 }

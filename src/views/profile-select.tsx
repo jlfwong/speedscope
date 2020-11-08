@@ -5,6 +5,7 @@ import {StyleSheet, css} from 'aphrodite'
 import {ZIndex, Sizes, defaultTheme} from './style'
 import {fuzzyMatchStrings} from '../lib/fuzzy-find'
 import {sortBy} from '../lib/utils'
+import { style } from './flamechart-style'
 
 interface ProfileSelectRowProps {
   setProfileIndexToView: (profileIndex: number) => void
@@ -83,7 +84,7 @@ export function ProfileSelectRow({
         hovered && style.profileRowHovered,
       )}
     >
-      <span className={css(style.profileIndex)} style={{width: maxDigits + 'em'}}>
+      <span className={css(style.profileIndex, selected && style.profileIndexSelected)} style={{width: maxDigits + 'em'}}>
         {indexInProfileGroup + 1}:
       </span>{' '}
       {highlighted}
@@ -290,6 +291,7 @@ export function ProfileSelect({
         <div className={css(style.filterInputContainer)}>
           <input
             type="text"
+            className={css(style.filterInput)}
             ref={focusFilterInput}
             placeholder={'Filter...'}
             value={filterText}
@@ -342,8 +344,22 @@ const style = StyleSheet.create({
   filterInputContainer: {
     display: 'flex',
     flexDirection: 'column',
-    padding: 10,
+    padding: 5,
     alignItems: 'stretch',
+  },
+  filterInput: {
+    color: defaultTheme.altFgPrimaryColor,
+    background: defaultTheme.altBgSecondaryColor,
+    borderRadius: 5,
+    padding: 5,
+    ':focus': {
+      border: 'none',
+      outline: 'none',
+    },
+    '::selection': {
+      color: defaultTheme.altFgPrimaryColor,
+      background: defaultTheme.selectionPrimaryColor,
+    },
   },
   caret: {
     width: 0,
@@ -385,6 +401,17 @@ const style = StyleSheet.create({
       20 * Sizes.FRAME_HEIGHT
     }px)`,
     overflow: 'auto',
+    '::-webkit-scrollbar': {
+      background: defaultTheme.altBgPrimaryColor,
+    },
+    '::-webkit-scrollbar-thumb': {
+      background: defaultTheme.altFgSecondaryColor,
+      borderRadius: 20,
+      border: `3px solid ${defaultTheme.altBgPrimaryColor}`,
+      ':hover': {
+        background: defaultTheme.altBgPrimaryColor,
+      },
+    },
   },
   profileSelectBox: {
     width: '100%',
@@ -405,6 +432,9 @@ const style = StyleSheet.create({
   profileIndex: {
     textAlign: 'right',
     display: 'inline-block',
-    color: defaultTheme.fgSecondaryColor,
+    color: defaultTheme.altFgSecondaryColor,
   },
+  profileIndexSelected: {
+    color: defaultTheme.altFgPrimaryColor,
+  }
 })

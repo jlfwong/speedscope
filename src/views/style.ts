@@ -1,6 +1,7 @@
 import {StyleSheet} from 'aphrodite'
 import {Color} from '../lib/color'
 import {darkTheme} from './themes/dark-theme'
+import {lightTheme} from './themes/light-theme'
 
 export enum FontFamily {
   MONOSPACE = '"Source Code Pro", Courier, monospace',
@@ -35,7 +36,7 @@ export interface Theme {
   colorForBucketGLSL: string
 }
 
-export const defaultTheme = darkTheme
+export const defaultTheme = lightTheme
 
 export enum Sizes {
   MINIMAP_HEIGHT = 100,
