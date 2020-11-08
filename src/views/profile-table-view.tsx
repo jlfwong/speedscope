@@ -48,8 +48,8 @@ interface SortIconProps {
 class SortIcon extends Component<SortIconProps, {}> {
   render() {
     const {activeDirection} = this.props
-    const upFill = activeDirection === SortDirection.ASCENDING ? Colors.GRAY : Colors.LIGHT_GRAY
-    const downFill = activeDirection === SortDirection.DESCENDING ? Colors.GRAY : Colors.LIGHT_GRAY
+    const upFill = activeDirection === SortDirection.ASCENDING ? Colors.GRAY : defaultTheme.fgSecondaryColor
+    const downFill = activeDirection === SortDirection.DESCENDING ? Colors.GRAY : defaultTheme.fgSecondaryColor
 
     return (
       <svg

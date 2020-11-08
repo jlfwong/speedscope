@@ -3,7 +3,7 @@ import {CallTreeNode} from '../lib/profile'
 import {Flamechart, FlamechartFrame} from '../lib/flamechart'
 import {CanvasContext} from '../gl/canvas-context'
 import {FlamechartRenderer} from '../gl/flamechart-renderer'
-import {Sizes, FontSize, Colors, FontFamily, commonStyle} from './style'
+import {Sizes, FontSize, Colors, FontFamily, commonStyle, defaultTheme} from './style'
 import {
   cachedMeasureTextWidth,
   ELLIPSIS,
@@ -340,7 +340,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
     matchedFrameBatch.fill(ctx, Colors.ORANGE)
     matchedTextHighlightBatch.fill(ctx, Colors.YELLOW)
-    fadedLabelBatch.fill(ctx, Colors.LIGHT_GRAY)
+    fadedLabelBatch.fill(ctx, defaultTheme.altFgSecondaryColor)
     labelBatch.fill(ctx, Colors.BLACK)
     indirectlySelectedOutlineBatch.stroke(ctx, Colors.PALE_DARK_BLUE, frameOutlineWidth)
     directlySelectedOutlineBatch.stroke(ctx, Colors.DARK_BLUE, frameOutlineWidth)

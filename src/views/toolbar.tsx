@@ -225,7 +225,7 @@ const style = StyleSheet.create({
     textAlign: 'right',
   },
   toolbarProfileIndex: {
-    color: Colors.LIGHT_GRAY,
+    color: defaultTheme.altFgSecondaryColor,
   },
   toolbarTab: {
     background: Colors.DARK_GRAY,

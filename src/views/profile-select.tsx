@@ -405,6 +405,6 @@ const style = StyleSheet.create({
   profileIndex: {
     textAlign: 'right',
     display: 'inline-block',
-    color: Colors.LIGHT_GRAY,
+    color: defaultTheme.fgSecondaryColor,
   },
 })
