@@ -69,7 +69,7 @@ export const style = StyleSheet.create({
     color: defaultTheme.altFgPrimaryColor,
   },
   allInstancesCell: {
-    background: Colors.PALE_DARK_BLUE,
+    background: defaultTheme.selectionSecondaryColor,
     color: defaultTheme.altFgPrimaryColor,
   },
   barDisplay: {

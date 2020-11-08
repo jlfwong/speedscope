@@ -283,7 +283,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     }
 
     const frameOutlineWidth = 2 * window.devicePixelRatio
-    ctx.strokeStyle = Colors.PALE_DARK_BLUE
+    ctx.strokeStyle = defaultTheme.selectionSecondaryColor
     const minConfigSpaceWidthToRenderOutline = (
       configToPhysical.inverseTransformVector(new Vec2(1, 0)) || new Vec2(0, 0)
     ).x
@@ -342,7 +342,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     matchedTextHighlightBatch.fill(ctx, Colors.YELLOW)
     fadedLabelBatch.fill(ctx, defaultTheme.fgSecondaryColor)
     labelBatch.fill(ctx, defaultTheme.fgPrimaryColor)
-    indirectlySelectedOutlineBatch.stroke(ctx, Colors.PALE_DARK_BLUE, frameOutlineWidth)
+    indirectlySelectedOutlineBatch.stroke(ctx, defaultTheme.selectionSecondaryColor, frameOutlineWidth)
     directlySelectedOutlineBatch.stroke(ctx, defaultTheme.selectionPrimaryColor, frameOutlineWidth)
 
     if (this.hoveredLabel) {

@@ -353,7 +353,7 @@ const style = StyleSheet.create({
     borderBottom: '5px solid black',
   },
   highlighted: {
-    background: Colors.PALE_DARK_BLUE,
+    background: defaultTheme.selectionSecondaryColor,
   },
   padding: {
     height: paddingHeight,
