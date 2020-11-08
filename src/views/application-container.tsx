@@ -24,7 +24,7 @@ export const ApplicationContainer = memo(() => {
   const theme = useTheme()
   const canvasContext = useAppSelector(
     state => (state.glCanvas ? getCanvasContext(theme)(state.glCanvas) : null),
-    [],
+    [theme],
   )
 
   return (

@@ -1,4 +1,4 @@
-import {h, Component, JSX, ComponentChild} from 'preact'
+import {h, JSX, ComponentChild} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 import {Profile, Frame} from '../lib/profile'
 import {formatPercent} from '../lib/utils'
@@ -261,6 +261,8 @@ export const ProfileTableView = memo(
         getCSSColorForFrame,
         searchIsActive,
         searchQuery,
+        style.emptyState,
+        style.tableView
       ],
     )
 

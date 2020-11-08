@@ -66,11 +66,10 @@ export function ProfileSelectRow({
   const maxDigits = 1 + Math.floor(Math.log10(profileCount))
 
   const highlightedClassName = css(style.highlighted)
-
   const highlighted = useMemo(() => {
     const result = highlightRanges(name, matchedRanges, highlightedClassName)
     return result
-  }, [name, matchedRanges])
+  }, [name, matchedRanges, highlightedClassName])
 
   // TODO(jlfwong): There's a really gnarly edge-case here where the highlighted
   // ranges are part of the text truncated by ellipsis. I'm just going to punt

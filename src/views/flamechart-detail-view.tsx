@@ -1,5 +1,5 @@
 import {StyleDeclarationValue, css} from 'aphrodite'
-import {h, Component, JSX} from 'preact'
+import {h, JSX} from 'preact'
 import {getFlamechartStyle} from './flamechart-style'
 import {formatPercent} from '../lib/utils'
 import {Frame, CallTreeNode} from '../lib/profile'
