@@ -3,7 +3,7 @@ import {CallTreeNode} from '../lib/profile'
 import {Flamechart, FlamechartFrame} from '../lib/flamechart'
 import {CanvasContext} from '../gl/canvas-context'
 import {FlamechartRenderer} from '../gl/flamechart-renderer'
-import {Sizes, FontSize, Colors, FontFamily, commonStyle, defaultTheme} from './style'
+import {Sizes, FontSize, FontFamily, commonStyle, defaultTheme} from './style'
 import {
   cachedMeasureTextWidth,
   ELLIPSIS,
@@ -346,7 +346,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     directlySelectedOutlineBatch.stroke(ctx, defaultTheme.selectionPrimaryColor, frameOutlineWidth)
 
     if (this.hoveredLabel) {
-      let color: string = Colors.DARK_GRAY
+      let color: string = defaultTheme.fgPrimaryColor
       if (this.props.selectedNode === this.hoveredLabel.node) {
         color = defaultTheme.selectionPrimaryColor
       }
@@ -399,14 +399,15 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
       ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
       ctx.fillRect(0, y, physicalViewSize.x, physicalViewSpaceFrameHeight)
-      ctx.fillStyle = Colors.DARK_GRAY
       ctx.textBaseline = 'top'
       for (let x = Math.ceil(left / interval) * interval; x < right; x += interval) {
         // TODO(jlfwong): Ensure that labels do not overlap
         const pos = Math.round(configToPhysical.transformPosition(new Vec2(x, 0)).x)
         const labelText = this.props.flamechart.formatValue(x)
         const textWidth = cachedMeasureTextWidth(ctx, labelText)
+        ctx.fillStyle = defaultTheme.fgPrimaryColor
         ctx.fillText(labelText, pos - textWidth - labelPaddingPx, y + labelPaddingPx)
+        ctx.fillStyle = defaultTheme.fgSecondaryColor
         ctx.fillRect(pos, 0, 1, physicalViewSize.y)
       }
     }

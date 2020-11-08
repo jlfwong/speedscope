@@ -4,7 +4,7 @@ import {Flamechart} from '../lib/flamechart'
 import {Rect, Vec2, AffineTransform, clamp} from '../lib/math'
 import {FlamechartRenderer} from '../gl/flamechart-renderer'
 import {style} from './flamechart-style'
-import {FontFamily, FontSize, Colors, Sizes, commonStyle} from './style'
+import {FontFamily, FontSize, Sizes, commonStyle, defaultTheme} from './style'
 import {CanvasContext} from '../gl/canvas-context'
 import {cachedMeasureTextWidth} from '../lib/text-utils'
 
@@ -137,14 +137,15 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       ctx.fillRect(0, 0, physicalViewSize.x, physicalViewSpaceFrameHeight)
       ctx.textBaseline = 'top'
 
-      ctx.fillStyle = Colors.DARK_GRAY
       for (let x = Math.ceil(left / interval) * interval; x < right; x += interval) {
         // TODO(jlfwong): Ensure that labels do not overlap
         const pos = Math.round(configToPhysical.transformPosition(new Vec2(x, 0)).x)
         const labelText = this.props.flamechart.formatValue(x)
         const textWidth = Math.ceil(cachedMeasureTextWidth(ctx, labelText))
 
+        ctx.fillStyle = defaultTheme.fgPrimaryColor
         ctx.fillText(labelText, pos - textWidth - labelPaddingPx, labelPaddingPx)
+        ctx.fillStyle = defaultTheme.fgSecondaryColor
         ctx.fillRect(pos, 0, 1, physicalViewSize.y)
       }
     }

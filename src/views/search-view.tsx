@@ -2,7 +2,7 @@ import {StyleSheet, css} from 'aphrodite'
 import {h, createContext, ComponentChildren, Fragment} from 'preact'
 import {useCallback, useRef, useEffect, useMemo} from 'preact/hooks'
 import {memo} from 'preact/compat'
-import {Sizes, Colors, FontSize, defaultTheme} from './style'
+import {Sizes, FontSize, defaultTheme} from './style'
 import {ProfileSearchResults} from '../lib/profile-search'
 import {Profile} from '../lib/profile'
 import {useActiveProfileState, useAppSelector} from '../store'
@@ -189,7 +189,7 @@ const style = StyleSheet.create({
     borderStyle: 'solid',
     fontSize: FontSize.LABEL,
     boxSizing: 'border-box',
-    background: Colors.DARK_GRAY,
+    background: defaultTheme.altBgSecondaryColor,
     color: defaultTheme.altFgPrimaryColor,
     display: 'flex',
     alignItems: 'center',

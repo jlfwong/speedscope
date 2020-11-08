@@ -1,5 +1,5 @@
 import {StyleSheet} from 'aphrodite'
-import {FontSize, Colors, Sizes, defaultTheme} from './style'
+import {FontSize, Sizes, defaultTheme} from './style'
 
 export const style = StyleSheet.create({
   hoverCount: {

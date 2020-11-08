@@ -2,7 +2,7 @@ import {Profile} from '../lib/profile'
 import {h, JSX, ComponentChild, Ref} from 'preact'
 import {useCallback, useState, useMemo, useEffect, useRef} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
-import {Colors, ZIndex, Sizes, defaultTheme} from './style'
+import {ZIndex, Sizes, defaultTheme} from './style'
 import {fuzzyMatchStrings} from '../lib/fuzzy-find'
 import {sortBy} from '../lib/utils'
 
@@ -378,7 +378,7 @@ const style = StyleSheet.create({
     background: defaultTheme.selectionPrimaryColor,
   },
   profileRowEven: {
-    background: Colors.DARK_GRAY,
+    background: defaultTheme.altBgSecondaryColor,
   },
   profileSelectScrolling: {
     maxHeight: `min(calc(100vh - ${Sizes.TOOLBAR_HEIGHT - 2 * paddingHeight}px), ${

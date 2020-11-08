@@ -3,7 +3,7 @@ import {ViewMode} from '../store'
 import {h, JSX, Fragment} from 'preact'
 import {useCallback, useState, useEffect} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
-import {Sizes, Colors, FontFamily, FontSize, Duration, defaultTheme} from './style'
+import {Sizes, FontFamily, FontSize, Duration, defaultTheme} from './style'
 import {ProfileSelect} from './profile-select'
 import {ProfileGroupState} from '../store/profiles-state'
 import {Profile} from '../lib/profile'
@@ -228,7 +228,7 @@ const style = StyleSheet.create({
     color: defaultTheme.altFgSecondaryColor,
   },
   toolbarTab: {
-    background: Colors.DARK_GRAY,
+    background: defaultTheme.altBgSecondaryColor,
     marginTop: Sizes.SEPARATOR_HEIGHT,
     height: Sizes.TOOLBAR_TAB_HEIGHT,
     lineHeight: `${Sizes.TOOLBAR_TAB_HEIGHT}px`,
@@ -238,7 +238,7 @@ const style = StyleSheet.create({
     marginLeft: 2,
     transition: `all ${Duration.HOVER_CHANGE} ease-in`,
     ':hover': {
-      background: Colors.LIGHT_GRAY,
+      background: defaultTheme.selectionSecondaryColor,
     },
   },
   toolbarTabActive: {

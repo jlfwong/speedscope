@@ -3,7 +3,7 @@ import {StyleSheet, css} from 'aphrodite'
 import {FileSystemDirectoryEntry} from '../import/file-system-entry'
 
 import {ProfileGroup, SymbolRemapper} from '../lib/profile'
-import {FontFamily, FontSize, Colors, Duration, defaultTheme} from './style'
+import {FontFamily, FontSize, Duration, defaultTheme} from './style'
 import {importEmscriptenSymbolMap as importEmscriptenSymbolRemapper} from '../lib/emscripten'
 import {SandwichViewContainer} from './sandwich-view'
 import {saveToFile} from '../lib/file-format'

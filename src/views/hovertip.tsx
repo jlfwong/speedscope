@@ -1,5 +1,5 @@
 import {Vec2} from '../lib/math'
-import {Sizes, Colors, FontSize, FontFamily, ZIndex, defaultTheme} from './style'
+import {Sizes, FontSize, FontFamily, ZIndex, defaultTheme} from './style'
 import {css, StyleSheet} from 'aphrodite'
 import {h, Component} from 'preact'
 

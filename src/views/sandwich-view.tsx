@@ -4,7 +4,7 @@ import {ProfileTableViewContainer, SortField, SortDirection} from './profile-tab
 import {h, JSX, createContext} from 'preact'
 import {memo} from 'preact/compat'
 import {useCallback, useMemo, useContext} from 'preact/hooks'
-import {commonStyle, Sizes, Colors, FontSize, defaultTheme} from './style'
+import {commonStyle, Sizes, FontSize, defaultTheme} from './style'
 import {actions} from '../store/actions'
 import {StatelessComponent} from '../lib/typed-redux'
 import {InvertedCallerFlamegraphView} from './inverted-caller-flamegraph-view'

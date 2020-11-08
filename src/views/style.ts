@@ -10,10 +10,11 @@ export enum FontSize {
   BIG_BUTTON = 36,
 }
 
-export enum Colors {
+enum Colors {
   WHITE = '#FFFFFF',
   OFF_WHITE = '#F6F6F6',
   LIGHT_GRAY = '#BDBDBD',
+  GRAY = '#666666',
   DARK_GRAY = '#222222',
   BLACK = '#000000',
   DARK_BLUE = '#2F80ED',
@@ -48,11 +49,13 @@ interface Theme {
 export const defaultTheme: Theme = {
   fgPrimaryColor: Colors.BLACK,
   fgSecondaryColor: Colors.LIGHT_GRAY,
+
   bgPrimaryColor: Colors.WHITE,
   bgSecondaryColor: Colors.OFF_WHITE,
 
   altFgPrimaryColor: Colors.WHITE,
   altFgSecondaryColor: Colors.LIGHT_GRAY,
+
   altBgPrimaryColor: Colors.BLACK,
   altBgSecondaryColor: Colors.DARK_GRAY,
 
