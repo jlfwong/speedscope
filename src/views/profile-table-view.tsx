@@ -384,7 +384,7 @@ const style = StyleSheet.create({
   hBarDisplayFilled: {
     height: '100%',
     position: 'absolute',
-    background: Colors.GREEN,
+    background: defaultTheme.fgWeightColor,
     right: 0,
   },
   matched: {

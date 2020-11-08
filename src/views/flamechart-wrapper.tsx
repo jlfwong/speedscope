@@ -1,7 +1,7 @@
 import {CallTreeNode} from '../lib/profile'
 import {StyleSheet, css} from 'aphrodite'
 import {h} from 'preact'
-import {commonStyle, Colors} from './style'
+import {commonStyle, Colors, defaultTheme} from './style'
 import {Rect, AffineTransform, Vec2} from '../lib/math'
 import {FlamechartPanZoomView} from './flamechart-pan-zoom-view'
 import {noop, formatPercent} from '../lib/utils'
@@ -89,6 +89,6 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
 
 export const style = StyleSheet.create({
   hoverCount: {
-    color: Colors.GREEN,
+    color: defaultTheme.fgWeightColor,
   },
 })
