@@ -388,7 +388,7 @@ const style = StyleSheet.create({
     right: 0,
   },
   matched: {
-    borderBottom: `2px solid ${Colors.BLACK}`,
+    borderBottom: `2px solid ${defaultTheme.fgPrimaryColor}`,
   },
   matchedSelected: {
     borderColor: defaultTheme.altFgPrimaryColor,

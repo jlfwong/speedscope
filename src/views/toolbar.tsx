@@ -194,7 +194,7 @@ const style = StyleSheet.create({
   toolbar: {
     height: Sizes.TOOLBAR_HEIGHT,
     flexShrink: 0,
-    background: Colors.BLACK,
+    background: defaultTheme.altBgPrimaryColor,
     color: defaultTheme.altFgPrimaryColor,
     textAlign: 'center',
     fontFamily: FontFamily.MONOSPACE,

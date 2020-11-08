@@ -185,7 +185,7 @@ const style = StyleSheet.create({
     height: Sizes.TOOLBAR_HEIGHT,
     width: 16 * 13,
     borderWidth: 2,
-    borderColor: Colors.BLACK,
+    borderColor: defaultTheme.altFgPrimaryColor,
     borderStyle: 'solid',
     fontSize: FontSize.LABEL,
     boxSizing: 'border-box',

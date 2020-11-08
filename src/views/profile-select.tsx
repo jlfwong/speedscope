@@ -357,7 +357,7 @@ const style = StyleSheet.create({
   },
   padding: {
     height: paddingHeight,
-    background: Colors.BLACK,
+    background: defaultTheme.altBgPrimaryColor,
   },
   profileRow: {
     height: Sizes.FRAME_HEIGHT - 2,
@@ -365,7 +365,7 @@ const style = StyleSheet.create({
     textAlign: 'left',
     paddingLeft: 10,
     paddingRight: 10,
-    background: Colors.BLACK,
+    background: defaultTheme.altBgPrimaryColor,
     overflow: 'hidden',
     whiteSpace: 'nowrap',
     textOverflow: 'ellipsis',
@@ -389,7 +389,7 @@ const style = StyleSheet.create({
   profileSelectBox: {
     width: '100%',
     paddingBottom: 10,
-    background: Colors.BLACK,
+    background: defaultTheme.altBgPrimaryColor,
     color: defaultTheme.altFgPrimaryColor,
   },
   profileSelectOuter: {
