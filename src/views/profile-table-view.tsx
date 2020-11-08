@@ -330,6 +330,17 @@ const style = StyleSheet.create({
     overflowY: 'auto',
     overflowX: 'hidden',
     flexGrow: 1,
+    '::-webkit-scrollbar': {
+      background: defaultTheme.bgPrimaryColor,
+    },
+    '::-webkit-scrollbar-thumb': {
+      background: defaultTheme.fgSecondaryColor,
+      borderRadius: 20,
+      border: `3px solid ${defaultTheme.bgPrimaryColor}`,
+      ':hover': {
+        background: defaultTheme.fgPrimaryColor,
+      },
+    },
   },
   tableView: {
     width: '100%',
@@ -348,6 +359,7 @@ const style = StyleSheet.create({
     marginRight: Sizes.FRAME_HEIGHT / 4,
   },
   tableRow: {
+    background: defaultTheme.bgPrimaryColor,
     height: Sizes.FRAME_HEIGHT,
   },
   tableRowEven: {

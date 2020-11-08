@@ -40,6 +40,17 @@ export const style = StyleSheet.create({
     height: Sizes.DETAIL_VIEW_HEIGHT,
     lineHeight: `${FontSize.LABEL + 2}px`,
     overflow: 'auto',
+    '::-webkit-scrollbar': {
+      background: defaultTheme.bgPrimaryColor,
+    },
+    '::-webkit-scrollbar-thumb': {
+      background: defaultTheme.fgSecondaryColor,
+      borderRadius: 20,
+      border: `3px solid ${defaultTheme.bgPrimaryColor}`,
+      ':hover': {
+        background: defaultTheme.fgPrimaryColor,
+      },
+    },
   },
   stackLine: {
     whiteSpace: 'nowrap',
