@@ -90,14 +90,14 @@ export const lightTheme: Theme = {
 }
 
 export const darkTheme: Theme = {
-  fgPrimaryColor: Colors.WHITE,
-  fgSecondaryColor: Colors.LIGHT_GRAY,
+  fgPrimaryColor: Colors.LIGHT_GRAY,
+  fgSecondaryColor: Colors.GRAY,
 
   bgPrimaryColor: Colors.DARK_GRAY,
   bgSecondaryColor: Colors.BLACK,
 
   altFgPrimaryColor: Colors.WHITE,
-  altFgSecondaryColor: Colors.LIGHT_GRAY,
+  altFgSecondaryColor: Colors.DARK_GRAY,
 
   altBgPrimaryColor: Colors.BLACK,
   altBgSecondaryColor: Colors.DARK_GRAY,

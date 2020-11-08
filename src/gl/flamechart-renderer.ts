@@ -338,8 +338,7 @@ export class FlamechartRenderer {
     )
 
     renderInto(this.gl, renderTarget, () => {
-      const color = Color.fromCSSHex(defaultTheme.bgPrimaryColor)
-      this.gl.clear(new Graphics.Color(color.r, color.g, color.b, color.a))
+      this.gl.clear(new Graphics.Color(0, 0, 0, 0))
 
       const viewportRect = new Rect(
         Vec2.zero,
