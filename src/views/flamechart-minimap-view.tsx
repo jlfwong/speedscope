@@ -7,6 +7,7 @@ import {style} from './flamechart-style'
 import {FontFamily, FontSize, Sizes, commonStyle, defaultTheme} from './style'
 import {CanvasContext} from '../gl/canvas-context'
 import {cachedMeasureTextWidth} from '../lib/text-utils'
+import { Color } from '../lib/color'
 
 interface FlamechartMinimapViewProps {
   flamechart: Flamechart
@@ -133,7 +134,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     }
 
     {
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
+      ctx.fillStyle = Color.fromCSSHex(defaultTheme.bgPrimaryColor).withAlpha(0.8).toCSS()
       ctx.fillRect(0, 0, physicalViewSize.x, physicalViewSpaceFrameHeight)
       ctx.textBaseline = 'top'
 

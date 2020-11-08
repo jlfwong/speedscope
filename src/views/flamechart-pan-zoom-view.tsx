@@ -15,6 +15,7 @@ import {h, Component} from 'preact'
 import {css} from 'aphrodite'
 import {ProfileSearchResults} from '../lib/profile-search'
 import {BatchCanvasTextRenderer, BatchCanvasRectRenderer} from '../lib/canvas-2d-batch-renderers'
+import { Color } from '../lib/color'
 
 interface FlamechartFrameLabel {
   configSpaceBounds: Rect
@@ -397,7 +398,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     {
       const y = this.props.renderInverted ? physicalViewSize.y - physicalViewSpaceFrameHeight : 0
 
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
+      ctx.fillStyle = Color.fromCSSHex(defaultTheme.bgPrimaryColor).withAlpha(0.8).toCSS()
       ctx.fillRect(0, y, physicalViewSize.x, physicalViewSpaceFrameHeight)
       ctx.textBaseline = 'top'
       for (let x = Math.ceil(left / interval) * interval; x < right; x += interval) {

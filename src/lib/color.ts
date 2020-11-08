@@ -34,6 +34,17 @@ export class Color {
     return new Color(clamp(R1 + m, 0, 1), clamp(G1 + m, 0, 1), clamp(B1 + m, 0, 1), 1.0)
   }
 
+  static fromCSSHex(hex: string) {
+    const r = parseInt(hex.substr(1, 2), 16) / 255
+    const g = parseInt(hex.substr(3, 2), 16) / 255
+    const b = parseInt(hex.substr(5, 2), 16) / 255
+    return new Color(r, g, b)
+  }
+
+  withAlpha(a: number): Color {
+    return new Color(this.r, this.g, this.b, a)
+  }
+
   toCSS(): string {
     return `rgba(${(255 * this.r).toFixed()}, ${(255 * this.g).toFixed()}, ${(
       255 * this.b

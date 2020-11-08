@@ -89,6 +89,6 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
 
 export const style = StyleSheet.create({
   hoverCount: {
-    color: defaultTheme.fgWeightColor,
+    color: defaultTheme.weightColor,
   },
 })

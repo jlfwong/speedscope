@@ -169,7 +169,7 @@ export const SearchView = memo(
         >
           <path
             d="M4.99999 4.16217L11.6427 10.8048M11.6427 4.16217L4.99999 10.8048"
-            stroke="#BDBDBD"
+            stroke={defaultTheme.altFgSecondaryColor}
           />
         </svg>
       </div>

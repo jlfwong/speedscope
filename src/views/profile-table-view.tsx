@@ -12,6 +12,7 @@ import {useAppSelector, ActiveProfileState} from '../store'
 import {memo} from 'preact/compat'
 import {useCallback, useMemo, useContext} from 'preact/hooks'
 import {SandwichViewContext} from './sandwich-view'
+import { Color } from '../lib/color'
 
 export enum SortField {
   SYMBOL_NAME,
@@ -375,7 +376,7 @@ const style = StyleSheet.create({
   },
   hBarDisplay: {
     position: 'absolute',
-    background: defaultTheme.bgWeightColor,
+    background: Color.fromCSSHex(defaultTheme.weightColor).withAlpha(0.2).toCSS(),
     bottom: 2,
     height: 2,
     width: `calc(100% - ${2 * Sizes.FRAME_HEIGHT}px)`,
@@ -384,7 +385,7 @@ const style = StyleSheet.create({
   hBarDisplayFilled: {
     height: '100%',
     position: 'absolute',
-    background: defaultTheme.fgWeightColor,
+    background: defaultTheme.weightColor,
     right: 0,
   },
   matched: {

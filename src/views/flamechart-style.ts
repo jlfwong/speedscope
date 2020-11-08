@@ -3,7 +3,7 @@ import {FontSize, Sizes, defaultTheme} from './style'
 
 export const style = StyleSheet.create({
   hoverCount: {
-    color: defaultTheme.fgWeightColor,
+    color: defaultTheme.weightColor,
   },
   fill: {
     width: '100%',

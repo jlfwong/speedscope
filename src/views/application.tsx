@@ -14,6 +14,7 @@ import {CanvasContext} from '../gl/canvas-context'
 import {Graphics} from '../gl/graphics'
 import {Toolbar} from './toolbar'
 import {importJavaScriptSourceMapSymbolRemapper} from '../lib/js-source-map'
+import { Color } from '../lib/color'
 
 const importModule = import('../import')
 
@@ -99,7 +100,8 @@ export class GLCanvas extends StatelessComponent<GLCanvasProps> {
       widthInAppUnits,
       heightInAppUnits,
     )
-    this.props.canvasContext.gl.clear(new Graphics.Color(1, 1, 1, 1))
+    const color = Color.fromCSSHex(defaultTheme.bgPrimaryColor)
+    this.props.canvasContext.gl.clear(new Graphics.Color(color.r, color.g, color.b, color.a))
   }
 
   onWindowResize = () => {
@@ -607,6 +609,7 @@ const style = StyleSheet.create({
     position: 'relative',
     fontFamily: FontFamily.MONOSPACE,
     lineHeight: '20px',
+    color: defaultTheme.fgPrimaryColor
   },
   dragTargetRoot: {
     cursor: 'copy',

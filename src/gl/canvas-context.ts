@@ -4,6 +4,8 @@ import {TextureRenderer} from './texture-renderer'
 import {Rect, Vec2} from '../lib/math'
 import {ViewportRectangleRenderer} from './overlay-rectangle-renderer'
 import {FlamechartColorPassRenderer} from './flamechart-color-pass-renderer'
+import {Color} from '../lib/color'
+import {defaultTheme} from '../views/style'
 
 type FrameCallback = () => void
 
@@ -48,7 +50,8 @@ export class CanvasContext {
   private onBeforeFrame = () => {
     this.animationFrameRequest = null
     this.gl.setViewport(0, 0, this.gl.renderTargetWidthInPixels, this.gl.renderTargetHeightInPixels)
-    this.gl.clear(new Graphics.Color(1, 1, 1, 1))
+    const color = Color.fromCSSHex(defaultTheme.bgPrimaryColor)
+    this.gl.clear(new Graphics.Color(color.r, color.g, color.b, color.a))
 
     for (const handler of this.beforeFrameHandlers) {
       handler()

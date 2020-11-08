@@ -7,6 +7,7 @@ import {RowAtlas} from './row-atlas'
 import {Graphics} from './graphics'
 import {FlamechartColorPassRenderer} from './flamechart-color-pass-renderer'
 import {renderInto} from './utils'
+import {defaultTheme} from '../views/style'
 
 const MAX_BATCH_SIZE = 10000
 
@@ -337,7 +338,8 @@ export class FlamechartRenderer {
     )
 
     renderInto(this.gl, renderTarget, () => {
-      this.gl.clear(new Graphics.Color(0, 0, 0, 0))
+      const color = Color.fromCSSHex(defaultTheme.bgPrimaryColor)
+      this.gl.clear(new Graphics.Color(color.r, color.g, color.b, color.a))
 
       const viewportRect = new Rect(
         Vec2.zero,
