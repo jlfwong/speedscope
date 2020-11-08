@@ -16,7 +16,6 @@ export enum Colors {
   LIGHT_GRAY = '#BDBDBD',
   DARK_GRAY = '#222222',
   BLACK = '#000000',
-  BRIGHT_BLUE = '#56CCF2',
   DARK_BLUE = '#2F80ED',
   PALE_DARK_BLUE = '#8EB7ED',
   GREEN = '#6FCF97',
@@ -35,8 +34,6 @@ interface Theme {
   altFgSecondaryColor: string
   altBgPrimaryColor: string
   altBgSecondaryColor: string
-
-  accentColor: string
 
   selectionPrimaryColor: string
   selectionSecondaryColor: string
@@ -58,8 +55,6 @@ export const defaultTheme: Theme = {
   altFgSecondaryColor: Colors.LIGHT_GRAY,
   altBgPrimaryColor: Colors.BLACK,
   altBgSecondaryColor: Colors.DARK_GRAY,
-
-  accentColor: Colors.BRIGHT_BLUE,
 
   selectionPrimaryColor: Colors.DARK_BLUE,
   selectionSecondaryColor: Colors.PALE_DARK_BLUE,

@@ -660,12 +660,16 @@ const style = StyleSheet.create({
     color: defaultTheme.altFgPrimaryColor,
     transition: `all ${Duration.HOVER_CHANGE} ease-in`,
     ':hover': {
-      background: defaultTheme.accentColor,
+      background: defaultTheme.selectionSecondaryColor,
     },
   },
   link: {
-    color: defaultTheme.accentColor,
+    color: defaultTheme.selectionPrimaryColor,
     cursor: 'pointer',
     textDecoration: 'none',
+    transition: `all ${Duration.HOVER_CHANGE} ease-in`,
+    ':hover': {
+      color: defaultTheme.selectionSecondaryColor,
+    },
   },
 })

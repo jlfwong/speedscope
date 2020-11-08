@@ -242,9 +242,9 @@ const style = StyleSheet.create({
     },
   },
   toolbarTabActive: {
-    background: Colors.BRIGHT_BLUE,
+    background: defaultTheme.selectionPrimaryColor,
     ':hover': {
-      background: Colors.BRIGHT_BLUE,
+      background: defaultTheme.selectionPrimaryColor,
     },
   },
   emoji: {
