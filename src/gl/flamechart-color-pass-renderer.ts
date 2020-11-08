@@ -1,4 +1,5 @@
 import {Vec2, Rect, AffineTransform} from '../lib/math'
+import {defaultTheme} from '../views/style'
 import {Graphics} from './graphics'
 import {setUniformAffineTransform} from './utils'
 
@@ -20,7 +21,7 @@ const vert = `
   }
 `
 
-const frag = `
+const frag = (colorForBucket: string) => `
   precision mediump float;
 
   uniform vec2 uvSpacePixelSize;
@@ -49,13 +50,7 @@ const frag = `
     return 2.0 * abs(fract(x) - 0.5) - 1.0;
   }
 
-  vec3 colorForBucket(float t) {
-    float x = triangle(30.0 * t);
-    float H = 360.0 * (0.9 * t);
-    float C = 0.25 + 0.2 * x;
-    float L = 0.80 - 0.15 * x;
-    return hcl2rgb(H, C, L);
-  }
+  ${colorForBucket}
 
   void main() {
     vec4 here = texture2D(colorTexture, vUv);
@@ -124,7 +119,7 @@ export class FlamechartColorPassRenderer {
 
     this.buffer = gl.createVertexBuffer(vertexFormat.stride * vertices.length)
     this.buffer.uploadFloats(floats)
-    this.material = gl.createMaterial(vertexFormat, vert, frag)
+    this.material = gl.createMaterial(vertexFormat, vert, frag(defaultTheme.colorForBucketGLSL))
   }
 
   render(props: FlamechartColorPassRenderProps) {

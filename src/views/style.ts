@@ -1,4 +1,6 @@
 import {StyleSheet} from 'aphrodite'
+import {Color} from '../lib/color'
+import {triangle} from '../lib/utils'
 
 export enum FontFamily {
   MONOSPACE = '"Source Code Pro", Courier, monospace',
@@ -44,6 +46,9 @@ interface Theme {
 
   searchMatchPrimaryColor: string
   searchMatchSecondaryColor: string
+
+  colorForBucket: (t: number) => Color
+  colorForBucketGLSL: string
 }
 
 export const defaultTheme: Theme = {
@@ -67,6 +72,24 @@ export const defaultTheme: Theme = {
 
   searchMatchPrimaryColor: Colors.ORANGE,
   searchMatchSecondaryColor: Colors.YELLOW,
+
+  colorForBucket: (t: number) => {
+    const x = triangle(30.0 * t)
+    const H = 360.0 * (0.9 * t)
+    const C = 0.25 + 0.2 * x
+    const L = 0.8 - 0.15 * x
+    return Color.fromLumaChromaHue(L, C, H)
+  },
+
+  colorForBucketGLSL: `
+    vec3 colorForBucket(float t) {
+      float x = triangle(30.0 * t);
+      float H = 360.0 * (0.9 * t);
+      float C = 0.25 + 0.2 * x;
+      float L = 0.80 - 0.15 * x;
+      return hcl2rgb(H, C, L);
+    }
+  `,
 }
 
 export enum Sizes {

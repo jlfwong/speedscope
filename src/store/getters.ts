@@ -1,9 +1,9 @@
 import {Frame, Profile} from '../lib/profile'
-import {triangle, memoizeByReference, memoizeByShallowEquality} from '../lib/utils'
+import {memoizeByReference, memoizeByShallowEquality} from '../lib/utils'
 import {RowAtlas} from '../gl/row-atlas'
 import {CanvasContext} from '../gl/canvas-context'
-import {Color} from '../lib/color'
 import {FlamechartRowAtlasKey} from '../gl/flamechart-renderer'
+import {defaultTheme} from '../views/style'
 
 export const createGetColorBucketForFrame = memoizeByReference(
   (frameToColorBucket: Map<number | string, number>) => {
@@ -18,12 +18,7 @@ export const createGetCSSColorForFrame = memoizeByReference(
     const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
     return (frame: Frame): string => {
       const t = getColorBucketForFrame(frame) / 255
-
-      const x = triangle(30.0 * t)
-      const H = 360.0 * (0.9 * t)
-      const C = 0.25 + 0.2 * x
-      const L = 0.8 - 0.15 * x
-      return Color.fromLumaChromaHue(L, C, H).toCSS()
+      return defaultTheme.colorForBucket(t).toCSS()
     }
   },
 )
