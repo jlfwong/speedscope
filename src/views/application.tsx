@@ -583,7 +583,7 @@ const style = StyleSheet.create({
   loading: {
     height: 3,
     marginBottom: -3,
-    background: Colors.DARK_BLUE,
+    background: defaultTheme.selectionPrimaryColor,
     transformOrigin: '0% 50%',
     animationName: [
       {
@@ -618,7 +618,7 @@ const style = StyleSheet.create({
     left: 0,
     width: '100%',
     height: '100%',
-    border: `5px dashed ${Colors.DARK_BLUE}`,
+    border: `5px dashed ${defaultTheme.selectionPrimaryColor}`,
     pointerEvents: 'none',
   },
   contentContainer: {

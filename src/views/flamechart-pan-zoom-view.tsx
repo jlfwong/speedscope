@@ -343,12 +343,12 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     fadedLabelBatch.fill(ctx, defaultTheme.fgSecondaryColor)
     labelBatch.fill(ctx, defaultTheme.fgPrimaryColor)
     indirectlySelectedOutlineBatch.stroke(ctx, Colors.PALE_DARK_BLUE, frameOutlineWidth)
-    directlySelectedOutlineBatch.stroke(ctx, Colors.DARK_BLUE, frameOutlineWidth)
+    directlySelectedOutlineBatch.stroke(ctx, defaultTheme.selectionPrimaryColor, frameOutlineWidth)
 
     if (this.hoveredLabel) {
-      let color = Colors.DARK_GRAY
+      let color: string = Colors.DARK_GRAY
       if (this.props.selectedNode === this.hoveredLabel.node) {
-        color = Colors.DARK_BLUE
+        color = defaultTheme.selectionPrimaryColor
       }
 
       ctx.lineWidth = 2 * devicePixelRatio

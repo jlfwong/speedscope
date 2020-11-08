@@ -372,10 +372,10 @@ const style = StyleSheet.create({
     cursor: 'pointer',
   },
   profileRowHovered: {
-    border: `1px solid ${Colors.DARK_BLUE}`,
+    border: `1px solid ${defaultTheme.selectionPrimaryColor}`,
   },
   profileRowSelected: {
-    background: Colors.DARK_BLUE,
+    background: defaultTheme.selectionPrimaryColor,
   },
   profileRowEven: {
     background: Colors.DARK_GRAY,

@@ -212,7 +212,7 @@ const style = StyleSheet.create({
     },
     '::selection': {
       color: defaultTheme.altFgPrimaryColor,
-      background: Colors.DARK_BLUE,
+      background: defaultTheme.selectionPrimaryColor,
     },
   },
   resultCount: {

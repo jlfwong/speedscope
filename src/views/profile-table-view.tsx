@@ -353,7 +353,7 @@ const style = StyleSheet.create({
     background: defaultTheme.bgSecondaryColor,
   },
   tableRowSelected: {
-    background: Colors.DARK_BLUE,
+    background: defaultTheme.selectionPrimaryColor,
     color: defaultTheme.altFgPrimaryColor,
   },
   numericCell: {

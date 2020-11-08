@@ -65,7 +65,7 @@ export const style = StyleSheet.create({
     alignItems: 'center',
   },
   thisInstanceCell: {
-    background: Colors.DARK_BLUE,
+    background: defaultTheme.selectionPrimaryColor,
     color: defaultTheme.altFgPrimaryColor,
   },
   allInstancesCell: {
