@@ -238,7 +238,7 @@ const style = StyleSheet.create({
     marginLeft: 2,
     transition: `all ${Duration.HOVER_CHANGE} ease-in`,
     ':hover': {
-      background: Colors.GRAY,
+      background: Colors.LIGHT_GRAY,
     },
   },
   toolbarTabActive: {

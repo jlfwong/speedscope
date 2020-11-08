@@ -48,8 +48,8 @@ interface SortIconProps {
 class SortIcon extends Component<SortIconProps, {}> {
   render() {
     const {activeDirection} = this.props
-    const upFill = activeDirection === SortDirection.ASCENDING ? Colors.GRAY : defaultTheme.fgSecondaryColor
-    const downFill = activeDirection === SortDirection.DESCENDING ? Colors.GRAY : defaultTheme.fgSecondaryColor
+    const upFill = activeDirection === SortDirection.ASCENDING ? defaultTheme.fgPrimaryColor : defaultTheme.fgSecondaryColor
+    const downFill = activeDirection === SortDirection.DESCENDING ? defaultTheme.fgPrimaryColor : defaultTheme.fgSecondaryColor
 
     return (
       <svg
@@ -338,7 +338,7 @@ const style = StyleSheet.create({
   tableHeader: {
     borderBottom: `2px solid ${defaultTheme.bgSecondaryColor}`,
     textAlign: 'left',
-    color: Colors.GRAY,
+    color: defaultTheme.fgPrimaryColor,
     userSelect: 'none',
   },
   sortIcon: {
