@@ -1,3 +1,3 @@
-speedscope@1.11.1
-Sun Oct 25 01:51:17 PDT 2020
-5f32640060fef961d700e04fd64ea4c644d02b29
+speedscope@1.12.0
+Thu Nov 12 01:58:30 PST 2020
+b32ff08ca38b3ea93b77a71e62106378c822ff71
