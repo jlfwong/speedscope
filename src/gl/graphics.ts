@@ -476,7 +476,7 @@ export namespace WebGL {
       const bounds = canvas.getBoundingClientRect()
 
       if (
-        this._width === widthInAppUnits &&
+        this._width === widthInPixels &&
         this._height === heightInPixels &&
         bounds.width === widthInAppUnits &&
         bounds.height === heightInAppUnits
