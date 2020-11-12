@@ -1,8 +1,8 @@
-import {h, Component, JSX, ComponentChild} from 'preact'
+import {h, JSX, ComponentChild} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 import {Profile, Frame} from '../lib/profile'
 import {formatPercent} from '../lib/utils'
-import {FontSize, Colors, Sizes, commonStyle} from './style'
+import {FontSize, Sizes, commonStyle} from './style'
 import {ColorChit} from './color-chit'
 import {ListItem, ScrollableListView} from './scrollable-list-view'
 import {actions} from '../store/actions'
@@ -12,6 +12,8 @@ import {useAppSelector, ActiveProfileState} from '../store'
 import {memo} from 'preact/compat'
 import {useCallback, useMemo, useContext} from 'preact/hooks'
 import {SandwichViewContext} from './sandwich-view'
+import {Color} from '../lib/color'
+import {useTheme, withTheme} from './themes/theme'
 
 export enum SortField {
   SYMBOL_NAME,
@@ -34,6 +36,8 @@ interface HBarProps {
 }
 
 function HBarDisplay(props: HBarProps) {
+  const style = getStyle(useTheme())
+
   return (
     <div className={css(style.hBarDisplay)}>
       <div className={css(style.hBarDisplayFilled)} style={{width: `${props.perc}%`}} />
@@ -45,26 +49,29 @@ interface SortIconProps {
   activeDirection: SortDirection | null
 }
 
-class SortIcon extends Component<SortIconProps, {}> {
-  render() {
-    const {activeDirection} = this.props
-    const upFill = activeDirection === SortDirection.ASCENDING ? Colors.GRAY : Colors.LIGHT_GRAY
-    const downFill = activeDirection === SortDirection.DESCENDING ? Colors.GRAY : Colors.LIGHT_GRAY
+function SortIcon(props: SortIconProps) {
+  const theme = useTheme()
+  const style = getStyle(theme)
 
-    return (
-      <svg
-        width="8"
-        height="10"
-        viewBox="0 0 8 10"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className={css(style.sortIcon)}
-      >
-        <path d="M0 4L4 0L8 4H0Z" fill={upFill} />
-        <path d="M0 4L4 0L8 4H0Z" transform="translate(0 10) scale(1 -1)" fill={downFill} />
-      </svg>
-    )
-  }
+  const {activeDirection} = props
+  const upFill =
+    activeDirection === SortDirection.ASCENDING ? theme.fgPrimaryColor : theme.fgSecondaryColor
+  const downFill =
+    activeDirection === SortDirection.DESCENDING ? theme.fgPrimaryColor : theme.fgSecondaryColor
+
+  return (
+    <svg
+      width="8"
+      height="10"
+      viewBox="0 0 8 10"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={css(style.sortIcon)}
+    >
+      <path d="M0 4L4 0L8 4H0Z" fill={upFill} />
+      <path d="M0 4L4 0L8 4H0Z" transform="translate(0 10) scale(1 -1)" fill={downFill} />
+    </svg>
+  )
 }
 
 interface ProfileTableRowViewProps {
@@ -103,6 +110,8 @@ const ProfileTableRowView = ({
   setSelectedFrame,
   getCSSColorForFrame,
 }: ProfileTableRowViewProps) => {
+  const style = getStyle(useTheme())
+
   const totalWeight = frame.getTotalWeight()
   const selfWeight = frame.getSelfWeight()
   const totalPerc = (100.0 * totalWeight) / profile.getTotalNonIdleWeight()
@@ -166,6 +175,8 @@ export const ProfileTableView = memo(
     searchQuery,
     searchIsActive,
   }: ProfileTableViewProps) => {
+    const style = getStyle(useTheme())
+
     const onSortClick = useCallback(
       (field: SortField, ev: MouseEvent) => {
         ev.preventDefault()
@@ -252,6 +263,8 @@ export const ProfileTableView = memo(
         getCSSColorForFrame,
         searchIsActive,
         searchQuery,
+        style.emptyState,
+        style.tableView,
       ],
     )
 
@@ -320,84 +333,98 @@ export const ProfileTableView = memo(
   },
 )
 
-const style = StyleSheet.create({
-  profileTableView: {
-    background: Colors.WHITE,
-    height: '100%',
-  },
-  scrollView: {
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    flexGrow: 1,
-  },
-  tableView: {
-    width: '100%',
-    fontSize: FontSize.LABEL,
-    background: Colors.WHITE,
-  },
-  tableHeader: {
-    borderBottom: `2px solid ${Colors.LIGHT_GRAY}`,
-    textAlign: 'left',
-    color: Colors.GRAY,
-    userSelect: 'none',
-  },
-  sortIcon: {
-    position: 'relative',
-    top: 1,
-    marginRight: Sizes.FRAME_HEIGHT / 4,
-  },
-  tableRow: {
-    height: Sizes.FRAME_HEIGHT,
-  },
-  tableRowEven: {
-    background: Colors.OFF_WHITE,
-  },
-  tableRowSelected: {
-    background: Colors.DARK_BLUE,
-    color: Colors.WHITE,
-  },
-  numericCell: {
-    textOverflow: 'ellipsis',
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    position: 'relative',
-    textAlign: 'right',
-    paddingRight: Sizes.FRAME_HEIGHT,
-    width: 6 * Sizes.FRAME_HEIGHT,
-    minWidth: 6 * Sizes.FRAME_HEIGHT,
-  },
-  textCell: {
-    textOverflow: 'ellipsis',
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    width: '100%',
-    maxWidth: 0,
-  },
-  hBarDisplay: {
-    position: 'absolute',
-    background: Colors.TRANSPARENT_GREEN,
-    bottom: 2,
-    height: 2,
-    width: `calc(100% - ${2 * Sizes.FRAME_HEIGHT}px)`,
-    right: Sizes.FRAME_HEIGHT,
-  },
-  hBarDisplayFilled: {
-    height: '100%',
-    position: 'absolute',
-    background: Colors.GREEN,
-    right: 0,
-  },
-  matched: {
-    borderBottom: `2px solid ${Colors.BLACK}`,
-  },
-  matchedSelected: {
-    borderColor: Colors.WHITE,
-  },
-  emptyState: {
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
-})
+const getStyle = withTheme(theme =>
+  StyleSheet.create({
+    profileTableView: {
+      background: theme.bgPrimaryColor,
+      height: '100%',
+    },
+    scrollView: {
+      overflowY: 'auto',
+      overflowX: 'hidden',
+      flexGrow: 1,
+      '::-webkit-scrollbar': {
+        background: theme.bgPrimaryColor,
+      },
+      '::-webkit-scrollbar-thumb': {
+        background: theme.fgSecondaryColor,
+        borderRadius: 20,
+        border: `3px solid ${theme.bgPrimaryColor}`,
+        ':hover': {
+          background: theme.fgPrimaryColor,
+        },
+      },
+    },
+    tableView: {
+      width: '100%',
+      fontSize: FontSize.LABEL,
+      background: theme.bgPrimaryColor,
+    },
+    tableHeader: {
+      borderBottom: `2px solid ${theme.bgSecondaryColor}`,
+      textAlign: 'left',
+      color: theme.fgPrimaryColor,
+      userSelect: 'none',
+    },
+    sortIcon: {
+      position: 'relative',
+      top: 1,
+      marginRight: Sizes.FRAME_HEIGHT / 4,
+    },
+    tableRow: {
+      background: theme.bgPrimaryColor,
+      height: Sizes.FRAME_HEIGHT,
+    },
+    tableRowEven: {
+      background: theme.bgSecondaryColor,
+    },
+    tableRowSelected: {
+      background: theme.selectionPrimaryColor,
+      color: theme.altFgPrimaryColor,
+    },
+    numericCell: {
+      textOverflow: 'ellipsis',
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+      position: 'relative',
+      textAlign: 'right',
+      paddingRight: Sizes.FRAME_HEIGHT,
+      width: 6 * Sizes.FRAME_HEIGHT,
+      minWidth: 6 * Sizes.FRAME_HEIGHT,
+    },
+    textCell: {
+      textOverflow: 'ellipsis',
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+      width: '100%',
+      maxWidth: 0,
+    },
+    hBarDisplay: {
+      position: 'absolute',
+      background: Color.fromCSSHex(theme.weightColor).withAlpha(0.2).toCSS(),
+      bottom: 2,
+      height: 2,
+      width: `calc(100% - ${2 * Sizes.FRAME_HEIGHT}px)`,
+      right: Sizes.FRAME_HEIGHT,
+    },
+    hBarDisplayFilled: {
+      height: '100%',
+      position: 'absolute',
+      background: theme.weightColor,
+      right: 0,
+    },
+    matched: {
+      borderBottom: `2px solid ${theme.fgPrimaryColor}`,
+    },
+    matchedSelected: {
+      borderColor: theme.altFgPrimaryColor,
+    },
+    emptyState: {
+      textAlign: 'center',
+      fontWeight: 'bold',
+    },
+  }),
+)
 
 interface ProfileTableViewContainerProps {
   activeProfileState: ActiveProfileState
@@ -410,10 +437,11 @@ export const ProfileTableViewContainer = memo((ownProps: ProfileTableViewContain
   const {profile, sandwichViewState, index} = activeProfileState
   if (!profile) throw new Error('profile missing')
   const tableSortMethod = useAppSelector(state => state.tableSortMethod, [])
+  const theme = useTheme()
   const {callerCallee} = sandwichViewState
   const selectedFrame = callerCallee ? callerCallee.selectedFrame : null
   const frameToColorBucket = getFrameToColorBucket(profile)
-  const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
+  const getCSSColorForFrame = createGetCSSColorForFrame({theme, frameToColorBucket})
 
   const setSelectedFrame = useActionCreator(
     (selectedFrame: Frame | null) => {

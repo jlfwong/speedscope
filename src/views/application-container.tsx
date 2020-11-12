@@ -6,6 +6,7 @@ import {useActionCreator} from '../lib/preact-redux'
 import {memo} from 'preact/compat'
 import {useAppSelector, useActiveProfileState} from '../store'
 import {ProfileSearchContextProvider} from './search-view'
+import {useTheme} from './themes/theme'
 
 const {
   setLoading,
@@ -20,9 +21,10 @@ const {
 
 export const ApplicationContainer = memo(() => {
   const appState = useAppSelector(state => state, [])
+  const theme = useTheme()
   const canvasContext = useAppSelector(
-    state => (state.glCanvas ? getCanvasContext(state.glCanvas) : null),
-    [],
+    state => (state.glCanvas ? getCanvasContext({theme, canvas: state.glCanvas}) : null),
+    [theme],
   )
 
   return (
@@ -38,6 +40,7 @@ export const ApplicationContainer = memo(() => {
         setViewMode={useActionCreator(setViewMode, [])}
         setFlattenRecursion={useActionCreator(setFlattenRecursion, [])}
         setProfileIndexToView={useActionCreator(setProfileIndexToView, [])}
+        theme={theme}
         {...appState}
       />
     </ProfileSearchContextProvider>

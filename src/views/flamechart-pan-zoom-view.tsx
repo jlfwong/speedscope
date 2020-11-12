@@ -3,18 +3,20 @@ import {CallTreeNode} from '../lib/profile'
 import {Flamechart, FlamechartFrame} from '../lib/flamechart'
 import {CanvasContext} from '../gl/canvas-context'
 import {FlamechartRenderer} from '../gl/flamechart-renderer'
-import {Sizes, FontSize, Colors, FontFamily, commonStyle} from './style'
+import {Sizes, FontSize, FontFamily, commonStyle} from './style'
 import {
   cachedMeasureTextWidth,
   ELLIPSIS,
   trimTextMid,
   remapRangesToTrimmedText,
 } from '../lib/text-utils'
-import {style} from './flamechart-style'
+import {getFlamechartStyle} from './flamechart-style'
 import {h, Component} from 'preact'
 import {css} from 'aphrodite'
 import {ProfileSearchResults} from '../lib/profile-search'
 import {BatchCanvasTextRenderer, BatchCanvasRectRenderer} from '../lib/canvas-2d-batch-renderers'
+import {Color} from '../lib/color'
+import {Theme} from './themes/theme'
 
 interface FlamechartFrameLabel {
   configSpaceBounds: Rect
@@ -45,6 +47,7 @@ export interface FlamechartPanZoomViewProps {
   flamechartRenderer: FlamechartRenderer
   renderInverted: boolean
   selectedNode: CallTreeNode | null
+  theme: Theme
 
   onNodeHover: (hover: {node: CallTreeNode; event: MouseEvent} | null) => void
   onNodeSelect: (node: CallTreeNode | null) => void
@@ -69,6 +72,10 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
   private overlayCtx: CanvasRenderingContext2D | null = null
 
   private hoveredLabel: FlamechartFrameLabel | null = null
+
+  private getStyle() {
+    return getFlamechartStyle(this.props.theme)
+  }
 
   private setConfigSpaceViewportRect(r: Rect) {
     this.props.setConfigSpaceViewportRect(r)
@@ -283,7 +290,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     }
 
     const frameOutlineWidth = 2 * window.devicePixelRatio
-    ctx.strokeStyle = Colors.PALE_DARK_BLUE
+    ctx.strokeStyle = this.props.theme.selectionSecondaryColor
     const minConfigSpaceWidthToRenderOutline = (
       configToPhysical.inverseTransformVector(new Vec2(1, 0)) || new Vec2(0, 0)
     ).x
@@ -338,17 +345,22 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
       renderFrameLabelAndChildren(frame)
     }
 
-    matchedFrameBatch.fill(ctx, Colors.ORANGE)
-    matchedTextHighlightBatch.fill(ctx, Colors.YELLOW)
-    fadedLabelBatch.fill(ctx, Colors.LIGHT_GRAY)
-    labelBatch.fill(ctx, Colors.BLACK)
-    indirectlySelectedOutlineBatch.stroke(ctx, Colors.PALE_DARK_BLUE, frameOutlineWidth)
-    directlySelectedOutlineBatch.stroke(ctx, Colors.DARK_BLUE, frameOutlineWidth)
+    const theme = this.props.theme
+
+    matchedFrameBatch.fill(ctx, theme.searchMatchPrimaryColor)
+    matchedTextHighlightBatch.fill(ctx, theme.searchMatchSecondaryColor)
+    fadedLabelBatch.fill(ctx, theme.fgSecondaryColor)
+    labelBatch.fill(
+      ctx,
+      this.props.searchResults != null ? theme.searchMatchTextColor : theme.fgPrimaryColor,
+    )
+    indirectlySelectedOutlineBatch.stroke(ctx, theme.selectionSecondaryColor, frameOutlineWidth)
+    directlySelectedOutlineBatch.stroke(ctx, theme.selectionPrimaryColor, frameOutlineWidth)
 
     if (this.hoveredLabel) {
-      let color = Colors.DARK_GRAY
+      let color: string = theme.fgPrimaryColor
       if (this.props.selectedNode === this.hoveredLabel.node) {
-        color = Colors.DARK_BLUE
+        color = theme.selectionPrimaryColor
       }
 
       ctx.lineWidth = 2 * devicePixelRatio
@@ -394,19 +406,22 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
       interval *= 2
     }
 
+    const theme = this.props.theme
+
     {
       const y = this.props.renderInverted ? physicalViewSize.y - physicalViewSpaceFrameHeight : 0
 
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
+      ctx.fillStyle = Color.fromCSSHex(theme.bgPrimaryColor).withAlpha(0.8).toCSS()
       ctx.fillRect(0, y, physicalViewSize.x, physicalViewSpaceFrameHeight)
-      ctx.fillStyle = Colors.DARK_GRAY
       ctx.textBaseline = 'top'
       for (let x = Math.ceil(left / interval) * interval; x < right; x += interval) {
         // TODO(jlfwong): Ensure that labels do not overlap
         const pos = Math.round(configToPhysical.transformPosition(new Vec2(x, 0)).x)
         const labelText = this.props.flamechart.formatValue(x)
         const textWidth = cachedMeasureTextWidth(ctx, labelText)
+        ctx.fillStyle = theme.fgPrimaryColor
         ctx.fillText(labelText, pos - textWidth - labelPaddingPx, y + labelPaddingPx)
+        ctx.fillStyle = theme.fgSecondaryColor
         ctx.fillRect(pos, 0, 1, physicalViewSize.y)
       }
     }
@@ -749,6 +764,14 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
       this.renderCanvas()
     } else if (this.props.configSpaceViewportRect !== nextProps.configSpaceViewportRect) {
       this.renderCanvas()
+    } else if (this.props.canvasContext !== nextProps.canvasContext) {
+      if (this.props.canvasContext) {
+        this.props.canvasContext.removeBeforeFrameHandler(this.onBeforeFrame)
+      }
+      if (nextProps.canvasContext) {
+        nextProps.canvasContext.addBeforeFrameHandler(this.onBeforeFrame)
+        nextProps.canvasContext.requestFrame()
+      }
     }
   }
   componentDidMount() {
@@ -763,6 +786,8 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
   }
 
   render() {
+    const style = this.getStyle()
+
     return (
       <div
         className={css(style.panZoomView, commonStyle.vbox)}

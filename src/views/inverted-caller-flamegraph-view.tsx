@@ -17,6 +17,7 @@ import {useAppSelector} from '../store'
 import {FlamechartWrapper} from './flamechart-wrapper'
 import {h} from 'preact'
 import {memo} from 'preact/compat'
+import {useTheme} from './themes/theme'
 
 const getInvertedCallerProfile = memoizeByShallowEquality(
   ({
@@ -57,6 +58,7 @@ export const InvertedCallerFlamegraphView = memo((ownProps: FlamechartViewContai
   let {profile, sandwichViewState, index} = activeProfileState
   const flattenRecursion = useAppSelector(state => state.flattenRecursion, [])
   const glCanvas = useAppSelector(state => state.glCanvas, [])
+  const theme = useTheme()
 
   if (!profile) throw new Error('profile missing')
   if (!glCanvas) throw new Error('glCanvas missing')
@@ -66,8 +68,8 @@ export const InvertedCallerFlamegraphView = memo((ownProps: FlamechartViewContai
 
   const frameToColorBucket = getFrameToColorBucket(profile)
   const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
-  const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
-  const canvasContext = getCanvasContext(glCanvas)
+  const getCSSColorForFrame = createGetCSSColorForFrame({theme, frameToColorBucket})
+  const canvasContext = getCanvasContext({theme, canvas: glCanvas})
 
   const flamechart = getInvertedCallerFlamegraph({
     invertedCallerProfile: getInvertedCallerProfile({
@@ -81,6 +83,7 @@ export const InvertedCallerFlamegraphView = memo((ownProps: FlamechartViewContai
 
   return (
     <FlamechartWrapper
+      theme={theme}
       renderInverted={true}
       flamechart={flamechart}
       flamechartRenderer={flamechartRenderer}

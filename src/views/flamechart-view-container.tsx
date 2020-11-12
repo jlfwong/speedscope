@@ -19,6 +19,7 @@ import {actions} from '../store/actions'
 import {memo} from 'preact/compat'
 import {ActiveProfileState} from '../store'
 import {FlamechartSearchContextProvider} from './flamechart-search-view'
+import {Theme, useTheme} from './themes/theme'
 
 interface FlamechartSetters {
   setLogicalSpaceViewportSize: (logicalSpaceViewportSize: Vec2) => void
@@ -60,6 +61,7 @@ export function useFlamechartSetters(id: FlamechartID, profileIndex: number): Fl
 }
 
 export type FlamechartViewProps = {
+  theme: Theme
   canvasContext: CanvasContext
   flamechart: Flamechart
   flamechartRenderer: FlamechartRenderer
@@ -116,10 +118,12 @@ export const ChronoFlamechartView = memo((props: FlamechartViewContainerProps) =
   const {activeProfileState, glCanvas} = props
   const {index, profile, chronoViewState} = activeProfileState
 
-  const canvasContext = getCanvasContext(glCanvas)
+  const theme = useTheme()
+
+  const canvasContext = getCanvasContext({theme, canvas: glCanvas})
   const frameToColorBucket = getFrameToColorBucket(profile)
   const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
-  const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
+  const getCSSColorForFrame = createGetCSSColorForFrame({theme, frameToColorBucket})
 
   const flamechart = getChronoViewFlamechart({profile, getColorBucketForFrame})
   const flamechartRenderer = getChronoViewFlamechartRenderer({
@@ -138,6 +142,7 @@ export const ChronoFlamechartView = memo((props: FlamechartViewContainerProps) =
       setConfigSpaceViewportRect={setters.setConfigSpaceViewportRect}
     >
       <FlamechartView
+        theme={theme}
         renderInverted={false}
         flamechart={flamechart}
         flamechartRenderer={flamechartRenderer}
@@ -174,10 +179,12 @@ export const LeftHeavyFlamechartView = memo((ownProps: FlamechartViewContainerPr
 
   const {index, profile, leftHeavyViewState} = activeProfileState
 
-  const canvasContext = getCanvasContext(glCanvas)
+  const theme = useTheme()
+
+  const canvasContext = getCanvasContext({theme, canvas: glCanvas})
   const frameToColorBucket = getFrameToColorBucket(profile)
   const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
-  const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
+  const getCSSColorForFrame = createGetCSSColorForFrame({theme, frameToColorBucket})
 
   const flamechart = getLeftHeavyFlamechart({
     profile,
@@ -199,6 +206,7 @@ export const LeftHeavyFlamechartView = memo((ownProps: FlamechartViewContainerPr
       setConfigSpaceViewportRect={setters.setConfigSpaceViewportRect}
     >
       <FlamechartView
+        theme={theme}
         renderInverted={false}
         flamechart={flamechart}
         flamechartRenderer={flamechartRenderer}

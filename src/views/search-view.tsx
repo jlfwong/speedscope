@@ -2,12 +2,13 @@ import {StyleSheet, css} from 'aphrodite'
 import {h, createContext, ComponentChildren, Fragment} from 'preact'
 import {useCallback, useRef, useEffect, useMemo} from 'preact/hooks'
 import {memo} from 'preact/compat'
-import {Sizes, Colors, FontSize} from './style'
+import {Sizes, FontSize} from './style'
 import {ProfileSearchResults} from '../lib/profile-search'
 import {Profile} from '../lib/profile'
 import {useActiveProfileState, useAppSelector} from '../store'
 import {useActionCreator} from '../lib/preact-redux'
 import {actions} from '../store/actions'
+import {useTheme, withTheme} from './themes/theme'
 
 function stopPropagation(ev: Event) {
   ev.stopPropagation()
@@ -44,6 +45,8 @@ interface SearchViewProps {
 
 export const SearchView = memo(
   ({numResults, resultIndex, selectNext, selectPrev}: SearchViewProps) => {
+    const theme = useTheme()
+    const style = getStyle(theme)
     const searchQuery = useAppSelector(state => state.searchQuery, [])
     const searchIsActive = useAppSelector(state => state.searchIsActive, [])
     const setSearchQuery = useActionCreator(setSearchQueryAction, [])
@@ -169,7 +172,7 @@ export const SearchView = memo(
         >
           <path
             d="M4.99999 4.16217L11.6427 10.8048M11.6427 4.16217L4.99999 10.8048"
-            stroke="#BDBDBD"
+            stroke={theme.altFgSecondaryColor}
           />
         </svg>
       </div>
@@ -177,61 +180,63 @@ export const SearchView = memo(
   },
 )
 
-const style = StyleSheet.create({
-  searchView: {
-    position: 'absolute',
-    top: 0,
-    right: 10,
-    height: Sizes.TOOLBAR_HEIGHT,
-    width: 16 * 13,
-    borderWidth: 2,
-    borderColor: Colors.BLACK,
-    borderStyle: 'solid',
-    fontSize: FontSize.LABEL,
-    boxSizing: 'border-box',
-    background: Colors.DARK_GRAY,
-    color: Colors.WHITE,
-    display: 'flex',
-    alignItems: 'center',
-  },
-  inputContainer: {
-    flexShrink: 1,
-    flexGrow: 1,
-    display: 'flex',
-  },
-  input: {
-    width: '100%',
-    border: 'none',
-    background: 'none',
-    fontSize: FontSize.LABEL,
-    lineHeight: `${Sizes.TOOLBAR_HEIGHT}px`,
-    color: Colors.WHITE,
-    ':focus': {
+const getStyle = withTheme(theme =>
+  StyleSheet.create({
+    searchView: {
+      position: 'absolute',
+      top: 0,
+      right: 10,
+      height: Sizes.TOOLBAR_HEIGHT,
+      width: 16 * 13,
+      borderWidth: 2,
+      borderColor: theme.altFgPrimaryColor,
+      borderStyle: 'solid',
+      fontSize: FontSize.LABEL,
+      boxSizing: 'border-box',
+      background: theme.altBgSecondaryColor,
+      color: theme.altFgPrimaryColor,
+      display: 'flex',
+      alignItems: 'center',
+    },
+    inputContainer: {
+      flexShrink: 1,
+      flexGrow: 1,
+      display: 'flex',
+    },
+    input: {
+      width: '100%',
       border: 'none',
-      outline: 'none',
+      background: 'none',
+      fontSize: FontSize.LABEL,
+      lineHeight: `${Sizes.TOOLBAR_HEIGHT}px`,
+      color: theme.altFgPrimaryColor,
+      ':focus': {
+        border: 'none',
+        outline: 'none',
+      },
+      '::selection': {
+        color: theme.altFgPrimaryColor,
+        background: theme.selectionPrimaryColor,
+      },
     },
-    '::selection': {
-      color: Colors.WHITE,
-      background: Colors.DARK_BLUE,
+    resultCount: {
+      verticalAlign: 'middle',
     },
-  },
-  resultCount: {
-    verticalAlign: 'middle',
-  },
-  icon: {
-    flexShrink: 0,
-    verticalAlign: 'middle',
-    height: '100%',
-    margin: '0px 2px 0px 2px',
-    fontSize: FontSize.LABEL,
-  },
-  button: {
-    display: 'inline',
-    background: 'none',
-    border: 'none',
-    padding: 0,
-    ':focus': {
-      outline: 'none',
+    icon: {
+      flexShrink: 0,
+      verticalAlign: 'middle',
+      height: '100%',
+      margin: '0px 2px 0px 2px',
+      fontSize: FontSize.LABEL,
     },
-  },
-})
+    button: {
+      display: 'inline',
+      background: 'none',
+      border: 'none',
+      padding: 0,
+      ':focus': {
+        outline: 'none',
+      },
+    },
+  }),
+)

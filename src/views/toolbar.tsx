@@ -1,13 +1,16 @@
 import {ApplicationProps} from './application'
-import {ViewMode} from '../store'
+import {useAppSelector, ViewMode} from '../store'
 import {h, JSX, Fragment} from 'preact'
 import {useCallback, useState, useEffect} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
-import {Sizes, Colors, FontFamily, FontSize, Duration} from './style'
+import {Sizes, FontFamily, FontSize, Duration} from './style'
 import {ProfileSelect} from './profile-select'
 import {ProfileGroupState} from '../store/profiles-state'
 import {Profile} from '../lib/profile'
 import {objectsHaveShallowEquality} from '../lib/utils'
+import {colorSchemeToString, nextColorScheme, useTheme, withTheme} from './themes/theme'
+import {useActionCreator} from '../lib/preact-redux'
+import {actions} from '../store/actions'
 
 interface ToolbarProps extends ApplicationProps {
   browseForFile(): void
@@ -19,6 +22,7 @@ function useSetViewMode(setViewMode: (viewMode: ViewMode) => void, viewMode: Vie
 }
 
 function ToolbarLeftContent(props: ToolbarProps) {
+  const style = getStyle(useTheme())
   const setChronoFlameChart = useSetViewMode(props.setViewMode, ViewMode.CHRONO_FLAME_CHART)
   const setLeftHeavyFlameGraph = useSetViewMode(props.setViewMode, ViewMode.LEFT_HEAVY_FLAME_GRAPH)
   const setSandwichView = useSetViewMode(props.setViewMode, ViewMode.SANDWICH_VIEW)
@@ -83,6 +87,8 @@ const getCachedProfileList = (() => {
 })()
 
 function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
+  const style = getStyle(useTheme())
+
   const {activeProfileState, profileGroup} = props
   const profiles = getCachedProfileList(profileGroup)
   const [profileSelectShown, setProfileSelectShown] = useState(false)
@@ -150,11 +156,33 @@ function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
 }
 
 function ToolbarRightContent(props: ToolbarProps) {
+  const style = getStyle(useTheme())
+  const colorScheme = useAppSelector(s => s.colorScheme, [])
+
+  const exportFile = (
+    <div className={css(style.toolbarTab)} onClick={props.saveFile}>
+      <span className={css(style.emoji)}>⤴️</span>Export
+    </div>
+  )
   const importFile = (
     <div className={css(style.toolbarTab)} onClick={props.browseForFile}>
       <span className={css(style.emoji)}>⤵️</span>Import
     </div>
   )
+  const toggleColorScheme = useActionCreator(
+    () => actions.setColorScheme(nextColorScheme(colorScheme)),
+    [colorScheme],
+  )
+
+  const colorSchemeToggle = (
+    <div className={css(style.toolbarTab)} onClick={toggleColorScheme}>
+      <span className={css(style.emoji)}>🎨</span>
+      <span className={css(style.toolbarTabColorSchemeToggle)}>
+        {colorSchemeToString(colorScheme)}
+      </span>
+    </div>
+  )
+
   const help = (
     <div className={css(style.toolbarTab)}>
       <a
@@ -169,18 +197,16 @@ function ToolbarRightContent(props: ToolbarProps) {
 
   return (
     <div className={css(style.toolbarRight)}>
-      {props.activeProfileState && (
-        <div className={css(style.toolbarTab)} onClick={props.saveFile}>
-          <span className={css(style.emoji)}>⤴️</span>Export
-        </div>
-      )}
+      {props.activeProfileState && exportFile}
       {importFile}
+      {colorSchemeToggle}
       {help}
     </div>
   )
 }
 
 export function Toolbar(props: ToolbarProps) {
+  const style = getStyle(useTheme())
   return (
     <div className={css(style.toolbar)}>
       <ToolbarLeftContent {...props} />
@@ -190,71 +216,78 @@ export function Toolbar(props: ToolbarProps) {
   )
 }
 
-const style = StyleSheet.create({
-  toolbar: {
-    height: Sizes.TOOLBAR_HEIGHT,
-    flexShrink: 0,
-    background: Colors.BLACK,
-    color: Colors.WHITE,
-    textAlign: 'center',
-    fontFamily: FontFamily.MONOSPACE,
-    fontSize: FontSize.TITLE,
-    lineHeight: `${Sizes.TOOLBAR_TAB_HEIGHT}px`,
-    userSelect: 'none',
-  },
-  toolbarLeft: {
-    position: 'absolute',
-    height: Sizes.TOOLBAR_HEIGHT,
-    overflow: 'hidden',
-    top: 0,
-    left: 0,
-    marginRight: 2,
-    textAlign: 'left',
-  },
-  toolbarCenter: {
-    paddingTop: 1,
-    height: Sizes.TOOLBAR_HEIGHT,
-  },
-  toolbarRight: {
-    height: Sizes.TOOLBAR_HEIGHT,
-    overflow: 'hidden',
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    marginRight: 2,
-    textAlign: 'right',
-  },
-  toolbarProfileIndex: {
-    color: Colors.LIGHT_GRAY,
-  },
-  toolbarTab: {
-    background: Colors.DARK_GRAY,
-    marginTop: Sizes.SEPARATOR_HEIGHT,
-    height: Sizes.TOOLBAR_TAB_HEIGHT,
-    lineHeight: `${Sizes.TOOLBAR_TAB_HEIGHT}px`,
-    paddingLeft: 2,
-    paddingRight: 8,
-    display: 'inline-block',
-    marginLeft: 2,
-    transition: `all ${Duration.HOVER_CHANGE} ease-in`,
-    ':hover': {
-      background: Colors.GRAY,
+const getStyle = withTheme(theme =>
+  StyleSheet.create({
+    toolbar: {
+      height: Sizes.TOOLBAR_HEIGHT,
+      flexShrink: 0,
+      background: theme.altBgPrimaryColor,
+      color: theme.altFgPrimaryColor,
+      textAlign: 'center',
+      fontFamily: FontFamily.MONOSPACE,
+      fontSize: FontSize.TITLE,
+      lineHeight: `${Sizes.TOOLBAR_TAB_HEIGHT}px`,
+      userSelect: 'none',
     },
-  },
-  toolbarTabActive: {
-    background: Colors.BRIGHT_BLUE,
-    ':hover': {
-      background: Colors.BRIGHT_BLUE,
+    toolbarLeft: {
+      position: 'absolute',
+      height: Sizes.TOOLBAR_HEIGHT,
+      overflow: 'hidden',
+      top: 0,
+      left: 0,
+      marginRight: 2,
+      textAlign: 'left',
     },
-  },
-  emoji: {
-    display: 'inline-block',
-    verticalAlign: 'middle',
-    paddingTop: '0px',
-    marginRight: '0.3em',
-  },
-  noLinkStyle: {
-    textDecoration: 'none',
-    color: 'inherit',
-  },
-})
+    toolbarCenter: {
+      paddingTop: 1,
+      height: Sizes.TOOLBAR_HEIGHT,
+    },
+    toolbarRight: {
+      height: Sizes.TOOLBAR_HEIGHT,
+      overflow: 'hidden',
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      marginRight: 2,
+      textAlign: 'right',
+    },
+    toolbarProfileIndex: {
+      color: theme.altFgSecondaryColor,
+    },
+    toolbarTab: {
+      background: theme.altBgSecondaryColor,
+      marginTop: Sizes.SEPARATOR_HEIGHT,
+      height: Sizes.TOOLBAR_TAB_HEIGHT,
+      lineHeight: `${Sizes.TOOLBAR_TAB_HEIGHT}px`,
+      paddingLeft: 2,
+      paddingRight: 8,
+      display: 'inline-block',
+      marginLeft: 2,
+      transition: `all ${Duration.HOVER_CHANGE} ease-in`,
+      ':hover': {
+        background: theme.selectionSecondaryColor,
+      },
+    },
+    toolbarTabActive: {
+      background: theme.selectionPrimaryColor,
+      ':hover': {
+        background: theme.selectionPrimaryColor,
+      },
+    },
+    toolbarTabColorSchemeToggle: {
+      display: 'inline-block',
+      textAlign: 'center',
+      minWidth: '50px',
+    },
+    emoji: {
+      display: 'inline-block',
+      verticalAlign: 'middle',
+      paddingTop: '0px',
+      marginRight: '0.3em',
+    },
+    noLinkStyle: {
+      textDecoration: 'none',
+      color: 'inherit',
+    },
+  }),
+)

@@ -10,22 +10,6 @@ export enum FontSize {
   BIG_BUTTON = 36,
 }
 
-export enum Colors {
-  WHITE = '#FFFFFF',
-  OFF_WHITE = '#F6F6F6',
-  LIGHT_GRAY = '#BDBDBD',
-  GRAY = '#666666',
-  DARK_GRAY = '#222222',
-  BLACK = '#000000',
-  BRIGHT_BLUE = '#56CCF2',
-  DARK_BLUE = '#2F80ED',
-  PALE_DARK_BLUE = '#8EB7ED',
-  GREEN = '#6FCF97',
-  TRANSPARENT_GREEN = 'rgba(111, 207, 151, 0.2)',
-  YELLOW = '#FEDC62',
-  ORANGE = '#FFAC02',
-}
-
 export enum Sizes {
   MINIMAP_HEIGHT = 100,
   DETAIL_VIEW_HEIGHT = 150,

@@ -3,7 +3,7 @@ import {StyleSheet, css} from 'aphrodite'
 import {FileSystemDirectoryEntry} from '../import/file-system-entry'
 
 import {ProfileGroup, SymbolRemapper} from '../lib/profile'
-import {FontFamily, FontSize, Colors, Duration} from './style'
+import {FontFamily, FontSize, Duration} from './style'
 import {importEmscriptenSymbolMap as importEmscriptenSymbolRemapper} from '../lib/emscripten'
 import {SandwichViewContainer} from './sandwich-view'
 import {saveToFile} from '../lib/file-format'
@@ -11,9 +11,9 @@ import {ApplicationState, ViewMode, canUseXHR, ActiveProfileState} from '../stor
 import {StatelessComponent} from '../lib/typed-redux'
 import {LeftHeavyFlamechartView, ChronoFlamechartView} from './flamechart-view-container'
 import {CanvasContext} from '../gl/canvas-context'
-import {Graphics} from '../gl/graphics'
 import {Toolbar} from './toolbar'
 import {importJavaScriptSourceMapSymbolRemapper} from '../lib/js-source-map'
+import {Theme, withTheme} from './themes/theme'
 
 const importModule = import('../import')
 
@@ -58,6 +58,7 @@ const exampleProfileURL = require('../../sample/profiles/stackcollapse/perf-vert
 
 interface GLCanvasProps {
   canvasContext: CanvasContext | null
+  theme: Theme
   setGLCanvas: (canvas: HTMLCanvasElement | null) => void
 }
 export class GLCanvas extends StatelessComponent<GLCanvasProps> {
@@ -99,7 +100,6 @@ export class GLCanvas extends StatelessComponent<GLCanvasProps> {
       widthInAppUnits,
       heightInAppUnits,
     )
-    this.props.canvasContext.gl.clear(new Graphics.Color(1, 1, 1, 1))
   }
 
   onWindowResize = () => {
@@ -128,6 +128,7 @@ export class GLCanvas extends StatelessComponent<GLCanvasProps> {
     window.removeEventListener('resize', this.onWindowResize)
   }
   render() {
+    const style = getStyle(this.props.theme)
     return (
       <div ref={this.containerRef} className={css(style.glCanvasView)}>
         <canvas ref={this.ref} width={1} height={1} />
@@ -147,6 +148,7 @@ export type ApplicationProps = ApplicationState & {
   setProfileIndexToView: (profileIndex: number) => void
   activeProfileState: ActiveProfileState | null
   canvasContext: CanvasContext | null
+  theme: Theme
 }
 
 export class Application extends StatelessComponent<ApplicationProps> {
@@ -199,6 +201,10 @@ export class Application extends StatelessComponent<ApplicationProps> {
 
     this.props.setProfileGroup(profileGroup)
     this.props.setLoading(false)
+  }
+
+  getStyle(): ReturnType<typeof getStyle> {
+    return getStyle(this.props.theme)
   }
 
   loadFromFile(file: File) {
@@ -431,6 +437,8 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   renderLanding() {
+    const style = this.getStyle()
+
     return (
       <div className={css(style.landingContainer)}>
         <div className={css(style.landingMessage)}>
@@ -502,6 +510,8 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   renderError() {
+    const style = this.getStyle()
+
     return (
       <div className={css(style.error)}>
         <div>😿 Something went wrong.</div>
@@ -511,6 +521,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   renderLoadingBar() {
+    const style = this.getStyle()
     return <div className={css(style.loading)} />
   }
 
@@ -545,6 +556,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   render() {
+    const style = this.getStyle()
     return (
       <div
         onDrop={this.onDrop}
@@ -552,7 +564,11 @@ export class Application extends StatelessComponent<ApplicationProps> {
         onDragLeave={this.onDragLeave}
         className={css(style.root, this.props.dragActive && style.dragTargetRoot)}
       >
-        <GLCanvas setGLCanvas={this.props.setGLCanvas} canvasContext={this.props.canvasContext} />
+        <GLCanvas
+          setGLCanvas={this.props.setGLCanvas}
+          canvasContext={this.props.canvasContext}
+          theme={this.props.theme}
+        />
         <Toolbar
           saveFile={this.saveFile}
           browseForFile={this.browseForFile}
@@ -565,107 +581,114 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 }
 
-const style = StyleSheet.create({
-  glCanvasView: {
-    position: 'absolute',
-    width: '100vw',
-    height: '100vh',
-    zIndex: -1,
-    pointerEvents: 'none',
-  },
-  error: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-  },
-  loading: {
-    height: 3,
-    marginBottom: -3,
-    background: Colors.DARK_BLUE,
-    transformOrigin: '0% 50%',
-    animationName: [
-      {
-        from: {
-          transform: `scaleX(0)`,
-        },
-        to: {
-          transform: `scaleX(1)`,
-        },
-      },
-    ],
-    animationTimingFunction: 'cubic-bezier(0, 1, 0, 1)',
-    animationDuration: '30s',
-  },
-  root: {
-    width: '100vw',
-    height: '100vh',
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    position: 'relative',
-    fontFamily: FontFamily.MONOSPACE,
-    lineHeight: '20px',
-  },
-  dragTargetRoot: {
-    cursor: 'copy',
-  },
-  dragTarget: {
-    boxSizing: 'border-box',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    border: `5px dashed ${Colors.DARK_BLUE}`,
-    pointerEvents: 'none',
-  },
-  contentContainer: {
-    position: 'relative',
-    display: 'flex',
-    overflow: 'hidden',
-    flexDirection: 'column',
-    flex: 1,
-  },
-  landingContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-  },
-  landingMessage: {
-    maxWidth: 600,
-  },
-  landingP: {
-    marginBottom: 16,
-  },
-  hide: {
-    display: 'none',
-  },
-  browseButtonContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  browseButton: {
-    marginBottom: 16,
-    height: 72,
-    flex: 1,
-    maxWidth: 256,
-    textAlign: 'center',
-    fontSize: FontSize.BIG_BUTTON,
-    lineHeight: '72px',
-    background: Colors.DARK_BLUE,
-    color: Colors.WHITE,
-    transition: `all ${Duration.HOVER_CHANGE} ease-in`,
-    ':hover': {
-      background: Colors.BRIGHT_BLUE,
+const getStyle = withTheme(theme =>
+  StyleSheet.create({
+    glCanvasView: {
+      position: 'absolute',
+      width: '100vw',
+      height: '100vh',
+      zIndex: -1,
+      pointerEvents: 'none',
     },
-  },
-  link: {
-    color: Colors.BRIGHT_BLUE,
-    cursor: 'pointer',
-    textDecoration: 'none',
-  },
-})
+    error: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100%',
+    },
+    loading: {
+      height: 3,
+      marginBottom: -3,
+      background: theme.selectionPrimaryColor,
+      transformOrigin: '0% 50%',
+      animationName: [
+        {
+          from: {
+            transform: `scaleX(0)`,
+          },
+          to: {
+            transform: `scaleX(1)`,
+          },
+        },
+      ],
+      animationTimingFunction: 'cubic-bezier(0, 1, 0, 1)',
+      animationDuration: '30s',
+    },
+    root: {
+      width: '100vw',
+      height: '100vh',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      position: 'relative',
+      fontFamily: FontFamily.MONOSPACE,
+      lineHeight: '20px',
+      color: theme.fgPrimaryColor,
+    },
+    dragTargetRoot: {
+      cursor: 'copy',
+    },
+    dragTarget: {
+      boxSizing: 'border-box',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      border: `5px dashed ${theme.selectionPrimaryColor}`,
+      pointerEvents: 'none',
+    },
+    contentContainer: {
+      position: 'relative',
+      display: 'flex',
+      overflow: 'hidden',
+      flexDirection: 'column',
+      flex: 1,
+    },
+    landingContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flex: 1,
+    },
+    landingMessage: {
+      maxWidth: 600,
+    },
+    landingP: {
+      marginBottom: 16,
+    },
+    hide: {
+      display: 'none',
+    },
+    browseButtonContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    browseButton: {
+      marginBottom: 16,
+      height: 72,
+      flex: 1,
+      maxWidth: 256,
+      textAlign: 'center',
+      fontSize: FontSize.BIG_BUTTON,
+      lineHeight: '72px',
+      background: theme.selectionPrimaryColor,
+      color: theme.altFgPrimaryColor,
+      transition: `all ${Duration.HOVER_CHANGE} ease-in`,
+      ':hover': {
+        background: theme.selectionSecondaryColor,
+      },
+    },
+    link: {
+      color: theme.selectionPrimaryColor,
+      cursor: 'pointer',
+      textDecoration: 'none',
+      transition: `all ${Duration.HOVER_CHANGE} ease-in`,
+      ':hover': {
+        color: theme.selectionSecondaryColor,
+      },
+    },
+  }),
+)
