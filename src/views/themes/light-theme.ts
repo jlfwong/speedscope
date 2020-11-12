@@ -60,6 +60,7 @@ export const lightTheme: Theme = {
 
   weightColor: Colors.GREEN,
 
+  searchMatchTextColor: Colors.BLACK,
   searchMatchPrimaryColor: Colors.ORANGE,
   searchMatchSecondaryColor: Colors.YELLOW,
 

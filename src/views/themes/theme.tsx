@@ -21,6 +21,7 @@ export interface Theme {
 
   weightColor: string
 
+  searchMatchTextColor: string
   searchMatchPrimaryColor: string
   searchMatchSecondaryColor: string
 

@@ -16,8 +16,8 @@ enum Colors {
   BLUE = '#00769B',
   PALE_BLUE = '#004E75',
   GREEN = '#0F8A42',
-  LIGHT_BROWN = '#8A6D07',
-  BROWN = '#624406',
+  LIGHT_BROWN = '#D6AE24',
+  BROWN = '#A66F1C',
 }
 
 const C_0 = 0.2
@@ -60,6 +60,7 @@ export const darkTheme: Theme = {
 
   weightColor: Colors.GREEN,
 
+  searchMatchTextColor: Colors.DARKER_GRAY,
   searchMatchPrimaryColor: Colors.BROWN,
   searchMatchSecondaryColor: Colors.LIGHT_BROWN,
 
