@@ -1,3 +1,13 @@
+## [1.12.0] - 2020-11-12
+
+### Added
+
+- Dark mode! [[#323](https://github.com/jlfwong/speedscope/pull/323)]
+
+### Fixed
+
+- Fixed incorrect highlighting when search result overlaps "…" [[#326](https://github.com/jlfwong/speedscope/pull/326)]
+
 ## [1.11.1] - 2020-10-25
 
 ### Fixed
