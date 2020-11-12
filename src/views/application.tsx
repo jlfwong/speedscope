@@ -13,7 +13,7 @@ import {LeftHeavyFlamechartView, ChronoFlamechartView} from './flamechart-view-c
 import {CanvasContext} from '../gl/canvas-context'
 import {Toolbar} from './toolbar'
 import {importJavaScriptSourceMapSymbolRemapper} from '../lib/js-source-map'
-import { Theme, withTheme } from './themes/theme'
+import {Theme, withTheme} from './themes/theme'
 
 const importModule = import('../import')
 
@@ -564,7 +564,11 @@ export class Application extends StatelessComponent<ApplicationProps> {
         onDragLeave={this.onDragLeave}
         className={css(style.root, this.props.dragActive && style.dragTargetRoot)}
       >
-        <GLCanvas setGLCanvas={this.props.setGLCanvas} canvasContext={this.props.canvasContext} theme={this.props.theme} />
+        <GLCanvas
+          setGLCanvas={this.props.setGLCanvas}
+          canvasContext={this.props.canvasContext}
+          theme={this.props.theme}
+        />
         <Toolbar
           saveFile={this.saveFile}
           browseForFile={this.browseForFile}
@@ -577,112 +581,114 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 }
 
-const getStyle = withTheme((theme) => StyleSheet.create({
-  glCanvasView: {
-    position: 'absolute',
-    width: '100vw',
-    height: '100vh',
-    zIndex: -1,
-    pointerEvents: 'none',
-  },
-  error: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-  },
-  loading: {
-    height: 3,
-    marginBottom: -3,
-    background: theme.selectionPrimaryColor,
-    transformOrigin: '0% 50%',
-    animationName: [
-      {
-        from: {
-          transform: `scaleX(0)`,
+const getStyle = withTheme(theme =>
+  StyleSheet.create({
+    glCanvasView: {
+      position: 'absolute',
+      width: '100vw',
+      height: '100vh',
+      zIndex: -1,
+      pointerEvents: 'none',
+    },
+    error: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100%',
+    },
+    loading: {
+      height: 3,
+      marginBottom: -3,
+      background: theme.selectionPrimaryColor,
+      transformOrigin: '0% 50%',
+      animationName: [
+        {
+          from: {
+            transform: `scaleX(0)`,
+          },
+          to: {
+            transform: `scaleX(1)`,
+          },
         },
-        to: {
-          transform: `scaleX(1)`,
-        },
+      ],
+      animationTimingFunction: 'cubic-bezier(0, 1, 0, 1)',
+      animationDuration: '30s',
+    },
+    root: {
+      width: '100vw',
+      height: '100vh',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      position: 'relative',
+      fontFamily: FontFamily.MONOSPACE,
+      lineHeight: '20px',
+      color: theme.fgPrimaryColor,
+    },
+    dragTargetRoot: {
+      cursor: 'copy',
+    },
+    dragTarget: {
+      boxSizing: 'border-box',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      border: `5px dashed ${theme.selectionPrimaryColor}`,
+      pointerEvents: 'none',
+    },
+    contentContainer: {
+      position: 'relative',
+      display: 'flex',
+      overflow: 'hidden',
+      flexDirection: 'column',
+      flex: 1,
+    },
+    landingContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flex: 1,
+    },
+    landingMessage: {
+      maxWidth: 600,
+    },
+    landingP: {
+      marginBottom: 16,
+    },
+    hide: {
+      display: 'none',
+    },
+    browseButtonContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    browseButton: {
+      marginBottom: 16,
+      height: 72,
+      flex: 1,
+      maxWidth: 256,
+      textAlign: 'center',
+      fontSize: FontSize.BIG_BUTTON,
+      lineHeight: '72px',
+      background: theme.selectionPrimaryColor,
+      color: theme.altFgPrimaryColor,
+      transition: `all ${Duration.HOVER_CHANGE} ease-in`,
+      ':hover': {
+        background: theme.selectionSecondaryColor,
       },
-    ],
-    animationTimingFunction: 'cubic-bezier(0, 1, 0, 1)',
-    animationDuration: '30s',
-  },
-  root: {
-    width: '100vw',
-    height: '100vh',
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    position: 'relative',
-    fontFamily: FontFamily.MONOSPACE,
-    lineHeight: '20px',
-    color: theme.fgPrimaryColor
-  },
-  dragTargetRoot: {
-    cursor: 'copy',
-  },
-  dragTarget: {
-    boxSizing: 'border-box',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    border: `5px dashed ${theme.selectionPrimaryColor}`,
-    pointerEvents: 'none',
-  },
-  contentContainer: {
-    position: 'relative',
-    display: 'flex',
-    overflow: 'hidden',
-    flexDirection: 'column',
-    flex: 1,
-  },
-  landingContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-  },
-  landingMessage: {
-    maxWidth: 600,
-  },
-  landingP: {
-    marginBottom: 16,
-  },
-  hide: {
-    display: 'none',
-  },
-  browseButtonContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  browseButton: {
-    marginBottom: 16,
-    height: 72,
-    flex: 1,
-    maxWidth: 256,
-    textAlign: 'center',
-    fontSize: FontSize.BIG_BUTTON,
-    lineHeight: '72px',
-    background: theme.selectionPrimaryColor,
-    color: theme.altFgPrimaryColor,
-    transition: `all ${Duration.HOVER_CHANGE} ease-in`,
-    ':hover': {
-      background: theme.selectionSecondaryColor,
     },
-  },
-  link: {
-    color: theme.selectionPrimaryColor,
-    cursor: 'pointer',
-    textDecoration: 'none',
-    transition: `all ${Duration.HOVER_CHANGE} ease-in`,
-    ':hover': {
-      color: theme.selectionSecondaryColor,
+    link: {
+      color: theme.selectionPrimaryColor,
+      cursor: 'pointer',
+      textDecoration: 'none',
+      transition: `all ${Duration.HOVER_CHANGE} ease-in`,
+      ':hover': {
+        color: theme.selectionSecondaryColor,
+      },
     },
-  },
-}))
+  }),
+)

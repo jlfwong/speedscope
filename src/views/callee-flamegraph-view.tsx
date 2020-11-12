@@ -17,7 +17,7 @@ import {FlamechartWrapper} from './flamechart-wrapper'
 import {useAppSelector} from '../store'
 import {h} from 'preact'
 import {memo} from 'preact/compat'
-import { useTheme } from './themes/theme'
+import {useTheme} from './themes/theme'
 
 const getCalleeProfile = memoizeByShallowEquality<
   {

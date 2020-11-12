@@ -19,7 +19,7 @@ import {actions} from '../store/actions'
 import {memo} from 'preact/compat'
 import {ActiveProfileState} from '../store'
 import {FlamechartSearchContextProvider} from './flamechart-search-view'
-import { Theme, useTheme } from './themes/theme'
+import {Theme, useTheme} from './themes/theme'
 
 interface FlamechartSetters {
   setLogicalSpaceViewportSize: (logicalSpaceViewportSize: Vec2) => void

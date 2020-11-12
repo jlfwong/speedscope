@@ -12,8 +12,8 @@ import {useAppSelector, ActiveProfileState} from '../store'
 import {memo} from 'preact/compat'
 import {useCallback, useMemo, useContext} from 'preact/hooks'
 import {SandwichViewContext} from './sandwich-view'
-import { Color } from '../lib/color'
-import { useTheme, withTheme } from './themes/theme'
+import {Color} from '../lib/color'
+import {useTheme, withTheme} from './themes/theme'
 
 export enum SortField {
   SYMBOL_NAME,
@@ -54,8 +54,10 @@ function SortIcon(props: SortIconProps) {
   const style = getStyle(theme)
 
   const {activeDirection} = props
-  const upFill = activeDirection === SortDirection.ASCENDING ? theme.fgPrimaryColor : theme.fgSecondaryColor
-  const downFill = activeDirection === SortDirection.DESCENDING ? theme.fgPrimaryColor : theme.fgSecondaryColor
+  const upFill =
+    activeDirection === SortDirection.ASCENDING ? theme.fgPrimaryColor : theme.fgSecondaryColor
+  const downFill =
+    activeDirection === SortDirection.DESCENDING ? theme.fgPrimaryColor : theme.fgSecondaryColor
 
   return (
     <svg
@@ -262,7 +264,7 @@ export const ProfileTableView = memo(
         searchIsActive,
         searchQuery,
         style.emptyState,
-        style.tableView
+        style.tableView,
       ],
     )
 
@@ -331,96 +333,98 @@ export const ProfileTableView = memo(
   },
 )
 
-const getStyle = withTheme(theme => StyleSheet.create({
-  profileTableView: {
-    background: theme.bgPrimaryColor,
-    height: '100%',
-  },
-  scrollView: {
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    flexGrow: 1,
-    '::-webkit-scrollbar': {
+const getStyle = withTheme(theme =>
+  StyleSheet.create({
+    profileTableView: {
       background: theme.bgPrimaryColor,
+      height: '100%',
     },
-    '::-webkit-scrollbar-thumb': {
-      background: theme.fgSecondaryColor,
-      borderRadius: 20,
-      border: `3px solid ${theme.bgPrimaryColor}`,
-      ':hover': {
-        background: theme.fgPrimaryColor,
+    scrollView: {
+      overflowY: 'auto',
+      overflowX: 'hidden',
+      flexGrow: 1,
+      '::-webkit-scrollbar': {
+        background: theme.bgPrimaryColor,
+      },
+      '::-webkit-scrollbar-thumb': {
+        background: theme.fgSecondaryColor,
+        borderRadius: 20,
+        border: `3px solid ${theme.bgPrimaryColor}`,
+        ':hover': {
+          background: theme.fgPrimaryColor,
+        },
       },
     },
-  },
-  tableView: {
-    width: '100%',
-    fontSize: FontSize.LABEL,
-    background: theme.bgPrimaryColor,
-  },
-  tableHeader: {
-    borderBottom: `2px solid ${theme.bgSecondaryColor}`,
-    textAlign: 'left',
-    color: theme.fgPrimaryColor,
-    userSelect: 'none',
-  },
-  sortIcon: {
-    position: 'relative',
-    top: 1,
-    marginRight: Sizes.FRAME_HEIGHT / 4,
-  },
-  tableRow: {
-    background: theme.bgPrimaryColor,
-    height: Sizes.FRAME_HEIGHT,
-  },
-  tableRowEven: {
-    background: theme.bgSecondaryColor,
-  },
-  tableRowSelected: {
-    background: theme.selectionPrimaryColor,
-    color: theme.altFgPrimaryColor,
-  },
-  numericCell: {
-    textOverflow: 'ellipsis',
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    position: 'relative',
-    textAlign: 'right',
-    paddingRight: Sizes.FRAME_HEIGHT,
-    width: 6 * Sizes.FRAME_HEIGHT,
-    minWidth: 6 * Sizes.FRAME_HEIGHT,
-  },
-  textCell: {
-    textOverflow: 'ellipsis',
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    width: '100%',
-    maxWidth: 0,
-  },
-  hBarDisplay: {
-    position: 'absolute',
-    background: Color.fromCSSHex(theme.weightColor).withAlpha(0.2).toCSS(),
-    bottom: 2,
-    height: 2,
-    width: `calc(100% - ${2 * Sizes.FRAME_HEIGHT}px)`,
-    right: Sizes.FRAME_HEIGHT,
-  },
-  hBarDisplayFilled: {
-    height: '100%',
-    position: 'absolute',
-    background: theme.weightColor,
-    right: 0,
-  },
-  matched: {
-    borderBottom: `2px solid ${theme.fgPrimaryColor}`,
-  },
-  matchedSelected: {
-    borderColor: theme.altFgPrimaryColor,
-  },
-  emptyState: {
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
-}))
+    tableView: {
+      width: '100%',
+      fontSize: FontSize.LABEL,
+      background: theme.bgPrimaryColor,
+    },
+    tableHeader: {
+      borderBottom: `2px solid ${theme.bgSecondaryColor}`,
+      textAlign: 'left',
+      color: theme.fgPrimaryColor,
+      userSelect: 'none',
+    },
+    sortIcon: {
+      position: 'relative',
+      top: 1,
+      marginRight: Sizes.FRAME_HEIGHT / 4,
+    },
+    tableRow: {
+      background: theme.bgPrimaryColor,
+      height: Sizes.FRAME_HEIGHT,
+    },
+    tableRowEven: {
+      background: theme.bgSecondaryColor,
+    },
+    tableRowSelected: {
+      background: theme.selectionPrimaryColor,
+      color: theme.altFgPrimaryColor,
+    },
+    numericCell: {
+      textOverflow: 'ellipsis',
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+      position: 'relative',
+      textAlign: 'right',
+      paddingRight: Sizes.FRAME_HEIGHT,
+      width: 6 * Sizes.FRAME_HEIGHT,
+      minWidth: 6 * Sizes.FRAME_HEIGHT,
+    },
+    textCell: {
+      textOverflow: 'ellipsis',
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+      width: '100%',
+      maxWidth: 0,
+    },
+    hBarDisplay: {
+      position: 'absolute',
+      background: Color.fromCSSHex(theme.weightColor).withAlpha(0.2).toCSS(),
+      bottom: 2,
+      height: 2,
+      width: `calc(100% - ${2 * Sizes.FRAME_HEIGHT}px)`,
+      right: Sizes.FRAME_HEIGHT,
+    },
+    hBarDisplayFilled: {
+      height: '100%',
+      position: 'absolute',
+      background: theme.weightColor,
+      right: 0,
+    },
+    matched: {
+      borderBottom: `2px solid ${theme.fgPrimaryColor}`,
+    },
+    matchedSelected: {
+      borderColor: theme.altFgPrimaryColor,
+    },
+    emptyState: {
+      textAlign: 'center',
+      fontWeight: 'bold',
+    },
+  }),
+)
 
 interface ProfileTableViewContainerProps {
   activeProfileState: ActiveProfileState

@@ -15,7 +15,7 @@ import {useAppSelector, ActiveProfileState} from '../store'
 import {sortBy} from '../lib/utils'
 import {ProfileSearchContext} from './search-view'
 import {FuzzyMatch} from '../lib/fuzzy-find'
-import { Theme, useTheme, withTheme } from './themes/theme'
+import {Theme, useTheme, withTheme} from './themes/theme'
 
 interface SandwichViewProps {
   selectedFrame: Frame | null
@@ -88,46 +88,48 @@ class SandwichView extends StatelessComponent<SandwichViewProps> {
   }
 }
 
-const getStyle = withTheme(theme => StyleSheet.create({
-  tableView: {
-    position: 'relative',
-    flex: 1,
-  },
-  panZoomViewWraper: {
-    flex: 1,
-  },
-  flamechartLabelParent: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'flex-end',
-    alignItems: 'flex-start',
-    fontSize: FontSize.TITLE,
-    width: FontSize.TITLE * 1.2,
-    borderRight: `1px solid ${theme.fgSecondaryColor}`,
-  },
-  flamechartLabelParentBottom: {
-    justifyContent: 'flex-start',
-  },
-  flamechartLabel: {
-    transform: 'rotate(-90deg)',
-    transformOrigin: '50% 50% 0',
-    width: FontSize.TITLE * 1.2,
-    flexShrink: 1,
-  },
-  flamechartLabelBottom: {
-    transform: 'rotate(-90deg)',
-    display: 'flex',
-    justifyContent: 'flex-end',
-  },
-  callersAndCallees: {
-    flex: 1,
-    borderLeft: `${Sizes.SEPARATOR_HEIGHT}px solid ${theme.fgSecondaryColor}`,
-  },
-  divider: {
-    height: 2,
-    background: theme.fgSecondaryColor,
-  },
-}))
+const getStyle = withTheme(theme =>
+  StyleSheet.create({
+    tableView: {
+      position: 'relative',
+      flex: 1,
+    },
+    panZoomViewWraper: {
+      flex: 1,
+    },
+    flamechartLabelParent: {
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'flex-end',
+      alignItems: 'flex-start',
+      fontSize: FontSize.TITLE,
+      width: FontSize.TITLE * 1.2,
+      borderRight: `1px solid ${theme.fgSecondaryColor}`,
+    },
+    flamechartLabelParentBottom: {
+      justifyContent: 'flex-start',
+    },
+    flamechartLabel: {
+      transform: 'rotate(-90deg)',
+      transformOrigin: '50% 50% 0',
+      width: FontSize.TITLE * 1.2,
+      flexShrink: 1,
+    },
+    flamechartLabelBottom: {
+      transform: 'rotate(-90deg)',
+      display: 'flex',
+      justifyContent: 'flex-end',
+    },
+    callersAndCallees: {
+      flex: 1,
+      borderLeft: `${Sizes.SEPARATOR_HEIGHT}px solid ${theme.fgSecondaryColor}`,
+    },
+    divider: {
+      height: 2,
+      background: theme.fgSecondaryColor,
+    },
+  }),
+)
 
 interface SandwichViewContainerProps {
   activeProfileState: ActiveProfileState

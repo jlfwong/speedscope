@@ -8,9 +8,9 @@ import {ProfileSelect} from './profile-select'
 import {ProfileGroupState} from '../store/profiles-state'
 import {Profile} from '../lib/profile'
 import {objectsHaveShallowEquality} from '../lib/utils'
-import { colorSchemeToString, nextColorScheme, useTheme, withTheme } from './themes/theme'
-import { useActionCreator } from '../lib/preact-redux'
-import { actions } from '../store/actions'
+import {colorSchemeToString, nextColorScheme, useTheme, withTheme} from './themes/theme'
+import {useActionCreator} from '../lib/preact-redux'
+import {actions} from '../store/actions'
 
 interface ToolbarProps extends ApplicationProps {
   browseForFile(): void
@@ -216,76 +216,78 @@ export function Toolbar(props: ToolbarProps) {
   )
 }
 
-const getStyle = withTheme(theme => StyleSheet.create({
-  toolbar: {
-    height: Sizes.TOOLBAR_HEIGHT,
-    flexShrink: 0,
-    background: theme.altBgPrimaryColor,
-    color: theme.altFgPrimaryColor,
-    textAlign: 'center',
-    fontFamily: FontFamily.MONOSPACE,
-    fontSize: FontSize.TITLE,
-    lineHeight: `${Sizes.TOOLBAR_TAB_HEIGHT}px`,
-    userSelect: 'none',
-  },
-  toolbarLeft: {
-    position: 'absolute',
-    height: Sizes.TOOLBAR_HEIGHT,
-    overflow: 'hidden',
-    top: 0,
-    left: 0,
-    marginRight: 2,
-    textAlign: 'left',
-  },
-  toolbarCenter: {
-    paddingTop: 1,
-    height: Sizes.TOOLBAR_HEIGHT,
-  },
-  toolbarRight: {
-    height: Sizes.TOOLBAR_HEIGHT,
-    overflow: 'hidden',
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    marginRight: 2,
-    textAlign: 'right',
-  },
-  toolbarProfileIndex: {
-    color: theme.altFgSecondaryColor,
-  },
-  toolbarTab: {
-    background: theme.altBgSecondaryColor,
-    marginTop: Sizes.SEPARATOR_HEIGHT,
-    height: Sizes.TOOLBAR_TAB_HEIGHT,
-    lineHeight: `${Sizes.TOOLBAR_TAB_HEIGHT}px`,
-    paddingLeft: 2,
-    paddingRight: 8,
-    display: 'inline-block',
-    marginLeft: 2,
-    transition: `all ${Duration.HOVER_CHANGE} ease-in`,
-    ':hover': {
-      background: theme.selectionSecondaryColor,
+const getStyle = withTheme(theme =>
+  StyleSheet.create({
+    toolbar: {
+      height: Sizes.TOOLBAR_HEIGHT,
+      flexShrink: 0,
+      background: theme.altBgPrimaryColor,
+      color: theme.altFgPrimaryColor,
+      textAlign: 'center',
+      fontFamily: FontFamily.MONOSPACE,
+      fontSize: FontSize.TITLE,
+      lineHeight: `${Sizes.TOOLBAR_TAB_HEIGHT}px`,
+      userSelect: 'none',
     },
-  },
-  toolbarTabActive: {
-    background: theme.selectionPrimaryColor,
-    ':hover': {
+    toolbarLeft: {
+      position: 'absolute',
+      height: Sizes.TOOLBAR_HEIGHT,
+      overflow: 'hidden',
+      top: 0,
+      left: 0,
+      marginRight: 2,
+      textAlign: 'left',
+    },
+    toolbarCenter: {
+      paddingTop: 1,
+      height: Sizes.TOOLBAR_HEIGHT,
+    },
+    toolbarRight: {
+      height: Sizes.TOOLBAR_HEIGHT,
+      overflow: 'hidden',
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      marginRight: 2,
+      textAlign: 'right',
+    },
+    toolbarProfileIndex: {
+      color: theme.altFgSecondaryColor,
+    },
+    toolbarTab: {
+      background: theme.altBgSecondaryColor,
+      marginTop: Sizes.SEPARATOR_HEIGHT,
+      height: Sizes.TOOLBAR_TAB_HEIGHT,
+      lineHeight: `${Sizes.TOOLBAR_TAB_HEIGHT}px`,
+      paddingLeft: 2,
+      paddingRight: 8,
+      display: 'inline-block',
+      marginLeft: 2,
+      transition: `all ${Duration.HOVER_CHANGE} ease-in`,
+      ':hover': {
+        background: theme.selectionSecondaryColor,
+      },
+    },
+    toolbarTabActive: {
       background: theme.selectionPrimaryColor,
+      ':hover': {
+        background: theme.selectionPrimaryColor,
+      },
     },
-  },
-  toolbarTabColorSchemeToggle: {
-    display: 'inline-block',
-    textAlign: 'center',
-    minWidth: '50px',
-  },
-  emoji: {
-    display: 'inline-block',
-    verticalAlign: 'middle',
-    paddingTop: '0px',
-    marginRight: '0.3em',
-  },
-  noLinkStyle: {
-    textDecoration: 'none',
-    color: 'inherit',
-  },
-}))
+    toolbarTabColorSchemeToggle: {
+      display: 'inline-block',
+      textAlign: 'center',
+      minWidth: '50px',
+    },
+    emoji: {
+      display: 'inline-block',
+      verticalAlign: 'middle',
+      paddingTop: '0px',
+      marginRight: '0.3em',
+    },
+    noLinkStyle: {
+      textDecoration: 'none',
+      color: 'inherit',
+    },
+  }),
+)

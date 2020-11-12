@@ -2,7 +2,7 @@ import {h, render} from 'preact'
 import {createAppStore} from './store'
 import {ApplicationContainer} from './views/application-container'
 import {Provider} from './lib/preact-redux'
-import { ThemeProvider } from './views/themes/theme'
+import {ThemeProvider} from './views/themes/theme'
 
 console.log(`speedscope v${require('../package.json').version}`)
 

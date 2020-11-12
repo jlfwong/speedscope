@@ -7,8 +7,8 @@ import {getFlamechartStyle} from './flamechart-style'
 import {FontFamily, FontSize, Sizes, commonStyle} from './style'
 import {CanvasContext} from '../gl/canvas-context'
 import {cachedMeasureTextWidth} from '../lib/text-utils'
-import { Color } from '../lib/color'
-import { Theme } from './themes/theme'
+import {Color} from '../lib/color'
+import {Theme} from './themes/theme'
 
 interface FlamechartMinimapViewProps {
   theme: Theme

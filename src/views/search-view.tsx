@@ -8,7 +8,7 @@ import {Profile} from '../lib/profile'
 import {useActiveProfileState, useAppSelector} from '../store'
 import {useActionCreator} from '../lib/preact-redux'
 import {actions} from '../store/actions'
-import { useTheme, withTheme } from './themes/theme'
+import {useTheme, withTheme} from './themes/theme'
 
 function stopPropagation(ev: Event) {
   ev.stopPropagation()
@@ -180,61 +180,63 @@ export const SearchView = memo(
   },
 )
 
-const getStyle = withTheme(theme => StyleSheet.create({
-  searchView: {
-    position: 'absolute',
-    top: 0,
-    right: 10,
-    height: Sizes.TOOLBAR_HEIGHT,
-    width: 16 * 13,
-    borderWidth: 2,
-    borderColor: theme.altFgPrimaryColor,
-    borderStyle: 'solid',
-    fontSize: FontSize.LABEL,
-    boxSizing: 'border-box',
-    background: theme.altBgSecondaryColor,
-    color: theme.altFgPrimaryColor,
-    display: 'flex',
-    alignItems: 'center',
-  },
-  inputContainer: {
-    flexShrink: 1,
-    flexGrow: 1,
-    display: 'flex',
-  },
-  input: {
-    width: '100%',
-    border: 'none',
-    background: 'none',
-    fontSize: FontSize.LABEL,
-    lineHeight: `${Sizes.TOOLBAR_HEIGHT}px`,
-    color: theme.altFgPrimaryColor,
-    ':focus': {
-      border: 'none',
-      outline: 'none',
-    },
-    '::selection': {
+const getStyle = withTheme(theme =>
+  StyleSheet.create({
+    searchView: {
+      position: 'absolute',
+      top: 0,
+      right: 10,
+      height: Sizes.TOOLBAR_HEIGHT,
+      width: 16 * 13,
+      borderWidth: 2,
+      borderColor: theme.altFgPrimaryColor,
+      borderStyle: 'solid',
+      fontSize: FontSize.LABEL,
+      boxSizing: 'border-box',
+      background: theme.altBgSecondaryColor,
       color: theme.altFgPrimaryColor,
-      background: theme.selectionPrimaryColor,
+      display: 'flex',
+      alignItems: 'center',
     },
-  },
-  resultCount: {
-    verticalAlign: 'middle',
-  },
-  icon: {
-    flexShrink: 0,
-    verticalAlign: 'middle',
-    height: '100%',
-    margin: '0px 2px 0px 2px',
-    fontSize: FontSize.LABEL,
-  },
-  button: {
-    display: 'inline',
-    background: 'none',
-    border: 'none',
-    padding: 0,
-    ':focus': {
-      outline: 'none',
+    inputContainer: {
+      flexShrink: 1,
+      flexGrow: 1,
+      display: 'flex',
     },
-  },
-}))
+    input: {
+      width: '100%',
+      border: 'none',
+      background: 'none',
+      fontSize: FontSize.LABEL,
+      lineHeight: `${Sizes.TOOLBAR_HEIGHT}px`,
+      color: theme.altFgPrimaryColor,
+      ':focus': {
+        border: 'none',
+        outline: 'none',
+      },
+      '::selection': {
+        color: theme.altFgPrimaryColor,
+        background: theme.selectionPrimaryColor,
+      },
+    },
+    resultCount: {
+      verticalAlign: 'middle',
+    },
+    icon: {
+      flexShrink: 0,
+      verticalAlign: 'middle',
+      height: '100%',
+      margin: '0px 2px 0px 2px',
+      fontSize: FontSize.LABEL,
+    },
+    button: {
+      display: 'inline',
+      background: 'none',
+      border: 'none',
+      padding: 0,
+      ':focus': {
+        outline: 'none',
+      },
+    },
+  }),
+)

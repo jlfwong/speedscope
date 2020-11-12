@@ -2,8 +2,8 @@ import {h, ComponentChildren, createContext} from 'preact'
 import {useCallback, useContext, useEffect, useState} from 'preact/hooks'
 import {Color} from '../../lib/color'
 import {memoizeByReference} from '../../lib/utils'
-import { ColorScheme, useAppSelector } from '../../store'
-import { darkTheme } from './dark-theme'
+import {ColorScheme, useAppSelector} from '../../store'
+import {darkTheme} from './dark-theme'
 import {lightTheme} from './light-theme'
 
 export interface Theme {
@@ -105,7 +105,6 @@ function getTheme(colorScheme: ColorScheme, systemPrefersDarkMode: boolean) {
     }
   }
 }
-
 
 export function ThemeProvider(props: {children: ComponentChildren}) {
   const [systemPrefersDarkMode, setSystemPrefersDarkMode] = useState(

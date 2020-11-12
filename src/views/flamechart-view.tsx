@@ -15,7 +15,7 @@ import {FlamechartViewProps} from './flamechart-view-container'
 import {StatelessComponent} from '../lib/typed-redux'
 import {ProfileSearchContext} from './search-view'
 import {FlamechartSearchView} from './flamechart-search-view'
-import { getFlamechartStyle } from './flamechart-style'
+import {getFlamechartStyle} from './flamechart-style'
 
 export class FlamechartView extends StatelessComponent<FlamechartViewProps> {
   private getStyle() {

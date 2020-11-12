@@ -5,7 +5,7 @@ import {StyleSheet, css} from 'aphrodite'
 import {ZIndex, Sizes} from './style'
 import {fuzzyMatchStrings} from '../lib/fuzzy-find'
 import {sortBy} from '../lib/utils'
-import { useTheme, withTheme } from './themes/theme'
+import {useTheme, withTheme} from './themes/theme'
 
 interface ProfileSelectRowProps {
   setProfileIndexToView: (profileIndex: number) => void
@@ -21,7 +21,11 @@ interface ProfileSelectRowProps {
   closeProfileSelect: () => void
 }
 
-function highlightRanges(text: string, ranges: [number, number][], highlightedClassName: string): JSX.Element {
+function highlightRanges(
+  text: string,
+  ranges: [number, number][],
+  highlightedClassName: string,
+): JSX.Element {
   const spans: ComponentChild[] = []
   let last = 0
   for (let range of ranges) {
@@ -87,7 +91,10 @@ export function ProfileSelectRow({
         hovered && style.profileRowHovered,
       )}
     >
-      <span className={css(style.profileIndex, selected && style.profileIndexSelected)} style={{width: maxDigits + 'em'}}>
+      <span
+        className={css(style.profileIndex, selected && style.profileIndexSelected)}
+        style={{width: maxDigits + 'em'}}
+      >
         {indexInProfileGroup + 1}:
       </span>{' '}
       {highlighted}
@@ -345,101 +352,103 @@ export function ProfileSelect({
 
 const paddingHeight = 10
 
-const getStyle = withTheme(theme => StyleSheet.create({
-  filterInputContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    padding: 5,
-    alignItems: 'stretch',
-  },
-  filterInput: {
-    color: theme.altFgPrimaryColor,
-    background: theme.altBgSecondaryColor,
-    borderRadius: 5,
-    padding: 5,
-    ':focus': {
-      border: 'none',
-      outline: 'none',
+const getStyle = withTheme(theme =>
+  StyleSheet.create({
+    filterInputContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      padding: 5,
+      alignItems: 'stretch',
     },
-    '::selection': {
+    filterInput: {
       color: theme.altFgPrimaryColor,
-      background: theme.selectionPrimaryColor,
-    },
-  },
-  caret: {
-    width: 0,
-    height: 0,
-    borderLeft: '5px solid transparent',
-    borderRight: '5px solid transparent',
-    borderBottom: '5px solid black',
-  },
-  highlighted: {
-    background: theme.selectionSecondaryColor,
-  },
-  padding: {
-    height: paddingHeight,
-    background: theme.altBgPrimaryColor,
-  },
-  profileRow: {
-    height: Sizes.FRAME_HEIGHT - 2,
-    border: '1px solid transparent',
-    textAlign: 'left',
-    paddingLeft: 10,
-    paddingRight: 10,
-    background: theme.altBgPrimaryColor,
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    textOverflow: 'ellipsis',
-    cursor: 'pointer',
-  },
-  profileRowHovered: {
-    border: `1px solid ${theme.selectionPrimaryColor}`,
-  },
-  profileRowSelected: {
-    background: theme.selectionPrimaryColor,
-  },
-  profileRowEven: {
-    background: theme.altBgSecondaryColor,
-  },
-  profileSelectScrolling: {
-    maxHeight: `min(calc(100vh - ${Sizes.TOOLBAR_HEIGHT - 2 * paddingHeight}px), ${
-      20 * Sizes.FRAME_HEIGHT
-    }px)`,
-    overflow: 'auto',
-    '::-webkit-scrollbar': {
-      background: theme.altBgPrimaryColor,
-    },
-    '::-webkit-scrollbar-thumb': {
-      background: theme.altFgSecondaryColor,
-      borderRadius: 20,
-      border: `3px solid ${theme.altBgPrimaryColor}`,
-      ':hover': {
-        background: theme.altBgPrimaryColor,
+      background: theme.altBgSecondaryColor,
+      borderRadius: 5,
+      padding: 5,
+      ':focus': {
+        border: 'none',
+        outline: 'none',
+      },
+      '::selection': {
+        color: theme.altFgPrimaryColor,
+        background: theme.selectionPrimaryColor,
       },
     },
-  },
-  profileSelectBox: {
-    width: '100%',
-    paddingBottom: 10,
-    background: theme.altBgPrimaryColor,
-    color: theme.altFgPrimaryColor,
-  },
-  profileSelectOuter: {
-    width: '100%',
-    maxWidth: 480,
-    margin: '0 auto',
-    position: 'relative',
-    zIndex: ZIndex.PROFILE_SELECT,
-    alignItems: 'center',
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  profileIndex: {
-    textAlign: 'right',
-    display: 'inline-block',
-    color: theme.altFgSecondaryColor,
-  },
-  profileIndexSelected: {
-    color: theme.altFgPrimaryColor,
-  }
-}))
+    caret: {
+      width: 0,
+      height: 0,
+      borderLeft: '5px solid transparent',
+      borderRight: '5px solid transparent',
+      borderBottom: '5px solid black',
+    },
+    highlighted: {
+      background: theme.selectionSecondaryColor,
+    },
+    padding: {
+      height: paddingHeight,
+      background: theme.altBgPrimaryColor,
+    },
+    profileRow: {
+      height: Sizes.FRAME_HEIGHT - 2,
+      border: '1px solid transparent',
+      textAlign: 'left',
+      paddingLeft: 10,
+      paddingRight: 10,
+      background: theme.altBgPrimaryColor,
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+      textOverflow: 'ellipsis',
+      cursor: 'pointer',
+    },
+    profileRowHovered: {
+      border: `1px solid ${theme.selectionPrimaryColor}`,
+    },
+    profileRowSelected: {
+      background: theme.selectionPrimaryColor,
+    },
+    profileRowEven: {
+      background: theme.altBgSecondaryColor,
+    },
+    profileSelectScrolling: {
+      maxHeight: `min(calc(100vh - ${Sizes.TOOLBAR_HEIGHT - 2 * paddingHeight}px), ${
+        20 * Sizes.FRAME_HEIGHT
+      }px)`,
+      overflow: 'auto',
+      '::-webkit-scrollbar': {
+        background: theme.altBgPrimaryColor,
+      },
+      '::-webkit-scrollbar-thumb': {
+        background: theme.altFgSecondaryColor,
+        borderRadius: 20,
+        border: `3px solid ${theme.altBgPrimaryColor}`,
+        ':hover': {
+          background: theme.altBgPrimaryColor,
+        },
+      },
+    },
+    profileSelectBox: {
+      width: '100%',
+      paddingBottom: 10,
+      background: theme.altBgPrimaryColor,
+      color: theme.altFgPrimaryColor,
+    },
+    profileSelectOuter: {
+      width: '100%',
+      maxWidth: 480,
+      margin: '0 auto',
+      position: 'relative',
+      zIndex: ZIndex.PROFILE_SELECT,
+      alignItems: 'center',
+      display: 'flex',
+      flexDirection: 'column',
+    },
+    profileIndex: {
+      textAlign: 'right',
+      display: 'inline-block',
+      color: theme.altFgSecondaryColor,
+    },
+    profileIndexSelected: {
+      color: theme.altFgPrimaryColor,
+    },
+  }),
+)

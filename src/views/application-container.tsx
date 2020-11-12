@@ -6,7 +6,7 @@ import {useActionCreator} from '../lib/preact-redux'
 import {memo} from 'preact/compat'
 import {useAppSelector, useActiveProfileState} from '../store'
 import {ProfileSearchContextProvider} from './search-view'
-import { useTheme } from './themes/theme'
+import {useTheme} from './themes/theme'
 
 const {
   setLoading,

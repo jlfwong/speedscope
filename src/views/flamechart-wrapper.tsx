@@ -8,7 +8,7 @@ import {noop, formatPercent} from '../lib/utils'
 import {Hovertip} from './hovertip'
 import {FlamechartViewProps} from './flamechart-view-container'
 import {StatelessComponent} from '../lib/typed-redux'
-import { withTheme } from './themes/theme'
+import {withTheme} from './themes/theme'
 
 export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
   private clampViewportToFlamegraph(viewportRect: Rect) {
@@ -91,8 +91,10 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
   }
 }
 
-export const getStyle = withTheme(theme => StyleSheet.create({
-  hoverCount: {
-    color: theme.weightColor,
-  },
-}))
+export const getStyle = withTheme(theme =>
+  StyleSheet.create({
+    hoverCount: {
+      color: theme.weightColor,
+    },
+  }),
+)

@@ -17,7 +17,7 @@ import {useAppSelector} from '../store'
 import {FlamechartWrapper} from './flamechart-wrapper'
 import {h} from 'preact'
 import {memo} from 'preact/compat'
-import { useTheme } from './themes/theme'
+import {useTheme} from './themes/theme'
 
 const getInvertedCallerProfile = memoizeByShallowEquality(
   ({

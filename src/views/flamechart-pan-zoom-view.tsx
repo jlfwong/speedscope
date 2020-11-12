@@ -15,8 +15,8 @@ import {h, Component} from 'preact'
 import {css} from 'aphrodite'
 import {ProfileSearchResults} from '../lib/profile-search'
 import {BatchCanvasTextRenderer, BatchCanvasRectRenderer} from '../lib/canvas-2d-batch-renderers'
-import { Color } from '../lib/color'
-import { Theme } from './themes/theme'
+import {Color} from '../lib/color'
+import {Theme} from './themes/theme'
 
 interface FlamechartFrameLabel {
   configSpaceBounds: Rect
@@ -350,7 +350,10 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     matchedFrameBatch.fill(ctx, theme.searchMatchPrimaryColor)
     matchedTextHighlightBatch.fill(ctx, theme.searchMatchSecondaryColor)
     fadedLabelBatch.fill(ctx, theme.fgSecondaryColor)
-    labelBatch.fill(ctx, this.props.searchResults != null ? theme.searchMatchTextColor : theme.fgPrimaryColor)
+    labelBatch.fill(
+      ctx,
+      this.props.searchResults != null ? theme.searchMatchTextColor : theme.fgPrimaryColor,
+    )
     indirectlySelectedOutlineBatch.stroke(ctx, theme.selectionSecondaryColor, frameOutlineWidth)
     directlySelectedOutlineBatch.stroke(ctx, theme.selectionPrimaryColor, frameOutlineWidth)
 

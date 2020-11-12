@@ -5,7 +5,7 @@ import {formatPercent} from '../lib/utils'
 import {Frame, CallTreeNode} from '../lib/profile'
 import {ColorChit} from './color-chit'
 import {Flamechart} from '../lib/flamechart'
-import { useTheme } from './themes/theme'
+import {useTheme} from './themes/theme'
 
 interface StatisticsTableProps {
   title: string
