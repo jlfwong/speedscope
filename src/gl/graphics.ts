@@ -169,6 +169,14 @@ export namespace Graphics {
     setUnpremultipliedBlendState() {
       this.setBlendState(BlendOperation.SOURCE_ALPHA, BlendOperation.INVERSE_SOURCE_ALPHA)
     }
+
+    protected resizeEventHandlers = new Set<() => void>()
+    addAfterResizeEventHandler(callback: () => void): void {
+      this.resizeEventHandlers.add(callback)
+    }
+    removeAfterResizeEventHandler(callback: () => void): void {
+      this.resizeEventHandlers.delete(callback)
+    }
   }
 
   export interface Material {
@@ -485,6 +493,8 @@ export namespace WebGL {
       this.setViewport(0, 0, widthInPixels, heightInPixels)
       this._width = widthInPixels
       this._height = heightInPixels
+
+      this.resizeEventHandlers.forEach(cb => cb())
     }
 
     clear(color: Graphics.Color) {

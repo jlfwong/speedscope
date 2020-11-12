@@ -25,6 +25,10 @@ export class CanvasContext {
     this.flamechartColorPassRenderer = new FlamechartColorPassRenderer(this.gl, theme)
     this.theme = theme
 
+    // Whenever the canvas is resized, draw immediately. This prevents
+    // flickering during resizing.
+    this.gl.addAfterResizeEventHandler(this.onBeforeFrame)
+
     const webGLInfo = this.gl.getWebGLInfo()
     if (webGLInfo) {
       console.log(

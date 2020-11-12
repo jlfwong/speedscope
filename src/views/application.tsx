@@ -11,10 +11,8 @@ import {ApplicationState, ViewMode, canUseXHR, ActiveProfileState} from '../stor
 import {StatelessComponent} from '../lib/typed-redux'
 import {LeftHeavyFlamechartView, ChronoFlamechartView} from './flamechart-view-container'
 import {CanvasContext} from '../gl/canvas-context'
-import {Graphics} from '../gl/graphics'
 import {Toolbar} from './toolbar'
 import {importJavaScriptSourceMapSymbolRemapper} from '../lib/js-source-map'
-import { Color } from '../lib/color'
 import { Theme, withTheme } from './themes/theme'
 
 const importModule = import('../import')
@@ -102,8 +100,6 @@ export class GLCanvas extends StatelessComponent<GLCanvasProps> {
       widthInAppUnits,
       heightInAppUnits,
     )
-    const color = Color.fromCSSHex(this.props.theme.bgPrimaryColor)
-    this.props.canvasContext.gl.clear(new Graphics.Color(color.r, color.g, color.b, color.a))
   }
 
   onWindowResize = () => {
