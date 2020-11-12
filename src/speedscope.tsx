@@ -20,11 +20,11 @@ const store = lastStore ? createAppStore(lastStore.getState()) : createAppStore(
 ;(window as any)['store'] = store
 
 render(
-  <ThemeProvider>
-    <Provider store={store}>
-        <ApplicationContainer />
-    </Provider>
-  </ThemeProvider>,
+  <Provider store={store}>
+    <ThemeProvider>
+      <ApplicationContainer />
+    </ThemeProvider>
+  </Provider>,
   document.body,
   document.body.lastElementChild || undefined,
 )

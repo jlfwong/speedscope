@@ -1,7 +1,7 @@
 import {actionCreator} from '../lib/typed-redux'
 import {CallTreeNode, Frame, ProfileGroup} from '../lib/profile'
 import {SortMethod} from '../views/profile-table-view'
-import {ViewMode} from '.'
+import {ColorScheme, ViewMode} from '.'
 import {FlamechartID} from './flamechart-view-state'
 import {Rect, Vec2} from '../lib/math'
 import {HashParams} from '../lib/hash-params'
@@ -19,6 +19,7 @@ export namespace actions {
   export const setLoading = actionCreator<boolean>('setLoading')
   export const setError = actionCreator<boolean>('setError')
   export const setHashParams = actionCreator<HashParams>('setHashParams')
+  export const setColorScheme = actionCreator<ColorScheme>('setColorScheme')
 
   export namespace sandwichView {
     export const setTableSortMethod = actionCreator<SortMethod>('sandwichView.setTableSortMethod')

@@ -1,5 +1,5 @@
 import {ApplicationProps} from './application'
-import {ViewMode} from '../store'
+import {useAppSelector, ViewMode} from '../store'
 import {h, JSX, Fragment} from 'preact'
 import {useCallback, useState, useEffect} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
@@ -8,7 +8,9 @@ import {ProfileSelect} from './profile-select'
 import {ProfileGroupState} from '../store/profiles-state'
 import {Profile} from '../lib/profile'
 import {objectsHaveShallowEquality} from '../lib/utils'
-import { useTheme, withTheme } from './themes/theme'
+import { colorSchemeToString, nextColorScheme, useTheme, withTheme } from './themes/theme'
+import { useActionCreator } from '../lib/preact-redux'
+import { actions } from '../store/actions'
 
 interface ToolbarProps extends ApplicationProps {
   browseForFile(): void
@@ -155,12 +157,32 @@ function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
 
 function ToolbarRightContent(props: ToolbarProps) {
   const style = getStyle(useTheme())
+  const colorScheme = useAppSelector(s => s.colorScheme, [])
 
+  const exportFile = (
+    <div className={css(style.toolbarTab)} onClick={props.saveFile}>
+      <span className={css(style.emoji)}>⤴️</span>Export
+    </div>
+  )
   const importFile = (
     <div className={css(style.toolbarTab)} onClick={props.browseForFile}>
       <span className={css(style.emoji)}>⤵️</span>Import
     </div>
   )
+  const toggleColorScheme = useActionCreator(
+    () => actions.setColorScheme(nextColorScheme(colorScheme)),
+    [colorScheme],
+  )
+
+  const colorSchemeToggle = (
+    <div className={css(style.toolbarTab)} onClick={toggleColorScheme}>
+      <span className={css(style.emoji)}>🎨</span>
+      <span className={css(style.toolbarTabColorSchemeToggle)}>
+        {colorSchemeToString(colorScheme)}
+      </span>
+    </div>
+  )
+
   const help = (
     <div className={css(style.toolbarTab)}>
       <a
@@ -175,12 +197,9 @@ function ToolbarRightContent(props: ToolbarProps) {
 
   return (
     <div className={css(style.toolbarRight)}>
-      {props.activeProfileState && (
-        <div className={css(style.toolbarTab)} onClick={props.saveFile}>
-          <span className={css(style.emoji)}>⤴️</span>Export
-        </div>
-      )}
+      {props.activeProfileState && exportFile}
       {importFile}
+      {colorSchemeToggle}
       {help}
     </div>
   )
@@ -253,6 +272,11 @@ const getStyle = withTheme(theme => StyleSheet.create({
     ':hover': {
       background: theme.selectionPrimaryColor,
     },
+  },
+  toolbarTabColorSchemeToggle: {
+    display: 'inline-block',
+    textAlign: 'center',
+    minWidth: '50px',
   },
   emoji: {
     display: 'inline-block',

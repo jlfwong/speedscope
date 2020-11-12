@@ -22,6 +22,17 @@ export const enum ViewMode {
   SANDWICH_VIEW,
 }
 
+export const enum ColorScheme {
+  // Default: respect prefers-color-schema
+  SYSTEM,
+
+  // Use dark theme
+  DARK,
+
+  // use light theme
+  LIGHT,
+}
+
 export interface ApplicationState {
   // The top-level profile group from which most other data will be derived
   profileGroup: ProfileGroupState
@@ -60,6 +71,9 @@ export interface ApplicationState {
   // The table sorting method using for the sandwich view, specifying the column
   // to sort by, and the direction to sort that clumn.
   tableSortMethod: SortMethod
+
+  // The color scheme to use for the entire UI
+  colorScheme: ColorScheme
 }
 
 const protocol = window.location.protocol
@@ -96,6 +110,8 @@ export function createAppStore(initialState?: ApplicationState): redux.Store<App
       field: SortField.SELF,
       direction: SortDirection.DESCENDING,
     }),
+
+    colorScheme: setter<ColorScheme>(actions.setColorScheme, ColorScheme.SYSTEM),
   })
 
   return redux.createStore(reducer, initialState)
