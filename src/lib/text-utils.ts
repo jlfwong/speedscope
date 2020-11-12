@@ -131,10 +131,7 @@ export function remapRangesToTrimmedText(
           case IndexTypeInTrimmed.ELIDED: {
             // The range starts in the prefix, but ends in the elided
             // section. Add just the prefix + one char for the ellipsis.
-            rangesToHighlightInTrimmedText.push([
-              origStart,
-              origStart + trimmedText.prefixLength + 1,
-            ])
+            rangesToHighlightInTrimmedText.push([origStart, trimmedText.prefixLength + 1])
             highlightedEllipsis = true
             break
           }
