@@ -1,3 +1,9 @@
+## [1.12.1] - 2020-11-12
+
+### Fixed
+
+- Fixed for retina displays [[#327](https://github.com/jlfwong/speedscope/issues/327)]
+
 ## [1.12.0] - 2020-11-12
 
 ### Added
