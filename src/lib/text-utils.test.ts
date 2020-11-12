@@ -91,6 +91,14 @@ test('remapRangesToTrimmedText', () => {
   })
 
   assertTrimmedHighlight({
+    text: 'xxhello world',
+    pattern: 'hello',
+    length: 6,
+    expectedHighlighted: 'xx[hello] world',
+    expectedHighlightedTrimmed: `xx[h...]ld`,
+  })
+
+  assertTrimmedHighlight({
     text: 'hello world',
     pattern: 'hello world',
     length: 4,
