@@ -21,6 +21,7 @@ import {importAsPprofProfile} from './pprof'
 import {decodeBase64} from '../lib/utils'
 import {importFromChromeHeapProfile} from './v8heapalloc'
 import {isTraceEventFormatted, importTraceEvents} from './trace-event'
+import {importFromCallgrind} from './callgrind'
 
 export async function importProfileGroupFromText(
   fileName: string,
@@ -179,6 +180,12 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     }
   } else {
     // Format is not JSON
+
+    // If the first line is "# callgrind format", it's probably in Callgrind
+    // Profile Format.
+    if (/^# callgrind format/.exec(contents)) {
+      return toGroup(importFromCallgrind(contents))
+    }
 
     // If the first line contains "Symbol Name", preceded by a tab, it's probably
     // a deep copy from OS X Instruments.app
