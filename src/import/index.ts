@@ -183,8 +183,11 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
 
     // If the first line is "# callgrind format", it's probably in Callgrind
     // Profile Format.
-    if (/^# callgrind format/.exec(contents)) {
-      return toGroup(importFromCallgrind(contents))
+    if (
+      /^# callgrind format/.exec(contents) ||
+      (/^events:/m.exec(contents) && /^fn=/m.exec(contents))
+    ) {
+      return importFromCallgrind(contents)
     }
 
     // If the first line contains "Symbol Name", preceded by a tab, it's probably
