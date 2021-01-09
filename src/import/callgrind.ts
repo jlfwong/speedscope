@@ -85,7 +85,98 @@
 // strat;backup;write, even though that never happened in the real program
 // execution.
 
-import {CallTreeProfileBuilder, ProfileGroup} from '../lib/profile'
+import {CallTreeProfileBuilder, Frame, FrameInfo, Profile, ProfileGroup} from '../lib/profile'
+import {getOrElse, getOrInsert, KeyedSet} from '../lib/utils'
+
+class CallGraph {
+  private frameSet = new KeyedSet<Frame>()
+  private totalWeights = new Map<Frame, number>()
+  private childrenTotalWeights = new Map<Frame, Map<Frame, number>>()
+
+  constructor(private name: string) {}
+
+  private getOrInsertFrame(info: FrameInfo): Frame {
+    return Frame.getOrInsert(this.frameSet, info)
+  }
+
+  private addToTotalWeight(frame: Frame, weight: number) {
+    if (!this.totalWeights.has(frame)) {
+      this.totalWeights.set(frame, weight)
+    } else {
+      this.totalWeights.set(frame, this.totalWeights.get(frame)! + weight)
+    }
+  }
+
+  addSelfWeight(frameInfo: FrameInfo, weight: number) {
+    this.addToTotalWeight(this.getOrInsertFrame(frameInfo), weight)
+  }
+
+  addChildWithTotalWeight(parentInfo: FrameInfo, childInfo: FrameInfo, weight: number) {
+    const parent = this.getOrInsertFrame(parentInfo)
+    const child = this.getOrInsertFrame(childInfo)
+
+    const childMap = getOrInsert(this.childrenTotalWeights, parent, k => new Map())
+
+    if (!childMap.has(child)) {
+      childMap.set(child, weight)
+    } else {
+      childMap.set(child, childMap.get(child) + weight)
+    }
+
+    this.addToTotalWeight(parent, weight)
+  }
+
+  toProfile(): Profile {
+    // To convert a call graph into a profile, we first need to identify what
+    // the "root weights" are. "root weights" are the total weight of each frame
+    // while at the bottom of the call-stack. The majority of functions will
+    // zero weight while at the bottom of the call-stack, since most functions
+    // are never at the bottom of the call-stack.
+    const rootWeights = new Map<Frame, number>()
+    for (let [frame, totalWeight] of this.totalWeights) {
+      rootWeights.set(frame, totalWeight)
+    }
+    for (let [parent, childMap] of this.childrenTotalWeights) {
+      for (let [_, weight] of childMap) {
+        rootWeights.set(parent, getOrElse(rootWeights, parent, () => weight) - weight)
+      }
+    }
+
+    const profile = new CallTreeProfileBuilder()
+    profile.setName(this.name)
+
+    let totalCumulative = 0
+
+    // TODO(jlfwong): Deal with cycles
+    const visit = (frame: Frame, weight: number) => {
+      const totalWeightForFrame = getOrElse(this.totalWeights, frame, () => 0)
+      const ratio = weight / totalWeightForFrame
+
+      let selfWeightForFrame = totalWeightForFrame
+
+      profile.enterFrame(frame, totalCumulative)
+
+      for (let [child, childTotalWeight] of this.childrenTotalWeights.get(frame) || []) {
+        selfWeightForFrame -= childTotalWeight
+        visit(child, childTotalWeight * ratio)
+      }
+
+      totalCumulative += selfWeightForFrame * ratio
+      profile.leaveFrame(frame, totalCumulative)
+    }
+
+    for (let [rootFrame, rootWeight] of rootWeights) {
+      if (rootWeight <= 0) {
+        continue
+      }
+      // If we've reached here, it means that the given root frame has some
+      // weight while at the top of the call-stack.
+      visit(rootFrame, rootWeight)
+    }
+
+    return profile.build()
+  }
+}
 
 // In writing this, I initially tried to use the formal grammar described in
 // section 3.2 of https://www.valgrind.org/docs/manual/cl-format.html, but
@@ -99,51 +190,81 @@ import {CallTreeProfileBuilder, ProfileGroup} from '../lib/profile'
 //
 // So, instead, I'm not going to bother with a formal parse. Since there are no
 // real recursive structures in this file format, that should be okay.
-export function importFromCallgrind(contents: string): ProfileGroup | null {
-  const lines = contents.split('\n')
+class CallgrindParser {
+  private lines: string[]
+  private lineNum: number
 
-  let profiles: CallTreeProfileBuilder[] | null = null
-  let eventsLine: string | null = null
+  private callGraphs: CallGraph[] | null = null
+  private eventsLine: string | null = null
 
-  let filename: string | null = null
-  let functionName: string | null = null
-  let calledFilename: string | null = null
-  let calledFunctionName: string | null = null
+  private filename: string | null = null
+  private functionName: string | null = null
+  private calleeFilename: string | null = null
+  private calleeFunctionName: string | null = null
 
-  const savedFileNames: {[id: string]: string} = {}
-  const savedFunctionNames: {[id: string]: string} = {}
+  private savedFileNames: {[id: string]: string} = {}
+  private savedFunctionNames: {[id: string]: string} = {}
 
-  let lineNum = 0
-
-  while (lineNum < lines.length) {
-    const line = lines[lineNum++]
-
-    if (/^\s*#/.exec(line)) {
-      // Line is a comment. Ignore it.
-      continue
-    }
-
-    if (/^\s*$/.exec(line)) {
-      // Line is empty. Ignore it.
-      continue
-    }
-
-    if (parseHeaderLine(line)) {
-      continue
-    }
-
-    if (parseAssignmentLine(line)) {
-      continue
-    }
-
-    if (parseCostLine(line)) {
-      continue
-    }
-
-    throw new Error(`Unrecognized line "${line}" on line ${lineNum}`)
+  constructor(contents: string, private importedFileName: string) {
+    this.lines = contents.split('\n')
+    this.lineNum = 0
   }
 
-  function parseHeaderLine(line: string): boolean {
+  parse(): ProfileGroup | null {
+    while (this.lineNum < this.lines.length) {
+      const line = this.lines[this.lineNum++]
+
+      if (/^\s*#/.exec(line)) {
+        // Line is a comment. Ignore it.
+        continue
+      }
+
+      if (/^\s*$/.exec(line)) {
+        // Line is empty. Ignore it.
+        continue
+      }
+
+      if (this.parseHeaderLine(line)) {
+        continue
+      }
+
+      if (this.parseAssignmentLine(line)) {
+        continue
+      }
+
+      if (this.parseCostLine(line)) {
+        continue
+      }
+
+      throw new Error(`Unrecognized line "${line}" on line ${this.lineNum}`)
+    }
+
+    if (!this.callGraphs) {
+      return null
+    }
+
+    return {
+      name: this.importedFileName,
+      indexToView: 0,
+      profiles: this.callGraphs.map(cg => cg.toProfile()),
+    }
+  }
+
+  private frameInfo(): FrameInfo {
+    const name = this.functionName || '(unknown)'
+    const file = this.filename || '(unknown)'
+    const key = `${file}:${name}`
+    return {key, name, file}
+  }
+
+  private calleeFrameInfo(): FrameInfo {
+    const name = this.calleeFilename || '(unknown)'
+    const file = this.calleeFunctionName || '(unknown)'
+    const key = `${file}:${name}`
+    return {key, name, file}
+  }
+
+  private parseHeaderLine(line: string): boolean {
     const headerMatch = /^\s*(\w+):\s*(.*)+$/.exec(line)
     if (!headerMatch) return false
 
@@ -156,25 +277,20 @@ export function importFromCallgrind(contents: string): ProfileGroup | null {
     const fields = headerMatch[2].split(' ')
     console.log('found fields', fields)
 
-    if (profiles != null) {
+    if (this.callGraphs != null) {
       throw new Error(
-        `Duplicate "events: " lines specified. First was "${eventsLine}", now received "${line}" on ${lineNum}.`,
+        `Duplicate "events: " lines specified. First was "${this.eventsLine}", now received "${line}" on ${this.lineNum}.`,
       )
     }
 
-    profiles = fields.map(f => {
-      const profile = new CallTreeProfileBuilder()
-
-      // TODO(jlfwong): Make this name also incldue the imported file name.
-      profile.setName(f)
-
-      return profile
+    this.callGraphs = fields.map(fieldName => {
+      return new CallGraph(`${this.importedFileName} -- ${fieldName}`)
     })
 
     return true
   }
 
-  function parseAssignmentLine(line: string): boolean {
+  private parseAssignmentLine(line: string): boolean {
     const assignmentMatch = /^(\w+)=\s*(.*)$/.exec(line)
     if (!assignmentMatch) return false
 
@@ -185,23 +301,23 @@ export function importFromCallgrind(contents: string): ProfileGroup | null {
       case 'fi':
       case 'fe':
       case 'fl': {
-        filename = parseNameWithCompression(value, savedFileNames)
+        this.filename = this.parseNameWithCompression(value, this.savedFileNames)
         break
       }
 
       case 'fn': {
-        functionName = parseNameWithCompression(value, savedFunctionNames)
+        this.functionName = this.parseNameWithCompression(value, this.savedFunctionNames)
         break
       }
 
       case 'cfi':
       case 'cfl': {
-        calledFilename = parseNameWithCompression(value, savedFileNames)
+        this.calleeFilename = this.parseNameWithCompression(value, this.savedFileNames)
         break
       }
 
       case 'cfn': {
-        calledFunctionName = parseNameWithCompression(value, savedFunctionNames)
+        this.calleeFunctionName = this.parseNameWithCompression(value, this.savedFunctionNames)
         break
       }
 
@@ -218,7 +334,7 @@ export function importFromCallgrind(contents: string): ProfileGroup | null {
     return true
   }
 
-  function parseNameWithCompression(name: string, saved: {[id: string]: string}): string {
+  private parseNameWithCompression(name: string, saved: {[id: string]: string}): string {
     {
       const nameDefinitionMatch = /^\((\d+)\)\s*(.+)$/.exec(name)
 
@@ -227,7 +343,7 @@ export function importFromCallgrind(contents: string): ProfileGroup | null {
         const name = nameDefinitionMatch[2]
         if (id in saved) {
           throw new Error(
-            `Redefinition of name with id: ${id}. Original value was "${saved[id]}". Tried to redefine as "${name}" on line ${lineNum}.`,
+            `Redefinition of name with id: ${id}. Original value was "${saved[id]}". Tried to redefine as "${name}" on line ${this.lineNum}.`,
           )
         }
 
@@ -242,7 +358,7 @@ export function importFromCallgrind(contents: string): ProfileGroup | null {
         const id = nameUseMatch[1]
         if (!(id in saved)) {
           throw new Error(
-            `Tried to use name with id ${id} on line ${lineNum} before it was defined.`,
+            `Tried to use name with id ${id} on line ${this.lineNum} before it was defined.`,
           )
         }
         return saved[id]
@@ -252,7 +368,7 @@ export function importFromCallgrind(contents: string): ProfileGroup | null {
     return name
   }
 
-  function parseCostLine(line: string): boolean {
+  private parseCostLine(line: string): boolean {
     // TODO(jlfwong): Handle "Subposition compression"
     // TODO(jlfwong): Allow hexadecimal encoding
 
@@ -272,14 +388,36 @@ export function importFromCallgrind(contents: string): ProfileGroup | null {
     if (nums.length == 0) {
       return false
     }
+
     // TODO(jlfwong): remove this
-    console.log(`fl=${filename} fn=${functionName} cost line=${nums.join(',')}`)
+    console.log(`fl=${this.filename} fn=${this.functionName} cost line=${nums.join(',')}`)
 
     // TODO(jlfwong): Handle custom positions format w/ multiple parts
-    const line = nums[0]
+    const numPositionFields = 1
+
+    // NOTE: We intentionally do not include the line number here because
+    // callgrind uses the line number of the function invocation, not the
+    // line number of the function definition, which conflicts with how
+    // speedscope uses line numbers.
+    //
+    // const lineNum = nums[0]
+
+    if (!this.callGraphs) {
+      throw new Error(
+        `Encountered a cost line on line ${this.lineNum} before event specification was provided.`,
+      )
+    }
+    for (let i = 0; i < this.callGraphs.length; i++) {
+      this.callGraphs[i].addSelfWeight(this.frameInfo(), nums[numPositionFields + i])
+    }
 
     return true
   }
+}
 
-  return null
+export function importFromCallgrind(
+  contents: string,
+  importedFileName: string,
+): ProfileGroup | null {
+  return new CallgrindParser(contents, importedFileName).parse()
 }

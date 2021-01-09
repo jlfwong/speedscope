@@ -136,6 +136,8 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
   } else if (fileName.endsWith('-recording.json')) {
     console.log('Importing as Safari profile')
     return toGroup(importFromSafari(JSON.parse(contents)))
+  } else if (fileName.startsWith('callgrind.') {
+    return importFromCallgrind(contents, fileName)
   }
 
   // Second pass: Try to guess what file format it is based on structure
