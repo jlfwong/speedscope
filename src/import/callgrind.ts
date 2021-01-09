@@ -2,6 +2,88 @@
 //
 // Larger example files can be found by searching on github:
 // https://github.com/search?q=cfn%3D&type=code
+//
+// Converting callgrind files into flamegraphs is challenging because callgrind
+// formatted profiles contain call graphs with weighted nodes and edges, and
+// such a weighted call graph does not uniquely define a flamegraph.
+//
+// Consider a program that looks like this:
+//
+//    // example.js
+//    function backup(read) {
+//      if (read) {
+//        read()
+//      } else {
+//        write()
+//      }
+//    }
+//
+//    function start() {
+//       backup(true)
+//    }
+//
+//    function end() {
+//       backup(false)
+//    }
+//
+//    start()
+//    end()
+//
+// Profiling this program might result in a profile that looks like the
+// following flame graph defined in Brendan Gregg's plaintext format:
+//
+//    start;backup;read 4
+//    end;backup;write 4
+//
+// When we convert this execution into a call-graph, we get the following:
+//
+//      +------------------+     +---------------+
+//      | start (self: 0)  |     | end (self: 0) |
+//      +------------------+     +---------------|
+//                   \               /
+//        (total: 4)  \             / (total: 4)
+//                     v           v
+//                 +------------------+
+//                 | backup (self: 0) |
+//                 +------------------+
+//                    /            \
+//       (total: 4)  /              \ (total: 4)
+//                  v                v
+//      +----------------+      +-----------------+
+//      | read (self: 4) |      | write (self: 4) |
+//      +----------------+      +-----------------+
+//
+// In the process of the conversion, we've lost information about the ratio of
+// time spent in read v.s. write in the start call v.s. the end call. The
+// following flame graph would yield the exact same call-graph, and therefore
+// the exact sample call-grind formatted profile:
+//
+//    start;backup;read 3
+//    start;backup;write 1
+//    end;backup;read 1
+//    end;backup;write 3
+//
+// This is unfortunate, since it means we can't produce a flamegraph that isn't
+// potentially lying about the what the actual execution behavior was. To
+// produce a flamegraph at all from the call graph representation, we have to
+// decide how much weight each sub-call should have. Given that we know the
+// total weight of each node, we'll make the incorrect assumption that every
+// invocation of a function will have the average distribution of costs among
+// the sub-function invocations. In the example given, this means we assume that
+// every invocation of backup() is assumed to spend half its time in read() and
+// half its time in write().
+//
+// So the flamegraph we'll produce from the given call-graph will actually be:
+//
+//    start;backup;read 2
+//    start;backup;write 2
+//    end;backup;read 2
+//    end;backup;write 2
+//
+// A particularly bad consequence is that the resulting flamegraph will suggest
+// that there was at some point a call stack that looked like
+// strat;backup;write, even though that never happened in the real program
+// execution.
 
 import {CallTreeProfileBuilder, ProfileGroup} from '../lib/profile'
 
@@ -187,8 +269,14 @@ export function importFromCallgrind(contents: string): ProfileGroup | null {
       nums.push(asNum)
     }
 
+    if (nums.length == 0) {
+      return false
+    }
     // TODO(jlfwong): remove this
     console.log(`fl=${filename} fn=${functionName} cost line=${nums.join(',')}`)
+
+    // TODO(jlfwong): Handle custom positions format w/ multiple parts
+    const line = nums[0]
 
     return true
   }
