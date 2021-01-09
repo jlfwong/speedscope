@@ -136,9 +136,9 @@ class CallGraph {
     for (let [frame, totalWeight] of this.totalWeights) {
       rootWeights.set(frame, totalWeight)
     }
-    for (let [parent, childMap] of this.childrenTotalWeights) {
-      for (let [_, weight] of childMap) {
-        rootWeights.set(parent, getOrElse(rootWeights, parent, () => weight) - weight)
+    for (let [_, childMap] of this.childrenTotalWeights) {
+      for (let [child, weight] of childMap) {
+        rootWeights.set(child, getOrElse(rootWeights, child, () => weight) - weight)
       }
     }
 
@@ -232,7 +232,7 @@ class CallgrindParser {
         continue
       }
 
-      if (this.parseCostLine(line)) {
+      if (this.parseCostLine(line, 'self')) {
         continue
       }
 
@@ -242,7 +242,6 @@ class CallgrindParser {
     if (!this.callGraphs) {
       return null
     }
-
     return {
       name: this.importedFileName,
       indexToView: 0,
@@ -251,15 +250,15 @@ class CallgrindParser {
   }
 
   private frameInfo(): FrameInfo {
-    const name = this.functionName || '(unknown)'
     const file = this.filename || '(unknown)'
+    const name = this.functionName || '(unknown)'
     const key = `${file}:${name}`
     return {key, name, file}
   }
 
   private calleeFrameInfo(): FrameInfo {
-    const name = this.calleeFilename || '(unknown)'
-    const file = this.calleeFunctionName || '(unknown)'
+    const file = this.calleeFilename || '(unknown)'
+    const name = this.calleeFunctionName || '(unknown)'
     const key = `${file}:${name}`
     return {key, name, file}
   }
@@ -275,7 +274,6 @@ class CallgrindParser {
 
     // Line specifies the formatting of subsequent cost lines.
     const fields = headerMatch[2].split(' ')
-    console.log('found fields', fields)
 
     if (this.callGraphs != null) {
       throw new Error(
@@ -298,10 +296,11 @@ class CallgrindParser {
     const value = assignmentMatch[2]
 
     switch (key) {
-      case 'fi':
       case 'fe':
+      case 'fi':
       case 'fl': {
         this.filename = this.parseNameWithCompression(value, this.savedFileNames)
+        this.calleeFilename = this.filename
         break
       }
 
@@ -322,12 +321,16 @@ class CallgrindParser {
       }
 
       case 'calls': {
-        // TODO(jlfwong): Implement this
+        // TODO(jlfwong): This is currently ignoring the number of calls being
+        // made. Accounting for the number of calls might be unhelpful anyway,
+        // since it'll just be copying the exact same frame over-and-over again,
+        // but that might be better than ignoring it.
+        this.parseCostLine(this.lines[this.lineNum++], 'child')
         break
       }
 
       default: {
-        console.log(`Ignoring assignment to unrecognized key "${key}"`)
+        console.log(`Ignoring assignment to unrecognized key "${line}" on line ${this.lineNum}`)
       }
     }
 
@@ -368,7 +371,7 @@ class CallgrindParser {
     return name
   }
 
-  private parseCostLine(line: string): boolean {
+  private parseCostLine(line: string, costType: 'self' | 'child'): boolean {
     // TODO(jlfwong): Handle "Subposition compression"
     // TODO(jlfwong): Allow hexadecimal encoding
 
@@ -389,9 +392,6 @@ class CallgrindParser {
       return false
     }
 
-    // TODO(jlfwong): remove this
-    console.log(`fl=${this.filename} fn=${this.functionName} cost line=${nums.join(',')}`)
-
     // TODO(jlfwong): Handle custom positions format w/ multiple parts
     const numPositionFields = 1
 
@@ -408,7 +408,15 @@ class CallgrindParser {
       )
     }
     for (let i = 0; i < this.callGraphs.length; i++) {
-      this.callGraphs[i].addSelfWeight(this.frameInfo(), nums[numPositionFields + i])
+      if (costType === 'self') {
+        this.callGraphs[i].addSelfWeight(this.frameInfo(), nums[numPositionFields + i])
+      } else if (costType === 'child') {
+        this.callGraphs[i].addChildWithTotalWeight(
+          this.frameInfo(),
+          this.calleeFrameInfo(),
+          nums[numPositionFields + i] || 0,
+        )
+      }
     }
 
     return true

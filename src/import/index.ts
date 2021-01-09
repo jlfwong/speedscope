@@ -136,7 +136,8 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
   } else if (fileName.endsWith('-recording.json')) {
     console.log('Importing as Safari profile')
     return toGroup(importFromSafari(JSON.parse(contents)))
-  } else if (fileName.startsWith('callgrind.') {
+  } else if (fileName.startsWith('callgrind.')) {
+    console.log('Importing as Callgrind profile')
     return importFromCallgrind(contents, fileName)
   }
 
@@ -189,7 +190,8 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
       /^# callgrind format/.exec(contents) ||
       (/^events:/m.exec(contents) && /^fn=/m.exec(contents))
     ) {
-      return importFromCallgrind(contents)
+      console.log('Importing as Callgrind profile')
+      return importFromCallgrind(contents, fileName)
     }
 
     // If the first line contains "Symbol Name", preceded by a tab, it's probably
