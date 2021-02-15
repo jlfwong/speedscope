@@ -1,3 +1,9 @@
+## [1.13.0] - 2021-02-14
+
+### Added
+
+- Support for importing callgrind profiles [[#331](https://github.com/jlfwong/speedscope/pull/331)]
+
 ## [1.12.1] - 2020-11-12
 
 ### Fixed
