@@ -150,11 +150,14 @@ class CallGraph {
 
     const profile = new CallTreeProfileBuilder()
 
+    let unitMultiplier = 1
+
     // These are common field names used by Xdebug. Let's give them special
     // treatment to more helpfully display units.
     if (this.fieldName === 'Time_(10ns)') {
       profile.setName(`${this.fileName} -- Time`)
-      profile.setValueFormatter(new TimeFormatter('nanoseconds', 10))
+      unitMultiplier = 10
+      profile.setValueFormatter(new TimeFormatter('nanoseconds'))
     } else if (this.fieldName == 'Memory_(bytes)') {
       profile.setName(`${this.fileName} -- Memory`)
       profile.setValueFormatter(new ByteFormatter())
@@ -234,7 +237,7 @@ class CallGraph {
 
       let selfWeightForFrame = callGraphWeightForFrame
 
-      profile.enterFrame(frame, totalCumulative)
+      profile.enterFrame(frame, totalCumulative * unitMultiplier)
 
       currentStack.add(frame)
       for (let [child, callGraphEdgeWeight] of this.childrenTotalWeights.get(frame) || []) {
@@ -245,7 +248,7 @@ class CallGraph {
       currentStack.delete(frame)
 
       totalCumulative += selfWeightForFrame * ratio
-      profile.leaveFrame(frame, totalCumulative)
+      profile.leaveFrame(frame, totalCumulative * unitMultiplier)
     }
 
     for (let [rootFrame, rootWeight] of rootWeights) {
