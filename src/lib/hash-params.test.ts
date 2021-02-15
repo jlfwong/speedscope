@@ -9,11 +9,11 @@ test('getHashParams', () => {
   })
   expect(
     getHashParams(
-      '#profileURL=https://raw.githubusercontent.com/jlfwong/speedscope/master/sample/profiles/speedscope/0.1.2/simple-sampled.speedscope.json',
+      '#profileURL=https://raw.githubusercontent.com/jlfwong/speedscope/main/sample/profiles/speedscope/0.1.2/simple-sampled.speedscope.json',
     ),
   ).toEqual({
     profileURL:
-      'https://raw.githubusercontent.com/jlfwong/speedscope/master/sample/profiles/speedscope/0.1.2/simple-sampled.speedscope.json',
+      'https://raw.githubusercontent.com/jlfwong/speedscope/main/sample/profiles/speedscope/0.1.2/simple-sampled.speedscope.json',
   })
   expect(getHashParams('#title=hello&localProfilePath=file:///tmp/file.js')).toEqual({
     title: 'hello',
