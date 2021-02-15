@@ -87,13 +87,14 @@
 
 import {CallTreeProfileBuilder, Frame, FrameInfo, Profile, ProfileGroup} from '../lib/profile'
 import {getOrElse, getOrInsert, KeyedSet} from '../lib/utils'
+import {ByteFormatter, TimeFormatter} from '../lib/value-formatters'
 
 class CallGraph {
   private frameSet = new KeyedSet<Frame>()
   private totalWeights = new Map<Frame, number>()
   private childrenTotalWeights = new Map<Frame, Map<Frame, number>>()
 
-  constructor(private name: string) {}
+  constructor(private fileName: string, private fieldName: string) {}
 
   private getOrInsertFrame(info: FrameInfo): Frame {
     return Frame.getOrInsert(this.frameSet, info)
@@ -129,7 +130,7 @@ class CallGraph {
   toProfile(): Profile {
     // To convert a call graph into a profile, we first need to identify what
     // the "root weights" are. "root weights" are the total weight of each frame
-    // while at the bottom of the call-stack. The majority of functions will
+    // while at the bottom of the call-stack. The majority of functions will have
     // zero weight while at the bottom of the call-stack, since most functions
     // are never at the bottom of the call-stack.
     const rootWeights = new Map<Frame, number>()
@@ -142,24 +143,106 @@ class CallGraph {
       }
     }
 
+    let totalProfileWeight = 0
+    for (let [_, rootWeight] of rootWeights) {
+      totalProfileWeight += rootWeight
+    }
+
     const profile = new CallTreeProfileBuilder()
-    profile.setName(this.name)
+
+    // These are common field names used by Xdebug. Let's give them special
+    // treatment to more helpfully display units.
+    if (this.fieldName === 'Time_(10ns)') {
+      profile.setName(`${this.fileName} -- Time`)
+      profile.setValueFormatter(new TimeFormatter('nanoseconds', 10))
+    } else if (this.fieldName == 'Memory_(bytes)') {
+      profile.setName(`${this.fileName} -- Memory`)
+      profile.setValueFormatter(new ByteFormatter())
+    } else {
+      profile.setName(`${this.fileName} -- ${this.fieldName}`)
+    }
 
     let totalCumulative = 0
 
-    // TODO(jlfwong): Deal with cycles
-    const visit = (frame: Frame, weight: number) => {
-      const totalWeightForFrame = getOrElse(this.totalWeights, frame, () => 0)
-      const ratio = weight / totalWeightForFrame
+    const currentStack = new Set<Frame>()
 
-      let selfWeightForFrame = totalWeightForFrame
+    const visit = (frame: Frame, callTreeWeight: number) => {
+      if (currentStack.has(frame)) {
+        // Call-graphs are allowed to have cycles. Call-trees are not. In case
+        // we run into a cycle, we'll just avoid recursing into the same subtree
+        // more than once in a call stack. The result will be that the time
+        // spent in the recursive call will instead be attributed as self time
+        // in the parent.
+        return
+      }
+
+      // We need to calculate how much weight to give to a particular node in
+      // the call-tree based on information from the call-graph. A given node
+      // from the call-graph might correspond to several nodes in the call-tree,
+      // so we need to decide how to distribute the weight of the call-graph
+      // node to the various call-tree nodes.
+      //
+      // We assume that the weighting is evenly distributed. If a call-tree node
+      // X occurs with weights x1 and x2, and we know from the call-graph that
+      // child Y of X has a total weight y, then we assume the child Y of X has
+      // weight y*x1/(x1 + x2) for the first occurrence, and y*x2(y1 + x2) for
+      // the second occurrence.
+      //
+      // This assumption is incorrectly (sometimes wildly so), but we need to
+      // make *some* assumption, and this seems to me the sanest option.
+      //
+      // See the comment at the top of the file for an example where this
+      // assumption can yield especially misleading results.
+
+      if (callTreeWeight < 1e-4 * totalProfileWeight) {
+        // This assumption about even distribution can cause us to generate a
+        // call tree with dramatically more nodes than the call graph.
+        //
+        // Consider a function which is called 1000 times, where the result is
+        // cached. The first invocation has a complex call tree and may take
+        // 100ms. Let's say that this complex call tree has 250 nodes.
+        //
+        // Subsequent calls use the cached result, so take only 1ms, and have no
+        // children in their call trees. So we have, in total, (1 + 250) + 999
+        // nodes in the call-tree for a total of 1250 nodes.
+        //
+        // The information specific to each invocation is, however, lost in the
+        // call-graph representation.
+        //
+        // Because of the even distribution assumption we make, this means that
+        // the call-trees of each invocation will have the same shape. Each 1ms
+        // call-tree will look identical to the 100ms call-tree, just
+        // horizontally compacted. So instead of 1251 nodes, we have
+        // 1000*250=250,000 nodes in the resulting call graph.
+        //
+        // To mitigate this explosion of the # of nodes, we ignore subtrees
+        // whose weights are less than 0.01% of the total weight of the profile.
+        return
+      }
+
+      // totalWeightForFrame is the total weight for the given frame in the
+      // entire call graph.
+      const callGraphWeightForFrame = getOrElse(this.totalWeights, frame, () => 0)
+      if (callGraphWeightForFrame === 0) {
+        return
+      }
+
+      // This is the portion of the total time the given child spends within the
+      // given parent that we'll attribute to this specific path in the call
+      // tree.
+      const ratio = callTreeWeight / callGraphWeightForFrame
+
+      let selfWeightForFrame = callGraphWeightForFrame
 
       profile.enterFrame(frame, totalCumulative)
 
-      for (let [child, childTotalWeight] of this.childrenTotalWeights.get(frame) || []) {
-        selfWeightForFrame -= childTotalWeight
-        visit(child, childTotalWeight * ratio)
+      currentStack.add(frame)
+      for (let [child, callGraphEdgeWeight] of this.childrenTotalWeights.get(frame) || []) {
+        selfWeightForFrame -= callGraphEdgeWeight
+        const childCallTreeWeight = callGraphEdgeWeight * ratio
+        visit(child, childCallTreeWeight)
       }
+      currentStack.delete(frame)
 
       totalCumulative += selfWeightForFrame * ratio
       profile.leaveFrame(frame, totalCumulative)
@@ -282,7 +365,7 @@ class CallgrindParser {
     }
 
     this.callGraphs = fields.map(fieldName => {
-      return new CallGraph(`${this.importedFileName} -- ${fieldName}`)
+      return new CallGraph(this.importedFileName, fieldName)
     })
 
     return true
