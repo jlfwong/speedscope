@@ -1,0 +1,177 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`importFromCallgrind 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": "file1.c",
+      "key": "file1.c:main",
+      "line": undefined,
+      "name": "main",
+      "selfWeight": 20,
+      "totalWeight": 820,
+    },
+    Frame {
+      "col": undefined,
+      "file": "file1.c",
+      "key": "file1.c:func1",
+      "line": undefined,
+      "name": "func1",
+      "selfWeight": 100,
+      "totalWeight": 400,
+    },
+    Frame {
+      "col": undefined,
+      "file": "file2.c",
+      "key": "file2.c:func2",
+      "line": undefined,
+      "name": "func2",
+      "selfWeight": 700,
+      "totalWeight": 700,
+    },
+  ],
+  "name": "callgrind.example.log -- Instructions",
+  "stacks": Array [
+    "main;func1;func2 300",
+    "main;func1 100",
+    "main;func2 400",
+    "main 20",
+  ],
+}
+`;
+
+exports[`importFromCallgrind multiple event types 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": "file1.c",
+      "key": "file1.c:main",
+      "line": undefined,
+      "name": "main",
+      "selfWeight": 200,
+      "totalWeight": 8200,
+    },
+    Frame {
+      "col": undefined,
+      "file": "file1.c",
+      "key": "file1.c:func1",
+      "line": undefined,
+      "name": "func1",
+      "selfWeight": 1000,
+      "totalWeight": 4000,
+    },
+    Frame {
+      "col": undefined,
+      "file": "file2.c",
+      "key": "file2.c:func2",
+      "line": undefined,
+      "name": "func2",
+      "selfWeight": 7000,
+      "totalWeight": 7000,
+    },
+  ],
+  "name": "callgrind.multiple-event-types.log -- Time",
+  "stacks": Array [
+    "main;func1;func2 3.00µs",
+    "main;func1 1.00µs",
+    "main;func2 4.00µs",
+    "main 200.00ns",
+  ],
+}
+`;
+
+exports[`importFromCallgrind multiple event types 2`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": "file1.c",
+      "key": "file1.c:main",
+      "line": undefined,
+      "name": "main",
+      "selfWeight": 15000,
+      "totalWeight": 38000,
+    },
+    Frame {
+      "col": undefined,
+      "file": "file1.c",
+      "key": "file1.c:func1",
+      "line": undefined,
+      "name": "func1",
+      "selfWeight": 8888.888888888889,
+      "totalWeight": 20000,
+    },
+    Frame {
+      "col": undefined,
+      "file": "file2.c",
+      "key": "file2.c:func2",
+      "line": undefined,
+      "name": "func2",
+      "selfWeight": 14111.111111111111,
+      "totalWeight": 14111.111111111111,
+    },
+  ],
+  "name": "callgrind.multiple-event-types.log -- Memory",
+  "stacks": Array [
+    "main;func1;func2 10.85 KB",
+    "main;func1 8.68 KB",
+    "main;func2 2.93 KB",
+    "main 14.65 KB",
+  ],
+}
+`;
+
+exports[`importFromCallgrind multiple event types: indexToView 1`] = `0`;
+
+exports[`importFromCallgrind multiple event types: profileGroup.name 1`] = `"callgrind.multiple-event-types.log"`;
+
+exports[`importFromCallgrind name compression 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": "file1.c",
+      "key": "file1.c:main",
+      "line": undefined,
+      "name": "main",
+      "selfWeight": 20,
+      "totalWeight": 820,
+    },
+    Frame {
+      "col": undefined,
+      "file": "file1.c",
+      "key": "file1.c:func1",
+      "line": undefined,
+      "name": "func1",
+      "selfWeight": 100,
+      "totalWeight": 400,
+    },
+    Frame {
+      "col": undefined,
+      "file": "file2.c",
+      "key": "file2.c:func2",
+      "line": undefined,
+      "name": "func2",
+      "selfWeight": 700,
+      "totalWeight": 700,
+    },
+  ],
+  "name": "callgrind.name-compression.log -- Instructions",
+  "stacks": Array [
+    "main;func1;func2 300",
+    "main;func1 100",
+    "main;func2 400",
+    "main 20",
+  ],
+}
+`;
+
+exports[`importFromCallgrind name compression: indexToView 1`] = `0`;
+
+exports[`importFromCallgrind name compression: profileGroup.name 1`] = `"callgrind.name-compression.log"`;
+
+exports[`importFromCallgrind: indexToView 1`] = `0`;
+
+exports[`importFromCallgrind: profileGroup.name 1`] = `"callgrind.example.log"`;
