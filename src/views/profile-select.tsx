@@ -2,9 +2,10 @@ import {Profile} from '../lib/profile'
 import {h, JSX, ComponentChild, Ref} from 'preact'
 import {useCallback, useState, useMemo, useEffect, useRef} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
-import {Colors, ZIndex, Sizes} from './style'
+import {ZIndex, Sizes} from './style'
 import {fuzzyMatchStrings} from '../lib/fuzzy-find'
 import {sortBy} from '../lib/utils'
+import {useTheme, withTheme} from './themes/theme'
 
 interface ProfileSelectRowProps {
   setProfileIndexToView: (profileIndex: number) => void
@@ -20,12 +21,16 @@ interface ProfileSelectRowProps {
   closeProfileSelect: () => void
 }
 
-function highlightRanges(text: string, ranges: [number, number][]): JSX.Element {
+function highlightRanges(
+  text: string,
+  ranges: [number, number][],
+  highlightedClassName: string,
+): JSX.Element {
   const spans: ComponentChild[] = []
   let last = 0
   for (let range of ranges) {
     spans.push(text.slice(last, range[0]))
-    spans.push(<span className={css(style.highlighted)}>{text.slice(range[0], range[1])}</span>)
+    spans.push(<span className={highlightedClassName}>{text.slice(range[0], range[1])}</span>)
     last = range[1]
   }
   spans.push(text.slice(last))
@@ -46,6 +51,8 @@ export function ProfileSelectRow({
   matchedRanges,
   indexInFilteredListView,
 }: ProfileSelectRowProps) {
+  const style = getStyle(useTheme())
+
   const onMouseUp = useCallback(() => {
     closeProfileSelect()
     setProfileIndexToView(indexInProfileGroup)
@@ -62,10 +69,11 @@ export function ProfileSelectRow({
 
   const maxDigits = 1 + Math.floor(Math.log10(profileCount))
 
+  const highlightedClassName = css(style.highlighted)
   const highlighted = useMemo(() => {
-    const result = highlightRanges(name, matchedRanges)
+    const result = highlightRanges(name, matchedRanges, highlightedClassName)
     return result
-  }, [name, matchedRanges])
+  }, [name, matchedRanges, highlightedClassName])
 
   // TODO(jlfwong): There's a really gnarly edge-case here where the highlighted
   // ranges are part of the text truncated by ellipsis. I'm just going to punt
@@ -83,7 +91,10 @@ export function ProfileSelectRow({
         hovered && style.profileRowHovered,
       )}
     >
-      <span className={css(style.profileIndex)} style={{width: maxDigits + 'em'}}>
+      <span
+        className={css(style.profileIndex, selected && style.profileIndexSelected)}
+        style={{width: maxDigits + 'em'}}
+      >
         {indexInProfileGroup + 1}:
       </span>{' '}
       {highlighted}
@@ -133,6 +144,8 @@ export function ProfileSelect({
   visible,
   setProfileIndexToView,
 }: ProfileSelectProps) {
+  const style = getStyle(useTheme())
+
   const [filterText, setFilterText] = useState('')
 
   const onFilterTextChange = useCallback(
@@ -290,6 +303,7 @@ export function ProfileSelect({
         <div className={css(style.filterInputContainer)}>
           <input
             type="text"
+            className={css(style.filterInput)}
             ref={focusFilterInput}
             placeholder={'Filter...'}
             value={filterText}
@@ -338,73 +352,103 @@ export function ProfileSelect({
 
 const paddingHeight = 10
 
-const style = StyleSheet.create({
-  filterInputContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    padding: 10,
-    alignItems: 'stretch',
-  },
-  caret: {
-    width: 0,
-    height: 0,
-    borderLeft: '5px solid transparent',
-    borderRight: '5px solid transparent',
-    borderBottom: '5px solid black',
-  },
-  highlighted: {
-    background: Colors.PALE_DARK_BLUE,
-  },
-  padding: {
-    height: paddingHeight,
-    background: Colors.BLACK,
-  },
-  profileRow: {
-    height: Sizes.FRAME_HEIGHT - 2,
-    border: '1px solid transparent',
-    textAlign: 'left',
-    paddingLeft: 10,
-    paddingRight: 10,
-    background: Colors.BLACK,
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    textOverflow: 'ellipsis',
-    cursor: 'pointer',
-  },
-  profileRowHovered: {
-    border: `1px solid ${Colors.DARK_BLUE}`,
-  },
-  profileRowSelected: {
-    background: Colors.DARK_BLUE,
-  },
-  profileRowEven: {
-    background: Colors.DARK_GRAY,
-  },
-  profileSelectScrolling: {
-    maxHeight: `min(calc(100vh - ${Sizes.TOOLBAR_HEIGHT - 2 * paddingHeight}px), ${
-      20 * Sizes.FRAME_HEIGHT
-    }px)`,
-    overflow: 'auto',
-  },
-  profileSelectBox: {
-    width: '100%',
-    paddingBottom: 10,
-    background: Colors.BLACK,
-    color: Colors.WHITE,
-  },
-  profileSelectOuter: {
-    width: '100%',
-    maxWidth: 480,
-    margin: '0 auto',
-    position: 'relative',
-    zIndex: ZIndex.PROFILE_SELECT,
-    alignItems: 'center',
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  profileIndex: {
-    textAlign: 'right',
-    display: 'inline-block',
-    color: Colors.LIGHT_GRAY,
-  },
-})
+const getStyle = withTheme(theme =>
+  StyleSheet.create({
+    filterInputContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      padding: 5,
+      alignItems: 'stretch',
+    },
+    filterInput: {
+      color: theme.altFgPrimaryColor,
+      background: theme.altBgSecondaryColor,
+      borderRadius: 5,
+      padding: 5,
+      ':focus': {
+        border: 'none',
+        outline: 'none',
+      },
+      '::selection': {
+        color: theme.altFgPrimaryColor,
+        background: theme.selectionPrimaryColor,
+      },
+    },
+    caret: {
+      width: 0,
+      height: 0,
+      borderLeft: '5px solid transparent',
+      borderRight: '5px solid transparent',
+      borderBottom: '5px solid black',
+    },
+    highlighted: {
+      background: theme.selectionSecondaryColor,
+    },
+    padding: {
+      height: paddingHeight,
+      background: theme.altBgPrimaryColor,
+    },
+    profileRow: {
+      height: Sizes.FRAME_HEIGHT - 2,
+      border: '1px solid transparent',
+      textAlign: 'left',
+      paddingLeft: 10,
+      paddingRight: 10,
+      background: theme.altBgPrimaryColor,
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+      textOverflow: 'ellipsis',
+      cursor: 'pointer',
+    },
+    profileRowHovered: {
+      border: `1px solid ${theme.selectionPrimaryColor}`,
+    },
+    profileRowSelected: {
+      background: theme.selectionPrimaryColor,
+    },
+    profileRowEven: {
+      background: theme.altBgSecondaryColor,
+    },
+    profileSelectScrolling: {
+      maxHeight: `min(calc(100vh - ${Sizes.TOOLBAR_HEIGHT - 2 * paddingHeight}px), ${
+        20 * Sizes.FRAME_HEIGHT
+      }px)`,
+      overflow: 'auto',
+      '::-webkit-scrollbar': {
+        background: theme.altBgPrimaryColor,
+      },
+      '::-webkit-scrollbar-thumb': {
+        background: theme.altFgSecondaryColor,
+        borderRadius: 20,
+        border: `3px solid ${theme.altBgPrimaryColor}`,
+        ':hover': {
+          background: theme.altBgPrimaryColor,
+        },
+      },
+    },
+    profileSelectBox: {
+      width: '100%',
+      paddingBottom: 10,
+      background: theme.altBgPrimaryColor,
+      color: theme.altFgPrimaryColor,
+    },
+    profileSelectOuter: {
+      width: '100%',
+      maxWidth: 480,
+      margin: '0 auto',
+      position: 'relative',
+      zIndex: ZIndex.PROFILE_SELECT,
+      alignItems: 'center',
+      display: 'flex',
+      flexDirection: 'column',
+    },
+    profileIndex: {
+      textAlign: 'right',
+      display: 'inline-block',
+      color: theme.altFgSecondaryColor,
+    },
+    profileIndexSelected: {
+      color: theme.altFgPrimaryColor,
+    },
+  }),
+)

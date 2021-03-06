@@ -1,4 +1,63 @@
-## Unreleased
+## [1.13.0] - 2021-02-14
+
+### Added
+
+- Support for importing callgrind profiles [[#331](https://github.com/jlfwong/speedscope/pull/331)]
+
+## [1.12.1] - 2020-11-12
+
+### Fixed
+
+- Fixed for retina displays [[#327](https://github.com/jlfwong/speedscope/issues/327)]
+
+## [1.12.0] - 2020-11-12
+
+### Added
+
+- Dark mode! [[#323](https://github.com/jlfwong/speedscope/pull/323)]
+
+### Fixed
+
+- Fixed incorrect highlighting when search result overlaps "…" [[#326](https://github.com/jlfwong/speedscope/pull/326)]
+
+## [1.11.1] - 2020-10-25
+
+### Fixed
+
+- Fix trace-event import for many cases where there are 'ts' collisions [[#322](https://github.com/jlfwong/speedscope/pull/322)]
+- Fix import of trace event files where B/E events' args don't match [[#321](https://github.com/jlfwong/speedscope/pull/321)]
+
+## [1.11.0] - 2020-10-13
+
+### Added
+
+- Support remapping profiles using source maps [[#317](https://github.com/jlfwong/speedscope/pull/317)]
+
+### Fixed
+
+- Fix line & column numbers in imports from Chrome & Firefox [[#318](https://github.com/jlfwong/speedscope/pull/318)]
+
+## [1.10.0] - 2020-09-29
+
+### Added
+
+- Support for importing profiles from Safari [[#300](https://github.com/jlfwong/speedscope/pull/300)] (by [@radex](https://github.com/radex))
+
+### Fixed
+
+- Fixed browser not opening on Windows when using the CLI [[#307](https://github.com/jlfwong/speedscope/pull/307)] (by [@spillerrec](https://github.com/spillerrec))
+- Fixed import of UTF-16 encoded files w/ BOM [[#314](https://github.com/jlfwong/speedscope/pull/314)]
+- Removed accidental dependency on React [[#315](https://github.com/jlfwong/speedscope/pull/315)]
+
+## [1.9.0] - 2020-08-05
+
+### Added
+
+- Provide prev/next buttons to cycle through search results, make search results more visually prominen [[#304](https://github.com/jlfwong/speedscope/pull/304)]
+
+### Fixed
+
+- Fix accumulated errors in Chrome profile imports caused by zeroed negative timeDeltas [[#305](https://github.com/jlfwong/speedscope/pull/305)] (by [@taneliang](https://github.com/taneliang))
 
 ## [1.8.0] - 2020-07-19
 

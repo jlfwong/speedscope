@@ -17,7 +17,10 @@ interface RangeResult {
 interface ScrollableListViewProps {
   items: ListItem[]
   axis: 'x' | 'y'
-  renderItems: (firstVisibleIndex: number, lastVisibleIndex: number) => JSX.Element | JSX.Element[]
+  renderItems: (
+    firstVisibleIndex: number,
+    lastVisibleIndex: number,
+  ) => JSX.Element | JSX.Element[] | null
   className?: string
   initialIndexInView?: number | null
 }

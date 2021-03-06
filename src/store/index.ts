@@ -6,16 +6,31 @@ import {actions} from './actions'
  */
 
 import * as redux from 'redux'
-import {setter, Reducer} from '../lib/typed-redux'
+import {setter, Reducer, Action} from '../lib/typed-redux'
 import {HashParams, getHashParams} from '../lib/hash-params'
 import {ProfileGroupState, profileGroup} from './profiles-state'
 import {SortMethod, SortField, SortDirection} from '../views/profile-table-view'
 import {useSelector} from '../lib/preact-redux'
+import {Profile} from '../lib/profile'
+import {FlamechartViewState} from './flamechart-view-state'
+import {SandwichViewState} from './sandwich-view-state'
+import {getProfileToView} from './getters'
 
 export const enum ViewMode {
   CHRONO_FLAME_CHART,
   LEFT_HEAVY_FLAME_GRAPH,
   SANDWICH_VIEW,
+}
+
+export const enum ColorScheme {
+  // Default: respect prefers-color-schema
+  SYSTEM,
+
+  // Use dark theme
+  DARK,
+
+  // use light theme
+  LIGHT,
 }
 
 export interface ApplicationState {
@@ -56,6 +71,9 @@ export interface ApplicationState {
   // The table sorting method using for the sandwich view, specifying the column
   // to sort by, and the direction to sort that clumn.
   tableSortMethod: SortMethod
+
+  // The color scheme to use for the entire UI
+  colorScheme: ColorScheme
 }
 
 const protocol = window.location.protocol
@@ -64,6 +82,47 @@ const protocol = window.location.protocol
 // from a file:// URL, and via websites. In the case of file:// URLs,
 // however, XHR will be unavailable to fetching files in adjacent directories.
 export const canUseXHR = protocol === 'http:' || protocol === 'https:'
+
+function colorScheme(state: ColorScheme | undefined, action: Action<any>): ColorScheme {
+  const localStorageKey = 'speedscope-color-scheme'
+
+  if (state === undefined) {
+    const storedPreference = window.localStorage && window.localStorage[localStorageKey]
+    if (storedPreference === 'DARK') {
+      return ColorScheme.DARK
+    } else if (storedPreference === 'LIGHT') {
+      return ColorScheme.LIGHT
+    } else {
+      return ColorScheme.SYSTEM
+    }
+  }
+
+  if (actions.setColorScheme.matches(action)) {
+    const value = action.payload
+
+    switch (value) {
+      case ColorScheme.DARK: {
+        window.localStorage[localStorageKey] = 'DARK'
+        break
+      }
+      case ColorScheme.LIGHT: {
+        window.localStorage[localStorageKey] = 'LIGHT'
+        break
+      }
+      case ColorScheme.SYSTEM: {
+        delete window.localStorage[localStorageKey]
+        break
+      }
+      default: {
+        const _exhaustiveCheck: never = value
+        return _exhaustiveCheck
+      }
+    }
+    return value
+  }
+
+  return state
+}
 
 export function createAppStore(initialState?: ApplicationState): redux.Store<ApplicationState> {
   const hashParams = getHashParams()
@@ -92,6 +151,8 @@ export function createAppStore(initialState?: ApplicationState): redux.Store<App
       field: SortField.SELF,
       direction: SortDirection.DESCENDING,
     }),
+
+    colorScheme,
   })
 
   return redux.createStore(reducer, initialState)
@@ -100,4 +161,31 @@ export function createAppStore(initialState?: ApplicationState): redux.Store<App
 export function useAppSelector<T>(selector: (t: ApplicationState) => T, cacheArgs: any[]): T {
   /* eslint-disable react-hooks/exhaustive-deps */
   return useSelector(selector, cacheArgs)
+}
+
+export interface ActiveProfileState {
+  profile: Profile
+  index: number
+  chronoViewState: FlamechartViewState
+  leftHeavyViewState: FlamechartViewState
+  sandwichViewState: SandwichViewState
+}
+
+export function useActiveProfileState(): ActiveProfileState | null {
+  return useAppSelector(state => {
+    const {profileGroup} = state
+    if (!profileGroup) return null
+    if (profileGroup.indexToView >= profileGroup.profiles.length) return null
+
+    const index = profileGroup.indexToView
+    const profileState = profileGroup.profiles[index]
+    return {
+      ...profileGroup.profiles[profileGroup.indexToView],
+      profile: getProfileToView({
+        profile: profileState.profile,
+        flattenRecursion: state.flattenRecursion,
+      }),
+      index: profileGroup.indexToView,
+    }
+  }, [])
 }

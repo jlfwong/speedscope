@@ -1,0 +1,25 @@
+[
+  { "pid": 0, "tid": 0, "ph": "B", "ts": 0, "name": "A" },
+  { "pid": 0, "tid": 0, "ph": "E", "ts": 2, "name": "A" },
+  { "pid": 0, "tid": 0, "ph": "X", "ts": 0, "dur": 2, "name": "B" },
+
+  { "pid": 0, "tid": 0, "ph": "X", "ts": 10, "dur": 2, "name": "C" },
+  { "pid": 0, "tid": 0, "ph": "B", "ts": 10, "name": "D" },
+  { "pid": 0, "tid": 0, "ph": "E", "ts": 12, "name": "D" },
+
+  { "pid": 0, "tid": 0, "ph": "X", "ts": 20, "dur": 1, "name": "E" },
+  { "pid": 0, "tid": 0, "ph": "B", "ts": 20, "name": "F" },
+  { "pid": 0, "tid": 0, "ph": "E", "ts": 22, "name": "F" },
+
+  { "pid": 0, "tid": 0, "ph": "B", "ts": 30, "name": "G" },
+  { "pid": 0, "tid": 0, "ph": "E", "ts": 32, "name": "G" },
+  { "pid": 0, "tid": 0, "ph": "X", "ts": 30, "dur": 1, "name": "H" },
+
+  { "pid": 0, "tid": 0, "ph": "X", "ts": 41, "dur": 1, "name": "I" },
+  { "pid": 0, "tid": 0, "ph": "B", "ts": 40, "name": "J" },
+  { "pid": 0, "tid": 0, "ph": "E", "ts": 42, "name": "J" },
+
+  { "pid": 0, "tid": 0, "ph": "B", "ts": 50, "name": "K" },
+  { "pid": 0, "tid": 0, "ph": "E", "ts": 52, "name": "K" },
+  { "pid": 0, "tid": 0, "ph": "X", "ts": 51, "dur": 1, "name": "L" }
+]

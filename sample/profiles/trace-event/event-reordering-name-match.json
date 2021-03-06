@@ -1,0 +1,7 @@
+[
+  {"tid": 1, "ph": "X", "pid": 0, "name": "alpha", "args": {"x": 0}, "ts": 0, "dur": 10},
+  {"tid": 1, "ph": "B", "pid": 0, "name": "beta", "args": {"x": 0}, "ts": 1},
+  {"tid": 1, "ph": "B", "pid": 0, "name": "gamma", "args": {"x": 0}, "ts": 1},
+  {"tid": 1, "ph": "E", "pid": 0, "name": "beta", "args": {"x": 1}, "ts": 2},
+  {"tid": 1, "ph": "E", "pid": 0, "name": "gamma", "args": {"x": 1}, "ts": 2}
+]

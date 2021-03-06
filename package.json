@@ -1,6 +1,6 @@
 {
   "name": "speedscope",
-  "version": "1.8.0",
+  "version": "1.13.0",
   "description": "",
   "repository": "jlfwong/speedscope",
   "main": "index.js",
@@ -13,7 +13,7 @@
     "prettier": "prettier --write 'src/**/*.ts' 'src/**/*.tsx'",
     "lint": "eslint 'src/**/*.ts' 'src/**/*.tsx'",
     "jest": "./scripts/test-setup.sh && jest --runInBand",
-    "coverage": "npm run jest -- --coverage && coveralls < coverage/lcov.info",
+    "coverage": "npm run jest -- --coverage",
     "typecheck": "tsc --noEmit",
     "test": "./scripts/ci.sh",
     "serve": "parcel assets/index.html --open --no-autoinstall"
@@ -38,7 +38,6 @@
     "@typescript-eslint/parser": "2.33.0",
     "acorn": "7.2.0",
     "aphrodite": "2.1.0",
-    "coveralls": "3.0.1",
     "eslint": "6.0.0",
     "eslint-plugin-prettier": "2.6.0",
     "eslint-plugin-react-hooks": "4.0.2",
@@ -50,8 +49,8 @@
     "preact": "10.4.1",
     "prettier": "2.0.4",
     "protobufjs": "6.8.8",
-    "react-redux": "^7.2.0",
     "redux": "^4.0.5",
+    "source-map": "0.6.1",
     "ts-jest": "24.3.0",
     "typescript": "3.9.2",
     "typescript-eslint-parser": "17.0.1",
@@ -79,7 +78,6 @@
     ]
   },
   "dependencies": {
-    "opn": "5.3.0",
-    "react": "^16.13.1"
+    "open": "7.2.0"
   }
 }

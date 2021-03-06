@@ -3,12 +3,16 @@ import {css} from 'aphrodite'
 import {Flamechart} from '../lib/flamechart'
 import {Rect, Vec2, AffineTransform, clamp} from '../lib/math'
 import {FlamechartRenderer} from '../gl/flamechart-renderer'
-import {style} from './flamechart-style'
-import {FontFamily, FontSize, Colors, Sizes, commonStyle} from './style'
+import {getFlamechartStyle} from './flamechart-style'
+import {FontFamily, FontSize, Sizes, commonStyle} from './style'
 import {CanvasContext} from '../gl/canvas-context'
 import {cachedMeasureTextWidth} from '../lib/text-utils'
+import {Color} from '../lib/color'
+import {Theme} from './themes/theme'
 
 interface FlamechartMinimapViewProps {
+  theme: Theme
+
   flamechart: Flamechart
   configSpaceViewportRect: Rect
 
@@ -38,6 +42,10 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       this.overlayCanvas ? this.overlayCanvas.width : 0,
       this.overlayCanvas ? this.overlayCanvas.height : 0,
     )
+  }
+
+  private getStyle() {
+    return getFlamechartStyle(this.props.theme)
   }
 
   private minimapOrigin() {
@@ -132,19 +140,22 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       interval *= 2
     }
 
+    const theme = this.props.theme
+
     {
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
+      ctx.fillStyle = Color.fromCSSHex(theme.bgPrimaryColor).withAlpha(0.8).toCSS()
       ctx.fillRect(0, 0, physicalViewSize.x, physicalViewSpaceFrameHeight)
       ctx.textBaseline = 'top'
 
-      ctx.fillStyle = Colors.DARK_GRAY
       for (let x = Math.ceil(left / interval) * interval; x < right; x += interval) {
         // TODO(jlfwong): Ensure that labels do not overlap
         const pos = Math.round(configToPhysical.transformPosition(new Vec2(x, 0)).x)
         const labelText = this.props.flamechart.formatValue(x)
         const textWidth = Math.ceil(cachedMeasureTextWidth(ctx, labelText))
 
+        ctx.fillStyle = theme.fgPrimaryColor
         ctx.fillText(labelText, pos - textWidth - labelPaddingPx, labelPaddingPx)
+        ctx.fillStyle = theme.fgSecondaryColor
         ctx.fillRect(pos, 0, 1, physicalViewSize.y)
       }
     }
@@ -159,6 +170,14 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
       this.renderCanvas()
     } else if (this.props.configSpaceViewportRect != nextProps.configSpaceViewportRect) {
       this.renderCanvas()
+    } else if (this.props.canvasContext !== nextProps.canvasContext) {
+      if (this.props.canvasContext) {
+        this.props.canvasContext.removeBeforeFrameHandler(this.onBeforeFrame)
+      }
+      if (nextProps.canvasContext) {
+        nextProps.canvasContext.addBeforeFrameHandler(this.onBeforeFrame)
+        nextProps.canvasContext.requestFrame()
+      }
     }
   }
 
@@ -406,6 +425,8 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
   }
 
   render() {
+    const style = this.getStyle()
+
     return (
       <div
         ref={this.containerRef}

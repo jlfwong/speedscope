@@ -3,9 +3,6 @@ import {ValueFormatter, RawValueFormatter} from './value-formatters'
 import {FileFormat} from './file-format-spec'
 const demangleCppModule = import('./demangle-cpp')
 
-// Force eager loading of the module
-demangleCppModule.then(() => {})
-
 export interface FrameInfo {
   key: string | number
 
@@ -17,12 +14,16 @@ export interface FrameInfo {
   // call stack frame.
   file?: string
 
-  // Line in the given file where this frame occurs
+  // Line in the given file where this frame occurs, 1-based.
   line?: number
 
-  // Column in the file
+  // Column in the file, 1-based.
   col?: number
 }
+
+export type SymbolRemapper = (
+  frame: Frame,
+) => {name?: string; file?: string; line?: number; col?: number} | null
 
 export class HasWeights {
   private selfWeight = 0
@@ -116,6 +117,13 @@ export class Profile {
 
   protected frames = new KeyedSet<Frame>()
 
+  // Profiles store two call-trees.
+  //
+  // The "append order" call tree is the one in which nodes are ordered in
+  // whatever order they were appended to their parent.
+  //
+  // The "grouped" call tree is one in which each node has at most one child per
+  // frame. Nodes are ordered in decreasing order of weight
   protected appendOrderCalltreeRoot = new CallTreeNode(Frame.root, null)
   protected groupedCalltreeRoot = new CallTreeNode(Frame.root, null)
 
@@ -135,6 +143,12 @@ export class Profile {
 
   constructor(totalWeight: number = 0) {
     this.totalWeight = totalWeight
+  }
+
+  shallowClone(): Profile {
+    const profile = new Profile(this.totalWeight)
+    Object.assign(profile, this)
+    return profile
   }
 
   formatValue(v: number) {
@@ -169,6 +183,17 @@ export class Profile {
     return this.totalNonIdleWeight
   }
 
+  // This is private because it should only be called in the ProfileBuilder
+  // classes. Once a Profile instance has been constructed, it should be treated
+  // as immutable.
+  protected sortGroupedCallTree() {
+    function visit(node: CallTreeNode) {
+      node.children.sort((a, b) => -(a.getTotalWeight() - b.getTotalWeight()))
+      node.children.forEach(visit)
+    }
+    visit(this.groupedCalltreeRoot)
+  }
+
   forEachCallGrouped(
     openFrame: (node: CallTreeNode, value: number) => void,
     closeFrame: (node: CallTreeNode, value: number) => void,
@@ -180,10 +205,7 @@ export class Profile {
 
       let childTime = 0
 
-      const children = [...node.children]
-      children.sort((a, b) => -(a.getTotalWeight() - b.getTotalWeight()))
-
-      children.forEach(function (child) {
+      node.children.forEach(function (child) {
         visit(child, start + childTime)
         childTime += child.getTotalWeight()
       })
@@ -248,12 +270,6 @@ export class Profile {
 
   forEachFrame(fn: (frame: Frame) => void) {
     this.frames.forEach(fn)
-  }
-
-  forEachSample(fn: (sample: CallTreeNode, weight: number) => void) {
-    for (let i = 0; i < this.samples.length; i++) {
-      fn(this.samples[i], this.weights[i])
-    }
   }
 
   getProfileWithRecursionFlattened(): Profile {
@@ -399,9 +415,25 @@ export class Profile {
     }
   }
 
-  remapNames(callback: (name: string) => string) {
+  remapSymbols(callback: SymbolRemapper) {
     for (let frame of this.frames) {
-      frame.name = callback(frame.name)
+      const remapped = callback(frame)
+      if (remapped == null) {
+        continue
+      }
+      const {name, file, line, col} = remapped
+      if (name != null) {
+        frame.name = name
+      }
+      if (file != null) {
+        frame.file = file
+      }
+      if (line != null) {
+        frame.line = line
+      }
+      if (col != null) {
+        frame.col = col
+      }
     }
   }
 }
@@ -511,6 +543,7 @@ export class StackListProfileBuilder extends Profile {
       this.totalWeight,
       this.weights.reduce((a, b) => a + b, 0),
     )
+    this.sortGroupedCallTree()
     return this
   }
 }
@@ -588,6 +621,7 @@ export class CallTreeProfileBuilder extends Profile {
     const frameCount = this.framesInStack.get(frame) || 0
     this.framesInStack.set(frame, frameCount + 1)
     this.lastValue = value
+    this.totalWeight = Math.max(this.totalWeight, this.lastValue)
   }
 
   private _leaveFrame(frame: Frame, value: number, useAppendOrder: boolean) {
@@ -651,6 +685,7 @@ export class CallTreeProfileBuilder extends Profile {
     if (this.appendOrderStack.length > 1 || this.groupedOrderStack.length > 1) {
       throw new Error('Tried to complete profile construction with a non-empty stack')
     }
+    this.sortGroupedCallTree()
     return this
   }
 }

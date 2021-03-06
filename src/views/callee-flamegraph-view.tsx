@@ -13,10 +13,11 @@ import {
   getFrameToColorBucket,
 } from '../store/getters'
 import {FlamechartID} from '../store/flamechart-view-state'
-import {FlamechartWrapper, useDummySearchProps} from './flamechart-wrapper'
+import {FlamechartWrapper} from './flamechart-wrapper'
 import {useAppSelector} from '../store'
 import {h} from 'preact'
 import {memo} from 'preact/compat'
+import {useTheme} from './themes/theme'
 
 const getCalleeProfile = memoizeByShallowEquality<
   {
@@ -52,6 +53,7 @@ export const CalleeFlamegraphView = memo((ownProps: FlamechartViewContainerProps
   const {index, profile, sandwichViewState} = activeProfileState
   const flattenRecursion = useAppSelector(state => state.flattenRecursion, [])
   const glCanvas = useAppSelector(state => state.glCanvas, [])
+  const theme = useTheme()
 
   if (!profile) throw new Error('profile missing')
   if (!glCanvas) throw new Error('glCanvas missing')
@@ -61,8 +63,8 @@ export const CalleeFlamegraphView = memo((ownProps: FlamechartViewContainerProps
 
   const frameToColorBucket = getFrameToColorBucket(profile)
   const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
-  const getCSSColorForFrame = createGetCSSColorForFrame(frameToColorBucket)
-  const canvasContext = getCanvasContext(glCanvas)
+  const getCSSColorForFrame = createGetCSSColorForFrame({theme, frameToColorBucket})
+  const canvasContext = getCanvasContext({theme, canvas: glCanvas})
 
   const flamechart = getCalleeFlamegraph({
     calleeProfile: getCalleeProfile({profile, frame: selectedFrame, flattenRecursion}),
@@ -72,20 +74,16 @@ export const CalleeFlamegraphView = memo((ownProps: FlamechartViewContainerProps
 
   return (
     <FlamechartWrapper
+      theme={theme}
       renderInverted={false}
       flamechart={flamechart}
       flamechartRenderer={flamechartRenderer}
       canvasContext={canvasContext}
       getCSSColorForFrame={getCSSColorForFrame}
       {...useFlamechartSetters(FlamechartID.SANDWICH_CALLEES, index)}
+      {...callerCallee.calleeFlamegraph}
       // This overrides the setSelectedNode specified in useFlamechartSettesr
       setSelectedNode={noop}
-      {...callerCallee.calleeFlamegraph}
-      /*
-       * TODO(jlfwong): When implementing search for the sandwich views,
-       * change these flags
-       * */
-      {...useDummySearchProps()}
     />
   )
 })

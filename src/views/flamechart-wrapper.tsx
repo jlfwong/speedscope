@@ -1,37 +1,22 @@
 import {CallTreeNode} from '../lib/profile'
 import {StyleSheet, css} from 'aphrodite'
 import {h} from 'preact'
-import {commonStyle, Colors} from './style'
+import {commonStyle} from './style'
 import {Rect, AffineTransform, Vec2} from '../lib/math'
 import {FlamechartPanZoomView} from './flamechart-pan-zoom-view'
 import {noop, formatPercent} from '../lib/utils'
 import {Hovertip} from './hovertip'
 import {FlamechartViewProps} from './flamechart-view-container'
 import {StatelessComponent} from '../lib/typed-redux'
-import {useCallback} from 'preact/hooks'
-import {SearchViewProps} from './search-view'
-
-export function useDummySearchProps(): SearchViewProps {
-  return {
-    searchIsActive: false,
-    searchQuery: '',
-    setSearchQuery: useCallback((q: string) => {}, []),
-    setSearchIsActive: useCallback((v: boolean) => {}, []),
-  }
-}
+import {withTheme} from './themes/theme'
 
 export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
   private clampViewportToFlamegraph(viewportRect: Rect) {
     const {flamechart, renderInverted} = this.props
-    const configSpaceSize = new Vec2(flamechart.getTotalWeight(), flamechart.getLayers().length)
-    const width = this.props.flamechart.getClampedViewportWidth(viewportRect.size.x)
-    const size = viewportRect.size.withX(width)
-    const origin = Vec2.clamp(
-      viewportRect.origin,
-      new Vec2(0, renderInverted ? 0 : -1),
-      Vec2.max(Vec2.zero, configSpaceSize.minus(size).plus(new Vec2(0, 1))),
-    )
-    return new Rect(origin, viewportRect.size.withX(width))
+    return flamechart.getClampedConfigSpaceViewportRect({
+      configSpaceViewportRect: viewportRect,
+      renderInverted,
+    })
   }
   private setConfigSpaceViewportRect = (configSpaceViewportRect: Rect) => {
     this.props.setConfigSpaceViewportRect(this.clampViewportToFlamegraph(configSpaceViewportRect))
@@ -55,6 +40,8 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
     if (!hover) return null
     const {width, height, left, top} = this.container.getBoundingClientRect()
     const offset = new Vec2(hover.event.clientX - left, hover.event.clientY - top)
+    const style = getStyle(this.props.theme)
+
     return (
       <Hovertip containerSize={new Vec2(width, height)} offset={offset}>
         <span className={css(style.hoverCount)}>
@@ -83,6 +70,7 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
         ref={this.containerRef}
       >
         <FlamechartPanZoomView
+          theme={this.props.theme}
           selectedNode={null}
           onNodeHover={this.setNodeHover}
           onNodeSelect={noop}
@@ -95,8 +83,7 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
           renderInverted={this.props.renderInverted}
           logicalSpaceViewportSize={this.props.logicalSpaceViewportSize}
           setLogicalSpaceViewportSize={this.setLogicalSpaceViewportSize}
-          searchIsActive={this.props.searchIsActive}
-          searchQuery={this.props.searchQuery}
+          searchResults={null}
         />
         {this.renderTooltip()}
       </div>
@@ -104,8 +91,10 @@ export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
   }
 }
 
-export const style = StyleSheet.create({
-  hoverCount: {
-    color: Colors.GREEN,
-  },
-})
+export const getStyle = withTheme(theme =>
+  StyleSheet.create({
+    hoverCount: {
+      color: theme.weightColor,
+    },
+  }),
+)

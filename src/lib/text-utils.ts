@@ -1,4 +1,4 @@
-import {binarySearch} from './utils'
+import {findValueBisect} from './utils'
 
 export const ELLIPSIS = '\u2026'
 
@@ -65,7 +65,7 @@ export function trimTextMid(
   if (cachedMeasureTextWidth(ctx, text) <= maxWidth) {
     return buildTrimmedText(text, text.length)
   }
-  const [lo] = binarySearch(
+  const [lo] = findValueBisect(
     0,
     text.length,
     n => {
@@ -131,10 +131,7 @@ export function remapRangesToTrimmedText(
           case IndexTypeInTrimmed.ELIDED: {
             // The range starts in the prefix, but ends in the elided
             // section. Add just the prefix + one char for the ellipsis.
-            rangesToHighlightInTrimmedText.push([
-              origStart,
-              origStart + trimmedText.prefixLength + 1,
-            ])
+            rangesToHighlightInTrimmedText.push([origStart, trimmedText.prefixLength + 1])
             highlightedEllipsis = true
             break
           }
