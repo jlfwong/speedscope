@@ -201,18 +201,16 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
       return toGroup(importFromInstrumentsDeepCopy(contents))
     }
 
-    // If every line ends with a space followed by a number, it's probably
-    // the collapsed stack format.
-    const lineCount = contents.split(/\n/).length
-    if (lineCount >= 1 && lineCount === contents.split(/ \d+\r?\n/).length) {
-      console.log('Importing as collapsed stack format')
-      return toGroup(importFromBGFlameGraph(contents))
-    }
-
     const fromLinuxPerf = importFromLinuxPerf(contents)
     if (fromLinuxPerf) {
       console.log('Importing from linux perf script output')
       return fromLinuxPerf
+    }
+
+    const fromBGFlameGraph = importFromBGFlameGraph(contents)
+    if (fromBGFlameGraph) {
+      console.log('Importing as collapsed stack format')
+      return toGroup(fromBGFlameGraph)
     }
   }
 
