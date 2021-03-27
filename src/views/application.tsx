@@ -373,8 +373,12 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   onDocumentPaste = (ev: Event) => {
+    if (document.activeElement != null && document.activeElement.nodeName === "INPUT")
+      return
+
     ev.preventDefault()
     ev.stopPropagation()
+
 
     const clipboardData = (ev as ClipboardEvent).clipboardData
     if (!clipboardData) return
