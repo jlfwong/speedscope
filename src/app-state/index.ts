@@ -1,6 +1,6 @@
 import {Atom} from '../lib/atom'
 import {getHashParams, HashParams} from '../lib/hash-params'
-import {FlamechartID, ProfileGroupAtom} from './profile-group'
+import {ProfileGroupAtom} from './profile-group'
 
 // True if recursion should be flattened when viewing flamegraphs
 export const flattenRecursionAtom = new Atom<boolean>(false, 'flattenRecursion')
