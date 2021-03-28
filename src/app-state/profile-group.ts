@@ -1,6 +1,7 @@
 import {Atom} from '../lib/atom'
-import {Rect, Vec2} from '../lib/math'
+import {clamp, Rect, Vec2} from '../lib/math'
 import {CallTreeNode, Frame, Profile, ProfileGroup} from '../lib/profile'
+import {objectsHaveShallowEquality} from '../lib/utils'
 
 export interface FlamechartViewState {
   hover: {
@@ -53,6 +54,14 @@ let initialFlameChartViewState: FlamechartViewState = {
 }
 
 export class ProfileGroupAtom extends Atom<ProfileGroupState> {
+  set(newState: ProfileGroupState) {
+    const oldState = this.state
+    if (oldState != null && newState != null && objectsHaveShallowEquality(oldState, newState)) {
+      return
+    }
+    super.set(newState)
+  }
+
   getActiveProfile(): ProfileState | null {
     if (this.state == null) return null
     return this.state.profiles[this.state?.indexToView] || null
@@ -73,6 +82,8 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
 
   setProfileIndexToView = (indexToView: number) => {
     if (this.state == null) return
+
+    indexToView = clamp(indexToView, 0, this.state.profiles.length - 1)
 
     this.set({
       ...this.state,
