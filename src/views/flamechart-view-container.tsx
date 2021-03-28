@@ -11,10 +11,10 @@ import {
   getCanvasContext,
   createGetCSSColorForFrame,
   getFrameToColorBucket,
-} from '../store/getters'
+} from '../app-state/getters'
 import {Vec2, Rect} from '../lib/math'
 import {memo, useCallback} from 'preact/compat'
-import {ActiveProfileState} from '../store'
+import {ActiveProfileState} from '../app-state/active-profile-state'
 import {FlamechartSearchContextProvider} from './flamechart-search-view'
 import {Theme, useTheme} from './themes/theme'
 import {FlamechartID, FlamechartViewState} from '../app-state/profile-group'

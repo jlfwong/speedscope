@@ -5,7 +5,7 @@ import {formatPercent} from '../lib/utils'
 import {FontSize, Sizes, commonStyle} from './style'
 import {ColorChit} from './color-chit'
 import {ListItem, ScrollableListView} from './scrollable-list-view'
-import {createGetCSSColorForFrame, getFrameToColorBucket} from '../store/getters'
+import {createGetCSSColorForFrame, getFrameToColorBucket} from '../app-state/getters'
 import {memo} from 'preact/compat'
 import {useCallback, useMemo, useContext} from 'preact/hooks'
 import {SandwichViewContext} from './sandwich-view'
@@ -21,7 +21,7 @@ import {
   searchQueryAtom,
 } from '../app-state'
 import {useAtom} from '../lib/atom'
-import {ActiveProfileState} from '../store'
+import {ActiveProfileState} from '../app-state/active-profile-state'
 
 interface HBarProps {
   perc: number

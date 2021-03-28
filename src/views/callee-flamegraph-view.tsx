@@ -11,7 +11,7 @@ import {
   createGetColorBucketForFrame,
   createGetCSSColorForFrame,
   getFrameToColorBucket,
-} from '../store/getters'
+} from '../app-state/getters'
 import {FlamechartWrapper} from './flamechart-wrapper'
 import {h} from 'preact'
 import {memo} from 'preact/compat'
