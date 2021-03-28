@@ -5,13 +5,13 @@ import {useCallback, useState, useEffect} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
 import {Sizes, FontFamily, FontSize, Duration} from './style'
 import {ProfileSelect} from './profile-select'
-import {ProfileGroupState} from '../store/profiles-state'
 import {Profile} from '../lib/profile'
 import {objectsHaveShallowEquality} from '../lib/utils'
 import {colorSchemeToString, nextColorScheme, useTheme, withTheme} from './themes/theme'
 import {useActionCreator} from '../lib/preact-redux'
 import {actions} from '../store/actions'
 import {ViewMode} from '../app-state'
+import {ProfileGroupState} from '../app-state/profile-group'
 
 interface ToolbarProps extends ApplicationProps {
   browseForFile(): void

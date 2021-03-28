@@ -50,7 +50,7 @@ const getCalleeFlamegraphRenderer = createMemoizedFlamechartRenderer()
 
 export const CalleeFlamegraphView = memo((ownProps: FlamechartViewContainerProps) => {
   const {activeProfileState} = ownProps
-  const {index, profile, sandwichViewState} = activeProfileState
+  const {profile, sandwichViewState} = activeProfileState
   const flattenRecursion = useAppSelector(state => state.flattenRecursion, [])
   const glCanvas = useAppSelector(state => state.glCanvas, [])
   const theme = useTheme()
@@ -80,7 +80,7 @@ export const CalleeFlamegraphView = memo((ownProps: FlamechartViewContainerProps
       flamechartRenderer={flamechartRenderer}
       canvasContext={canvasContext}
       getCSSColorForFrame={getCSSColorForFrame}
-      {...useFlamechartSetters(FlamechartID.SANDWICH_CALLEES, index)}
+      {...useFlamechartSetters(FlamechartID.SANDWICH_CALLEES)}
       {...callerCallee.calleeFlamegraph}
       // This overrides the setSelectedNode specified in useFlamechartSettesr
       setSelectedNode={noop}

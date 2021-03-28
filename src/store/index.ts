@@ -8,13 +8,19 @@ import {actions} from './actions'
 import * as redux from 'redux'
 import {setter, Reducer, Action} from '../lib/typed-redux'
 import {HashParams, getHashParams} from '../lib/hash-params'
-import {ProfileGroupState, profileGroup} from './profiles-state'
 import {useSelector} from '../lib/preact-redux'
 import {Profile} from '../lib/profile'
-import {SandwichViewState} from './sandwich-view-state'
 import {getProfileToView} from './getters'
-import {ViewMode, SortMethod, SortField, SortDirection} from '../app-state'
-import {FlamechartViewState} from '../app-state/profile-group'
+import {
+  ViewMode,
+  SortMethod,
+  SortField,
+  SortDirection,
+  flattenRecursionAtom,
+  profileGroupAtom,
+} from '../app-state'
+import {FlamechartViewState, SandwichViewState} from '../app-state/profile-group'
+import {useAtom} from '../lib/atom'
 
 export const enum ColorScheme {
   // Default: respect prefers-color-schema
@@ -28,9 +34,6 @@ export const enum ColorScheme {
 }
 
 export interface ApplicationState {
-  // The top-level profile group from which most other data will be derived
-  profileGroup: ProfileGroupState
-
   // Parameters defined by the URL encoded k=v pairs after the # in the URL
   hashParams: HashParams
 
@@ -124,8 +127,6 @@ export function createAppStore(initialState?: ApplicationState): redux.Store<App
   const loading = canUseXHR && hashParams.profileURL != null
 
   const reducer: Reducer<ApplicationState> = redux.combineReducers({
-    profileGroup,
-
     hashParams: setter<HashParams>(actions.setHashParams, hashParams),
 
     flattenRecursion: setter<boolean>(actions.setFlattenRecursion, false),
@@ -166,20 +167,20 @@ export interface ActiveProfileState {
 }
 
 export function useActiveProfileState(): ActiveProfileState | null {
-  return useAppSelector(state => {
-    const {profileGroup} = state
-    if (!profileGroup) return null
-    if (profileGroup.indexToView >= profileGroup.profiles.length) return null
+  const flattenRecursion = useAtom(flattenRecursionAtom)
+  const profileGroupState = useAtom(profileGroupAtom)
 
-    const index = profileGroup.indexToView
-    const profileState = profileGroup.profiles[index]
-    return {
-      ...profileGroup.profiles[profileGroup.indexToView],
-      profile: getProfileToView({
-        profile: profileState.profile,
-        flattenRecursion: state.flattenRecursion,
-      }),
-      index: profileGroup.indexToView,
-    }
-  }, [])
+  if (!profileGroupState) return null
+  if (profileGroupState.indexToView >= profileGroupState.profiles.length) return null
+
+  const index = profileGroupState.indexToView
+  const profileState = profileGroupState.profiles[index]
+  return {
+    ...profileGroupState.profiles[profileGroupState.indexToView],
+    profile: getProfileToView({
+      profile: profileState.profile,
+      flattenRecursion,
+    }),
+    index: profileGroupState.indexToView,
+  }
 }

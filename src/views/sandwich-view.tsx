@@ -5,18 +5,16 @@ import {h, JSX, createContext} from 'preact'
 import {memo} from 'preact/compat'
 import {useCallback, useMemo, useContext} from 'preact/hooks'
 import {commonStyle, Sizes, FontSize} from './style'
-import {actions} from '../store/actions'
 import {StatelessComponent} from '../lib/typed-redux'
 import {InvertedCallerFlamegraphView} from './inverted-caller-flamegraph-view'
 import {CalleeFlamegraphView} from './callee-flamegraph-view'
-import {useDispatch} from '../lib/preact-redux'
 import {SandwichSearchView} from './sandwich-search-view'
 import {useAppSelector, ActiveProfileState} from '../store'
 import {sortBy} from '../lib/utils'
 import {ProfileSearchContext} from './search-view'
 import {FuzzyMatch} from '../lib/fuzzy-find'
 import {Theme, useTheme, withTheme} from './themes/theme'
-import {SortField, SortDirection} from '../app-state'
+import {SortField, SortDirection, profileGroupAtom} from '../app-state'
 
 interface SandwichViewProps {
   selectedFrame: Frame | null
@@ -153,18 +151,9 @@ export const SandwichViewContainer = memo((ownProps: SandwichViewContainerProps)
   const {callerCallee} = sandwichViewState
 
   const theme = useTheme()
-  const dispatch = useDispatch()
-  const setSelectedFrame = useCallback(
-    (selectedFrame: Frame | null) => {
-      dispatch(
-        actions.sandwichView.setSelectedFrame({
-          profileIndex: index,
-          args: selectedFrame,
-        }),
-      )
-    },
-    [dispatch, index],
-  )
+  const setSelectedFrame = useCallback((selectedFrame: Frame | null) => {
+    profileGroupAtom.setSelectedFrame(selectedFrame)
+  }, [])
 
   const profile = activeProfileState.profile
   const tableSortMethod = useAppSelector(state => state.tableSortMethod, [])

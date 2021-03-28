@@ -14,7 +14,7 @@ import {useCallback, useMemo, useContext} from 'preact/hooks'
 import {SandwichViewContext} from './sandwich-view'
 import {Color} from '../lib/color'
 import {useTheme, withTheme} from './themes/theme'
-import {SortDirection, SortMethod, SortField} from '../app-state'
+import {SortDirection, SortMethod, SortField, profileGroupAtom} from '../app-state'
 
 interface HBarProps {
   perc: number
@@ -419,7 +419,7 @@ const {setTableSortMethod} = actions.sandwichView
 
 export const ProfileTableViewContainer = memo((ownProps: ProfileTableViewContainerProps) => {
   const {activeProfileState} = ownProps
-  const {profile, sandwichViewState, index} = activeProfileState
+  const {profile, sandwichViewState} = activeProfileState
   if (!profile) throw new Error('profile missing')
   const tableSortMethod = useAppSelector(state => state.tableSortMethod, [])
   const theme = useTheme()
@@ -428,12 +428,9 @@ export const ProfileTableViewContainer = memo((ownProps: ProfileTableViewContain
   const frameToColorBucket = getFrameToColorBucket(profile)
   const getCSSColorForFrame = createGetCSSColorForFrame({theme, frameToColorBucket})
 
-  const setSelectedFrame = useActionCreator(
-    (selectedFrame: Frame | null) => {
-      return actions.sandwichView.setSelectedFrame({profileIndex: index, args: selectedFrame})
-    },
-    [index],
-  )
+  const setSelectedFrame = useCallback((selectedFrame: Frame | null) => {
+    profileGroupAtom.setSelectedFrame(selectedFrame)
+  }, [])
   const setSortMethod = useActionCreator(setTableSortMethod, [])
   const searchIsActive = useAppSelector(state => state.searchIsActive, [])
   const searchQuery = useAppSelector(state => state.searchQuery, [])

@@ -15,6 +15,7 @@ import {Toolbar} from './toolbar'
 import {importJavaScriptSourceMapSymbolRemapper} from '../lib/js-source-map'
 import {Theme, withTheme} from './themes/theme'
 import {ViewMode} from '../app-state'
+import {ProfileGroupState} from '../app-state/profile-group'
 
 const importModule = import('../import')
 
@@ -150,6 +151,7 @@ export type ApplicationProps = ApplicationState & {
   activeProfileState: ActiveProfileState | null
   canvasContext: CanvasContext | null
   theme: Theme
+  profileGroup: ProfileGroupState
 }
 
 export class Application extends StatelessComponent<ApplicationProps> {

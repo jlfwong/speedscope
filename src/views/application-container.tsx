@@ -7,17 +7,10 @@ import {memo} from 'preact/compat'
 import {useAppSelector, useActiveProfileState} from '../store'
 import {ProfileSearchContextProvider} from './search-view'
 import {useTheme} from './themes/theme'
+import {profileGroupAtom} from '../app-state'
+import {useAtom} from '../lib/atom'
 
-const {
-  setLoading,
-  setError,
-  setProfileGroup,
-  setDragActive,
-  setViewMode,
-  setGLCanvas,
-  setFlattenRecursion,
-  setProfileIndexToView,
-} = actions
+const {setLoading, setError, setDragActive, setViewMode, setGLCanvas, setFlattenRecursion} = actions
 
 export const ApplicationContainer = memo(() => {
   const appState = useAppSelector(state => state, [])
@@ -35,11 +28,12 @@ export const ApplicationContainer = memo(() => {
         setGLCanvas={useActionCreator(setGLCanvas, [])}
         setLoading={useActionCreator(setLoading, [])}
         setError={useActionCreator(setError, [])}
-        setProfileGroup={useActionCreator(setProfileGroup, [])}
+        setProfileGroup={profileGroupAtom.setProfileGroup}
         setDragActive={useActionCreator(setDragActive, [])}
         setViewMode={useActionCreator(setViewMode, [])}
         setFlattenRecursion={useActionCreator(setFlattenRecursion, [])}
-        setProfileIndexToView={useActionCreator(setProfileIndexToView, [])}
+        setProfileIndexToView={profileGroupAtom.setProfileIndexToView}
+        profileGroup={useAtom(profileGroupAtom)}
         theme={theme}
         {...appState}
       />

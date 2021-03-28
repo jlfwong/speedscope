@@ -55,7 +55,7 @@ const getInvertedCallerFlamegraphRenderer = createMemoizedFlamechartRenderer({in
 
 export const InvertedCallerFlamegraphView = memo((ownProps: FlamechartViewContainerProps) => {
   const {activeProfileState} = ownProps
-  let {profile, sandwichViewState, index} = activeProfileState
+  let {profile, sandwichViewState} = activeProfileState
   const flattenRecursion = useAppSelector(state => state.flattenRecursion, [])
   const glCanvas = useAppSelector(state => state.glCanvas, [])
   const theme = useTheme()
@@ -89,7 +89,7 @@ export const InvertedCallerFlamegraphView = memo((ownProps: FlamechartViewContai
       flamechartRenderer={flamechartRenderer}
       canvasContext={canvasContext}
       getCSSColorForFrame={getCSSColorForFrame}
-      {...useFlamechartSetters(FlamechartID.SANDWICH_INVERTED_CALLERS, index)}
+      {...useFlamechartSetters(FlamechartID.SANDWICH_INVERTED_CALLERS)}
       {...callerCallee.invertedCallerFlamegraph}
       // This overrides the setSelectedNode specified in useFlamechartSettesr
       setSelectedNode={noop}
