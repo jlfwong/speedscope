@@ -5,10 +5,10 @@ import {memo} from 'preact/compat'
 import {Sizes, FontSize} from './style'
 import {ProfileSearchResults} from '../lib/profile-search'
 import {Profile} from '../lib/profile'
-import {useActiveProfileState, useAppSelector} from '../store'
-import {useActionCreator} from '../lib/preact-redux'
-import {actions} from '../store/actions'
+import {useActiveProfileState} from '../app-state/active-profile-state'
 import {useTheme, withTheme} from './themes/theme'
+import {searchIsActiveAtom, searchQueryAtom} from '../app-state'
+import {useAtom} from '../lib/atom'
 
 function stopPropagation(ev: Event) {
   ev.stopPropagation()
@@ -19,8 +19,8 @@ export const ProfileSearchContext = createContext<ProfileSearchResults | null>(n
 export const ProfileSearchContextProvider = ({children}: {children: ComponentChildren}) => {
   const activeProfileState = useActiveProfileState()
   const profile: Profile | null = activeProfileState ? activeProfileState.profile : null
-  const searchIsActive = useAppSelector(state => state.searchIsActive, [])
-  const searchQuery = useAppSelector(state => state.searchQuery, [])
+  const searchIsActive = useAtom(searchIsActiveAtom)
+  const searchQuery = useAtom(searchQueryAtom)
 
   const searchResults = useMemo(() => {
     if (!profile || !searchIsActive || searchQuery.length === 0) {
@@ -34,8 +34,6 @@ export const ProfileSearchContextProvider = ({children}: {children: ComponentChi
   )
 }
 
-const {setSearchQuery: setSearchQueryAction, setSearchIsActive: setSearchIsActiveAction} = actions
-
 interface SearchViewProps {
   resultIndex: number | null
   numResults: number | null
@@ -47,10 +45,10 @@ export const SearchView = memo(
   ({numResults, resultIndex, selectNext, selectPrev}: SearchViewProps) => {
     const theme = useTheme()
     const style = getStyle(theme)
-    const searchQuery = useAppSelector(state => state.searchQuery, [])
-    const searchIsActive = useAppSelector(state => state.searchIsActive, [])
-    const setSearchQuery = useActionCreator(setSearchQueryAction, [])
-    const setSearchIsActive = useActionCreator(setSearchIsActiveAction, [])
+    const searchIsActive = useAtom(searchIsActiveAtom)
+    const searchQuery = useAtom(searchQueryAtom)
+    const setSearchQuery = searchQueryAtom.set
+    const setSearchIsActive = searchIsActiveAtom.set
 
     const onInput = useCallback(
       (ev: Event) => {

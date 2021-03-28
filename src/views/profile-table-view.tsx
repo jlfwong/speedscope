@@ -5,31 +5,23 @@ import {formatPercent} from '../lib/utils'
 import {FontSize, Sizes, commonStyle} from './style'
 import {ColorChit} from './color-chit'
 import {ListItem, ScrollableListView} from './scrollable-list-view'
-import {actions} from '../store/actions'
-import {createGetCSSColorForFrame, getFrameToColorBucket} from '../store/getters'
-import {useActionCreator} from '../lib/preact-redux'
-import {useAppSelector, ActiveProfileState} from '../store'
+import {createGetCSSColorForFrame, getFrameToColorBucket} from '../app-state/getters'
 import {memo} from 'preact/compat'
 import {useCallback, useMemo, useContext} from 'preact/hooks'
 import {SandwichViewContext} from './sandwich-view'
 import {Color} from '../lib/color'
 import {useTheme, withTheme} from './themes/theme'
-
-export enum SortField {
-  SYMBOL_NAME,
-  SELF,
-  TOTAL,
-}
-
-export enum SortDirection {
-  ASCENDING,
-  DESCENDING,
-}
-
-export interface SortMethod {
-  field: SortField
-  direction: SortDirection
-}
+import {
+  SortDirection,
+  SortMethod,
+  SortField,
+  profileGroupAtom,
+  tableSortMethodAtom,
+  searchIsActiveAtom,
+  searchQueryAtom,
+} from '../app-state'
+import {useAtom} from '../lib/atom'
+import {ActiveProfileState} from '../app-state/active-profile-state'
 
 interface HBarProps {
   perc: number
@@ -430,28 +422,22 @@ interface ProfileTableViewContainerProps {
   activeProfileState: ActiveProfileState
 }
 
-const {setTableSortMethod} = actions.sandwichView
-
 export const ProfileTableViewContainer = memo((ownProps: ProfileTableViewContainerProps) => {
   const {activeProfileState} = ownProps
-  const {profile, sandwichViewState, index} = activeProfileState
+  const {profile, sandwichViewState} = activeProfileState
   if (!profile) throw new Error('profile missing')
-  const tableSortMethod = useAppSelector(state => state.tableSortMethod, [])
+  const tableSortMethod = useAtom(tableSortMethodAtom)
   const theme = useTheme()
   const {callerCallee} = sandwichViewState
   const selectedFrame = callerCallee ? callerCallee.selectedFrame : null
   const frameToColorBucket = getFrameToColorBucket(profile)
   const getCSSColorForFrame = createGetCSSColorForFrame({theme, frameToColorBucket})
 
-  const setSelectedFrame = useActionCreator(
-    (selectedFrame: Frame | null) => {
-      return actions.sandwichView.setSelectedFrame({profileIndex: index, args: selectedFrame})
-    },
-    [index],
-  )
-  const setSortMethod = useActionCreator(setTableSortMethod, [])
-  const searchIsActive = useAppSelector(state => state.searchIsActive, [])
-  const searchQuery = useAppSelector(state => state.searchQuery, [])
+  const setSelectedFrame = useCallback((selectedFrame: Frame | null) => {
+    profileGroupAtom.setSelectedFrame(selectedFrame)
+  }, [])
+  const searchIsActive = useAtom(searchIsActiveAtom)
+  const searchQuery = useAtom(searchQueryAtom)
 
   return (
     <ProfileTableView
@@ -460,7 +446,7 @@ export const ProfileTableViewContainer = memo((ownProps: ProfileTableViewContain
       getCSSColorForFrame={getCSSColorForFrame}
       sortMethod={tableSortMethod}
       setSelectedFrame={setSelectedFrame}
-      setSortMethod={setSortMethod}
+      setSortMethod={tableSortMethodAtom.set}
       searchIsActive={searchIsActive}
       searchQuery={searchQuery}
     />

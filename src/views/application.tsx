@@ -7,13 +7,16 @@ import {FontFamily, FontSize, Duration} from './style'
 import {importEmscriptenSymbolMap as importEmscriptenSymbolRemapper} from '../lib/emscripten'
 import {SandwichViewContainer} from './sandwich-view'
 import {saveToFile} from '../lib/file-format'
-import {ApplicationState, ViewMode, canUseXHR, ActiveProfileState} from '../store'
-import {StatelessComponent} from '../lib/typed-redux'
+import {ActiveProfileState} from '../app-state/active-profile-state'
 import {LeftHeavyFlamechartView, ChronoFlamechartView} from './flamechart-view-container'
 import {CanvasContext} from '../gl/canvas-context'
 import {Toolbar} from './toolbar'
 import {importJavaScriptSourceMapSymbolRemapper} from '../lib/js-source-map'
 import {Theme, withTheme} from './themes/theme'
+import {canUseXHR, ViewMode} from '../app-state'
+import {ProfileGroupState} from '../app-state/profile-group'
+import {HashParams} from '../lib/hash-params'
+import {StatelessComponent} from '../lib/preact-helpers'
 
 const importModule = import('../import')
 
@@ -137,7 +140,7 @@ export class GLCanvas extends StatelessComponent<GLCanvasProps> {
   }
 }
 
-export type ApplicationProps = ApplicationState & {
+export type ApplicationProps = {
   setGLCanvas: (canvas: HTMLCanvasElement | null) => void
   setLoading: (loading: boolean) => void
   setError: (error: boolean) => void
@@ -149,6 +152,14 @@ export type ApplicationProps = ApplicationState & {
   activeProfileState: ActiveProfileState | null
   canvasContext: CanvasContext | null
   theme: Theme
+  profileGroup: ProfileGroupState
+  flattenRecursion: boolean
+  viewMode: ViewMode
+  hashParams: HashParams
+  dragActive: boolean
+  loading: boolean
+  glCanvas: HTMLCanvasElement | null
+  error: boolean
 }
 
 export class Application extends StatelessComponent<ApplicationProps> {
@@ -373,12 +384,10 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   onDocumentPaste = (ev: Event) => {
-    if (document.activeElement != null && document.activeElement.nodeName === "INPUT")
-      return
+    if (document.activeElement != null && document.activeElement.nodeName === 'INPUT') return
 
     ev.preventDefault()
     ev.stopPropagation()
-
 
     const clipboardData = (ev as ClipboardEvent).clipboardData
     if (!clipboardData) return

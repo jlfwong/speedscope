@@ -12,10 +12,10 @@ import {FlamechartDetailView} from './flamechart-detail-view'
 import {FlamechartPanZoomView} from './flamechart-pan-zoom-view'
 import {Hovertip} from './hovertip'
 import {FlamechartViewProps} from './flamechart-view-container'
-import {StatelessComponent} from '../lib/typed-redux'
 import {ProfileSearchContext} from './search-view'
 import {FlamechartSearchView} from './flamechart-search-view'
 import {getFlamechartStyle} from './flamechart-style'
+import {StatelessComponent} from '../lib/preact-helpers'
 
 export class FlamechartView extends StatelessComponent<FlamechartViewProps> {
   private getStyle() {
