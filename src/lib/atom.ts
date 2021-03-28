@@ -14,7 +14,7 @@
 //
 // # Simple functions being passed atom
 //
-//     const myListAtom = new Atom<number[]>([])
+//     const myListAtom = new Atom<number[]>([], "myList")
 //     function push<T>(atom: Atom<T[]>, t: T) {
 //       const next = [...atom.get(), t]
 //       atom.set(next)
@@ -28,7 +28,7 @@
 //
 // # Simple functions operating on global atoms
 //
-//     const myListAtom = new Atom<number[]>([])
+//     const myListAtom = new Atom<number[]>([], "myLisT")
 //     function push(t: number) {
 //       myListAtom.set([...myListAtom.get(), t])
 //     }
@@ -47,10 +47,11 @@
 //        }
 //        removeLast() {
 //          const next = [...this.state]
+//          next.pop()
 //          this.set(next)
 //        }
 //     }
-//     const myListAtom = new ListAtom<number>
+//     const myListAtom = new ListAtom<number>([], "myList")
 //
 // This library is inspired by https://recoiljs.org/
 
