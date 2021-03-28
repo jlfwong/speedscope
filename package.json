@@ -49,7 +49,6 @@
     "preact": "10.4.1",
     "prettier": "2.0.4",
     "protobufjs": "6.8.8",
-    "redux": "^4.0.5",
     "source-map": "0.6.1",
     "ts-jest": "24.3.0",
     "typescript": "3.9.2",

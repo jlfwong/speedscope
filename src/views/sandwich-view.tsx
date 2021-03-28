@@ -5,7 +5,6 @@ import {h, JSX, createContext} from 'preact'
 import {memo} from 'preact/compat'
 import {useCallback, useMemo, useContext} from 'preact/hooks'
 import {commonStyle, Sizes, FontSize} from './style'
-import {StatelessComponent} from '../lib/typed-redux'
 import {InvertedCallerFlamegraphView} from './inverted-caller-flamegraph-view'
 import {CalleeFlamegraphView} from './callee-flamegraph-view'
 import {SandwichSearchView} from './sandwich-search-view'
@@ -16,6 +15,7 @@ import {FuzzyMatch} from '../lib/fuzzy-find'
 import {Theme, useTheme, withTheme} from './themes/theme'
 import {SortField, SortDirection, profileGroupAtom, tableSortMethodAtom} from '../app-state'
 import {useAtom} from '../lib/atom'
+import {StatelessComponent} from '../lib/preact-helpers'
 
 interface SandwichViewProps {
   selectedFrame: Frame | null

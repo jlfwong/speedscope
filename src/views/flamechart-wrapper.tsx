@@ -7,8 +7,8 @@ import {FlamechartPanZoomView} from './flamechart-pan-zoom-view'
 import {noop, formatPercent} from '../lib/utils'
 import {Hovertip} from './hovertip'
 import {FlamechartViewProps} from './flamechart-view-container'
-import {StatelessComponent} from '../lib/typed-redux'
 import {withTheme} from './themes/theme'
+import {StatelessComponent} from '../lib/preact-helpers'
 
 export class FlamechartWrapper extends StatelessComponent<FlamechartViewProps> {
   private clampViewportToFlamegraph(viewportRect: Rect) {

@@ -8,7 +8,6 @@ import {importEmscriptenSymbolMap as importEmscriptenSymbolRemapper} from '../li
 import {SandwichViewContainer} from './sandwich-view'
 import {saveToFile} from '../lib/file-format'
 import {ActiveProfileState} from '../store'
-import {StatelessComponent} from '../lib/typed-redux'
 import {LeftHeavyFlamechartView, ChronoFlamechartView} from './flamechart-view-container'
 import {CanvasContext} from '../gl/canvas-context'
 import {Toolbar} from './toolbar'
@@ -17,6 +16,7 @@ import {Theme, withTheme} from './themes/theme'
 import {canUseXHR, ViewMode} from '../app-state'
 import {ProfileGroupState} from '../app-state/profile-group'
 import {HashParams} from '../lib/hash-params'
+import {StatelessComponent} from '../lib/preact-helpers'
 
 const importModule = import('../import')
 
