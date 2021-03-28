@@ -7,12 +7,10 @@ import {actions} from './actions'
 
 import * as redux from 'redux'
 import {setter, Reducer, Action} from '../lib/typed-redux'
-import {HashParams, getHashParams} from '../lib/hash-params'
 import {useSelector} from '../lib/preact-redux'
 import {Profile} from '../lib/profile'
 import {getProfileToView} from './getters'
 import {
-  ViewMode,
   SortMethod,
   SortField,
   SortDirection,
@@ -34,17 +32,6 @@ export const enum ColorScheme {
 }
 
 export interface ApplicationState {
-  // Parameters defined by the URL encoded k=v pairs after the # in the URL
-  hashParams: HashParams
-
-  glCanvas: HTMLCanvasElement | null
-
-  // Which top-level view should be displayed
-  viewMode: ViewMode
-
-  // True if recursion should be flattened when viewing flamegraphs
-  flattenRecursion: boolean
-
   // The query used in top-level views
   //
   // An empty string indicates that the search is open by no filter is applied.
@@ -52,18 +39,6 @@ export interface ApplicationState {
   // query even when the search input is closed.
   searchQuery: string
   searchIsActive: boolean
-
-  // True when a file drag is currently active. Used to indicate that the
-  // application is a valid drop target.
-  dragActive: boolean
-
-  // True when the application is currently in a loading state. Used to
-  // display a loading progress bar.
-  loading: boolean
-
-  // True when the application is an error state, e.g. because the profile
-  // imported was invalid.
-  error: boolean
 
   // The table sorting method using for the sandwich view, specifying the column
   // to sort by, and the direction to sort that clumn.
@@ -122,25 +97,9 @@ function colorScheme(state: ColorScheme | undefined, action: Action<any>): Color
 }
 
 export function createAppStore(initialState?: ApplicationState): redux.Store<ApplicationState> {
-  const hashParams = getHashParams()
-
-  const loading = canUseXHR && hashParams.profileURL != null
-
   const reducer: Reducer<ApplicationState> = redux.combineReducers({
-    hashParams: setter<HashParams>(actions.setHashParams, hashParams),
-
-    flattenRecursion: setter<boolean>(actions.setFlattenRecursion, false),
-
-    viewMode: setter<ViewMode>(actions.setViewMode, ViewMode.CHRONO_FLAME_CHART),
-
     searchQuery: setter<string>(actions.setSearchQuery, ''),
     searchIsActive: setter<boolean>(actions.setSearchIsActive, false),
-
-    glCanvas: setter<HTMLCanvasElement | null>(actions.setGLCanvas, null),
-
-    dragActive: setter<boolean>(actions.setDragActive, false),
-    loading: setter<boolean>(actions.setLoading, loading),
-    error: setter<boolean>(actions.setError, false),
 
     tableSortMethod: setter<SortMethod>(actions.sandwichView.setTableSortMethod, {
       field: SortField.SELF,

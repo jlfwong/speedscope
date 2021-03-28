@@ -13,11 +13,12 @@ import {
   getFrameToColorBucket,
 } from '../store/getters'
 import {FlamechartWrapper} from './flamechart-wrapper'
-import {useAppSelector} from '../store'
 import {h} from 'preact'
 import {memo} from 'preact/compat'
 import {useTheme} from './themes/theme'
 import {FlamechartID} from '../app-state/profile-group'
+import {flattenRecursionAtom, glCanvasAtom} from '../app-state'
+import {useAtom} from '../lib/atom'
 
 const getCalleeProfile = memoizeByShallowEquality<
   {
@@ -51,8 +52,8 @@ const getCalleeFlamegraphRenderer = createMemoizedFlamechartRenderer()
 export const CalleeFlamegraphView = memo((ownProps: FlamechartViewContainerProps) => {
   const {activeProfileState} = ownProps
   const {profile, sandwichViewState} = activeProfileState
-  const flattenRecursion = useAppSelector(state => state.flattenRecursion, [])
-  const glCanvas = useAppSelector(state => state.glCanvas, [])
+  const flattenRecursion = useAtom(flattenRecursionAtom)
+  const glCanvas = useAtom(glCanvasAtom)
   const theme = useTheme()
 
   if (!profile) throw new Error('profile missing')

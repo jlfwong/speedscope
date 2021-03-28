@@ -10,7 +10,7 @@ import {objectsHaveShallowEquality} from '../lib/utils'
 import {colorSchemeToString, nextColorScheme, useTheme, withTheme} from './themes/theme'
 import {useActionCreator} from '../lib/preact-redux'
 import {actions} from '../store/actions'
-import {ViewMode} from '../app-state'
+import {ViewMode, viewModeAtom} from '../app-state'
 import {ProfileGroupState} from '../app-state/profile-group'
 
 interface ToolbarProps extends ApplicationProps {
@@ -24,9 +24,9 @@ function useSetViewMode(setViewMode: (viewMode: ViewMode) => void, viewMode: Vie
 
 function ToolbarLeftContent(props: ToolbarProps) {
   const style = getStyle(useTheme())
-  const setChronoFlameChart = useSetViewMode(props.setViewMode, ViewMode.CHRONO_FLAME_CHART)
-  const setLeftHeavyFlameGraph = useSetViewMode(props.setViewMode, ViewMode.LEFT_HEAVY_FLAME_GRAPH)
-  const setSandwichView = useSetViewMode(props.setViewMode, ViewMode.SANDWICH_VIEW)
+  const setChronoFlameChart = useSetViewMode(viewModeAtom.set, ViewMode.CHRONO_FLAME_CHART)
+  const setLeftHeavyFlameGraph = useSetViewMode(viewModeAtom.set, ViewMode.LEFT_HEAVY_FLAME_GRAPH)
+  const setSandwichView = useSetViewMode(viewModeAtom.set, ViewMode.SANDWICH_VIEW)
 
   if (!props.activeProfileState) return null
 

@@ -7,7 +7,7 @@ import {FontFamily, FontSize, Duration} from './style'
 import {importEmscriptenSymbolMap as importEmscriptenSymbolRemapper} from '../lib/emscripten'
 import {SandwichViewContainer} from './sandwich-view'
 import {saveToFile} from '../lib/file-format'
-import {ApplicationState, canUseXHR, ActiveProfileState} from '../store'
+import {canUseXHR, ActiveProfileState} from '../store'
 import {StatelessComponent} from '../lib/typed-redux'
 import {LeftHeavyFlamechartView, ChronoFlamechartView} from './flamechart-view-container'
 import {CanvasContext} from '../gl/canvas-context'
@@ -16,6 +16,7 @@ import {importJavaScriptSourceMapSymbolRemapper} from '../lib/js-source-map'
 import {Theme, withTheme} from './themes/theme'
 import {ViewMode} from '../app-state'
 import {ProfileGroupState} from '../app-state/profile-group'
+import {HashParams} from '../lib/hash-params'
 
 const importModule = import('../import')
 
@@ -139,7 +140,7 @@ export class GLCanvas extends StatelessComponent<GLCanvasProps> {
   }
 }
 
-export type ApplicationProps = ApplicationState & {
+export type ApplicationProps = {
   setGLCanvas: (canvas: HTMLCanvasElement | null) => void
   setLoading: (loading: boolean) => void
   setError: (error: boolean) => void
@@ -152,6 +153,13 @@ export type ApplicationProps = ApplicationState & {
   canvasContext: CanvasContext | null
   theme: Theme
   profileGroup: ProfileGroupState
+  flattenRecursion: boolean
+  viewMode: ViewMode
+  hashParams: HashParams
+  dragActive: boolean
+  loading: boolean
+  glCanvas: HTMLCanvasElement | null
+  error: boolean
 }
 
 export class Application extends StatelessComponent<ApplicationProps> {

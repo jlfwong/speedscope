@@ -1,41 +1,52 @@
 import {h} from 'preact'
-import {Application} from './application'
 import {getCanvasContext} from '../store/getters'
-import {actions} from '../store/actions'
-import {useActionCreator} from '../lib/preact-redux'
-import {memo} from 'preact/compat'
-import {useAppSelector, useActiveProfileState} from '../store'
-import {ProfileSearchContextProvider} from './search-view'
+import {memo, useMemo} from 'preact/compat'
+import {useActiveProfileState} from '../store'
 import {useTheme} from './themes/theme'
-import {profileGroupAtom} from '../app-state'
+import {
+  dragActiveAtom,
+  errorAtom,
+  flattenRecursionAtom,
+  glCanvasAtom,
+  hashParamsAtom,
+  loadingAtom,
+  profileGroupAtom,
+  viewModeAtom,
+} from '../app-state'
 import {useAtom} from '../lib/atom'
-
-const {setLoading, setError, setDragActive, setViewMode, setGLCanvas, setFlattenRecursion} = actions
+import {ProfileSearchContextProvider} from './search-view'
+import {Application} from './application'
 
 export const ApplicationContainer = memo(() => {
-  const appState = useAppSelector(state => state, [])
+  const canvas = useAtom(glCanvasAtom)
   const theme = useTheme()
-  const canvasContext = useAppSelector(
-    state => (state.glCanvas ? getCanvasContext({theme, canvas: state.glCanvas}) : null),
-    [theme],
-  )
+  const canvasContext = useMemo(() => (canvas ? getCanvasContext({theme, canvas}) : null), [
+    theme,
+    canvas,
+  ])
 
   return (
     <ProfileSearchContextProvider>
       <Application
         activeProfileState={useActiveProfileState()}
         canvasContext={canvasContext}
-        setGLCanvas={useActionCreator(setGLCanvas, [])}
-        setLoading={useActionCreator(setLoading, [])}
-        setError={useActionCreator(setError, [])}
+        setGLCanvas={glCanvasAtom.set}
+        setLoading={loadingAtom.set}
+        setError={errorAtom.set}
         setProfileGroup={profileGroupAtom.setProfileGroup}
-        setDragActive={useActionCreator(setDragActive, [])}
-        setViewMode={useActionCreator(setViewMode, [])}
-        setFlattenRecursion={useActionCreator(setFlattenRecursion, [])}
+        setDragActive={dragActiveAtom.set}
+        setViewMode={viewModeAtom.set}
+        setFlattenRecursion={flattenRecursionAtom.set}
         setProfileIndexToView={profileGroupAtom.setProfileIndexToView}
         profileGroup={useAtom(profileGroupAtom)}
         theme={theme}
-        {...appState}
+        flattenRecursion={useAtom(flattenRecursionAtom)}
+        viewMode={useAtom(viewModeAtom)}
+        hashParams={useAtom(hashParamsAtom)}
+        glCanvas={canvas}
+        dragActive={useAtom(dragActiveAtom)}
+        loading={useAtom(loadingAtom)}
+        error={useAtom(errorAtom)}
       />
     </ProfileSearchContextProvider>
   )

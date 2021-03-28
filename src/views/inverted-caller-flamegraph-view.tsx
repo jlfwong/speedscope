@@ -12,12 +12,13 @@ import {
   createGetCSSColorForFrame,
   getFrameToColorBucket,
 } from '../store/getters'
-import {useAppSelector} from '../store'
 import {FlamechartWrapper} from './flamechart-wrapper'
 import {h} from 'preact'
 import {memo} from 'preact/compat'
 import {useTheme} from './themes/theme'
 import {FlamechartID} from '../app-state/profile-group'
+import {flattenRecursionAtom, glCanvasAtom} from '../app-state'
+import {useAtom} from '../lib/atom'
 
 const getInvertedCallerProfile = memoizeByShallowEquality(
   ({
@@ -56,8 +57,8 @@ const getInvertedCallerFlamegraphRenderer = createMemoizedFlamechartRenderer({in
 export const InvertedCallerFlamegraphView = memo((ownProps: FlamechartViewContainerProps) => {
   const {activeProfileState} = ownProps
   let {profile, sandwichViewState} = activeProfileState
-  const flattenRecursion = useAppSelector(state => state.flattenRecursion, [])
-  const glCanvas = useAppSelector(state => state.glCanvas, [])
+  const flattenRecursion = useAtom(flattenRecursionAtom)
+  const glCanvas = useAtom(glCanvasAtom)
   const theme = useTheme()
 
   if (!profile) throw new Error('profile missing')
