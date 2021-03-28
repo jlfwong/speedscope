@@ -215,4 +215,13 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
       logicalSpaceViewportSize,
     }))
   }
+
+  clearHoverNode() {
+    // TODO(jlfwong): This causes 4 separate observer events. This is probably
+    // fine, since I hope that Preact/React are smart about batching re-renders?
+    this.setFlamechartHoveredNode(FlamechartID.CHRONO, null)
+    this.setFlamechartHoveredNode(FlamechartID.LEFT_HEAVY, null)
+    this.setFlamechartHoveredNode(FlamechartID.SANDWICH_CALLEES, null)
+    this.setFlamechartHoveredNode(FlamechartID.SANDWICH_INVERTED_CALLERS, null)
+  }
 }

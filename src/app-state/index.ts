@@ -19,25 +19,16 @@ export const enum ViewMode {
   SANDWICH_VIEW,
 }
 
-class ViewModeAtom extends Atom<ViewMode> {
-  set = (value: ViewMode) => {
-    super.set(value)
-
-    // TODO(jlfwong): Move this into a method in ProfileGroupAtom
-    //
-    // If we switch views, the hover information is no longer relevant
-    profileGroupAtom.setFlamechartHoveredNode(FlamechartID.CHRONO, null)
-    profileGroupAtom.setFlamechartHoveredNode(FlamechartID.LEFT_HEAVY, null)
-    profileGroupAtom.setFlamechartHoveredNode(FlamechartID.SANDWICH_CALLEES, null)
-    profileGroupAtom.setFlamechartHoveredNode(FlamechartID.SANDWICH_INVERTED_CALLERS, null)
-  }
-}
-
 // Which top-level view should be displayed
-export const viewModeAtom = new ViewModeAtom(ViewMode.CHRONO_FLAME_CHART, 'viewMode')
+export const viewModeAtom = new Atom<ViewMode>(ViewMode.CHRONO_FLAME_CHART, 'viewMode')
 
 // The top-level profile group from which most other data will be derived
 export const profileGroupAtom = new ProfileGroupAtom(null, 'profileGroup')
+
+viewModeAtom.subscribe(() => {
+  // If we switch views, the hover information is no longer relevant
+  profileGroupAtom.clearHoverNode()
+})
 
 // Parameters defined by the URL encoded k=v pairs after the # in the URL
 const hashParams = getHashParams()
