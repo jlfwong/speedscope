@@ -58,9 +58,45 @@ import {useLayoutEffect, useState} from 'preact/hooks'
 
 type AtomListener = () => void
 
+let AtomDev: {[key: string]: Atom<any>} | null = null
+let hotReloadStash: Map<string, any> | null = null
+
+declare const module: any
+if (process.env.NODE_ENV === 'development') {
+  ;(window as any)['Atom'] = AtomDev = {}
+
+  module.hot.dispose(() => {
+    if (AtomDev) {
+      hotReloadStash = new Map()
+      for (let key in AtomDev) {
+        hotReloadStash.set(key, AtomDev[key].get())
+      }
+    }
+    ;(window as any)['Atom_hotReloadStash'] = hotReloadStash
+  })
+  module.hot.accept()
+
+  hotReloadStash = (window as any)['Atom_hotReloadStash'] || null
+}
+
 export class Atom<T> {
   private observers: AtomListener[] = []
-  constructor(protected state: T) {
+  constructor(protected state: T, debugKey: string) {
+    if (process.env.NODE_ENV === 'development') {
+      if (hotReloadStash?.has(debugKey)) {
+        // If we have a stored value from a previous hot reload, use that
+        // instead of whatever was passed to the constructor.
+        this.state = hotReloadStash.get(debugKey)
+      }
+
+      if (AtomDev) {
+        if (debugKey in AtomDev) {
+          console.warn(`[Atom] Multiple atoms tried to register with the key ${debugKey}`)
+        }
+        AtomDev[debugKey] = this
+      }
+    }
+
     // We do the bind here rather than in the definition to facilitate
     // inheritance (we want the value defined on both the prototype and the
     // instance).

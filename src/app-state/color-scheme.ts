@@ -68,7 +68,7 @@ class ColorSchemeAtom extends Atom<ColorScheme> {
   }
 }
 
-export const colorSchemeAtom = new ColorSchemeAtom(getStoredPreference())
+export const colorSchemeAtom = new ColorSchemeAtom(getStoredPreference(), 'colorScheme')
 
 colorSchemeAtom.subscribe(() => {
   const value = colorSchemeAtom.get()
