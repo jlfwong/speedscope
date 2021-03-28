@@ -69,6 +69,10 @@ export class Atom<T> {
   }
 
   set(t: T) {
+    if (this.state === t) {
+      // No-op if the value didn't actually change
+      return
+    }
     this.state = t
     this.observers.forEach(fn => fn())
   }
