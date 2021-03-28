@@ -73,9 +73,9 @@ if (process.env.NODE_ENV === 'development') {
         hotReloadStash.set(key, AtomDev[key].get())
       }
     }
+
     ;(window as any)['Atom_hotReloadStash'] = hotReloadStash
   })
-  module.hot.accept()
 
   hotReloadStash = (window as any)['Atom_hotReloadStash'] || null
 }
