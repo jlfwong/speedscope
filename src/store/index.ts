@@ -11,10 +11,10 @@ import {HashParams, getHashParams} from '../lib/hash-params'
 import {ProfileGroupState, profileGroup} from './profiles-state'
 import {useSelector} from '../lib/preact-redux'
 import {Profile} from '../lib/profile'
-import {FlamechartViewState} from './flamechart-view-state'
 import {SandwichViewState} from './sandwich-view-state'
 import {getProfileToView} from './getters'
 import {ViewMode, SortMethod, SortField, SortDirection} from '../app-state'
+import {FlamechartViewState} from '../app-state/profile-group'
 
 export const enum ColorScheme {
   // Default: respect prefers-color-schema

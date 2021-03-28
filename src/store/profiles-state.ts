@@ -1,14 +1,11 @@
 import {Profile} from '../lib/profile'
-import {
-  FlamechartViewState,
-  createFlamechartViewStateReducer,
-  FlamechartID,
-} from './flamechart-view-state'
+import {createFlamechartViewStateReducer} from './flamechart-view-state'
 import {SandwichViewState, createSandwichView} from './sandwich-view-state'
 import {Reducer, actionCreator, setter} from '../lib/typed-redux'
 import {actions} from './actions'
 import {clamp} from '../lib/math'
 import {objectsHaveShallowEquality} from '../lib/utils'
+import {FlamechartViewState, FlamechartID} from '../app-state/profile-group'
 
 export type ProfileGroupState = {
   name: string

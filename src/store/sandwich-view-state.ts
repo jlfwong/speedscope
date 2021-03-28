@@ -1,11 +1,8 @@
 import {Frame} from '../lib/profile'
-import {
-  FlamechartViewState,
-  FlamechartID,
-  createFlamechartViewStateReducer,
-} from './flamechart-view-state'
+import {createFlamechartViewStateReducer} from './flamechart-view-state'
 import {Reducer} from '../lib/typed-redux'
 import {actions} from './actions'
+import {FlamechartViewState, FlamechartID} from '../app-state/profile-group'
 
 export interface SandwichViewState {
   callerCallee: CallerCalleeState | null

@@ -1,5 +1,4 @@
 import {h} from 'preact'
-import {FlamechartID, FlamechartViewState} from '../store/flamechart-view-state'
 import {CanvasContext} from '../gl/canvas-context'
 import {Flamechart} from '../lib/flamechart'
 import {FlamechartRenderer, FlamechartRendererOptions} from '../gl/flamechart-renderer'
@@ -20,6 +19,7 @@ import {memo} from 'preact/compat'
 import {ActiveProfileState} from '../store'
 import {FlamechartSearchContextProvider} from './flamechart-search-view'
 import {Theme, useTheme} from './themes/theme'
+import {FlamechartID, FlamechartViewState} from '../app-state/profile-group'
 
 interface FlamechartSetters {
   setLogicalSpaceViewportSize: (logicalSpaceViewportSize: Vec2) => void

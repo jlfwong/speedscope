@@ -1,11 +1,11 @@
 import {actionCreator} from '../lib/typed-redux'
 import {CallTreeNode, Frame, ProfileGroup} from '../lib/profile'
 import {ColorScheme} from '.'
-import {FlamechartID} from './flamechart-view-state'
 import {Rect, Vec2} from '../lib/math'
 import {HashParams} from '../lib/hash-params'
 import {actionCreatorWithIndex} from './profiles-state'
 import {ViewMode, SortMethod} from '../app-state'
+import {FlamechartID} from '../app-state/profile-group'
 
 export namespace actions {
   export const setProfileGroup = actionCreator<ProfileGroup>('setProfileGroup')

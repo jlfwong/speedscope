@@ -1,24 +1,7 @@
-import {CallTreeNode} from '../lib/profile'
+import {FlamechartID, FlamechartViewState} from '../app-state/profile-group'
 import {Rect, Vec2} from '../lib/math'
 import {Reducer} from '../lib/typed-redux'
 import {actions} from './actions'
-
-export enum FlamechartID {
-  LEFT_HEAVY = 'LEFT_HEAVY',
-  CHRONO = 'CHRONO',
-  SANDWICH_INVERTED_CALLERS = 'SANDWICH_INVERTED_CALLERS',
-  SANDWICH_CALLEES = 'SANDWICH_CALLEES',
-}
-
-export interface FlamechartViewState {
-  hover: {
-    node: CallTreeNode
-    event: MouseEvent
-  } | null
-  selectedNode: CallTreeNode | null
-  logicalSpaceViewportSize: Vec2
-  configSpaceViewportRect: Rect
-}
 
 export function createFlamechartViewStateReducer(
   id: FlamechartID,

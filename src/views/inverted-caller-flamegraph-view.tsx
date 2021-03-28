@@ -12,12 +12,12 @@ import {
   createGetCSSColorForFrame,
   getFrameToColorBucket,
 } from '../store/getters'
-import {FlamechartID} from '../store/flamechart-view-state'
 import {useAppSelector} from '../store'
 import {FlamechartWrapper} from './flamechart-wrapper'
 import {h} from 'preact'
 import {memo} from 'preact/compat'
 import {useTheme} from './themes/theme'
+import {FlamechartID} from '../app-state/profile-group'
 
 const getInvertedCallerProfile = memoizeByShallowEquality(
   ({
