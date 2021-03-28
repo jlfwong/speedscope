@@ -14,22 +14,7 @@ import {useCallback, useMemo, useContext} from 'preact/hooks'
 import {SandwichViewContext} from './sandwich-view'
 import {Color} from '../lib/color'
 import {useTheme, withTheme} from './themes/theme'
-
-export enum SortField {
-  SYMBOL_NAME,
-  SELF,
-  TOTAL,
-}
-
-export enum SortDirection {
-  ASCENDING,
-  DESCENDING,
-}
-
-export interface SortMethod {
-  field: SortField
-  direction: SortDirection
-}
+import {SortDirection, SortMethod, SortField} from '../app-state'
 
 interface HBarProps {
   perc: number

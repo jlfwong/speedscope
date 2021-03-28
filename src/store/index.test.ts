@@ -1,7 +1,6 @@
-import {ViewMode} from '.'
+import {ViewMode, SortField, SortDirection} from '../app-state'
 import {actions} from './actions'
 import {storeTest} from './store-test-utils'
-import {SortField, SortDirection} from '../views/profile-table-view'
 
 storeTest('flattenRecursion', ({getState, dispatch}) => {
   expect(getState().flattenRecursion).toBe(false)

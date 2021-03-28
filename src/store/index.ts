@@ -9,18 +9,12 @@ import * as redux from 'redux'
 import {setter, Reducer, Action} from '../lib/typed-redux'
 import {HashParams, getHashParams} from '../lib/hash-params'
 import {ProfileGroupState, profileGroup} from './profiles-state'
-import {SortMethod, SortField, SortDirection} from '../views/profile-table-view'
 import {useSelector} from '../lib/preact-redux'
 import {Profile} from '../lib/profile'
 import {FlamechartViewState} from './flamechart-view-state'
 import {SandwichViewState} from './sandwich-view-state'
 import {getProfileToView} from './getters'
-
-export const enum ViewMode {
-  CHRONO_FLAME_CHART,
-  LEFT_HEAVY_FLAME_GRAPH,
-  SANDWICH_VIEW,
-}
+import {ViewMode, SortMethod, SortField, SortDirection} from '../app-state'
 
 export const enum ColorScheme {
   // Default: respect prefers-color-schema

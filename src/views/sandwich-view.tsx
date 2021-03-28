@@ -1,6 +1,6 @@
 import {Frame} from '../lib/profile'
 import {StyleSheet, css} from 'aphrodite'
-import {ProfileTableViewContainer, SortField, SortDirection} from './profile-table-view'
+import {ProfileTableViewContainer} from './profile-table-view'
 import {h, JSX, createContext} from 'preact'
 import {memo} from 'preact/compat'
 import {useCallback, useMemo, useContext} from 'preact/hooks'
@@ -16,6 +16,7 @@ import {sortBy} from '../lib/utils'
 import {ProfileSearchContext} from './search-view'
 import {FuzzyMatch} from '../lib/fuzzy-find'
 import {Theme, useTheme, withTheme} from './themes/theme'
+import {SortField, SortDirection} from '../app-state'
 
 interface SandwichViewProps {
   selectedFrame: Frame | null

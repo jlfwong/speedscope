@@ -1,5 +1,5 @@
 import {ApplicationProps} from './application'
-import {useAppSelector, ViewMode} from '../store'
+import {useAppSelector} from '../store'
 import {h, JSX, Fragment} from 'preact'
 import {useCallback, useState, useEffect} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
@@ -11,6 +11,7 @@ import {objectsHaveShallowEquality} from '../lib/utils'
 import {colorSchemeToString, nextColorScheme, useTheme, withTheme} from './themes/theme'
 import {useActionCreator} from '../lib/preact-redux'
 import {actions} from '../store/actions'
+import {ViewMode} from '../app-state'
 
 interface ToolbarProps extends ApplicationProps {
   browseForFile(): void

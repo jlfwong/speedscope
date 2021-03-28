@@ -2,7 +2,7 @@ import {storeTest, profileGroupTwoSampled} from './store-test-utils'
 import {actions} from './actions'
 import {Rect, Vec2} from '../lib/math'
 import {FlamechartID} from './flamechart-view-state'
-import {ViewMode} from '.'
+import {ViewMode} from '../app-state'
 
 describe('flamechart view state', () => {
   storeTest('setHoveredNode', ({getState, dispatch}) => {

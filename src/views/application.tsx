@@ -7,13 +7,14 @@ import {FontFamily, FontSize, Duration} from './style'
 import {importEmscriptenSymbolMap as importEmscriptenSymbolRemapper} from '../lib/emscripten'
 import {SandwichViewContainer} from './sandwich-view'
 import {saveToFile} from '../lib/file-format'
-import {ApplicationState, ViewMode, canUseXHR, ActiveProfileState} from '../store'
+import {ApplicationState, canUseXHR, ActiveProfileState} from '../store'
 import {StatelessComponent} from '../lib/typed-redux'
 import {LeftHeavyFlamechartView, ChronoFlamechartView} from './flamechart-view-container'
 import {CanvasContext} from '../gl/canvas-context'
 import {Toolbar} from './toolbar'
 import {importJavaScriptSourceMapSymbolRemapper} from '../lib/js-source-map'
 import {Theme, withTheme} from './themes/theme'
+import {ViewMode} from '../app-state'
 
 const importModule = import('../import')
 
@@ -373,12 +374,10 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   onDocumentPaste = (ev: Event) => {
-    if (document.activeElement != null && document.activeElement.nodeName === "INPUT")
-      return
+    if (document.activeElement != null && document.activeElement.nodeName === 'INPUT') return
 
     ev.preventDefault()
     ev.stopPropagation()
-
 
     const clipboardData = (ev as ClipboardEvent).clipboardData
     if (!clipboardData) return
