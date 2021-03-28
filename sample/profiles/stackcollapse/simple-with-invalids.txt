@@ -1,0 +1,8 @@
+# comment that gives extra info about the samples
+// some other comment
+a;b;c 1
+a;b;c 1
+a;b;d 4
+a;b;c 3
+a;b 5
+invalid line

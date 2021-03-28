@@ -212,6 +212,60 @@ exports[`importFromBGFlameGraph with UTF-16, Little Endian: indexToView 1`] = `0
 
 exports[`importFromBGFlameGraph with UTF-16, Little Endian: profileGroup.name 1`] = `"simple-utf16-le.txt"`;
 
+exports[`importFromBGFlameGraph with invalid lines 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "a",
+      "line": undefined,
+      "name": "a",
+      "selfWeight": 0,
+      "totalWeight": 14,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "b",
+      "line": undefined,
+      "name": "b",
+      "selfWeight": 5,
+      "totalWeight": 14,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "c",
+      "line": undefined,
+      "name": "c",
+      "selfWeight": 5,
+      "totalWeight": 5,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "d",
+      "line": undefined,
+      "name": "d",
+      "selfWeight": 4,
+      "totalWeight": 4,
+    },
+  ],
+  "name": "simple-with-invalids.txt",
+  "stacks": Array [
+    "a;b;c 2",
+    "a;b;d 4",
+    "a;b;c 3",
+    "a;b 5",
+  ],
+}
+`;
+
+exports[`importFromBGFlameGraph with invalid lines: indexToView 1`] = `0`;
+
+exports[`importFromBGFlameGraph with invalid lines: profileGroup.name 1`] = `"simple-with-invalids.txt"`;
+
 exports[`importFromBGFlameGraph: indexToView 1`] = `0`;
 
 exports[`importFromBGFlameGraph: profileGroup.name 1`] = `"simple.txt"`;

@@ -15,3 +15,7 @@ test('importFromBGFlameGraph with UTF-16, Little Endian', async () => {
 test('importFromBGFlameGraph with UTF-16, Big Endian', async () => {
   await checkProfileSnapshot('./sample/profiles/stackcollapse/simple-utf16-be.txt')
 })
+
+test('importFromBGFlameGraph with invalid lines', async () => {
+  await checkProfileSnapshot('./sample/profiles/stackcollapse/simple-with-invalids.txt')
+})
