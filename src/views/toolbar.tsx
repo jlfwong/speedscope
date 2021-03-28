@@ -1,5 +1,4 @@
 import {ApplicationProps} from './application'
-import {useAppSelector} from '../store'
 import {h, JSX, Fragment} from 'preact'
 import {useCallback, useState, useEffect} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
@@ -7,11 +6,11 @@ import {Sizes, FontFamily, FontSize, Duration} from './style'
 import {ProfileSelect} from './profile-select'
 import {Profile} from '../lib/profile'
 import {objectsHaveShallowEquality} from '../lib/utils'
-import {colorSchemeToString, nextColorScheme, useTheme, withTheme} from './themes/theme'
-import {useActionCreator} from '../lib/preact-redux'
-import {actions} from '../store/actions'
+import {colorSchemeToString, useTheme, withTheme} from './themes/theme'
 import {ViewMode, viewModeAtom} from '../app-state'
 import {ProfileGroupState} from '../app-state/profile-group'
+import {colorSchemeAtom} from '../app-state/color-scheme'
+import {useAtom} from '../lib/atom'
 
 interface ToolbarProps extends ApplicationProps {
   browseForFile(): void
@@ -158,7 +157,7 @@ function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
 
 function ToolbarRightContent(props: ToolbarProps) {
   const style = getStyle(useTheme())
-  const colorScheme = useAppSelector(s => s.colorScheme, [])
+  const colorScheme = useAtom(colorSchemeAtom)
 
   const exportFile = (
     <div className={css(style.toolbarTab)} onClick={props.saveFile}>
@@ -170,13 +169,9 @@ function ToolbarRightContent(props: ToolbarProps) {
       <span className={css(style.emoji)}>⤵️</span>Import
     </div>
   )
-  const toggleColorScheme = useActionCreator(
-    () => actions.setColorScheme(nextColorScheme(colorScheme)),
-    [colorScheme],
-  )
 
   const colorSchemeToggle = (
-    <div className={css(style.toolbarTab)} onClick={toggleColorScheme}>
+    <div className={css(style.toolbarTab)} onClick={colorSchemeAtom.cycleToNextColorScheme}>
       <span className={css(style.emoji)}>🎨</span>
       <span className={css(style.toolbarTabColorSchemeToggle)}>
         {colorSchemeToString(colorScheme)}

@@ -1,8 +1,9 @@
 import {h, ComponentChildren, createContext} from 'preact'
 import {useCallback, useContext, useEffect, useState} from 'preact/hooks'
+import {ColorScheme, colorSchemeAtom} from '../../app-state/color-scheme'
+import {useAtom} from '../../lib/atom'
 import {Color} from '../../lib/color'
 import {memoizeByReference} from '../../lib/utils'
-import {ColorScheme, useAppSelector} from '../../store'
 import {darkTheme} from './dark-theme'
 import {lightTheme} from './light-theme'
 
@@ -58,40 +59,6 @@ export function colorSchemeToString(scheme: ColorScheme): string {
   }
 }
 
-export function nextColorScheme(scheme: ColorScheme): ColorScheme {
-  const systemPrefersDarkMode = matchMediaDarkColorScheme().matches
-
-  // We'll use a different cycling order for changing the color scheme depending
-  // on what the *current* system preference is. This should guarantee that when
-  // a user interacts with the color scheme toggle for the first time, it always
-  // changes the color scheme.
-  if (systemPrefersDarkMode) {
-    switch (scheme) {
-      case ColorScheme.SYSTEM: {
-        return ColorScheme.LIGHT
-      }
-      case ColorScheme.LIGHT: {
-        return ColorScheme.DARK
-      }
-      case ColorScheme.DARK: {
-        return ColorScheme.SYSTEM
-      }
-    }
-  } else {
-    switch (scheme) {
-      case ColorScheme.SYSTEM: {
-        return ColorScheme.DARK
-      }
-      case ColorScheme.DARK: {
-        return ColorScheme.LIGHT
-      }
-      case ColorScheme.LIGHT: {
-        return ColorScheme.SYSTEM
-      }
-    }
-  }
-}
-
 function getTheme(colorScheme: ColorScheme, systemPrefersDarkMode: boolean) {
   switch (colorScheme) {
     case ColorScheme.SYSTEM: {
@@ -126,7 +93,7 @@ export function ThemeProvider(props: {children: ComponentChildren}) {
     }
   }, [matchMediaListener])
 
-  const colorScheme = useAppSelector(s => s.colorScheme, [])
+  const colorScheme = useAtom(colorSchemeAtom)
   const theme = getTheme(colorScheme, systemPrefersDarkMode)
   return <ThemeContext.Provider value={theme} children={props.children} />
 }
