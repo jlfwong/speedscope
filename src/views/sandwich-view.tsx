@@ -9,12 +9,13 @@ import {StatelessComponent} from '../lib/typed-redux'
 import {InvertedCallerFlamegraphView} from './inverted-caller-flamegraph-view'
 import {CalleeFlamegraphView} from './callee-flamegraph-view'
 import {SandwichSearchView} from './sandwich-search-view'
-import {useAppSelector, ActiveProfileState} from '../store'
+import {ActiveProfileState} from '../store'
 import {sortBy} from '../lib/utils'
 import {ProfileSearchContext} from './search-view'
 import {FuzzyMatch} from '../lib/fuzzy-find'
 import {Theme, useTheme, withTheme} from './themes/theme'
-import {SortField, SortDirection, profileGroupAtom} from '../app-state'
+import {SortField, SortDirection, profileGroupAtom, tableSortMethodAtom} from '../app-state'
+import {useAtom} from '../lib/atom'
 
 interface SandwichViewProps {
   selectedFrame: Frame | null
@@ -156,7 +157,7 @@ export const SandwichViewContainer = memo((ownProps: SandwichViewContainerProps)
   }, [])
 
   const profile = activeProfileState.profile
-  const tableSortMethod = useAppSelector(state => state.tableSortMethod, [])
+  const tableSortMethod = useAtom(tableSortMethodAtom)
   const profileSearchResults = useContext(ProfileSearchContext)
 
   const selectedFrame = callerCallee ? callerCallee.selectedFrame : null

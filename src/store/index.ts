@@ -6,17 +6,11 @@ import {actions} from './actions'
  */
 
 import * as redux from 'redux'
-import {setter, Reducer, Action} from '../lib/typed-redux'
+import {Reducer, Action} from '../lib/typed-redux'
 import {useSelector} from '../lib/preact-redux'
 import {Profile} from '../lib/profile'
 import {getProfileToView} from './getters'
-import {
-  SortMethod,
-  SortField,
-  SortDirection,
-  flattenRecursionAtom,
-  profileGroupAtom,
-} from '../app-state'
+import {flattenRecursionAtom, profileGroupAtom} from '../app-state'
 import {FlamechartViewState, SandwichViewState} from '../app-state/profile-group'
 import {useAtom} from '../lib/atom'
 
@@ -32,18 +26,6 @@ export const enum ColorScheme {
 }
 
 export interface ApplicationState {
-  // The query used in top-level views
-  //
-  // An empty string indicates that the search is open by no filter is applied.
-  // searchIsActive is stored separately, because we may choose to persist the
-  // query even when the search input is closed.
-  searchQuery: string
-  searchIsActive: boolean
-
-  // The table sorting method using for the sandwich view, specifying the column
-  // to sort by, and the direction to sort that clumn.
-  tableSortMethod: SortMethod
-
   // The color scheme to use for the entire UI
   colorScheme: ColorScheme
 }
@@ -98,14 +80,6 @@ function colorScheme(state: ColorScheme | undefined, action: Action<any>): Color
 
 export function createAppStore(initialState?: ApplicationState): redux.Store<ApplicationState> {
   const reducer: Reducer<ApplicationState> = redux.combineReducers({
-    searchQuery: setter<string>(actions.setSearchQuery, ''),
-    searchIsActive: setter<boolean>(actions.setSearchIsActive, false),
-
-    tableSortMethod: setter<SortMethod>(actions.sandwichView.setTableSortMethod, {
-      field: SortField.SELF,
-      direction: SortDirection.DESCENDING,
-    }),
-
     colorScheme,
   })
 
