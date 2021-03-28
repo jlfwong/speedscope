@@ -142,7 +142,7 @@ export const ScrollableListView = ({
         </div>
       </div>
     )
-  }, [rangeResult?.invisiblePrefixSize, visibleItems, totalSize])
+  }, [rangeResult, visibleItems, totalSize])
 
   return (
     <div className={className} ref={viewportCallback} onScroll={onViewportScroll}>

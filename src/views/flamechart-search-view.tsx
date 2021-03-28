@@ -138,7 +138,7 @@ export const FlamechartSearchView = memo(() => {
         selectAndZoomToMatch(result)
       },
     }
-  }, [numResults, resultIndex, searchResults, searchResults?.at, selectAndZoomToMatch])
+  }, [numResults, resultIndex, searchResults, selectAndZoomToMatch])
 
   return (
     <SearchView
