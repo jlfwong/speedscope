@@ -1,4 +1,4 @@
-import * as jsc from 'jsverify'
+import fc from 'fast-check'
 import {LRUCache} from './lru-cache'
 
 class SlowLRUCache<K, V> {
@@ -90,11 +90,13 @@ type Command =
     }
   | {type: 'removeLRU'}
 
-const arbitraryCommand: jsc.Arbitrary<Command> = jsc.record({
-  type: jsc.elements(['has', 'get', 'getSize', 'insert', 'getOrInsert', 'removeLRU']),
-  key: jsc.elements(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']),
-  value: jsc.nat,
-}) as any
+const arbitraryCommand = fc.record({
+  type: fc.constantFrom(
+    ...(['has', 'get', 'getSize', 'insert', 'getOrInsert', 'removeLRU'] as const),
+  ),
+  key: fc.constantFrom('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'),
+  value: fc.nat(),
+})
 
 function runCommand(cache: ILRUCache<string, number>, cmd: Command): any {
   switch (cmd.type) {
@@ -131,18 +133,9 @@ test('LRUCache', () => {
     {type: 'removeLRU'},
   ])
 
-  jsc.assert(
-    jsc.forall(
-      jsc.suchthat(jsc.uint8, n => n > 0),
-      jsc.nearray(arbitraryCommand),
-      (cap, commands) => {
-        verify(cap, commands)
-        return true
-      },
-    ),
-    {
-      size: 100,
-      tests: 1000,
-    },
+  fc.assert(
+    fc.property(fc.integer({min: 1, max: 255}), fc.array(arbitraryCommand), (cap, commands) => {
+      verify(cap, commands)
+    }),
   )
 })
