@@ -17,7 +17,7 @@ import {
   findIndexBisect,
 } from './utils'
 
-import * as jsc from 'jsverify'
+import fc from 'fast-check'
 
 test('sortBy', () => {
   const ls = ['a3', 'b2', 'c1', 'd4']
@@ -144,13 +144,19 @@ test('findIndexBisect', () => {
   check([3, 5, 5, 7], 7)
   check([3, 5, 5, 7], 11)
 
-  jsc.assertForall(jsc.array(jsc.int8), jsc.int8, (haystack: number[], needle: number) => {
-    haystack.sort((a, b) => a - b)
+  fc.assert(
+    fc.property(
+      fc.array(fc.integer({min: -128, max: 127})),
+      fc.integer({min: -128, max: 127}),
+      (haystack: number[], needle: number) => {
+        haystack.sort((a, b) => a - b)
 
-    const fn = (v: number) => v > needle
-    expect(findIndexBisect(haystack, fn)).toEqual(haystack.findIndex(fn))
-    return true
-  })
+        const fn = (v: number) => v > needle
+        expect(findIndexBisect(haystack, fn)).toEqual(haystack.findIndex(fn))
+        return true
+      },
+    ),
+  )
 })
 
 test('memoizeByReference', () => {
@@ -215,17 +221,19 @@ test('objectsHaveShallowEquality', () => {
 })
 
 test('decodeBase64', () => {
-  jsc.assertForall(jsc.array(jsc.uint8), byteArray => {
-    let binaryString = ''
-    for (let byte of byteArray) {
-      binaryString += String.fromCharCode(byte)
-    }
-    const b64string = btoa(binaryString)
-    const decoded = decodeBase64(b64string)
+  fc.assert(
+    fc.property(fc.array(fc.integer({min: 0, max: 255})), byteArray => {
+      let binaryString = ''
+      for (let byte of byteArray) {
+        binaryString += String.fromCharCode(byte)
+      }
+      const b64string = btoa(binaryString)
+      const decoded = decodeBase64(b64string)
 
-    expect(Uint8Array.from(byteArray)).toEqual(decoded)
+      expect(Uint8Array.from(byteArray)).toEqual(decoded)
 
-    // If the above expect(...) assertion fails, we won't reach here.
-    return true
-  })
+      // If the above expect(...) assertion fails, we won't reach here.
+      return true
+    }),
+  )
 })
