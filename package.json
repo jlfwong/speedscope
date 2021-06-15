@@ -12,7 +12,7 @@
     "prepack": "./scripts/build-release.sh",
     "prettier": "prettier --write 'src/**/*.ts' 'src/**/*.tsx'",
     "lint": "eslint 'src/**/*.ts' 'src/**/*.tsx'",
-    "jest": "jest --runInBand",
+    "jest": "./scripts/test-setup.sh && jest --runInBand",
     "coverage": "npm run jest -- --coverage",
     "typecheck": "tsc --noEmit",
     "test": "./scripts/ci.sh",
