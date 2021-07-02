@@ -411,7 +411,8 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   async maybeLoadHashParamProfile() {
-    if (this.props.hashParams.profileURL) {
+    const {profileURL} = this.props.hashParams;
+    if (profileURL) {
       if (!canUseXHR) {
         alert(
           `Cannot load a profile URL when loading from "${window.location.protocol}" URL protocol`,
@@ -419,8 +420,8 @@ export class Application extends StatelessComponent<ApplicationProps> {
         return
       }
       this.loadProfile(async () => {
-        const response: Response = await fetch(this.props.hashParams.profileURL!)
-        let filename = new URL(this.props.hashParams.profileURL!).pathname
+        const response: Response = await fetch(profileURL)
+        let filename = new URL(profileURL, window.location.href).pathname
         if (filename.includes('/')) {
           filename = filename.slice(filename.lastIndexOf('/') + 1)
         }
