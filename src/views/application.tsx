@@ -13,7 +13,8 @@ import {CanvasContext} from '../gl/canvas-context'
 import {Toolbar} from './toolbar'
 import {importJavaScriptSourceMapSymbolRemapper} from '../lib/js-source-map'
 import {Theme, withTheme} from './themes/theme'
-import {canUseXHR, ViewMode} from '../app-state'
+import {ViewMode} from '../lib/view-mode'
+import {canUseXHR} from '../app-state'
 import {ProfileGroupState} from '../app-state/profile-group'
 import {HashParams} from '../lib/hash-params'
 import {StatelessComponent} from '../lib/preact-helpers'
@@ -198,6 +199,10 @@ export class Application extends StatelessComponent<ApplicationProps> {
       }
     }
     document.title = `${profileGroup.name} - speedscope`
+
+    if (this.props.hashParams.viewMode) {
+      this.props.setViewMode(this.props.hashParams.viewMode)
+    }
 
     for (let profile of profileGroup.profiles) {
       await profile.demangle()

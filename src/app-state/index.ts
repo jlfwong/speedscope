@@ -1,4 +1,5 @@
 import {Atom} from '../lib/atom'
+import {ViewMode} from '../lib/view-mode'
 import {getHashParams, HashParams} from '../lib/hash-params'
 import {ProfileGroupAtom} from './profile-group'
 
@@ -12,12 +13,6 @@ export const flattenRecursionAtom = new Atom<boolean>(false, 'flattenRecursion')
 // query even when the search input is closed.
 export const searchIsActiveAtom = new Atom<boolean>(false, 'searchIsActive')
 export const searchQueryAtom = new Atom<string>('', 'searchQueryAtom')
-
-export const enum ViewMode {
-  CHRONO_FLAME_CHART,
-  LEFT_HEAVY_FLAME_GRAPH,
-  SANDWICH_VIEW,
-}
 
 // Which top-level view should be displayed
 export const viewModeAtom = new Atom<ViewMode>(ViewMode.CHRONO_FLAME_CHART, 'viewMode')
