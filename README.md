@@ -1,4 +1,5 @@
-# 🔬speedscope
+English | [简体中文](./README-zh_CN.md)
+# 🔬speedscope 
 
 A fast, interactive web-based viewer for performance profiles. An alternative viewer for [FlameGraphs][1]. Will happily display multi-megabyte profiles without crashing your browser.
 
