@@ -31,30 +31,30 @@
 Speedscope可以不同编程语言和环境的各种不同探查器中摄取概要文件。单击下面的链接获取从特定源导入的文档。
 
 - JavaScript
-  - [Importing from Chrome](https://github.com/jlfwong/speedscope/wiki/Importing-from-Chrome)
-  - [Importing from Firefox](https://github.com/jlfwong/speedscope/wiki/Importing-from-Firefox)
-  - [Importing from Safari](https://github.com/jlfwong/speedscope/wiki/Importing-from-Safari)
-  - [Importing from Node.js](https://github.com/jlfwong/speedscope/wiki/Importing-from-Node.js)
+  - [从 Chrome 导入](https://github.com/jlfwong/speedscope/wiki/Importing-from-Chrome)
+  - [从 Firefox 导入](https://github.com/jlfwong/speedscope/wiki/Importing-from-Firefox)
+  - [从 Safari 导入](https://github.com/jlfwong/speedscope/wiki/Importing-from-Safari)
+  - [从 Node.js 导入](https://github.com/jlfwong/speedscope/wiki/Importing-from-Node.js)
 - Ruby
-  - [Importing from stackprof](https://github.com/jlfwong/speedscope/wiki/Importing-from-stackprof-(ruby))
-  - [Importing from rbspy](https://github.com/jlfwong/speedscope/wiki/Importing-from-rbspy-(ruby))
-  - [Importing from ruby-prof](https://github.com/jlfwong/speedscope/wiki/Importing-from-ruby-prof)
+  - [从 stackprof 导入](https://github.com/jlfwong/speedscope/wiki/Importing-from-stackprof-(ruby))
+  - [从 rbspy 导入](https://github.com/jlfwong/speedscope/wiki/Importing-from-rbspy-(ruby))
+  - [从 ruby-prof 导入](https://github.com/jlfwong/speedscope/wiki/Importing-from-ruby-prof)
 - Python
-  - [Importing from py-spy](https://github.com/jlfwong/speedscope/wiki/Importing-from-py-spy-(python))
+  - [从 py-spy 导入](https://github.com/jlfwong/speedscope/wiki/Importing-from-py-spy-(python))
   - [pyspeedscope](https://github.com/windelbouwman/pyspeedscope)
-  - [Importing from Austin](https://github.com/P403n1x87/austin-python#format-conversion)
+  - [从 Austin 导入](https://github.com/P403n1x87/austin-python#format-conversion)
 - Go
-  - [Importing from pprof](https://github.com/jlfwong/speedscope/wiki/Importing-from-pprof-(go))  
+  - [从 pprof 导入](https://github.com/jlfwong/speedscope/wiki/Importing-from-pprof-(go))  
 - Rust
   - [flamescope](https://github.com/coolreader18/flamescope)
 - Native code
-  - [Importing from Instruments.app](https://github.com/jlfwong/speedscope/wiki/Importing-from-Instruments.app) (macOS)
-  - [Importing from `perf`](https://github.com/jlfwong/speedscope/wiki/Importing-from-perf-(linux)) (linux)
-- [Importing from .NET Core](https://github.com/jlfwong/speedscope/wiki/Importing-from-.NET-Core)
-- [Importing from GHC (Haskell)](https://github.com/jlfwong/speedscope/wiki/Importing-from-Haskell)
-- [Importing from custom sources](https://github.com/jlfwong/speedscope/wiki/Importing-from-custom-sources)
+  - [从 Instruments.app 导入](https://github.com/jlfwong/speedscope/wiki/Importing-from-Instruments.app) (macOS)
+  - [从 `perf` 导入](https://github.com/jlfwong/speedscope/wiki/Importing-from-perf-(linux)) (linux)
+- [从 .NET Core 导入](https://github.com/jlfwong/speedscope/wiki/Importing-from-.NET-Core)
+- [从 GHC (Haskell) 导入](https://github.com/jlfwong/speedscope/wiki/Importing-from-Haskell)
+- [从 custom sources 导入](https://github.com/jlfwong/speedscope/wiki/Importing-from-custom-sources)
 
-Contributions to add support for additional formats are welcome! See issues with the ["import source" tag](https://github.com/jlfwong/speedscope/issues?q=is%3Aissue+is%3Aopen+label%3A%22import+source%22).
+极力欢迎贡献添加对其他格式的支持! 查看 issues ["import source" tag](https://github.com/jlfwong/speedscope/issues?q=is%3Aissue+is%3Aopen+label%3A%22import+source%22).
 
 ## 通过URL导入
 
