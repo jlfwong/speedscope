@@ -54,7 +54,7 @@ Speedscope可以不同编程语言和环境的各种不同探查器中摄取概�
 - [从 GHC (Haskell) 导入](https://github.com/jlfwong/speedscope/wiki/Importing-from-Haskell)
 - [从 custom sources 导入](https://github.com/jlfwong/speedscope/wiki/Importing-from-custom-sources)
 
-极力欢迎贡献添加对其他格式的支持! 查看 issues ["import source" tag](https://github.com/jlfwong/speedscope/issues?q=is%3Aissue+is%3Aopen+label%3A%22import+source%22).
+极力欢迎贡献添加对其他格式的支持！查看 issues ["import source" tag](https://github.com/jlfwong/speedscope/issues?q=is%3Aissue+is%3Aopen+label%3A%22import+source%22).
 
 ## 通过URL导入
 
