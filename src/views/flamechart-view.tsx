@@ -80,6 +80,7 @@ export class FlamechartView extends StatelessComponent<FlamechartViewProps> {
     if (!hover) return null
     const {width, height, left, top} = this.container.getBoundingClientRect()
     const offset = new Vec2(hover.event.clientX - left, hover.event.clientY - top)
+    const frame = hover.node.frame
 
     const style = this.getStyle()
 
@@ -88,7 +89,12 @@ export class FlamechartView extends StatelessComponent<FlamechartViewProps> {
         <span className={css(style.hoverCount)}>
           {this.formatValue(hover.node.getTotalWeight())}
         </span>{' '}
-        {hover.node.frame.name}
+        {frame.name}
+        {frame.file ? (
+          <div>
+            {frame.file}:{frame.line}
+          </div>
+        ) : undefined}
       </Hovertip>
     )
   }
