@@ -80,12 +80,21 @@ function codeToFrameInfo(code: Code, v8log: V8LogProfile): FrameInfo {
     case 'JS': {
       const matches = name.match(/([a-zA-Z0-9\._\-$]*) ([a-zA-Z0-9\.\-_\/$]*):(\d+):(\d+)/)
       if (matches) {
+        const file = matches[2]
+        const line = parseInt(matches[3], 10)
+        const col = parseInt(matches[4], 10)
+        const functionName =
+          matches[1].length > 0
+            ? matches[1]
+            : file
+            ? `(anonymous ${file.split('/').pop()}:${line})`
+            : '(anonymous)'
         return {
           key: name,
-          name: matches[1].length > 0 ? matches[1] : '(anonymous)',
-          file: matches[2].length > 0 ? matches[2] : '(unknown file)',
-          line: parseInt(matches[3], 10),
-          col: parseInt(matches[4], 10),
+          name: functionName,
+          file: file.length > 0 ? file : '(unknown file)',
+          line,
+          col,
         }
       }
       break

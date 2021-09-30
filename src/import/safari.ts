@@ -72,7 +72,7 @@ function makeStack(frames: StackFrame[]): FrameInfo[] {
       file: url,
       line,
       col: column,
-      name: name || '(anonymous)',
+      name: name || (url ? `(anonymous ${url.split('/').pop()}:${line})` : '(anonymous)'),
     }))
     .reverse()
 }

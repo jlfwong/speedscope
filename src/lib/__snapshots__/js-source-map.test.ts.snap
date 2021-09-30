@@ -2,7 +2,7 @@
 
 exports[`source-map remapping of chrome-85-esbuild 1`] = `
 Array [
-  "((anonymous) @ alpha.ts:5:5) <- ((anonymous) @ file:///Users/jlfwong/code/speedscope/sample/programs/javascript/sourcemaps/dist/esbuild/typescript-source-map-test.js:1:170)",
+  "((anonymous typescript-source-map-test.js:1) @ alpha.ts:5:5) <- ((anonymous typescript-source-map-test.js:1) @ file:///Users/jlfwong/code/speedscope/sample/programs/javascript/sourcemaps/dist/esbuild/typescript-source-map-test.js:1:170)",
   "(e @ beta.ts:3:8) <- (e @ file:///Users/jlfwong/code/speedscope/sample/programs/javascript/sourcemaps/dist/esbuild/typescript-source-map-test.js:1:75)",
   "(get floop @ kludge.ts:13:7) <- (get floop @ file:///Users/jlfwong/code/speedscope/sample/programs/javascript/sourcemaps/dist/esbuild/typescript-source-map-test.js:1:276)",
   "(l constructor @ kludge.ts:4:3) <- (l @ file:///Users/jlfwong/code/speedscope/sample/programs/javascript/sourcemaps/dist/esbuild/typescript-source-map-test.js:1:226)",
@@ -15,7 +15,7 @@ Array [
 
 exports[`source-map remapping of chrome-85-parcel 1`] = `
 Array [
-  "((anonymous) @ ../alpha.ts:5:5) <- ((anonymous) @ file:///Users/jlfwong/code/speedscope/sample/programs/javascript/sourcemaps/dist/parcel/typescript-source-map-test.js:8:152)",
+  "((anonymous typescript-source-map-test.js:8) @ ../alpha.ts:5:5) <- ((anonymous typescript-source-map-test.js:8) @ file:///Users/jlfwong/code/speedscope/sample/programs/javascript/sourcemaps/dist/parcel/typescript-source-map-test.js:8:152)",
   "(e @ ../gamma.ts:1:22) <- (e @ file:///Users/jlfwong/code/speedscope/sample/programs/javascript/sourcemaps/dist/parcel/typescript-source-map-test.js:2:104)",
   "(get @ ../kludge.ts:13:3) <- (get @ file:///Users/jlfwong/code/speedscope/sample/programs/javascript/sourcemaps/dist/parcel/typescript-source-map-test.js:10:284)",
   "(o.zap @ ../kludge.ts:9:3) <- (o.zap @ file:///Users/jlfwong/code/speedscope/sample/programs/javascript/sourcemaps/dist/parcel/typescript-source-map-test.js:10:211)",
@@ -32,7 +32,7 @@ Array [
 
 exports[`source-map remapping of chrome-85-webpack 1`] = `
 Array [
-  "((anonymous) @ webpack://speedscope-sourcemap-test-project/alpha.ts:5:4) <- ((anonymous) @ file:///Users/jlfwong/code/speedscope/sample/programs/javascript/sourcemaps/dist/webpack/typescript-source-map-test.js:1:181)",
+  "((anonymous typescript-source-map-test.js:1) @ webpack://speedscope-sourcemap-test-project/alpha.ts:5:4) <- ((anonymous typescript-source-map-test.js:1) @ file:///Users/jlfwong/code/speedscope/sample/programs/javascript/sourcemaps/dist/webpack/typescript-source-map-test.js:1:181)",
   "(get @ webpack://speedscope-sourcemap-test-project/kludge.ts:13:3) <- (get @ file:///Users/jlfwong/code/speedscope/sample/programs/javascript/sourcemaps/dist/webpack/typescript-source-map-test.js:1:368)",
   "(n.zap @ webpack://speedscope-sourcemap-test-project/kludge.ts:9:3) <- (n.zap @ file:///Users/jlfwong/code/speedscope/sample/programs/javascript/sourcemaps/dist/webpack/typescript-source-map-test.js:1:305)",
   "(n constructor @ webpack://speedscope-sourcemap-test-project/kludge.ts:4:3) <- (n @ file:///Users/jlfwong/code/speedscope/sample/programs/javascript/sourcemaps/dist/webpack/typescript-source-map-test.js:1:243)",
@@ -58,8 +58,8 @@ Array [
 
 exports[`source-map remapping of safari-13-webpack 1`] = `
 Array [
-  "((anonymous) @ webpack://speedscope-sourcemap-test-project/alpha.ts:5:4) <- ((anonymous) @ file:///Users/jlfwong/code/speedscope/sample/programs/javascript/sourcemaps/dist/webpack/typescript-source-map-test.js:1:181)",
-  "(zap @ webpack://speedscope-sourcemap-test-project/kludge.ts:9:3) <- ((anonymous) @ file:///Users/jlfwong/code/speedscope/sample/programs/javascript/sourcemaps/dist/webpack/typescript-source-map-test.js:1:305)",
+  "((anonymous typescript-source-map-test.js:1) @ webpack://speedscope-sourcemap-test-project/alpha.ts:5:4) <- ((anonymous typescript-source-map-test.js:1) @ file:///Users/jlfwong/code/speedscope/sample/programs/javascript/sourcemaps/dist/webpack/typescript-source-map-test.js:1:181)",
+  "(zap @ webpack://speedscope-sourcemap-test-project/kludge.ts:9:3) <- ((anonymous typescript-source-map-test.js:1) @ file:///Users/jlfwong/code/speedscope/sample/programs/javascript/sourcemaps/dist/webpack/typescript-source-map-test.js:1:305)",
   "(get @ webpack://speedscope-sourcemap-test-project/kludge.ts:13:3) <- (get @ file:///Users/jlfwong/code/speedscope/sample/programs/javascript/sourcemaps/dist/webpack/typescript-source-map-test.js:1:368)",
   "(n constructor @ webpack://speedscope-sourcemap-test-project/kludge.ts:4:3) <- (n @ file:///Users/jlfwong/code/speedscope/sample/programs/javascript/sourcemaps/dist/webpack/typescript-source-map-test.js:1:243)",
   "(n @ webpack://speedscope-sourcemap-test-project/gamma.ts:1:22) <- (n @ file:///Users/jlfwong/code/speedscope/sample/programs/javascript/sourcemaps/dist/webpack/typescript-source-map-test.js:1:34)",
