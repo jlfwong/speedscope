@@ -6,3 +6,5 @@ a;b;d 4
 a;b;c 3
 a;b 5
 invalid line
+
+# duration: 1000

@@ -9,7 +9,7 @@ interface BGSample {
 
 function parseBGFoldedStacks(contents: string): BGSample[] {
   const samples: BGSample[] = []
-  contents.replace(/^(.*) (\d+)$/gm, (match: string, stack: string, n: string) => {
+  contents.replace(/(^[^#\n].*) (\d+)$/gm, (match: string, stack: string, n: string) => {
     samples.push({
       stack: stack.split(';').map(name => ({key: name, name: name})),
       duration: parseInt(n, 10),
