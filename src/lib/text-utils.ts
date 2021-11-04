@@ -30,6 +30,9 @@ interface TrimmedTextResult {
 // Trim text, placing an ellipsis in the middle, with a slight bias towards
 // keeping text from the beginning rather than the end
 export function buildTrimmedText(text: string, length: number): TrimmedTextResult {
+  // make thread name more concise by spliting full path and showing the last part as thread name
+  const textFullPath = text.split("/")
+  text = textFullPath[textFullPath.length - 1]
   if (text.length <= length) {
     return {
       trimmedString: text,
