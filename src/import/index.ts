@@ -123,7 +123,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     return toGroup(importFromInstrumentsDeepCopy(contents.asString()))
   } else if (fileName.endsWith('.linux-perf.txt')) {
     console.log('Importing as output of linux perf script')
-    return importFromLinuxPerf(contents.asString())
+    return importFromLinuxPerf(contents)
   } else if (fileName.endsWith('.collapsedstack.txt')) {
     console.log('Importing as collapsed stack format')
     return toGroup(importFromBGFlameGraph(contents.asString()))
@@ -205,7 +205,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
       return toGroup(importFromInstrumentsDeepCopy(contents.asString()))
     }
 
-    const fromLinuxPerf = importFromLinuxPerf(contents.asString())
+    const fromLinuxPerf = importFromLinuxPerf(contents)
     if (fromLinuxPerf) {
       console.log('Importing from linux perf script output')
       return fromLinuxPerf

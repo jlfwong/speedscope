@@ -1,6 +1,7 @@
 import {StackListProfileBuilder, ProfileGroup} from '../lib/profile'
 import {itMap, getOrInsert} from '../lib/utils'
 import {TimeFormatter} from '../lib/value-formatters'
+import { TextFileContent } from './utils'
 
 // This imports the output of the "perf script" command on linux.
 //
@@ -80,7 +81,7 @@ function parseEvent(rawEvent: string): PerfEvent | null {
   return event
 }
 
-export function importFromLinuxPerf(contents: string): ProfileGroup | null {
+export function importFromLinuxPerf(contents: TextFileContent): ProfileGroup | null {
   const profiles = new Map<string, StackListProfileBuilder>()
 
   let eventType: string | null = null

@@ -10,8 +10,8 @@ export interface ProfileDataSource {
 }
 
 
-interface TextFileContent {
-  splitLines(): string[]
+export interface TextFileContent {
+  split(separator: string): string[]
   asString(): string
   parseAsJSON(): any
 }
@@ -24,86 +24,96 @@ interface TextFileContent {
 // representation.
 //
 // See: https://github.com/v8/v8/blob/8b663818fc311217c2cdaaab935f020578bfb7a8/src/objects/string.h#L479-L483
+//
+// TODO(jlfwong): Write tests for this
 export class BufferBackedTextFileContent implements TextFileContent {
-  private array: Uint8Array
-  private decodedString: string | null = null
-  private encoding: string
+  private chunks: string[] = []
+  private byteArray: Uint8Array
 
   constructor(buffer: ArrayBuffer) {
-    this.array = new Uint8Array(buffer)
+    const byteArray = this.byteArray = new Uint8Array(buffer)
 
-    this.encoding = 'utf-8'
-    if (this.array.length > 2) {
-      if (this.array[0] === 0xff && this.array[1] === 0xfe) {
+    let encoding: string = 'utf-8'
+    if (byteArray.length > 2) {
+      if (byteArray[0] === 0xff && byteArray[1] === 0xfe) {
         // UTF-16, Little Endian encoding
-        this.encoding = 'utf-16le'
-      } else if (this.array[0] === 0xfe && this.array[1] === 0xff) {
+        encoding = 'utf-16le'
+      } else if (byteArray[0] === 0xfe && byteArray[1] === 0xff) {
         // UTF-16, Big Endian encoding
-        this.encoding = 'utf-16be'
+        encoding = 'utf-16be'
       }
     }
 
+    // At time of writing (2021/03/27), the maximum string length in V8 is
+    //  32 bit systems: 2^28 - 16 = ~268M chars
+    //  64 bit systems: 2^29 - 24 = ~537M chars
+    //
+    // https://source.chromium.org/chromium/chromium/src/+/main:v8/include/v8-primitive.h;drc=cb88fe94d9044d860cc75c89e1bc270ab4062702;l=125
+    //
+    // We'll be conservative and feed in 2^27 bytes at a time (~134M chars
+    // assuming utf-8 encoding)
+    const CHUNK_SIZE = 1 << 27
 
     if (typeof TextDecoder !== 'undefined') {
       // If TextDecoder is available, we'll try to use it to decode the string.
-      const decoder = new TextDecoder(this.encoding)
-      this.decodedString = decoder.decode(buffer)
-      if (this.array.length > 0 && this.decodedString.length === 0) {
-        // If the resulting string would be larger than the max string size,
-        // TextDecoder.decode returns an empty string.
-        this.decodedString = null
+      const decoder = new TextDecoder(encoding)
+
+      for (let chunkNum = 0; chunkNum < buffer.byteLength / CHUNK_SIZE; chunkNum++) {
+        const offset = chunkNum * CHUNK_SIZE
+        const view = new Uint8Array(buffer, offset, Math.min(buffer.byteLength - offset, CHUNK_SIZE))
+        const chunk = decoder.decode(view, {stream: true})
+        this.chunks.push(chunk)
       }
     } else {
-      //
-      // At time of writing (2021/03/27), the maximum string length in V8 is
-      //  32 bit systems: 2^28 - 16 = ~2.68M chars
-      //  64 bit systems: 2^29 - 24 = ~5.37M chars
-      //
-      // https://source.chromium.org/chromium/chromium/src/+/main:v8/include/v8-primitive.h;drc=cb88fe94d9044d860cc75c89e1bc270ab4062702;l=125
       // JavaScript strings are UTF-16 encoded, but we're reading data from disk
       // that we're going to blindly assume it's ASCII encoded. This codepath
       // only exists for older browser support.
 
       console.warn('This browser does not support TextDecoder. Decoding text as ASCII.')
-      // TODO(jlfwong): Warn if size is over limit
-      this.decodedString = ''
-      for (let i = 0; i < this.array.length; i++) {
-        this.decodedString += String.fromCharCode(this.array[i])
+      this.chunks.push('')
+      for (let i = 0; i < byteArray.length; i++) {
+        this.chunks[this.chunks.length - 1] += String.fromCharCode(byteArray[i])
+        ;(this.chunks[this.chunks.length - 1] as any) | 0 // This forces the string to be flattened
+
+        if (this.chunks[this.chunks.length - 1].length >= CHUNK_SIZE) {
+          this.chunks.push('')
+        }
       }
     }
   }
 
-  splitLines(): string[] {
-    if (this.decodedString) {
-      return this.decodedString.split('\n')
+  split(separator: string): string[] {
+    let parts: string[] = this.chunks[0].split(separator)
+    for (let i = 1; i < this.chunks.length; i++) {
+      const chunkParts = this.chunks[i].split(separator)
+      if (chunkParts.length === 0) continue
+      if (parts.length > 0) {
+        parts[parts.length - 1] += chunkParts.shift()
+      }
+      parts = parts.concat(chunkParts)
     }
-
-    const lines: string[] = []
-
-    return lines
+    return parts
   }
 
   asString(): string {
-    if (this.decodedString) {
-      return this.decodedString
+    if (this.chunks.length === 1) {
+      return this.chunks[0]
     }
-    throw new Error(`String exceeds maximum string length. Buffer size is: ${this.array.length} bytes`)
+    throw new Error(`String exceeds maximum string length. Buffer size is: ${this.byteArray.length} bytes`)
   }
 
   parseAsJSON(): any {
-    /*
-    if (this.decodedString) {
-      return JSON.parse(this.decodedString)
+    if (this.chunks.length === 1) {
+      return JSON.parse(this.chunks[0])
     }
-    */
-    return JSON_parse(this.array)
+    return JSON_parse(new Uint8Array(this.byteArray))
   }
 }
 
 class StringBackedTextFileContent implements TextFileContent {
   constructor(private s: string) {}
-  splitLines(): string[] {
-    return this.s.split('\n')
+  split(separator: string): string[] {
+    return this.s.split(separator)
   }
   asString(): string {
     return this.s
@@ -118,16 +128,11 @@ export class TextProfileDataSource implements ProfileDataSource {
   async name() {
     return this.fileName
   }
- // TODO(jlfwong): Figure out proper type annotations
 
   async readAsArrayBuffer() {
-    // JavaScript strings are UTF-16 encoded, but if this string is
-    // constructed based on
-
-    // TODO(jlfwong): Might want to make this construct an array
-    // buffer based on the text
     return new ArrayBuffer(0)
   }
+
   async readAsText() {
     return new StringBackedTextFileContent(this.contents)
   }
