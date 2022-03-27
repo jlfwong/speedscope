@@ -88,7 +88,7 @@
 import {CallTreeProfileBuilder, Frame, FrameInfo, Profile, ProfileGroup} from '../lib/profile'
 import {getOrElse, getOrInsert, KeyedSet} from '../lib/utils'
 import {ByteFormatter, TimeFormatter} from '../lib/value-formatters'
-import { TextFileContent } from './utils'
+import {TextFileContent} from './utils'
 
 class CallGraph {
   private frameSet = new KeyedSet<Frame>()

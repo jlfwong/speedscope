@@ -1,7 +1,7 @@
 import {StackListProfileBuilder, ProfileGroup} from '../lib/profile'
 import {itMap, getOrInsert} from '../lib/utils'
 import {TimeFormatter} from '../lib/value-formatters'
-import { TextFileContent } from './utils'
+import {TextFileContent} from './utils'
 
 // This imports the output of the "perf script" command on linux.
 //

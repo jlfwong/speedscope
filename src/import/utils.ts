@@ -1,14 +1,13 @@
 import * as pako from 'pako'
 
 // TODO(jlfwong): Figure out proper type annotations
-const {JSON_parse} : {JSON_parse: (array: Uint8Array) => any} = require('uint8array-json-parser')
+const {JSON_parse}: {JSON_parse: (array: Uint8Array) => any} = require('uint8array-json-parser')
 
 export interface ProfileDataSource {
   name(): Promise<string>
   readAsArrayBuffer(): Promise<ArrayBuffer>
   readAsText(): Promise<TextFileContent>
 }
-
 
 export interface TextFileContent {
   split(separator: string): string[]
@@ -44,7 +43,7 @@ export class BufferBackedTextFileContent implements TextFileContent {
   private byteArray: Uint8Array
 
   constructor(buffer: ArrayBuffer) {
-    const byteArray = this.byteArray = new Uint8Array(buffer)
+    const byteArray = (this.byteArray = new Uint8Array(buffer))
 
     let encoding: string = 'utf-8'
     if (byteArray.length > 2) {
@@ -73,7 +72,11 @@ export class BufferBackedTextFileContent implements TextFileContent {
 
       for (let chunkNum = 0; chunkNum < buffer.byteLength / CHUNK_SIZE; chunkNum++) {
         const offset = chunkNum * CHUNK_SIZE
-        const view = new Uint8Array(buffer, offset, Math.min(buffer.byteLength - offset, CHUNK_SIZE))
+        const view = new Uint8Array(
+          buffer,
+          offset,
+          Math.min(buffer.byteLength - offset, CHUNK_SIZE),
+        )
         const chunk = decoder.decode(view, {stream: true})
         this.chunks.push(chunk)
       }
@@ -109,7 +112,7 @@ export class BufferBackedTextFileContent implements TextFileContent {
   }
 
   firstChunk(): string {
-    return this.chunks[0] || ""
+    return this.chunks[0] || ''
   }
 
   parseAsJSON(): any {
