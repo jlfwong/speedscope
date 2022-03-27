@@ -188,7 +188,6 @@ function readAsArrayBuffer(file: File): Promise<ArrayBuffer> {
 }
 
 function readAsText(file: File): Promise<TextFileContent> {
-  // TODO(jlfwong): Change this interface to be TextFileContent
   return MaybeCompressedDataReader.fromFile(file).readAsText()
 }
 
