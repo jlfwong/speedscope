@@ -10,7 +10,7 @@ export interface ProfileDataSource {
 }
 
 export interface TextFileContent {
-  split(separator: string): string[]
+  splitLines(): string[]
   firstChunk(): string
   parseAsJSON(): any
 }
@@ -30,14 +30,35 @@ function fixUpJSON(content: string): string {
 // size, we provide an alternate string interface for text backed by a
 // Uint8Array instead.
 //
-// We provide a simple split() implementation under the assumption that when
-// splitting by a common separator in the file, the resulting parts will each be
-// under the maximum string size. This isn't true in the general case, but will
-// be true for most common large files.
+// We provide a simple splitLines() which returns simple strings under the
+// assumption that most extremely large text profiles will be broken into many
+// lines.  This isn't true in the general case, but will be true for most common
+// large files.
 //
 // See: https://github.com/v8/v8/blob/8b663818fc311217c2cdaaab935f020578bfb7a8/src/objects/string.h#L479-L483
 //
 // TODO(jlfwong): Write tests for this
+//
+// At time of writing (2021/03/27), the maximum string length in V8 is
+//  32 bit systems: 2^28 - 16 = ~268M chars
+//  64 bit systems: 2^29 - 24 = ~537M chars
+//
+// https://source.chromium.org/chromium/chromium/src/+/main:v8/include/v8-primitive.h;drc=cb88fe94d9044d860cc75c89e1bc270ab4062702;l=125
+//
+// We'll be conservative and feed in 2^27 bytes at a time (~134M chars
+// assuming utf-8 encoding)
+let TEXT_FILE_CHUNK_SIZE = 1 << 27
+
+export async function withMockedFileChunkSizeForTests(chunkSize: number, cb: () => any) {
+  const original = TEXT_FILE_CHUNK_SIZE
+  TEXT_FILE_CHUNK_SIZE = chunkSize
+  try {
+    await cb()
+  } finally {
+    TEXT_FILE_CHUNK_SIZE = original
+  }
+}
+
 export class BufferBackedTextFileContent implements TextFileContent {
   private chunks: string[] = []
   private byteArray: Uint8Array
@@ -56,26 +77,16 @@ export class BufferBackedTextFileContent implements TextFileContent {
       }
     }
 
-    // At time of writing (2021/03/27), the maximum string length in V8 is
-    //  32 bit systems: 2^28 - 16 = ~268M chars
-    //  64 bit systems: 2^29 - 24 = ~537M chars
-    //
-    // https://source.chromium.org/chromium/chromium/src/+/main:v8/include/v8-primitive.h;drc=cb88fe94d9044d860cc75c89e1bc270ab4062702;l=125
-    //
-    // We'll be conservative and feed in 2^27 bytes at a time (~134M chars
-    // assuming utf-8 encoding)
-    const CHUNK_SIZE = 1 << 27
-
     if (typeof TextDecoder !== 'undefined') {
       // If TextDecoder is available, we'll try to use it to decode the string.
       const decoder = new TextDecoder(encoding)
 
-      for (let chunkNum = 0; chunkNum < buffer.byteLength / CHUNK_SIZE; chunkNum++) {
-        const offset = chunkNum * CHUNK_SIZE
+      for (let chunkNum = 0; chunkNum < buffer.byteLength / TEXT_FILE_CHUNK_SIZE; chunkNum++) {
+        const offset = chunkNum * TEXT_FILE_CHUNK_SIZE
         const view = new Uint8Array(
           buffer,
           offset,
-          Math.min(buffer.byteLength - offset, CHUNK_SIZE),
+          Math.min(buffer.byteLength - offset, TEXT_FILE_CHUNK_SIZE),
         )
         const chunk = decoder.decode(view, {stream: true})
         this.chunks.push(chunk)
@@ -91,17 +102,17 @@ export class BufferBackedTextFileContent implements TextFileContent {
         this.chunks[this.chunks.length - 1] += String.fromCharCode(byteArray[i])
         ;(this.chunks[this.chunks.length - 1] as any) | 0 // This forces the string to be flattened
 
-        if (this.chunks[this.chunks.length - 1].length >= CHUNK_SIZE) {
+        if (this.chunks[this.chunks.length - 1].length >= TEXT_FILE_CHUNK_SIZE) {
           this.chunks.push('')
         }
       }
     }
   }
 
-  split(separator: string): string[] {
-    let parts: string[] = this.chunks[0].split(separator)
+  splitLines(): string[] {
+    let parts: string[] = this.chunks[0].split('\n')
     for (let i = 1; i < this.chunks.length; i++) {
-      const chunkParts = this.chunks[i].split(separator)
+      const chunkParts = this.chunks[i].split('\n')
       if (chunkParts.length === 0) continue
       if (parts.length > 0) {
         parts[parts.length - 1] += chunkParts.shift()
@@ -137,8 +148,8 @@ export class BufferBackedTextFileContent implements TextFileContent {
 export class StringBackedTextFileContent implements TextFileContent {
   constructor(private s: string) {}
 
-  split(separator: string): string[] {
-    return this.s.split(separator)
+  splitLines(): string[] {
+    return this.s.split('\n')
   }
 
   firstChunk(): string {

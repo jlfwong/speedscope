@@ -14,7 +14,7 @@ import {FileSystemDirectoryEntry, FileSystemEntry, FileSystemFileEntry} from './
 import {MaybeCompressedDataReader, TextFileContent} from './utils'
 
 function parseTSV<T>(contents: TextFileContent): T[] {
-  const lines = contents.split('\n').map(l => l.split('\t'))
+  const lines = contents.splitLines().map(l => l.split('\t'))
 
   const headerLine = lines.shift()
   if (!headerLine) return []

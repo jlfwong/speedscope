@@ -1,4 +1,5 @@
 import {checkProfileSnapshot} from '../lib/test-utils'
+import {withMockedFileChunkSizeForTests} from './utils'
 
 describe('importFromLinuxPerf', () => {
   test('simple.linux-perf.txt', async () => {
@@ -18,5 +19,10 @@ describe('importFromLinuxPerf', () => {
   })
   test('system-wide.linux-perf.txt', async () => {
     await checkProfileSnapshot('./sample/profiles/linux-perf/system-wide.linux-perf.txt')
+  })
+  test('system-wide.linux-perf.txt chunked', async () => {
+    await withMockedFileChunkSizeForTests(100, async () => {
+      await checkProfileSnapshot('./sample/profiles/linux-perf/system-wide.linux-perf.txt')
+    })
   })
 })

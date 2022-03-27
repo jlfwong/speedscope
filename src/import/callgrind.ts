@@ -293,7 +293,7 @@ class CallgrindParser {
   private savedFunctionNames: {[id: string]: string} = {}
 
   constructor(contents: TextFileContent, private importedFileName: string) {
-    this.lines = contents.split('\n')
+    this.lines = contents.splitLines()
     this.lineNum = 0
   }
 

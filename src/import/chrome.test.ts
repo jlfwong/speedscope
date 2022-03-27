@@ -1,4 +1,5 @@
 import {checkProfileSnapshot} from '../lib/test-utils'
+import {withMockedFileChunkSizeForTests} from './utils'
 
 test('importFromChromeCPUProfile', async () => {
   await checkProfileSnapshot('./sample/profiles/Chrome/65/simple.cpuprofile')
@@ -6,6 +7,12 @@ test('importFromChromeCPUProfile', async () => {
 
 test('importFromChromeTimeline', async () => {
   await checkProfileSnapshot('./sample/profiles/Chrome/65/simple-timeline.json')
+})
+
+test('importFromChromeTimeline chunked', async () => {
+  await withMockedFileChunkSizeForTests(100, async () => {
+    await checkProfileSnapshot('./sample/profiles/Chrome/65/simple-timeline.json')
+  })
 })
 
 test('importFromChromeTimeline Chrome 69', async () => {
