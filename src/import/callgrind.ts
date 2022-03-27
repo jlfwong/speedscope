@@ -88,6 +88,7 @@
 import {CallTreeProfileBuilder, Frame, FrameInfo, Profile, ProfileGroup} from '../lib/profile'
 import {getOrElse, getOrInsert, KeyedSet} from '../lib/utils'
 import {ByteFormatter, TimeFormatter} from '../lib/value-formatters'
+import { TextFileContent } from './utils'
 
 class CallGraph {
   private frameSet = new KeyedSet<Frame>()
@@ -291,7 +292,7 @@ class CallgrindParser {
   private savedFileNames: {[id: string]: string} = {}
   private savedFunctionNames: {[id: string]: string} = {}
 
-  constructor(contents: string, private importedFileName: string) {
+  constructor(contents: TextFileContent, private importedFileName: string) {
     this.lines = contents.split('\n')
     this.lineNum = 0
   }
@@ -510,7 +511,7 @@ class CallgrindParser {
 }
 
 export function importFromCallgrind(
-  contents: string,
+  contents: TextFileContent,
   importedFileName: string,
 ): ProfileGroup | null {
   return new CallgrindParser(contents, importedFileName).parse()

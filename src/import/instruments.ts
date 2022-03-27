@@ -187,9 +187,9 @@ function readAsArrayBuffer(file: File): Promise<ArrayBuffer> {
   return MaybeCompressedDataReader.fromFile(file).readAsArrayBuffer()
 }
 
-function readAsText(file: File): Promise<string> {
+function readAsText(file: File): Promise<TextFileContent> {
   // TODO(jlfwong): Change this interface to be TextFileContent
-  return MaybeCompressedDataReader.fromFile(file).readAsText().then(t => t.asString())
+  return MaybeCompressedDataReader.fromFile(file).readAsText()
 }
 
 function getCoreDirForRun(tree: TraceDirectoryTree, selectedRun: number): TraceDirectoryTree {
@@ -260,7 +260,7 @@ async function getRawSampleList(core: TraceDirectoryTree): Promise<Sample[]> {
     const schemaFile = storedir.files.get('schema.xml')
     if (!schemaFile) continue
     const schema = await readAsText(schemaFile)
-    if (!/name="time-profile"/.exec(schema)) {
+    if (!/name="time-profile"/.exec(schema.firstChunk())) {
       continue
     }
     const bulkstore = new BinReader(

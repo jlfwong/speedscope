@@ -12,17 +12,29 @@ export interface ProfileDataSource {
 
 export interface TextFileContent {
   split(separator: string): string[]
-  asString(): string
   firstChunk(): string
   parseAsJSON(): any
+}
+
+function fixUpJSON(content: string): string {
+  content = content.trim()
+  if (content[0] === '[') {
+    content = content.replace(/,\s*$/, '')
+    if (content[content.length - 1] !== ']') {
+      content += ']'
+    }
+  }
+  return content
 }
 
 // V8 has a maximum string size. To support files whose contents exceeds that
 // size, we provide an alternate string interface for text backed by a
 // Uint8Array instead.
 //
-// If the buffer is under a certain size, we fall back to using a simple string
-// representation.
+// We provide a simple split() implementation under the assumption that when
+// splitting by a common separator in the file, the resulting parts will each be
+// under the maximum string size. This isn't true in the general case, but will
+// be true for most common large files.
 //
 // See: https://github.com/v8/v8/blob/8b663818fc311217c2cdaaab935f020578bfb7a8/src/objects/string.h#L479-L483
 //
@@ -96,34 +108,34 @@ export class BufferBackedTextFileContent implements TextFileContent {
     return parts
   }
 
-  asString(): string {
-    if (this.chunks.length === 1) {
-      return this.chunks[0]
-    }
-    throw new Error(`String exceeds maximum string length. Buffer size is: ${this.byteArray.length} bytes`)
-  }
-
   firstChunk(): string {
     return this.chunks[0] || ""
   }
 
   parseAsJSON(): any {
+    // This code is similar to the code from here:
+    // https://github.com/catapult-project/catapult/blob/27e047e0494df162022be6aa8a8862742a270232/tracing/tracing/extras/importer/trace_event_importer.html#L197-L208
+    //
+    //   If the event data begins with a [, then we know it should end with a ]. The
+    //   reason we check for this is because some tracing implementations cannot
+    //   guarantee that a ']' gets written to the trace file. So, we are forgiving
+    //   and if this is obviously the case, we fix it up before throwing the string
+    //   at JSON.parse.
+    //
     if (this.chunks.length === 1) {
-      return JSON.parse(this.chunks[0])
+      return JSON.parse(fixUpJSON(this.chunks[0]))
     }
+
+    // TODO(jlfwong): fixUpJSON for this case
     return JSON_parse(new Uint8Array(this.byteArray))
   }
 }
 
-class StringBackedTextFileContent implements TextFileContent {
+export class StringBackedTextFileContent implements TextFileContent {
   constructor(private s: string) {}
 
   split(separator: string): string[] {
     return this.s.split(separator)
-  }
-
-  asString(): string {
-    return this.s
   }
 
   firstChunk(): string {

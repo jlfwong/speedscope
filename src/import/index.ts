@@ -73,26 +73,6 @@ function toGroup(profile: Profile | null): ProfileGroup | null {
   return {name: profile.getName(), indexToView: 0, profiles: [profile]}
 }
 
-function fixUpJSON(content: string): string {
-  // This code is similar to the code from here:
-  // https://github.com/catapult-project/catapult/blob/27e047e0494df162022be6aa8a8862742a270232/tracing/tracing/extras/importer/trace_event_importer.html#L197-L208
-  //
-  //   If the event data begins with a [, then we know it should end with a ]. The
-  //   reason we check for this is because some tracing implementations cannot
-  //   guarantee that a ']' gets written to the trace file. So, we are forgiving
-  //   and if this is obviously the case, we fix it up before throwing the string
-  //   at JSON.parse.
-  //
-  content = content.trim()
-  if (content[0] === '[') {
-    content = content.replace(/,\s*$/, '')
-    if (content[content.length - 1] !== ']') {
-      content += ']'
-    }
-  }
-  return content
-}
-
 async function _importProfileGroup(dataSource: ProfileDataSource): Promise<ProfileGroup | null> {
   const fileName = await dataSource.name()
 
@@ -138,13 +118,13 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     return toGroup(importFromSafari(contents.parseAsJSON()))
   } else if (fileName.startsWith('callgrind.')) {
     console.log('Importing as Callgrind profile')
-    return importFromCallgrind(contents.asString(), fileName)
+    return importFromCallgrind(contents, fileName)
   }
 
   // Second pass: Try to guess what file format it is based on structure
   let parsed: any
   try {
-    parsed = JSON.parse(fixUpJSON(contents.asString()))
+    parsed = contents.parseAsJSON()
   } catch (e) {}
   if (parsed) {
     if (parsed['$schema'] === 'https://www.speedscope.app/file-format-schema.json') {
@@ -191,7 +171,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
       (/^events:/m.exec(contents.firstChunk()) && /^fn=/m.exec(contents.firstChunk()))
     ) {
       console.log('Importing as Callgrind profile')
-      return importFromCallgrind(contents.asString(), fileName)
+      return importFromCallgrind(contents, fileName)
     }
 
     // If the first line contains "Symbol Name", preceded by a tab, it's probably
