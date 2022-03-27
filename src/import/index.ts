@@ -111,45 +111,45 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
   // First pass: Check known file format names to infer the file type
   if (fileName.endsWith('.speedscope.json')) {
     console.log('Importing as speedscope json file')
-    return importSpeedscopeProfiles(JSON.parse(contents))
+    return importSpeedscopeProfiles(contents.parseAsJSON())
   } else if (fileName.endsWith('.chrome.json') || /Profile-\d{8}T\d{6}/.exec(fileName)) {
     console.log('Importing as Chrome Timeline')
-    return importFromChromeTimeline(JSON.parse(contents), fileName)
+    return importFromChromeTimeline(contents.parseAsJSON(), fileName)
   } else if (fileName.endsWith('.stackprof.json')) {
     console.log('Importing as stackprof profile')
-    return toGroup(importFromStackprof(JSON.parse(contents)))
+    return toGroup(importFromStackprof(contents.parseAsJSON()))
   } else if (fileName.endsWith('.instruments.txt')) {
     console.log('Importing as Instruments.app deep copy')
-    return toGroup(importFromInstrumentsDeepCopy(contents))
+    return toGroup(importFromInstrumentsDeepCopy(contents.asString()))
   } else if (fileName.endsWith('.linux-perf.txt')) {
     console.log('Importing as output of linux perf script')
-    return importFromLinuxPerf(contents)
+    return importFromLinuxPerf(contents.asString())
   } else if (fileName.endsWith('.collapsedstack.txt')) {
     console.log('Importing as collapsed stack format')
-    return toGroup(importFromBGFlameGraph(contents))
+    return toGroup(importFromBGFlameGraph(contents.asString()))
   } else if (fileName.endsWith('.v8log.json')) {
     console.log('Importing as --prof-process v8 log')
-    return toGroup(importFromV8ProfLog(JSON.parse(contents)))
+    return toGroup(importFromV8ProfLog(contents.parseAsJSON()))
   } else if (fileName.endsWith('.heapprofile')) {
     console.log('Importing as Chrome Heap Profile')
-    return toGroup(importFromChromeHeapProfile(JSON.parse(contents)))
+    return toGroup(importFromChromeHeapProfile(contents.parseAsJSON()))
   } else if (fileName.endsWith('-recording.json')) {
     console.log('Importing as Safari profile')
-    return toGroup(importFromSafari(JSON.parse(contents)))
+    return toGroup(importFromSafari(contents.parseAsJSON()))
   } else if (fileName.startsWith('callgrind.')) {
     console.log('Importing as Callgrind profile')
-    return importFromCallgrind(contents, fileName)
+    return importFromCallgrind(contents.asString(), fileName)
   }
 
   // Second pass: Try to guess what file format it is based on structure
   let parsed: any
   try {
-    parsed = JSON.parse(fixUpJSON(contents))
+    parsed = JSON.parse(fixUpJSON(contents.asString()))
   } catch (e) {}
   if (parsed) {
     if (parsed['$schema'] === 'https://www.speedscope.app/file-format-schema.json') {
       console.log('Importing as speedscope json file')
-      return importSpeedscopeProfiles(JSON.parse(contents))
+      return importSpeedscopeProfiles(contents.parseAsJSON())
     } else if (parsed['systemHost'] && parsed['systemHost']['name'] == 'Firefox') {
       console.log('Importing as Firefox profile')
       return toGroup(importFromFirefox(parsed))
@@ -173,41 +173,45 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
       return toGroup(importFromV8ProfLog(parsed))
     } else if ('head' in parsed && 'selfSize' in parsed['head']) {
       console.log('Importing as Chrome Heap Profile')
-      return toGroup(importFromChromeHeapProfile(JSON.parse(contents)))
+      return toGroup(importFromChromeHeapProfile(contents.parseAsJSON()))
     } else if ('rts_arguments' in parsed && 'initial_capabilities' in parsed) {
       console.log('Importing as Haskell GHC JSON Profile')
       return importFromHaskell(parsed)
     } else if ('recording' in parsed && 'sampleStackTraces' in parsed.recording) {
       console.log('Importing as Safari profile')
-      return toGroup(importFromSafari(JSON.parse(contents)))
+      return toGroup(importFromSafari(contents.parseAsJSON()))
     }
   } else {
     // Format is not JSON
 
     // If the first line is "# callgrind format", it's probably in Callgrind
     // Profile Format.
+    //
+    // TODO(jlfwong): Change these to not do the .exec
     if (
-      /^# callgrind format/.exec(contents) ||
-      (/^events:/m.exec(contents) && /^fn=/m.exec(contents))
+      /^# callgrind format/.exec(contents.asString()) ||
+      (/^events:/m.exec(contents.asString()) && /^fn=/m.exec(contents.asString()))
     ) {
       console.log('Importing as Callgrind profile')
-      return importFromCallgrind(contents, fileName)
+      return importFromCallgrind(contents.asString(), fileName)
     }
 
     // If the first line contains "Symbol Name", preceded by a tab, it's probably
     // a deep copy from OS X Instruments.app
-    if (/^[\w \t\(\)]*\tSymbol Name/.exec(contents)) {
+    //
+    // TODO: change this to remove the .exec
+    if (/^[\w \t\(\)]*\tSymbol Name/.exec(contents.asString())) {
       console.log('Importing as Instruments.app deep copy')
-      return toGroup(importFromInstrumentsDeepCopy(contents))
+      return toGroup(importFromInstrumentsDeepCopy(contents.asString()))
     }
 
-    const fromLinuxPerf = importFromLinuxPerf(contents)
+    const fromLinuxPerf = importFromLinuxPerf(contents.asString())
     if (fromLinuxPerf) {
       console.log('Importing from linux perf script output')
       return fromLinuxPerf
     }
 
-    const fromBGFlameGraph = importFromBGFlameGraph(contents)
+    const fromBGFlameGraph = importFromBGFlameGraph(contents.asString())
     if (fromBGFlameGraph) {
       console.log('Importing as collapsed stack format')
       return toGroup(fromBGFlameGraph)
