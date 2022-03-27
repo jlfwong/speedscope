@@ -189,8 +189,8 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     //
     // TODO(jlfwong): Change these to not do the .exec
     if (
-      /^# callgrind format/.exec(contents.asString()) ||
-      (/^events:/m.exec(contents.asString()) && /^fn=/m.exec(contents.asString()))
+      /^# callgrind format/.exec(contents.firstChunk()) ||
+      (/^events:/m.exec(contents.firstChunk()) && /^fn=/m.exec(contents.firstChunk()))
     ) {
       console.log('Importing as Callgrind profile')
       return importFromCallgrind(contents.asString(), fileName)
@@ -200,7 +200,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     // a deep copy from OS X Instruments.app
     //
     // TODO: change this to remove the .exec
-    if (/^[\w \t\(\)]*\tSymbol Name/.exec(contents.asString())) {
+    if (/^[\w \t\(\)]*\tSymbol Name/.exec(contents.firstChunk())) {
       console.log('Importing as Instruments.app deep copy')
       return toGroup(importFromInstrumentsDeepCopy(contents.asString()))
     }

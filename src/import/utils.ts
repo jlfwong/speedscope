@@ -13,6 +13,7 @@ export interface ProfileDataSource {
 export interface TextFileContent {
   split(separator: string): string[]
   asString(): string
+  firstChunk(): string
   parseAsJSON(): any
 }
 
@@ -102,6 +103,10 @@ export class BufferBackedTextFileContent implements TextFileContent {
     throw new Error(`String exceeds maximum string length. Buffer size is: ${this.byteArray.length} bytes`)
   }
 
+  firstChunk(): string {
+    return this.chunks[0] || ""
+  }
+
   parseAsJSON(): any {
     if (this.chunks.length === 1) {
       return JSON.parse(this.chunks[0])
@@ -112,12 +117,19 @@ export class BufferBackedTextFileContent implements TextFileContent {
 
 class StringBackedTextFileContent implements TextFileContent {
   constructor(private s: string) {}
+
   split(separator: string): string[] {
     return this.s.split(separator)
   }
+
   asString(): string {
     return this.s
   }
+
+  firstChunk(): string {
+    return this.s
+  }
+
   parseAsJSON(): any {
     return JSON.parse(this.s)
   }
