@@ -11,9 +11,9 @@ import {
 import {sortBy, getOrThrow, getOrInsert, lastOf, getOrElse, zeroPad} from '../lib/utils'
 import {ByteFormatter, TimeFormatter} from '../lib/value-formatters'
 import {FileSystemDirectoryEntry, FileSystemEntry, FileSystemFileEntry} from './file-system-entry'
-import {MaybeCompressedDataReader} from './utils'
+import {MaybeCompressedDataReader, TextFileContent} from './utils'
 
-function parseTSV<T>(contents: string): T[] {
+function parseTSV<T>(contents: TextFileContent): T[] {
   const lines = contents.split('\n').map(l => l.split('\t'))
 
   const headerLine = lines.shift()
@@ -94,7 +94,7 @@ function getWeight(deepCopyRow: any): number {
 }
 
 // Import from a deep copy made of a profile
-export function importFromInstrumentsDeepCopy(contents: string): Profile {
+export function importFromInstrumentsDeepCopy(contents: TextFileContent): Profile {
   const profile = new CallTreeProfileBuilder()
   const rows = parseTSV<PastedTimeProfileRow | PastedAllocationsProfileRow>(contents)
 

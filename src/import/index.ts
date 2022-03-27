@@ -120,7 +120,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     return toGroup(importFromStackprof(contents.parseAsJSON()))
   } else if (fileName.endsWith('.instruments.txt')) {
     console.log('Importing as Instruments.app deep copy')
-    return toGroup(importFromInstrumentsDeepCopy(contents.asString()))
+    return toGroup(importFromInstrumentsDeepCopy(contents))
   } else if (fileName.endsWith('.linux-perf.txt')) {
     console.log('Importing as output of linux perf script')
     return importFromLinuxPerf(contents)
@@ -198,7 +198,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     // a deep copy from OS X Instruments.app
     if (/^[\w \t\(\)]*\tSymbol Name/.exec(contents.firstChunk())) {
       console.log('Importing as Instruments.app deep copy')
-      return toGroup(importFromInstrumentsDeepCopy(contents.asString()))
+      return toGroup(importFromInstrumentsDeepCopy(contents))
     }
 
     const fromLinuxPerf = importFromLinuxPerf(contents)
