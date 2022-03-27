@@ -1,4 +1,5 @@
 import {checkProfileSnapshot} from '../lib/test-utils'
+import {withMockedFileChunkSizeForTests} from './utils'
 
 test('importTraceEvents simple', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/simple.json')
@@ -16,12 +17,30 @@ test('importTraceEvents partial json import', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/simple-partial.json')
 })
 
+test('importTraceEvents partial json import chunked', async () => {
+  await withMockedFileChunkSizeForTests(100, async () => {
+    await checkProfileSnapshot('./sample/profiles/trace-event/simple-partial.json')
+  })
+})
+
 test('importTraceEvents partial json import trailing comma', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/simple-partial-trailing-comma.json')
 })
 
+test('importTraceEvents partial json import trailing comma chunked', async () => {
+  await withMockedFileChunkSizeForTests(100, async () => {
+    await checkProfileSnapshot('./sample/profiles/trace-event/simple-partial-trailing-comma.json')
+  })
+})
+
 test('importTraceEvents partial json import whitespace padding', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/simple-partial-whitespace.json')
+})
+
+test('importTraceEvents partial json import whitespace padding chunked', async () => {
+  await withMockedFileChunkSizeForTests(100, async () => {
+    await checkProfileSnapshot('./sample/profiles/trace-event/simple-partial-whitespace.json')
+  })
 })
 
 test('importTraceEvents bad E events', async () => {
