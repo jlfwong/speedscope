@@ -48,6 +48,63 @@ export async function withMockedFileChunkSizeForTests(chunkSize: number, cb: () 
   }
 }
 
+function permissivelyParseJSONString(content: string) {
+  // This code is similar to the code from here:
+  // https://github.com/catapult-project/catapult/blob/27e047e0494df162022be6aa8a8862742a270232/tracing/tracing/extras/importer/trace_event_importer.html#L197-L208
+  //
+  //   If the event data begins with a [, then we know it should end with a ]. The
+  //   reason we check for this is because some tracing implementations cannot
+  //   guarantee that a ']' gets written to the trace file. So, we are forgiving
+  //   and if this is obviously the case, we fix it up before throwing the string
+  //   at JSON.parse.
+  content = content.trim()
+  if (content[0] === '[') {
+    content = content.replace(/,\s*$/, '')
+    if (content[content.length - 1] !== ']') {
+      content += ']'
+    }
+  }
+  return JSON.parse(content)
+}
+
+function permissivelyParseJSONUint8Array(byteArray: Uint8Array) {
+  let indexOfFirstNonWhitespaceChar = 0
+  for (let i = 0; i < byteArray.length; i++) {
+    if (!/\s/.exec(String.fromCharCode(byteArray[i]))) {
+      indexOfFirstNonWhitespaceChar = i
+      break
+    }
+  }
+  if (
+    byteArray[indexOfFirstNonWhitespaceChar] === '['.charCodeAt(0) &&
+    byteArray[byteArray.length - 1] !== ']'.charCodeAt(0)
+  ) {
+    // Strip trailing whitespace from the end of the array
+    let trimmedLength = byteArray.length
+    while (trimmedLength > 0 && /\s/.exec(String.fromCharCode(byteArray[trimmedLength - 1]))) {
+      trimmedLength--
+    }
+
+    // Ignore trailing comma
+    if (String.fromCharCode(byteArray[trimmedLength - 1]) === ',') {
+      trimmedLength--
+    }
+
+    if (String.fromCharCode(byteArray[trimmedLength - 1]) !== ']') {
+      // Clone the array, ignoring any whitespace & trailing comma, then append a ']'
+      //
+      // Note: We could save a tiny bit of space here by avoiding copying the
+      // leading whitespace, but it's a trivial perf boost and it complicates
+      // the code.
+      const newByteArray = new Uint8Array(trimmedLength + 1)
+      newByteArray.set(byteArray.subarray(0, trimmedLength))
+      newByteArray[trimmedLength] = ']'.charCodeAt(0)
+      byteArray = newByteArray
+    }
+  }
+  return JSON_parse(byteArray)
+}
+
 export class BufferBackedTextFileContent implements TextFileContent {
   private chunks: string[] = []
   private byteArray: Uint8Array
@@ -119,62 +176,9 @@ export class BufferBackedTextFileContent implements TextFileContent {
     // We only use the Uint8Array version of JSON.parse when necessary, because
     // it's around 4x slower than native.
     if (this.chunks.length === 1) {
-      // This code is similar to the code from here:
-      // https://github.com/catapult-project/catapult/blob/27e047e0494df162022be6aa8a8862742a270232/tracing/tracing/extras/importer/trace_event_importer.html#L197-L208
-      //
-      //   If the event data begins with a [, then we know it should end with a ]. The
-      //   reason we check for this is because some tracing implementations cannot
-      //   guarantee that a ']' gets written to the trace file. So, we are forgiving
-      //   and if this is obviously the case, we fix it up before throwing the string
-      //   at JSON.parse.
-      let content = this.chunks[0].trim()
-      if (content[0] === '[') {
-        content = content.replace(/,\s*$/, '')
-        if (content[content.length - 1] !== ']') {
-          content += ']'
-        }
-      }
-      return JSON.parse(content)
+      return permissivelyParseJSONString(this.chunks[0])
     }
-
-    let indexOfFirstNonWhitespaceChar = 0
-    for (let i = 0; i < this.byteArray.length; i++) {
-      if (!/\s/.exec(String.fromCharCode(this.byteArray[i]))) {
-        indexOfFirstNonWhitespaceChar = i
-        break
-      }
-    }
-    if (
-      this.byteArray[indexOfFirstNonWhitespaceChar] === '['.charCodeAt(0) &&
-      this.byteArray[this.byteArray.length - 1] !== ']'.charCodeAt(0)
-    ) {
-      // Strip trailing whitespace from the end of the array
-      let trimmedLength = this.byteArray.length
-      while (
-        trimmedLength > 0 &&
-        /\s/.exec(String.fromCharCode(this.byteArray[trimmedLength - 1]))
-      ) {
-        trimmedLength--
-      }
-
-      // Ignore trailing comma
-      if (String.fromCharCode(this.byteArray[trimmedLength - 1]) === ',') {
-        trimmedLength--
-      }
-
-      if (String.fromCharCode(this.byteArray[trimmedLength - 1]) !== ']') {
-        // Clone the array, ignoring any whitespace & trailing comma, then append a ']'
-        //
-        // Note: We could save a tiny bit of space here by avoiding copying the
-        // leading whitespace, but it's a trivial perf boost and it complicates
-        // the code.
-        const newByteArray = new Uint8Array(trimmedLength + 1)
-        newByteArray.set(this.byteArray.subarray(0, trimmedLength))
-        newByteArray[trimmedLength] = ']'.charCodeAt(0)
-        this.byteArray = newByteArray
-      }
-    }
-    return JSON_parse(this.byteArray)
+    return permissivelyParseJSONUint8Array(this.byteArray)
   }
 }
 
@@ -190,7 +194,7 @@ export class StringBackedTextFileContent implements TextFileContent {
   }
 
   parseAsJSON(): any {
-    return JSON.parse(this.s)
+    return permissivelyParseJSONString(this.s)
   }
 }
 
