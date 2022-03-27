@@ -126,7 +126,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     return importFromLinuxPerf(contents)
   } else if (fileName.endsWith('.collapsedstack.txt')) {
     console.log('Importing as collapsed stack format')
-    return toGroup(importFromBGFlameGraph(contents.asString()))
+    return toGroup(importFromBGFlameGraph(contents))
   } else if (fileName.endsWith('.v8log.json')) {
     console.log('Importing as --prof-process v8 log')
     return toGroup(importFromV8ProfLog(contents.parseAsJSON()))
@@ -186,8 +186,6 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
 
     // If the first line is "# callgrind format", it's probably in Callgrind
     // Profile Format.
-    //
-    // TODO(jlfwong): Change these to not do the .exec
     if (
       /^# callgrind format/.exec(contents.firstChunk()) ||
       (/^events:/m.exec(contents.firstChunk()) && /^fn=/m.exec(contents.firstChunk()))
@@ -198,8 +196,6 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
 
     // If the first line contains "Symbol Name", preceded by a tab, it's probably
     // a deep copy from OS X Instruments.app
-    //
-    // TODO: change this to remove the .exec
     if (/^[\w \t\(\)]*\tSymbol Name/.exec(contents.firstChunk())) {
       console.log('Importing as Instruments.app deep copy')
       return toGroup(importFromInstrumentsDeepCopy(contents.asString()))
@@ -211,7 +207,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
       return fromLinuxPerf
     }
 
-    const fromBGFlameGraph = importFromBGFlameGraph(contents.asString())
+    const fromBGFlameGraph = importFromBGFlameGraph(contents)
     if (fromBGFlameGraph) {
       console.log('Importing as collapsed stack format')
       return toGroup(fromBGFlameGraph)
