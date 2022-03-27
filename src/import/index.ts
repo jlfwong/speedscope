@@ -129,7 +129,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
   if (parsed) {
     if (parsed['$schema'] === 'https://www.speedscope.app/file-format-schema.json') {
       console.log('Importing as speedscope json file')
-      return importSpeedscopeProfiles(contents.parseAsJSON())
+      return importSpeedscopeProfiles(parsed)
     } else if (parsed['systemHost'] && parsed['systemHost']['name'] == 'Firefox') {
       console.log('Importing as Firefox profile')
       return toGroup(importFromFirefox(parsed))
@@ -153,13 +153,13 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
       return toGroup(importFromV8ProfLog(parsed))
     } else if ('head' in parsed && 'selfSize' in parsed['head']) {
       console.log('Importing as Chrome Heap Profile')
-      return toGroup(importFromChromeHeapProfile(contents.parseAsJSON()))
+      return toGroup(importFromChromeHeapProfile(parsed))
     } else if ('rts_arguments' in parsed && 'initial_capabilities' in parsed) {
       console.log('Importing as Haskell GHC JSON Profile')
       return importFromHaskell(parsed)
     } else if ('recording' in parsed && 'sampleStackTraces' in parsed.recording) {
       console.log('Importing as Safari profile')
-      return toGroup(importFromSafari(contents.parseAsJSON()))
+      return toGroup(importFromSafari(parsed))
     }
   } else {
     // Format is not JSON
