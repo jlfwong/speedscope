@@ -22,6 +22,7 @@ import {decodeBase64} from '../lib/utils'
 import {importFromChromeHeapProfile} from './v8heapalloc'
 import {isTraceEventFormatted, importTraceEvents} from './trace-event'
 import {importFromCallgrind} from './callgrind'
+import {importFromJSSelfProfiling} from './js-self-profiling'
 
 export async function importProfileGroupFromText(
   fileName: string,
@@ -180,6 +181,14 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     } else if ('recording' in parsed && 'sampleStackTraces' in parsed.recording) {
       console.log('Importing as Safari profile')
       return toGroup(importFromSafari(JSON.parse(contents)))
+    } else if (
+      'frames' in parsed &&
+      'resources' in parsed &&
+      'stacks' in parsed &&
+      'samples' in parsed
+    ) {
+      console.log('Importing as JS Self-Profiling')
+      return importFromJSSelfProfiling(parsed)
     }
   } else {
     // Format is not JSON
