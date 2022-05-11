@@ -11,15 +11,19 @@ interface StackprofFrame {
 
 export interface StackprofProfile {
   frames: {[number: string]: StackprofFrame}
+  mode: string
   raw: number[]
   raw_timestamp_deltas: number[]
+  samples: number
 }
 
 export function importFromStackprof(stackprofProfile: StackprofProfile): Profile {
-  const duration = stackprofProfile.raw_timestamp_deltas.reduce((a, b) => a + b, 0)
-  const profile = new StackListProfileBuilder(duration)
+  const {frames, mode, raw, raw_timestamp_deltas, samples} = stackprofProfile
+  const objectMode = mode == 'object'
 
-  const {frames, raw, raw_timestamp_deltas} = stackprofProfile
+  const size = objectMode ? samples : stackprofProfile.raw_timestamp_deltas.reduce((a, b) => a + b, 0)
+  const profile = new StackListProfileBuilder(size)
+
   let sampleIndex = 0
 
   let prevStack: FrameInfo[] = []
@@ -40,15 +44,23 @@ export function importFromStackprof(stackprofProfile: StackprofProfile): Profile
     }
     const nSamples = raw[i++]
 
-    let sampleDuration = 0
-    for (let j = 0; j < nSamples; j++) {
-      sampleDuration += raw_timestamp_deltas[sampleIndex++]
+    if (objectMode) {
+      profile.appendSampleWithWeight(stack, nSamples)
+    } else {
+      let sampleDuration = 0
+      for (let j = 0; j < nSamples; j++) {
+        sampleDuration += raw_timestamp_deltas[sampleIndex++]
+      }
+
+      profile.appendSampleWithWeight(stack, sampleDuration)
     }
 
-    profile.appendSampleWithWeight(stack, sampleDuration)
     prevStack = stack
   }
 
-  profile.setValueFormatter(new TimeFormatter('microseconds'))
+  if (!objectMode) {
+    profile.setValueFormatter(new TimeFormatter('microseconds'))
+  }
+
   return profile.build()
 }
