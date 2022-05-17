@@ -168,7 +168,6 @@ export function importFromChromeTimeline(events: TimelineEvent[], fileName: stri
 const callFrameToFrameInfo = new Map<CPUProfileCallFrame, FrameInfo>()
 function frameInfoForCallFrame(callFrame: CPUProfileCallFrame) {
   return getOrInsert(callFrameToFrameInfo, callFrame, callFrame => {
-    const name = callFrame.functionName || '(anonymous)'
     const file = callFrame.url
 
     // In Chrome profiles, line numbers & column numbers are both 0-indexed.
@@ -180,6 +179,10 @@ function frameInfoForCallFrame(callFrame: CPUProfileCallFrame) {
 
     let col = callFrame.columnNumber
     if (col != null) col++
+
+    const name =
+      callFrame.functionName ||
+      (file ? `(anonymous ${file.split('/').pop()}:${line})` : '(anonymous)')
 
     return {
       key: `${name}:${file}:${line}:${col}`,

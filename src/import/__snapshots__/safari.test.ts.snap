@@ -17,7 +17,7 @@ Object {
       "file": "__InjectedScript_CommandLineAPIModuleSource.js",
       "key": ":__InjectedScript_CommandLineAPIModuleSource.js:2:10",
       "line": 2,
-      "name": "(anonymous)",
+      "name": "(anonymous __InjectedScript_CommandLineAPIModuleSource.js:2)",
       "selfWeight": 0.001,
       "totalWeight": 0.001,
     },
@@ -78,7 +78,7 @@ Object {
   ],
   "name": "Grabación de Control temporal 1",
   "stacks": Array [
-    "injectModule;(anonymous) 1.00ms",
+    "injectModule;(anonymous __InjectedScript_CommandLineAPIModuleSource.js:2) 1.00ms",
     " 39.93ms",
     "(program);alpha;delta;gamma 10.83ms",
     " 2.46ms",

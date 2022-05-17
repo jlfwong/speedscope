@@ -37,10 +37,12 @@ interface HeapProfile {
 const callFrameToFrameInfo = new Map<HeapProfileCallFrame, FrameInfo>()
 function frameInfoForCallFrame(callFrame: HeapProfileCallFrame) {
   return getOrInsert(callFrameToFrameInfo, callFrame, callFrame => {
-    const name = callFrame.functionName || '(anonymous)'
     const file = callFrame.url
     const line = callFrame.lineNumber
     const col = callFrame.columnNumber
+    const name =
+      callFrame.functionName ||
+      (file ? `(anonymous ${file.split('/').pop()}:${line})` : '(anonymous)')
     return {
       key: `${name}:${file}:${line}:${col}`,
       name,
