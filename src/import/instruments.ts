@@ -11,10 +11,10 @@ import {
 import {sortBy, getOrThrow, getOrInsert, lastOf, getOrElse, zeroPad} from '../lib/utils'
 import {ByteFormatter, TimeFormatter} from '../lib/value-formatters'
 import {FileSystemDirectoryEntry, FileSystemEntry, FileSystemFileEntry} from './file-system-entry'
-import {MaybeCompressedDataReader} from './utils'
+import {MaybeCompressedDataReader, TextFileContent} from './utils'
 
-function parseTSV<T>(contents: string): T[] {
-  const lines = contents.split('\n').map(l => l.split('\t'))
+function parseTSV<T>(contents: TextFileContent): T[] {
+  const lines = contents.splitLines().map(l => l.split('\t'))
 
   const headerLine = lines.shift()
   if (!headerLine) return []
@@ -94,7 +94,7 @@ function getWeight(deepCopyRow: any): number {
 }
 
 // Import from a deep copy made of a profile
-export function importFromInstrumentsDeepCopy(contents: string): Profile {
+export function importFromInstrumentsDeepCopy(contents: TextFileContent): Profile {
   const profile = new CallTreeProfileBuilder()
   const rows = parseTSV<PastedTimeProfileRow | PastedAllocationsProfileRow>(contents)
 
@@ -187,7 +187,7 @@ function readAsArrayBuffer(file: File): Promise<ArrayBuffer> {
   return MaybeCompressedDataReader.fromFile(file).readAsArrayBuffer()
 }
 
-function readAsText(file: File): Promise<string> {
+function readAsText(file: File): Promise<TextFileContent> {
   return MaybeCompressedDataReader.fromFile(file).readAsText()
 }
 
@@ -259,7 +259,7 @@ async function getRawSampleList(core: TraceDirectoryTree): Promise<Sample[]> {
     const schemaFile = storedir.files.get('schema.xml')
     if (!schemaFile) continue
     const schema = await readAsText(schemaFile)
-    if (!/name="time-profile"/.exec(schema)) {
+    if (!/name="time-profile"/.exec(schema.firstChunk())) {
       continue
     }
     const bulkstore = new BinReader(

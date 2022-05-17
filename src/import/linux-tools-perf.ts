@@ -1,6 +1,7 @@
 import {StackListProfileBuilder, ProfileGroup} from '../lib/profile'
 import {itMap, getOrInsert} from '../lib/utils'
 import {TimeFormatter} from '../lib/value-formatters'
+import {TextFileContent} from './utils'
 
 // This imports the output of the "perf script" command on linux.
 //
@@ -80,11 +81,39 @@ function parseEvent(rawEvent: string): PerfEvent | null {
   return event
 }
 
-export function importFromLinuxPerf(contents: string): ProfileGroup | null {
+function splitBlocks(contents: TextFileContent): string[] {
+  // In perf files, blocks are separated by '\n\n'.  If our input was a simple
+  // string, we could use str.split('\n\n'), but since we have a TextFileContent
+  // object which may be backed by several strings, we can't easily split this
+  // way.
+  //
+  // Instead, we'll split into lines, and then re-group runs of non-empty strings.
+  const blocks: string[] = []
+  let pending: string = ''
+  for (let line of contents.splitLines()) {
+    if (line === '') {
+      if (pending.length > 0) {
+        blocks.push(pending)
+      }
+      pending = line
+    } else {
+      if (pending.length > 0) {
+        pending += '\n'
+      }
+      pending += line
+    }
+  }
+  if (pending.length > 0) {
+    blocks.push(pending)
+  }
+  return blocks
+}
+
+export function importFromLinuxPerf(contents: TextFileContent): ProfileGroup | null {
   const profiles = new Map<string, StackListProfileBuilder>()
 
   let eventType: string | null = null
-  const events = contents.split('\n\n').map(parseEvent)
+  const events = splitBlocks(contents).map(parseEvent)
 
   for (let event of events) {
     if (event == null) continue

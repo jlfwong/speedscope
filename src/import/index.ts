@@ -73,26 +73,6 @@ function toGroup(profile: Profile | null): ProfileGroup | null {
   return {name: profile.getName(), indexToView: 0, profiles: [profile]}
 }
 
-function fixUpJSON(content: string): string {
-  // This code is similar to the code from here:
-  // https://github.com/catapult-project/catapult/blob/27e047e0494df162022be6aa8a8862742a270232/tracing/tracing/extras/importer/trace_event_importer.html#L197-L208
-  //
-  //   If the event data begins with a [, then we know it should end with a ]. The
-  //   reason we check for this is because some tracing implementations cannot
-  //   guarantee that a ']' gets written to the trace file. So, we are forgiving
-  //   and if this is obviously the case, we fix it up before throwing the string
-  //   at JSON.parse.
-  //
-  content = content.trim()
-  if (content[0] === '[') {
-    content = content.replace(/,\s*$/, '')
-    if (content[content.length - 1] !== ']') {
-      content += ']'
-    }
-  }
-  return content
-}
-
 async function _importProfileGroup(dataSource: ProfileDataSource): Promise<ProfileGroup | null> {
   const fileName = await dataSource.name()
 
@@ -111,13 +91,13 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
   // First pass: Check known file format names to infer the file type
   if (fileName.endsWith('.speedscope.json')) {
     console.log('Importing as speedscope json file')
-    return importSpeedscopeProfiles(JSON.parse(contents))
+    return importSpeedscopeProfiles(contents.parseAsJSON())
   } else if (fileName.endsWith('.chrome.json') || /Profile-\d{8}T\d{6}/.exec(fileName)) {
     console.log('Importing as Chrome Timeline')
-    return importFromChromeTimeline(JSON.parse(contents), fileName)
+    return importFromChromeTimeline(contents.parseAsJSON(), fileName)
   } else if (fileName.endsWith('.stackprof.json')) {
     console.log('Importing as stackprof profile')
-    return toGroup(importFromStackprof(JSON.parse(contents)))
+    return toGroup(importFromStackprof(contents.parseAsJSON()))
   } else if (fileName.endsWith('.instruments.txt')) {
     console.log('Importing as Instruments.app deep copy')
     return toGroup(importFromInstrumentsDeepCopy(contents))
@@ -129,13 +109,13 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     return toGroup(importFromBGFlameGraph(contents))
   } else if (fileName.endsWith('.v8log.json')) {
     console.log('Importing as --prof-process v8 log')
-    return toGroup(importFromV8ProfLog(JSON.parse(contents)))
+    return toGroup(importFromV8ProfLog(contents.parseAsJSON()))
   } else if (fileName.endsWith('.heapprofile')) {
     console.log('Importing as Chrome Heap Profile')
-    return toGroup(importFromChromeHeapProfile(JSON.parse(contents)))
+    return toGroup(importFromChromeHeapProfile(contents.parseAsJSON()))
   } else if (fileName.endsWith('-recording.json')) {
     console.log('Importing as Safari profile')
-    return toGroup(importFromSafari(JSON.parse(contents)))
+    return toGroup(importFromSafari(contents.parseAsJSON()))
   } else if (fileName.startsWith('callgrind.')) {
     console.log('Importing as Callgrind profile')
     return importFromCallgrind(contents, fileName)
@@ -144,12 +124,12 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
   // Second pass: Try to guess what file format it is based on structure
   let parsed: any
   try {
-    parsed = JSON.parse(fixUpJSON(contents))
+    parsed = contents.parseAsJSON()
   } catch (e) {}
   if (parsed) {
     if (parsed['$schema'] === 'https://www.speedscope.app/file-format-schema.json') {
       console.log('Importing as speedscope json file')
-      return importSpeedscopeProfiles(JSON.parse(contents))
+      return importSpeedscopeProfiles(parsed)
     } else if (parsed['systemHost'] && parsed['systemHost']['name'] == 'Firefox') {
       console.log('Importing as Firefox profile')
       return toGroup(importFromFirefox(parsed))
@@ -173,13 +153,13 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
       return toGroup(importFromV8ProfLog(parsed))
     } else if ('head' in parsed && 'selfSize' in parsed['head']) {
       console.log('Importing as Chrome Heap Profile')
-      return toGroup(importFromChromeHeapProfile(JSON.parse(contents)))
+      return toGroup(importFromChromeHeapProfile(parsed))
     } else if ('rts_arguments' in parsed && 'initial_capabilities' in parsed) {
       console.log('Importing as Haskell GHC JSON Profile')
       return importFromHaskell(parsed)
     } else if ('recording' in parsed && 'sampleStackTraces' in parsed.recording) {
       console.log('Importing as Safari profile')
-      return toGroup(importFromSafari(JSON.parse(contents)))
+      return toGroup(importFromSafari(parsed))
     }
   } else {
     // Format is not JSON
@@ -187,8 +167,8 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     // If the first line is "# callgrind format", it's probably in Callgrind
     // Profile Format.
     if (
-      /^# callgrind format/.exec(contents) ||
-      (/^events:/m.exec(contents) && /^fn=/m.exec(contents))
+      /^# callgrind format/.exec(contents.firstChunk()) ||
+      (/^events:/m.exec(contents.firstChunk()) && /^fn=/m.exec(contents.firstChunk()))
     ) {
       console.log('Importing as Callgrind profile')
       return importFromCallgrind(contents, fileName)
@@ -196,7 +176,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
 
     // If the first line contains "Symbol Name", preceded by a tab, it's probably
     // a deep copy from OS X Instruments.app
-    if (/^[\w \t\(\)]*\tSymbol Name/.exec(contents)) {
+    if (/^[\w \t\(\)]*\tSymbol Name/.exec(contents.firstChunk())) {
       console.log('Importing as Instruments.app deep copy')
       return toGroup(importFromInstrumentsDeepCopy(contents))
     }
