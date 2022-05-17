@@ -44,6 +44,7 @@ Speedscope可以不同编程语言和环境的各种不同探查器中摄取概�
   - [从 py-spy 导入](https://github.com/jlfwong/speedscope/wiki/Importing-from-py-spy-(python))
   - [pyspeedscope](https://github.com/windelbouwman/pyspeedscope)
   - [从 Austin 导入](https://github.com/P403n1x87/austin-python#format-conversion)
+  - [从 pyinstrument 导入](https://github.com/jlfwong/speedscope/wiki/Importing-from-pyinstrument-(python))
 - Go
   - [从 pprof 导入](https://github.com/jlfwong/speedscope/wiki/Importing-from-pprof-(go))  
 - Rust
