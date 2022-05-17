@@ -48,6 +48,8 @@ speedscope is designed to ingest profiles from a variety of different profilers 
   - [pyspeedscope](https://github.com/windelbouwman/pyspeedscope)
   - [Importing from Austin](https://github.com/P403n1x87/austin-python#format-conversion)
   - [Importing from pyinstrument](https://github.com/jlfwong/speedscope/wiki/Importing-from-pyinstrument-(python))
+- PHP
+  - [Importing from phpspy or sj-i/php-profiler](https://github.com/sj-i/php-profiler/pull/101)
 - Go
   - [Importing from pprof](https://github.com/jlfwong/speedscope/wiki/Importing-from-pprof-(go))  
 - Rust
