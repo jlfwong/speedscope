@@ -67,12 +67,19 @@ async function main() {
     const sourceBuffer = await getProfileBuffer(relPath)
     const filename = path.basename(relPath)
 
-    // TODO(jlfwong): Test this for files > 512MB. If it doesn't work, print an
-    // error instead telling the user to drop the file into the browser.
-    const sourceBase64 = sourceBuffer.toString('base64')
-    const jsSource = `speedscope.loadFileFromBase64(${JSON.stringify(filename)}, ${JSON.stringify(
-      sourceBase64,
-    )})`
+    let jsSource
+    try {
+      const sourceBase64 = sourceBuffer.toString('base64')
+      jsSource = `speedscope.loadFileFromBase64(${JSON.stringify(filename)}, ${JSON.stringify(
+        sourceBase64,
+      )})`
+    } catch(e) {
+      if (e && e.message && /Cannot create a string longer than/.exec(e.message)) {
+        jsSource = `alert("Sorry, ${filename} is too large to be loaded via command-line argument! Try dragging it into speedscope instead.")`
+      } else {
+        throw e
+      }
+    }
 
     const filePrefix = `speedscope-${+new Date()}-${process.pid}`
     const jsPath = path.join(os.tmpdir(), `${filePrefix}.js`)
