@@ -17,7 +17,14 @@ import {
   findIndexBisect,
 } from './utils'
 
+import {TextEncoder} from 'util'
+
 import * as jsc from 'jsverify'
+import {
+  BufferBackedTextFileContent,
+  StringBackedTextFileContent,
+  withMockedFileChunkSizeForTests,
+} from '../import/utils'
 
 test('sortBy', () => {
   const ls = ['a3', 'b2', 'c1', 'd4']
@@ -228,4 +235,54 @@ test('decodeBase64', () => {
     // If the above expect(...) assertion fails, we won't reach here.
     return true
   })
+})
+
+test('BufferBackedTextFileContent.firstChunk', async () => {
+  await withMockedFileChunkSizeForTests(2, () => {
+    const str = 'may\nyour\nrope\nbe\nlong'
+    const buffer = new TextEncoder().encode(str).buffer
+    const content = new BufferBackedTextFileContent(buffer)
+    expect(content.firstChunk()).toEqual('ma')
+  })
+})
+
+test('BufferBackedTextFileContent.splitLines', async () => {
+  await withMockedFileChunkSizeForTests(2, () => {
+    const str = 'may\nyour\nrope\nbe\nlong'
+    const buffer = new TextEncoder().encode(str).buffer
+    const content = new BufferBackedTextFileContent(buffer)
+    expect(content.splitLines()).toEqual(['may', 'your', 'rope', 'be', 'long'])
+  })
+})
+
+test('BufferBackedTextFileContent.parseAsJSON', async () => {
+  await withMockedFileChunkSizeForTests(2, () => {
+    // parseAsJSON is special cased to permissively allow trailing commas
+    // and a mission closing bracket
+    const str = '[200,300,400,'
+    const buffer = new TextEncoder().encode(str).buffer
+    const content = new BufferBackedTextFileContent(buffer)
+
+    expect(content.parseAsJSON()).toEqual([200, 300, 400])
+  })
+})
+
+test('StringBackedTextFileContent.firstChunk', async () => {
+  const str = 'may\nyour\nrope\nbe\nlong'
+  const content = new StringBackedTextFileContent(str)
+  expect(content.firstChunk()).toEqual(str)
+})
+
+test('StringBackedTextFileContent.splitLines', async () => {
+  const str = 'may\nyour\nrope\nbe\nlong'
+  const content = new StringBackedTextFileContent(str)
+  expect(content.splitLines()).toEqual(['may', 'your', 'rope', 'be', 'long'])
+})
+
+test('StringBackedTextFileContent.parseAsJSON', async () => {
+  // parseAsJSON is special cased to permissively allow trailing commas
+  // and a mission closing bracket
+  const str = '[200,300,400,'
+  const content = new StringBackedTextFileContent(str)
+  expect(content.parseAsJSON()).toEqual([200, 300, 400])
 })

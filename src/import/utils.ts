@@ -26,8 +26,6 @@ export interface TextFileContent {
 //
 // See: https://github.com/v8/v8/blob/8b663818fc311217c2cdaaab935f020578bfb7a8/src/objects/string.h#L479-L483
 //
-// TODO(jlfwong): Write tests for this
-//
 // At time of writing (2021/03/27), the maximum string length in V8 is
 //  32 bit systems: 2^28 - 16 = ~268M chars
 //  64 bit systems: 2^29 - 24 = ~537M chars
