@@ -1,7 +1,5 @@
 import * as pako from 'pako'
-
-// TODO(jlfwong): Figure out proper type annotations
-const {JSON_parse}: {JSON_parse: (array: Uint8Array) => any} = require('uint8array-json-parser')
+import {JSON_parse} from 'uint8array-json-parser'
 
 export interface ProfileDataSource {
   name(): Promise<string>

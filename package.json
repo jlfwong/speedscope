@@ -53,8 +53,8 @@
     "ts-jest": "24.3.0",
     "typescript": "4.2.3",
     "typescript-json-schema": "0.42.0",
-    "uint8array-json-parser": "^0.0.1",
-    "uglify-es": "3.2.2"
+    "uglify-es": "3.2.2",
+    "uint8array-json-parser": "jlfwong/uint8array-json-parser#edce51ce"
   },
   "jest": {
     "transform": {
