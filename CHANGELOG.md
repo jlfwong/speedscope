@@ -1,3 +1,19 @@
+## [1.14.0] - 2022-05-19
+
+### Added
+
+- File and line information is now displayed in hover tips [[#365](https://github.com/jlfwong/speedscope/pull/365)] (by [@sokra](https://github.com/sokra))
+- Support for stackprof object mode [[#391](https://github.com/jlfwong/speedscope/pull/391)] (by [@alexcoco](https://github.com/alexcoco))
+- Support for hash params to control view-mode [[#362](https://github.com/jlfwong/speedscope/pull/362)] (by [@djudd](https://github.com/djudd))
+- Support for profiles over 512MB now works [[#385](https://github.com/jlfwong/speedscope/pull/385)] (by [@jlfwong](https://github.com/jlfwong))
+- Support for relative URLs in profileURL hashParam [[#357](https://github.com/jlfwong/speedscope/pull/357)] (by [@danvk](https://github.com/danvk))
+
+### Fixed
+
+- Allow collapsed stacks with invalid lines for the Brenden Gregg stack format [[#336](https://github.com/jlfwong/speedscope/pull/336)] (by [@P403n1x87](https://github.com/P403n1x87))
+- Allow pasting into the search box [[#338](https://github.com/jlfwong/speedscope/pull/338)] (by [@P403n1x87](https://github.com/P403n1x87))
+- Prevent hover tips from getting unnecessarily clipped outside container bounds [[#395](https://github.com/jlfwong/speedscope/pull/395)] (by [@jlfwong](https://github.com/jlfwong))
+
 ## [1.13.0] - 2021-02-14
 
 ### Added
