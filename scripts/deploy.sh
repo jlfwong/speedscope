@@ -58,5 +58,5 @@ echo "Build complete. Starting server on http://localhost:4444/"
 echo "Hit Ctrl+C to complete or cancel the release"
 echo
 echo
-python -m SimpleHTTPServer 4444 .
+python3 -m http.server 4444
 set +x
