@@ -1,0 +1,46 @@
+Weight	Self Weight		Symbol Name
+96.08 Gc  100.0%	-	 	example_app (40414)
+96.08 Gc  100.0%	-	 	 start
+96.08 Gc  100.0%	-	 	  main
+96.08 Gc  100.0%	-	 	   std::rt::lang_start::hdba6f1ebfd1bdcf8
+96.08 Gc  100.0%	-	 	    std::rt::lang_start_internal::hc453db0ee48af82e
+96.08 Gc  100.0%	-	 	     std::rt::lang_start::_$u7b$$u7b$closure$u7d$$u7d$::hd856f2663871206c
+96.08 Gc  100.0%	-	 	      std::sys_common::backtrace::__rust_begin_short_backtrace::h4869fd82068bc1dc
+96.08 Gc  100.0%	-	 	       core::ops::function::FnOnce::call_once::h06e0c27ee740c6a8
+96.08 Gc  100.0%	-	 	        example_app::main::hddab13ae8d8b6a6e
+47.82 Gc   49.7%	-	 	         example_app::example_a::h622d6879b734496d
+46.92 Gc   48.8%	404.75 Mc	 	          std::time::Instant::elapsed::h2e3793148fc23529
+45.92 Gc   47.7%	45.92 Gc	 	           mach_absolute_time
+600.78 Mc    0.6%	600.78 Mc	 	           std::time::Instant::elapsed::h2e3793148fc23529
+1.00 Mc    0.0%	1.00 Mc	 	           DYLD-STUB$$mach_absolute_time
+634.35 Mc    0.6%	634.35 Mc	 	          core::time::Duration::as_millis::hae6ad1b9cf7bb5ec
+181.50 Mc    0.1%	181.50 Mc	 	          example_app::example_a::h622d6879b734496d
+84.45 Mc    0.0%	-	 	          example_app::example_b::h71b31fcd89b9ffd2
+81.45 Mc    0.0%	-	 	           std::time::Instant::elapsed::h2e3793148fc23529
+80.45 Mc    0.0%	80.45 Mc	 	            mach_absolute_time
+1.00 Mc    0.0%	1.00 Mc	 	            std::time::Instant::elapsed::h2e3793148fc23529
+1.00 Mc    0.0%	-	 	           example_app::example_c::h631759c10d7dee93
+1.00 Mc    0.0%	-	 	            alloc::vec::Vec$LT$T$C$A$GT$::push::ha3426502ffc42c8b
+1.00 Mc    0.0%	-	 	             alloc::raw_vec::RawVec$LT$T$C$A$GT$::reserve_for_push::he4a29b8274e35dbb
+1.00 Mc    0.0%	-	 	              alloc::raw_vec::RawVec$LT$T$C$A$GT$::grow_amortized::h78db9ba423623c58
+1.00 Mc    0.0%	-	 	               alloc::raw_vec::finish_grow::h876f5af1c66d74c8
+1.00 Mc    0.0%	-	 	                _$LT$alloc..alloc..Global$u20$as$u20$core..alloc..Allocator$GT$::allocate::hcc733a40a34fbc94
+1.00 Mc    0.0%	-	 	                 alloc::alloc::Global::alloc_impl::hc55feba7d6266dfa
+1.00 Mc    0.0%	-	 	                  alloc::alloc::alloc::hfac63f3d6850b759
+1.00 Mc    0.0%	-	 	                   _malloc_zone_malloc
+1.00 Mc    0.0%	-	 	                    nanov2_malloc
+1.00 Mc    0.0%	-	 	                     nanov2_allocate
+1.00 Mc    0.0%	-	 	                      nanov2_allocate
+1.00 Mc    0.0%	1.00 Mc	 	                       nanov2_find_block_and_allocate
+1.00 Mc    0.0%	1.00 Mc	 	           example_app::example_b::h71b31fcd89b9ffd2
+1.00 Mc    0.0%	1.00 Mc	 	           core::time::Duration::as_millis::hae6ad1b9cf7bb5ec
+47.45 Gc   49.3%	415.12 Mc	 	         std::time::Instant::elapsed::h2e3793148fc23529
+46.39 Gc   48.2%	46.39 Gc	 	          mach_absolute_time
+649.70 Mc    0.6%	649.70 Mc	 	          std::time::Instant::elapsed::h2e3793148fc23529
+614.22 Mc    0.6%	614.22 Mc	 	         core::time::Duration::as_millis::hae6ad1b9cf7bb5ec
+190.55 Mc    0.1%	190.55 Mc	 	         example_app::main::hddab13ae8d8b6a6e
+1.34 Kc    0.0%	-	 	         std::io::stdio::_print::hdecfefdeb43586ed
+1.34 Kc    0.0%	-	 	          _$LT$$RF$std..io..stdio..Stdout$u20$as$u20$std..io..Write$GT$::write_fmt::h2cb06dcd2b172844
+1.34 Kc    0.0%	-	 	           core::fmt::write::hed96bcfc6342aee5
+532 cycles    0.0%	-	 	            _$LT$std..io..Write..write_fmt..Adapter$LT$T$GT$$u20$as$u20$core..fmt..Write$GT$::write_str::hbe33ec23de24ce2f
+532 cycles    0.0%	532 cycles	 	             _$LT$std..io..stdio..StdoutLock$u20$as$u20$std..io..Write$GT$::write_all::h22667d0a03b2151b
