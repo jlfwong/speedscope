@@ -85,7 +85,7 @@ function getWeight(deepCopyRow: any): number {
       case 's':
         return 1000 * value
       case 'min':
-        return 1000 * value
+        return 60 * 1000 * value
 
       case 'cycles':
         return value
