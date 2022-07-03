@@ -85,7 +85,16 @@ function getWeight(deepCopyRow: any): number {
       case 's':
         return 1000 * value
       case 'min':
+        return 60 * 1000 * value
+
+      case 'cycles':
+        return value
+      case 'Kc':
         return 1000 * value
+      case 'Mc':
+        return 1000 * 1000 * value
+      case 'Gc':
+        return 1000 * 1000 * 1000 * value
     }
     throw new Error(`Unrecognized units ${units}`)
   }

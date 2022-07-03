@@ -18,6 +18,10 @@ describe('importFromInstrumentsDeepCopy', () => {
       './sample/profiles/Instruments/7.3.1/random-allocations-deep-copy.txt',
     )
   })
+
+  test('allocations profile', async () => {
+    await checkProfileSnapshot('./sample/profiles/Instruments/13.4/cycles-example-deep-copy.txt')
+  })
 })
 
 class ZipBackedFileSystemEntry implements FileSystemEntry {
