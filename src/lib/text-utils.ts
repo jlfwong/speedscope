@@ -96,9 +96,9 @@ export function remapRangesToTrimmedText(
   trimmedText: TrimmedTextResult,
   ranges: [number, number][],
 ): [number, number][] {
-  // We intentionally don't just re-run fuzzy matching on the trimmed
-  // text, beacuse if the search query is "helloWorld", the frame name
-  // is "application::helloWorld", and that gets trimmed down to
+  // We intentionally don't just re-run matching on the trimmed text,
+  // beacuse if the search query is "helloWorld", the frame name is
+  // "application::helloWorld", and that gets trimmed down to
   // "appl...oWorld", we still want "oWorld" to be highlighted, even
   // though the string "appl...oWorld" is not matched by the query
   // "helloWorld".

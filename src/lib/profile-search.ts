@@ -1,5 +1,4 @@
 import {Profile, Frame, CallTreeNode} from './profile'
-import {FuzzyMatch, fuzzyMatchStrings} from './fuzzy-find'
 import {Flamechart, FlamechartFrame} from './flamechart'
 import {Rect, Vec2} from './math'
 
@@ -8,17 +7,41 @@ export enum FlamechartType {
   LEFT_HEAVY_FLAME_GRAPH,
 }
 
+export interface Match {
+  matchedRanges: [number, number][]
+}
+
+export function matchStrings(text: string, pattern: string): Match | null {
+  let matches = []
+  try {
+    matches = [...text.matchAll(pattern)]
+  } catch (SyntaxError) {
+    return null
+  }
+  if (matches.length === 0) {
+    return null
+  } else {
+    let matchedRanges = []
+    for (let match of matches) {
+      let start = match['index']
+      let end = start + match[0].length
+      matchedRanges.push([start, end])
+    }
+    return {matchedRanges}
+  }
+}
+
 // A utility class for storing cached search results to avoid recomputation when
 // the search results & profile did not change.
 export class ProfileSearchResults {
   constructor(readonly profile: Profile, readonly searchQuery: string) {}
 
-  private matches: Map<Frame, FuzzyMatch> | null = null
-  getMatchForFrame(frame: Frame): FuzzyMatch | null {
+  private matches: Map<Frame, Match> | null = null
+  getMatchForFrame(frame: Frame): Match | null {
     if (!this.matches) {
       this.matches = new Map()
       this.profile.forEachFrame(frame => {
-        const match = fuzzyMatchStrings(frame.name, this.searchQuery)
+        const match = matchStrings(frame.name, this.searchQuery)
         if (match == null) return
         this.matches!.set(frame, match)
       })

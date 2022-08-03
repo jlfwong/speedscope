@@ -1,5 +1,5 @@
 import {buildTrimmedText, ELLIPSIS, remapRangesToTrimmedText} from './text-utils'
-import {fuzzyMatchStrings} from './fuzzy-find'
+import {matchStrings} from './profile-search'
 
 function assertTrimmed(text: string, length: number, expectedTrimmed: string) {
   expect(buildTrimmedText(text, length).trimmedString).toEqual(
@@ -41,7 +41,7 @@ function assertTrimmedHighlight({
   length: number
   expectedHighlightedTrimmed: string
 }) {
-  const match = fuzzyMatchStrings(text, pattern)
+  const match = matchStrings(text, pattern)
   const trimmed = buildTrimmedText(text, length)
 
   if (!match) {

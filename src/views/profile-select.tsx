@@ -3,7 +3,7 @@ import {h, JSX, ComponentChild, Ref} from 'preact'
 import {useCallback, useState, useMemo, useEffect, useRef} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
 import {ZIndex, Sizes} from './style'
-import {fuzzyMatchStrings} from '../lib/fuzzy-find'
+import {matchStrings} from '../lib/profile-search.ts'
 import {sortBy} from '../lib/utils'
 import {useTheme, withTheme} from './themes/theme'
 
@@ -125,7 +125,7 @@ function getSortedFilteredProfiles(profiles: Profile[], filterText: string): Fil
   const filtered: FilteredProfile[] = []
   for (let i = 0; i < profiles.length; i++) {
     const profile = profiles[i]
-    const match = fuzzyMatchStrings(profile.getName(), filterText)
+    const match = matchStrings(profile.getName(), filterText)
     if (!match) continue
     filtered.push({
       indexInProfileGroup: i,
