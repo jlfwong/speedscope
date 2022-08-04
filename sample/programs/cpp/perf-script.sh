@@ -3,26 +3,24 @@
 set -eoux pipefail
 
 if [[ "$1" == "system-wide" ]]; then
-  perf record -a -F 999 -g ./simple-terminates > perf.data
+  perf record -a -F 999 -g --output=perf.data ./simple-terminates 1>&2
   perf script -i perf.data
   exit 0
 fi
 
 if [[ "$1" == "forks" ]]; then
-  perf record -a -F 999 -g ./forks > perf.data
+  perf record -a -F 999 -g --output=perf.data ./forks 1>&2
   perf script -i perf.data
   exit 0
 fi
 
 if [[ "$1" == "idle" ]]; then
-  perf record -a -F 999 -g ./idle > perf.data
-  echo "Done recording"
-  ls -alh perf.data
+  perf record -a -F 999 -g --output=perf.data ./idle 1>&2
   perf script -i perf.data
   exit 0
 fi
 
-perf record -F 999 -g ./simple-terminates > perf.data
+perf record -F 999 -g --output=perf.data ./simple-terminates 1>&2
 
 if [[ "$1" == "with-header" ]]; then
   perf script --header -i perf.data
