@@ -44,14 +44,14 @@ void timed(int microseconds) {
     }
 }
 
-void a() { timed(5000); }
-void b() { timed(5000); }
-void c() { timed(5000); }
-void d() { timed(5000); }
-void e() { timed(5000); }
+void a() { timed(6000); }
+void b() { timed(6000); }
+void c() { timed(6000); }
+void d() { timed(6000); }
+void e() { timed(6000); }
 
 void func() {
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 2; i++) {
         a();
         b();
         fselect();
@@ -59,7 +59,7 @@ void func() {
         d();
         e();
         printf("sleep begin\n");
-        sleep(0.1);
+        usleep(30000);
         printf("sleep end\n");
     }
 }
