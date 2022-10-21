@@ -1,3 +1,9 @@
+## [1.15.0] - 2022-10-22
+
+### Fixed
+
+- Replace fuzzy matching with exact substring matching for finding matching frames [[#407](https://github.com/jlfwong/speedscope/pull/407)]
+
 ## [1.14.0] - 2022-05-19
 
 ### Added
