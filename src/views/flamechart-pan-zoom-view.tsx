@@ -241,7 +241,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
           if (match) {
             const rangesToHighlightInTrimmedText = remapRangesToTrimmedText(
               trimmedText,
-              match.matchedRanges,
+              match
             )
 
             // Once we have the character ranges to highlight, we need to

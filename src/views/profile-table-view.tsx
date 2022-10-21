@@ -217,7 +217,7 @@ export const ProfileTableView = memo(
           rows.push(
             ProfileTableRowView({
               frame,
-              matchedRanges: match == null ? null : match.matchedRanges,
+              matchedRanges: match == null ? null : match,
               index: i,
               profile: profile,
               selectedFrame: selectedFrame,
