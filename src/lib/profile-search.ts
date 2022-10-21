@@ -1,5 +1,4 @@
 import {Profile, Frame, CallTreeNode} from './profile'
-import {FuzzyMatch, fuzzyMatchStrings} from './fuzzy-find'
 import {Flamechart, FlamechartFrame} from './flamechart'
 import {Rect, Vec2} from './math'
 
@@ -8,19 +7,47 @@ export enum FlamechartType {
   LEFT_HEAVY_FLAME_GRAPH,
 }
 
+// In previous versions of speedscope, searching for strings within the profile
+// was done using fuzzy finding. As it turns out, this was surprising behavior
+// to most people, so we've switched to a more traditional substring search that
+// more closely mimics browser behavior.
+//
+// This is case insensitive for both the needle & the haystack. This means
+// searching for "hello" will match "Hello" and "HELLO", and searching for
+// "HELLO" will match both "hello" and "Hello". This matches Chrome's behavior
+// as far as I can tell.
+//
+// See https://github.com/jlfwong/speedscope/issues/352
+//
+// Return ranges for all matches in order to highlight them.
+export function exactMatchStrings(text: string, pattern: string): [number, number][] {
+  const lowerText = text.toLocaleLowerCase()
+  const lowerPattern = pattern.toLocaleLowerCase()
+
+  let lastIndex = 0
+  const matchedRanges: Array<[number, number]> = []
+  while (true) {
+    let index = lowerText.indexOf(lowerPattern, lastIndex)
+    if (index === -1) {
+      return matchedRanges
+    }
+    matchedRanges.push([index, index + pattern.length])
+    lastIndex = index + pattern.length
+  }
+}
+
 // A utility class for storing cached search results to avoid recomputation when
 // the search results & profile did not change.
 export class ProfileSearchResults {
   constructor(readonly profile: Profile, readonly searchQuery: string) {}
 
-  private matches: Map<Frame, FuzzyMatch> | null = null
-  getMatchForFrame(frame: Frame): FuzzyMatch | null {
+  private matches: Map<Frame, [number, number][] | null> | null = null
+  getMatchForFrame(frame: Frame): [number, number][] | null {
     if (!this.matches) {
       this.matches = new Map()
       this.profile.forEachFrame(frame => {
-        const match = fuzzyMatchStrings(frame.name, this.searchQuery)
-        if (match == null) return
-        this.matches!.set(frame, match)
+        const match = exactMatchStrings(frame.name, this.searchQuery)
+        this.matches!.set(frame, match.length === 0 ? null : match)
       })
     }
     return this.matches.get(frame) || null
