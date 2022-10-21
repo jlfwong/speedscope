@@ -11,7 +11,6 @@ import {SandwichSearchView} from './sandwich-search-view'
 import {ActiveProfileState} from '../app-state/active-profile-state'
 import {sortBy} from '../lib/utils'
 import {ProfileSearchContext} from './search-view'
-import {FuzzyMatch} from '../lib/fuzzy-find'
 import {Theme, useTheme, withTheme} from './themes/theme'
 import {SortField, SortDirection, profileGroupAtom, tableSortMethodAtom} from '../app-state'
 import {useAtom} from '../lib/atom'
@@ -141,7 +140,7 @@ interface SandwichViewContextData {
   selectedFrame: Frame | null
   setSelectedFrame: (frame: Frame | null) => void
   getIndexForFrame: (frame: Frame) => number | null
-  getSearchMatchForFrame: (frame: Frame) => FuzzyMatch | null
+  getSearchMatchForFrame: (frame: Frame) => [number, number][] | null
 }
 
 export const SandwichViewContext = createContext<SandwichViewContextData | null>(null)
@@ -204,7 +203,7 @@ export const SandwichViewContainer = memo((ownProps: SandwichViewContainerProps)
     }
   }, [rowList])
 
-  const getSearchMatchForFrame: (frame: Frame) => FuzzyMatch | null = useMemo(() => {
+  const getSearchMatchForFrame: (frame: Frame) => [number, number][] | null = useMemo(() => {
     return (frame: Frame) => {
       if (profileSearchResults == null) return null
       return profileSearchResults.getMatchForFrame(frame)
