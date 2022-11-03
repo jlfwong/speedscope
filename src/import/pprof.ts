@@ -81,7 +81,13 @@ export function importAsPprofProfile(rawProfile: ArrayBuffer): Profile | null {
     if (lastLine == null) return null
 
     if (lastLine.functionId) {
-      return frameInfoByFunctionID.get(i32(lastLine.functionId)) || null
+      let funcFrame = frameInfoByFunctionID.get(i32(lastLine.functionId))
+      if (lastLine.line && lastLine.line > 0) {
+        if (funcFrame != null) {
+          funcFrame.line = lastLine.line as number
+        }
+      }
+      return funcFrame || null
     } else {
       return null
     }
