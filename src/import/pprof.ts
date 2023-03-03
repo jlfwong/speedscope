@@ -104,8 +104,11 @@ export function importAsPprofProfile(rawProfile: ArrayBuffer): Profile | null {
   }))
 
   const sampleTypeIndex = protoProfile.defaultSampleType
-    ? +protoProfile.defaultSampleType
+    ? +protoProfile.defaultSampleType > sampleTypes.length - 1
+      ? sampleTypes.length - 1
+      : +protoProfile.defaultSampleType
     : sampleTypes.length - 1
+
   const sampleType = sampleTypes[sampleTypeIndex]
 
   const profileBuilder = new StackListProfileBuilder()
