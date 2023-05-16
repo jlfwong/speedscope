@@ -1,7 +1,7 @@
 // https://github.com/tmm1/stackprof
 
 import {Profile, FrameInfo, StackListProfileBuilder} from '../lib/profile'
-import {TimeFormatter} from '../lib/value-formatters'
+import {RawValueFormatter, TimeFormatter} from '../lib/value-formatters'
 
 interface StackprofFrame {
   name?: string
@@ -15,14 +15,13 @@ export interface StackprofProfile {
   raw: number[]
   raw_timestamp_deltas: number[]
   samples: number
+  interval: number
 }
 
 export function importFromStackprof(stackprofProfile: StackprofProfile): Profile {
-  const {frames, mode, raw, raw_timestamp_deltas, samples} = stackprofProfile
-  const objectMode = mode == 'object'
-
-  const size = objectMode ? samples : stackprofProfile.raw_timestamp_deltas.reduce((a, b) => a + b, 0)
-  const profile = new StackListProfileBuilder(size)
+  const {frames, mode, raw, raw_timestamp_deltas, interval} = stackprofProfile
+  const profile = new StackListProfileBuilder()
+  profile.setValueFormatter(new TimeFormatter('microseconds')) // default to time format unless we're in object mode
 
   let sampleIndex = 0
 
@@ -50,22 +49,23 @@ export function importFromStackprof(stackprofProfile: StackprofProfile): Profile
     }
     const nSamples = raw[i++]
 
-    if (objectMode) {
-      profile.appendSampleWithWeight(stack, nSamples)
-    } else {
-      let sampleDuration = 0
-      for (let j = 0; j < nSamples; j++) {
-        sampleDuration += raw_timestamp_deltas[sampleIndex++]
-      }
-
-      profile.appendSampleWithWeight(stack, sampleDuration)
+    switch (mode) {
+      case 'object':
+        profile.appendSampleWithWeight(stack, nSamples)
+        profile.setValueFormatter(new RawValueFormatter())
+        break
+      case 'cpu':
+        profile.appendSampleWithWeight(stack, nSamples * interval)
+        break
+      default:
+        let sampleDuration = 0
+        for (let j = 0; j < nSamples; j++) {
+          sampleDuration += raw_timestamp_deltas[sampleIndex++]
+        }
+        profile.appendSampleWithWeight(stack, sampleDuration)
     }
 
     prevStack = stack
-  }
-
-  if (!objectMode) {
-    profile.setValueFormatter(new TimeFormatter('microseconds'))
   }
 
   return profile.build()
