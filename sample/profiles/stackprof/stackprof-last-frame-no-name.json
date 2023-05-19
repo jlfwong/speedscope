@@ -3412,7 +3412,6 @@
       }
     },
     "4842027160": {
-      "name": "<top (required)>",
       "file": "/Users/jez/stripe/sorbet/gems/sorbet-runtime/test/types/validate_override_shape.rb",
       "total_samples": 1,
       "samples": 1,
