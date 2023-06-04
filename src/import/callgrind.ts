@@ -416,6 +416,13 @@ class CallgrindParser {
         break
       }
 
+      case 'cob':
+      case 'ob': {
+        // We ignore these for now. They're valid lines, but we don't capture or
+        // display information about them.
+        break
+      }
+
       default: {
         console.log(`Ignoring assignment to unrecognized key "${line}" on line ${this.lineNum}`)
       }
