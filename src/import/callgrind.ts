@@ -129,26 +129,6 @@ class CallGraph {
   }
 
   toProfile(): Profile {
-    // To convert a call graph into a profile, we first need to identify what
-    // the "root weights" are. "root weights" are the total weight of each frame
-    // while at the bottom of the call-stack. The majority of functions will have
-    // zero weight while at the bottom of the call-stack, since most functions
-    // are never at the bottom of the call-stack.
-    const rootWeights = new Map<Frame, number>()
-    for (let [frame, totalWeight] of this.totalWeights) {
-      rootWeights.set(frame, totalWeight)
-    }
-    for (let [_, childMap] of this.childrenTotalWeights) {
-      for (let [child, weight] of childMap) {
-        rootWeights.set(child, getOrElse(rootWeights, child, () => weight) - weight)
-      }
-    }
-
-    let totalProfileWeight = 0
-    for (let [_, rootWeight] of rootWeights) {
-      totalProfileWeight += rootWeight
-    }
-
     const profile = new CallTreeProfileBuilder()
 
     let unitMultiplier = 1
@@ -169,6 +149,11 @@ class CallGraph {
     let totalCumulative = 0
 
     const currentStack = new Set<Frame>()
+
+    let maxWeight = 0
+    for (let [_, totalWeight] of this.totalWeights) {
+      maxWeight = Math.max(maxWeight, totalWeight)
+    }
 
     const visit = (frame: Frame, subtreeTotalWeight: number) => {
       if (currentStack.has(frame)) {
@@ -198,7 +183,7 @@ class CallGraph {
       // See the comment at the top of the file for an example where this
       // assumption can yield especially misleading results.
 
-      if (subtreeTotalWeight < 1e-4 * totalProfileWeight) {
+      if (subtreeTotalWeight < 1e-4 * maxWeight) {
         // This assumption about even distribution can cause us to generate a
         // call tree with dramatically more nodes than the call graph.
         //
@@ -220,7 +205,8 @@ class CallGraph {
         // 1000*250=250,000 nodes in the resulting call graph.
         //
         // To mitigate this explosion of the # of nodes, we ignore subtrees
-        // whose weights are less than 0.01% of the total weight of the profile.
+        // whose weights are less than 0.01% of the heaviest node in the call
+        // graph.
         return
       }
 
@@ -260,13 +246,72 @@ class CallGraph {
       profile.leaveFrame(frame, Math.round(totalCumulative * unitMultiplier))
     }
 
-    for (let [rootFrame, rootWeight] of rootWeights) {
-      if (rootWeight <= 0) {
-        continue
+    // It's surprisingly hard to figure out which nodes in the call graph
+    // constitute the root nodes of call trees.
+    //
+    // Here are a few intuitive options, and reasons why they're not always
+    // correct or good.
+    //
+    // ## 1. Find nodes in the call graph that have no callers
+    //
+    // This is probably right 99% of the time in practice, but since the
+    // callgrind is totally general, it's totally valid to have a file
+    // representing a profile for the following code:
+    //
+    //    function a() {
+    //      b()
+    //    }
+    //    function b() {
+    //    }
+    //    a()
+    //    b()
+    //
+    // In this case, even though b has a caller, some of the real calltree for
+    // an execution trace of the program will have b on the top of the stack.
+    //
+    // ## 2. Find nodes in the call graph that still have weight if you
+    //       subtract all of the weight caused by callers.
+    //
+    // The callgraph format, in theory, provides inclusive times for every
+    // function call. That means if you have a function `alpha` with a total
+    // weight of 20, and its only in-edge in the call-graph has weight of 10,
+    // that should indicate that `alpha` exists both as the root-node of a
+    // calltree, and as a node in some other call-tree.
+    //
+    // In theory, you should be able to figure out the weight of it as a root
+    // node by subtracting the weights of all the in-edges. In practice, real
+    // callgrind files are inconsistent in how they do accounting for in-edges
+    // where you end up in weird situations where the weight of in-edges
+    // *exceeds* the weight of nodes (where the weight of a node is its
+    // self-weight plus the weight of all its out-edges).
+    //
+    // ## 3. Find the heaviest node in the call graph, build its call-tree, and
+    //       decrease the weights of other nodes in the call graph while you
+    //       build the call tree. After you've done this, repeat with the new
+    //       heaviest.
+    //
+    // I think this version is probably fully correct, but the performance is
+    // awful. The naive-version is O(n^2) because you have to re-determine which
+    // node is the heaviest after each time you finish building a call-tree. You
+    // can't just sort, because the relative ordering also changes with the
+    // construction of each call tree.
+    //
+    // There's probably a clever solution here which puts all of the nodes into
+    // a min-heap and then deletes and re-inserts nodes as their weights change,
+    // but reasoning about the performance of that is a big pain in the butt.
+    //
+    // Despite not always being correct, I'm opting for option (1).
+
+    const rootNodes = new Set<Frame>(this.frameSet)
+
+    for (let [_, childMap] of this.childrenTotalWeights) {
+      for (let [child, _] of childMap) {
+        rootNodes.delete(child)
       }
-      // If we've reached here, it means that the given root frame has some
-      // weight while at the top of the call-stack.
-      visit(rootFrame, rootWeight)
+    }
+
+    for (let rootNode of rootNodes) {
+      visit(rootNode, this.totalWeights.get(rootNode)!)
     }
 
     return profile.build()
@@ -392,7 +437,18 @@ class CallgrindParser {
 
     switch (key) {
       case 'fe':
-      case 'fi':
+      case 'fi': {
+        // fe/fi are used to indicate the source-file of a function definition
+        // changed mid-definition. This is for inlined code, but doesn't
+        // indicate that we've actually switched to referring to a different
+        // function, so we mostly ignore it.
+        //
+        // We still need to do the parseNameWithCompression call in case a name
+        // is defined and then referenced later on for name compression.
+        this.parseNameWithCompression(value, this.savedFileNames)
+        break
+      }
+
       case 'fl': {
         this.filename = this.parseNameWithCompression(value, this.savedFileNames)
         this.calleeFilename = this.filename
@@ -406,6 +462,8 @@ class CallgrindParser {
 
       case 'cfi':
       case 'cfl': {
+        // NOTE: unlike the fe/fi distinction described above, cfi and cfl are
+        // interchangeable.
         this.calleeFilename = this.parseNameWithCompression(value, this.savedFileNames)
         break
       }
