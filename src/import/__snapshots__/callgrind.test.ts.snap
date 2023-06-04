@@ -172,6 +172,51 @@ exports[`importFromCallgrind name compression: indexToView 1`] = `0`;
 
 exports[`importFromCallgrind name compression: profileGroup.name 1`] = `"callgrind.name-compression.log"`;
 
+exports[`importFromCallgrind subposition compression 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": "file1.c",
+      "key": "file1.c:main",
+      "line": undefined,
+      "name": "main",
+      "selfWeight": 20,
+      "totalWeight": 820,
+    },
+    Frame {
+      "col": undefined,
+      "file": "file1.c",
+      "key": "file1.c:func1",
+      "line": undefined,
+      "name": "func1",
+      "selfWeight": 100,
+      "totalWeight": 400,
+    },
+    Frame {
+      "col": undefined,
+      "file": "file2.c",
+      "key": "file2.c:func2",
+      "line": undefined,
+      "name": "func2",
+      "selfWeight": 700,
+      "totalWeight": 700,
+    },
+  ],
+  "name": "callgrind.subposition-compression.log -- Instructions",
+  "stacks": Array [
+    "main;func1;func2 300",
+    "main;func1 100",
+    "main;func2 400",
+    "main 20",
+  ],
+}
+`;
+
+exports[`importFromCallgrind subposition compression: indexToView 1`] = `0`;
+
+exports[`importFromCallgrind subposition compression: profileGroup.name 1`] = `"callgrind.subposition-compression.log"`;
+
 exports[`importFromCallgrind: indexToView 1`] = `0`;
 
 exports[`importFromCallgrind: profileGroup.name 1`] = `"callgrind.example.log"`;
