@@ -170,7 +170,7 @@ class CallGraph {
 
     const currentStack = new Set<Frame>()
 
-    const visit = (frame: Frame, callTreeWeight: number) => {
+    const visit = (frame: Frame, subtreeTotalWeight: number) => {
       if (currentStack.has(frame)) {
         // Call-graphs are allowed to have cycles. Call-trees are not. In case
         // we run into a cycle, we'll just avoid recursing into the same subtree
@@ -198,7 +198,7 @@ class CallGraph {
       // See the comment at the top of the file for an example where this
       // assumption can yield especially misleading results.
 
-      if (callTreeWeight < 1e-4 * totalProfileWeight) {
+      if (subtreeTotalWeight < 1e-4 * totalProfileWeight) {
         // This assumption about even distribution can cause us to generate a
         // call tree with dramatically more nodes than the call graph.
         //
@@ -224,32 +224,40 @@ class CallGraph {
         return
       }
 
-      // totalWeightForFrame is the total weight for the given frame in the
-      // entire call graph.
-      const callGraphWeightForFrame = getOrElse(this.totalWeights, frame, () => 0)
-      if (callGraphWeightForFrame === 0) {
+      const totalWeightForFrameInCallgraph = getOrElse(this.totalWeights, frame, () => 0)
+      if (totalWeightForFrameInCallgraph === 0) {
         return
       }
 
-      // This is the portion of the total time the given child spends within the
-      // given parent that we'll attribute to this specific path in the call
-      // tree.
-      const ratio = callTreeWeight / callGraphWeightForFrame
+      let selfWeightForNodeInCallTree = subtreeTotalWeight
 
-      let selfWeightForFrame = callGraphWeightForFrame
-
-      profile.enterFrame(frame, totalCumulative * unitMultiplier)
+      profile.enterFrame(frame, Math.round(totalCumulative * unitMultiplier))
 
       currentStack.add(frame)
-      for (let [child, callGraphEdgeWeight] of this.childrenTotalWeights.get(frame) || []) {
-        selfWeightForFrame -= callGraphEdgeWeight
-        const childCallTreeWeight = callGraphEdgeWeight * ratio
+      for (let [child, totalWeightAsChild] of this.childrenTotalWeights.get(frame) || []) {
+        // To determine the weight of the child in the call tree, we look at the
+        // weight of the child in the call graph relative to its parent.
+        const childCallTreeWeight =
+          subtreeTotalWeight * (totalWeightAsChild / totalWeightForFrameInCallgraph)
+
+        let prevTotalCumulative = totalCumulative
         visit(child, childCallTreeWeight)
+
+        // Even though we tried to add a child with total weight equal to
+        // childCallTreeWeight, we might have failed for a variety of data
+        // consistency reasons, or due to cycles.
+        //
+        // We want to avoid losing weight in the call tree by subtracting from
+        // the self weight on the assumption it was added to the subtree, so we
+        // only subtree from the self weight the amount that was *actually* used
+        // by the subtree, rather than the amount we *intended* for it to use.
+        const actualChildCallTreeWeight = totalCumulative - prevTotalCumulative
+        selfWeightForNodeInCallTree -= actualChildCallTreeWeight
       }
       currentStack.delete(frame)
 
-      totalCumulative += selfWeightForFrame * ratio
-      profile.leaveFrame(frame, totalCumulative * unitMultiplier)
+      totalCumulative += selfWeightForNodeInCallTree
+      profile.leaveFrame(frame, Math.round(totalCumulative * unitMultiplier))
     }
 
     for (let [rootFrame, rootWeight] of rootWeights) {
