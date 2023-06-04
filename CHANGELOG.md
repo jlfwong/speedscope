@@ -1,3 +1,10 @@
+## [1.15.1] - 2023-06-04
+
+### Fixed
+
+- Fix import from Chrome Devtools performance tab in Chrome >= 114 [[#422](https://github.com/jlfwong/speedscope/pull/422)]
+- Callgrind: Subposition compression and weight correction [[#423](https://github.com/jlfwong/speedscope/pull/423)]
+
 ## [1.15.0] - 2022-10-22
 
 ### Fixed
