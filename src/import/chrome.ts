@@ -49,7 +49,7 @@ export interface CPUProfile {
   timeDeltas: number[]
 }
 
-export function isChromeTimeline(rawProfile: any): boolean {
+export function isChromeTimeline(rawProfile: any): rawProfile is TimelineEvent[] {
   if (!Array.isArray(rawProfile)) return false
   if (rawProfile.length < 1) return false
   const first = rawProfile[0]
@@ -61,6 +61,14 @@ export function isChromeTimeline(rawProfile: any): boolean {
   )
     return false
   return true
+}
+
+export function isChromeTimelineObject(
+  rawProfile: any,
+): rawProfile is {traceEvents: TimelineEvent[]} {
+  // Starting with Chrome 114, the timeline format output by devtools is an object
+  if (!('traceEvents' in rawProfile)) return false
+  return isChromeTimeline(rawProfile.traceEvents)
 }
 
 export function importFromChromeTimeline(events: TimelineEvent[], fileName: string): ProfileGroup {

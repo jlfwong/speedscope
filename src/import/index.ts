@@ -6,6 +6,7 @@ import {
   importFromChromeTimeline,
   isChromeTimeline,
   importFromOldV8CPUProfile,
+  isChromeTimelineObject,
 } from './chrome'
 import {importFromStackprof} from './stackprof'
 import {importFromInstrumentsDeepCopy, importFromInstrumentsTrace} from './instruments'
@@ -92,6 +93,9 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
   if (fileName.endsWith('.speedscope.json')) {
     console.log('Importing as speedscope json file')
     return importSpeedscopeProfiles(contents.parseAsJSON())
+  } else if (/Trace-\d{8}T\d{6}/.exec(fileName)) {
+    console.log('Importing as Chrome Timeline Object')
+    return importFromChromeTimeline(contents.parseAsJSON().traceEvents, fileName)
   } else if (fileName.endsWith('.chrome.json') || /Profile-\d{8}T\d{6}/.exec(fileName)) {
     console.log('Importing as Chrome Timeline')
     return importFromChromeTimeline(contents.parseAsJSON(), fileName)
@@ -136,6 +140,9 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     } else if (isChromeTimeline(parsed)) {
       console.log('Importing as Chrome Timeline')
       return importFromChromeTimeline(parsed, fileName)
+    } else if (isChromeTimelineObject(parsed)) {
+      console.log('Importing as Chrome Timeline Object')
+      return importFromChromeTimeline(parsed.traceEvents, fileName)
     } else if ('nodes' in parsed && 'samples' in parsed && 'timeDeltas' in parsed) {
       console.log('Importing as Chrome CPU Profile')
       return toGroup(importFromChromeCPUProfile(parsed))
