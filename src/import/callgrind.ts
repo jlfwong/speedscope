@@ -129,26 +129,6 @@ class CallGraph {
   }
 
   toProfile(): Profile {
-    // To convert a call graph into a profile, we first need to identify what
-    // the "root weights" are. "root weights" are the total weight of each frame
-    // while at the bottom of the call-stack. The majority of functions will have
-    // zero weight while at the bottom of the call-stack, since most functions
-    // are never at the bottom of the call-stack.
-    const rootWeights = new Map<Frame, number>()
-    for (let [frame, totalWeight] of this.totalWeights) {
-      rootWeights.set(frame, totalWeight)
-    }
-    for (let [_, childMap] of this.childrenTotalWeights) {
-      for (let [child, weight] of childMap) {
-        rootWeights.set(child, getOrElse(rootWeights, child, () => weight) - weight)
-      }
-    }
-
-    let totalProfileWeight = 0
-    for (let [_, rootWeight] of rootWeights) {
-      totalProfileWeight += rootWeight
-    }
-
     const profile = new CallTreeProfileBuilder()
 
     let unitMultiplier = 1
@@ -170,7 +150,12 @@ class CallGraph {
 
     const currentStack = new Set<Frame>()
 
-    const visit = (frame: Frame, callTreeWeight: number) => {
+    let maxWeight = 0
+    for (let [_, totalWeight] of this.totalWeights) {
+      maxWeight = Math.max(maxWeight, totalWeight)
+    }
+
+    const visit = (frame: Frame, subtreeTotalWeight: number) => {
       if (currentStack.has(frame)) {
         // Call-graphs are allowed to have cycles. Call-trees are not. In case
         // we run into a cycle, we'll just avoid recursing into the same subtree
@@ -198,7 +183,7 @@ class CallGraph {
       // See the comment at the top of the file for an example where this
       // assumption can yield especially misleading results.
 
-      if (callTreeWeight < 1e-4 * totalProfileWeight) {
+      if (subtreeTotalWeight < 1e-4 * maxWeight) {
         // This assumption about even distribution can cause us to generate a
         // call tree with dramatically more nodes than the call graph.
         //
@@ -220,45 +205,113 @@ class CallGraph {
         // 1000*250=250,000 nodes in the resulting call graph.
         //
         // To mitigate this explosion of the # of nodes, we ignore subtrees
-        // whose weights are less than 0.01% of the total weight of the profile.
+        // whose weights are less than 0.01% of the heaviest node in the call
+        // graph.
         return
       }
 
-      // totalWeightForFrame is the total weight for the given frame in the
-      // entire call graph.
-      const callGraphWeightForFrame = getOrElse(this.totalWeights, frame, () => 0)
-      if (callGraphWeightForFrame === 0) {
+      const totalWeightForFrameInCallgraph = getOrElse(this.totalWeights, frame, () => 0)
+      if (totalWeightForFrameInCallgraph === 0) {
         return
       }
 
-      // This is the portion of the total time the given child spends within the
-      // given parent that we'll attribute to this specific path in the call
-      // tree.
-      const ratio = callTreeWeight / callGraphWeightForFrame
+      let selfWeightForNodeInCallTree = subtreeTotalWeight
 
-      let selfWeightForFrame = callGraphWeightForFrame
-
-      profile.enterFrame(frame, totalCumulative * unitMultiplier)
+      profile.enterFrame(frame, Math.round(totalCumulative * unitMultiplier))
 
       currentStack.add(frame)
-      for (let [child, callGraphEdgeWeight] of this.childrenTotalWeights.get(frame) || []) {
-        selfWeightForFrame -= callGraphEdgeWeight
-        const childCallTreeWeight = callGraphEdgeWeight * ratio
+      for (let [child, totalWeightAsChild] of this.childrenTotalWeights.get(frame) || []) {
+        // To determine the weight of the child in the call tree, we look at the
+        // weight of the child in the call graph relative to its parent.
+        const childCallTreeWeight =
+          subtreeTotalWeight * (totalWeightAsChild / totalWeightForFrameInCallgraph)
+
+        let prevTotalCumulative = totalCumulative
         visit(child, childCallTreeWeight)
+
+        // Even though we tried to add a child with total weight equal to
+        // childCallTreeWeight, we might have failed for a variety of data
+        // consistency reasons, or due to cycles.
+        //
+        // We want to avoid losing weight in the call tree by subtracting from
+        // the self weight on the assumption it was added to the subtree, so we
+        // only subtree from the self weight the amount that was *actually* used
+        // by the subtree, rather than the amount we *intended* for it to use.
+        const actualChildCallTreeWeight = totalCumulative - prevTotalCumulative
+        selfWeightForNodeInCallTree -= actualChildCallTreeWeight
       }
       currentStack.delete(frame)
 
-      totalCumulative += selfWeightForFrame * ratio
-      profile.leaveFrame(frame, totalCumulative * unitMultiplier)
+      totalCumulative += selfWeightForNodeInCallTree
+      profile.leaveFrame(frame, Math.round(totalCumulative * unitMultiplier))
     }
 
-    for (let [rootFrame, rootWeight] of rootWeights) {
-      if (rootWeight <= 0) {
-        continue
+    // It's surprisingly hard to figure out which nodes in the call graph
+    // constitute the root nodes of call trees.
+    //
+    // Here are a few intuitive options, and reasons why they're not always
+    // correct or good.
+    //
+    // ## 1. Find nodes in the call graph that have no callers
+    //
+    // This is probably right 99% of the time in practice, but since the
+    // callgrind is totally general, it's totally valid to have a file
+    // representing a profile for the following code:
+    //
+    //    function a() {
+    //      b()
+    //    }
+    //    function b() {
+    //    }
+    //    a()
+    //    b()
+    //
+    // In this case, even though b has a caller, some of the real calltree for
+    // an execution trace of the program will have b on the top of the stack.
+    //
+    // ## 2. Find nodes in the call graph that still have weight if you
+    //       subtract all of the weight caused by callers.
+    //
+    // The callgraph format, in theory, provides inclusive times for every
+    // function call. That means if you have a function `alpha` with a total
+    // weight of 20, and its only in-edge in the call-graph has weight of 10,
+    // that should indicate that `alpha` exists both as the root-node of a
+    // calltree, and as a node in some other call-tree.
+    //
+    // In theory, you should be able to figure out the weight of it as a root
+    // node by subtracting the weights of all the in-edges. In practice, real
+    // callgrind files are inconsistent in how they do accounting for in-edges
+    // where you end up in weird situations where the weight of in-edges
+    // *exceeds* the weight of nodes (where the weight of a node is its
+    // self-weight plus the weight of all its out-edges).
+    //
+    // ## 3. Find the heaviest node in the call graph, build its call-tree, and
+    //       decrease the weights of other nodes in the call graph while you
+    //       build the call tree. After you've done this, repeat with the new
+    //       heaviest.
+    //
+    // I think this version is probably fully correct, but the performance is
+    // awful. The naive-version is O(n^2) because you have to re-determine which
+    // node is the heaviest after each time you finish building a call-tree. You
+    // can't just sort, because the relative ordering also changes with the
+    // construction of each call tree.
+    //
+    // There's probably a clever solution here which puts all of the nodes into
+    // a min-heap and then deletes and re-inserts nodes as their weights change,
+    // but reasoning about the performance of that is a big pain in the butt.
+    //
+    // Despite not always being correct, I'm opting for option (1).
+
+    const rootNodes = new Set<Frame>(this.frameSet)
+
+    for (let [_, childMap] of this.childrenTotalWeights) {
+      for (let [child, _] of childMap) {
+        rootNodes.delete(child)
       }
-      // If we've reached here, it means that the given root frame has some
-      // weight while at the top of the call-stack.
-      visit(rootFrame, rootWeight)
+    }
+
+    for (let rootNode of rootNodes) {
+      visit(rootNode, this.totalWeights.get(rootNode)!)
     }
 
     return profile.build()
@@ -344,7 +397,7 @@ class CallgrindParser {
   }
 
   private calleeFrameInfo(): FrameInfo {
-    const file = this.calleeFilename || '(unknown)'
+    const file = this.calleeFilename || this.filename || '(unknown)'
     const name = this.calleeFunctionName || '(unknown)'
     const key = `${file}:${name}`
     return {key, name, file}
@@ -384,10 +437,20 @@ class CallgrindParser {
 
     switch (key) {
       case 'fe':
-      case 'fi':
+      case 'fi': {
+        // fe/fi are used to indicate the source-file of a function definition
+        // changed mid-definition. This is for inlined code, but doesn't
+        // indicate that we've actually switched to referring to a different
+        // function, so we mostly ignore it.
+        //
+        // We still need to do the parseNameWithCompression call in case a name
+        // is defined and then referenced later on for name compression.
+        this.parseNameWithCompression(value, this.savedFileNames)
+        break
+      }
+
       case 'fl': {
         this.filename = this.parseNameWithCompression(value, this.savedFileNames)
-        this.calleeFilename = this.filename
         break
       }
 
@@ -398,6 +461,8 @@ class CallgrindParser {
 
       case 'cfi':
       case 'cfl': {
+        // NOTE: unlike the fe/fi distinction described above, cfi and cfl are
+        // interchangeable.
         this.calleeFilename = this.parseNameWithCompression(value, this.savedFileNames)
         break
       }
@@ -413,6 +478,22 @@ class CallgrindParser {
         // since it'll just be copying the exact same frame over-and-over again,
         // but that might be better than ignoring it.
         this.parseCostLine(this.lines[this.lineNum++], 'child')
+
+        // This isn't specified anywhere in the spec, but empirically the and
+        // "cfn" scope should only persist for a single "call".
+        //
+        // This seems to be what KCacheGrind does too:
+        //
+        // https://github.com/KDE/kcachegrind/blob/ea4314db2785cb8f279fe884ee7f82445642b692/libcore/cachegrindloader.cpp#L1259
+        this.calleeFilename = null
+        this.calleeFunctionName = null
+        break
+      }
+
+      case 'cob':
+      case 'ob': {
+        // We ignore these for now. They're valid lines, but we don't capture or
+        // display information about them.
         break
       }
 
@@ -458,21 +539,52 @@ class CallgrindParser {
     return name
   }
 
+  private prevCostLineNumbers: number[] = []
+
   private parseCostLine(line: string, costType: 'self' | 'child'): boolean {
-    // TODO(jlfwong): Handle "Subposition compression"
     // TODO(jlfwong): Allow hexadecimal encoding
 
     const parts = line.split(/\s+/)
     const nums: number[] = []
-    for (let part of parts) {
-      // As far as I can tell from the specification, the callgrind format does
-      // not accept floating point numbers.
-      const asNum = parseInt(part)
-      if (isNaN(asNum)) {
+
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i]
+
+      if (part.length === 0) {
         return false
       }
 
-      nums.push(asNum)
+      if (part === '*' || part[0] === '-' || part[1] === '+') {
+        // This handles "Subposition compression"
+        // See: https://valgrind.org/docs/manual/cl-format.html#cl-format.overview.compression2
+        if (this.prevCostLineNumbers.length <= i) {
+          throw new Error(
+            `Line ${this.lineNum} has a subposition on column ${i} but ` +
+              `previous cost line has only ${this.prevCostLineNumbers.length} ` +
+              `columns. Line contents: ${line}`,
+          )
+        }
+        const prevCostForSubposition = this.prevCostLineNumbers[i]
+        if (part === '*') {
+          nums.push(prevCostForSubposition)
+        } else {
+          // This handles both the '-' and '+' cases
+          const offset = parseInt(part)
+          if (isNaN(offset)) {
+            throw new Error(
+              `Line ${this.lineNum} has a subposition on column ${i} but ` +
+                `the offset is not a number. Line contents: ${line}`,
+            )
+          }
+          nums.push(prevCostForSubposition + offset)
+        }
+      } else {
+        const asNum = parseInt(part)
+        if (isNaN(asNum)) {
+          return false
+        }
+        nums.push(asNum)
+      }
     }
 
     if (nums.length == 0) {
@@ -506,6 +618,7 @@ class CallgrindParser {
       }
     }
 
+    this.prevCostLineNumbers = nums
     return true
   }
 }

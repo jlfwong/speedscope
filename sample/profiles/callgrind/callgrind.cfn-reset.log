@@ -1,0 +1,30 @@
+# callgrind format
+events: Instructions
+
+fl=alpha.c
+fn=alpha
+1 10
+cfl=beta.c
+cfn=beta
+calls=1 1
+1 10
+cfn=gamma
+calls=1 1
+1 10
+cfn=delta
+calls=1 1
+1 20
+
+fn=delta
+1 10
+cfn=gamma
+calls=1 1
+1 10
+
+fn=gamma
+1 10
+cfl=
+
+fl=beta.c
+fn=beta
+1 10
