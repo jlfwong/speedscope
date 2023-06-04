@@ -458,21 +458,52 @@ class CallgrindParser {
     return name
   }
 
+  private prevCostLineNumbers: number[] = []
+
   private parseCostLine(line: string, costType: 'self' | 'child'): boolean {
-    // TODO(jlfwong): Handle "Subposition compression"
     // TODO(jlfwong): Allow hexadecimal encoding
 
     const parts = line.split(/\s+/)
     const nums: number[] = []
-    for (let part of parts) {
-      // As far as I can tell from the specification, the callgrind format does
-      // not accept floating point numbers.
-      const asNum = parseInt(part)
-      if (isNaN(asNum)) {
+
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i]
+
+      if (part.length === 0) {
         return false
       }
 
-      nums.push(asNum)
+      if (part === '*' || part[0] === '-' || part[1] === '+') {
+        // This handles "Subposition compression"
+        // See: https://valgrind.org/docs/manual/cl-format.html#cl-format.overview.compression2
+        if (this.prevCostLineNumbers.length <= i) {
+          throw new Error(
+            `Line ${this.lineNum} has a subposition on column ${i} but ` +
+              `previous cost line has only ${this.prevCostLineNumbers.length} ` +
+              `columns. Line contents: ${line}`,
+          )
+        }
+        const prevCostForSubposition = this.prevCostLineNumbers[i]
+        if (part === '*') {
+          nums.push(prevCostForSubposition)
+        } else {
+          // This handles both the '-' and '+' cases
+          const offset = parseInt(part)
+          if (isNaN(offset)) {
+            throw new Error(
+              `Line ${this.lineNum} has a subposition on column ${i} but ` +
+                `the offset is not a number. Line contents: ${line}`,
+            )
+          }
+          nums.push(prevCostForSubposition + offset)
+        }
+      } else {
+        const asNum = parseInt(part)
+        if (isNaN(asNum)) {
+          return false
+        }
+        nums.push(asNum)
+      }
     }
 
     if (nums.length == 0) {
@@ -506,6 +537,7 @@ class CallgrindParser {
       }
     }
 
+    this.prevCostLineNumbers = nums
     return true
   }
 }
