@@ -30,3 +30,7 @@ test('importFromChromeTimeline Workers Chrome 66', async () => {
 test('importFromChromeTimeline Workers Chrome 70', async () => {
   await checkProfileSnapshot('./sample/profiles/Chrome/70/worker.json')
 })
+
+test('importFromChromeTimeline Chrome 116', async () => {
+  await checkProfileSnapshot('./sample/profiles/Chrome/116/Trace-20230603T221323.json')
+})
