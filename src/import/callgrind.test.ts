@@ -15,3 +15,7 @@ test('importFromCallgrind multiple event types', async () => {
 test('importFromCallgrind subposition compression', async () => {
   await checkProfileSnapshot('./sample/profiles/callgrind/callgrind.subposition-compression.log')
 })
+
+test('importFromCallgrind cfn reset', async () => {
+  await checkProfileSnapshot('./sample/profiles/callgrind/callgrind.cfn-reset.log')
+})

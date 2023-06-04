@@ -397,7 +397,7 @@ class CallgrindParser {
   }
 
   private calleeFrameInfo(): FrameInfo {
-    const file = this.calleeFilename || '(unknown)'
+    const file = this.calleeFilename || this.filename || '(unknown)'
     const name = this.calleeFunctionName || '(unknown)'
     const key = `${file}:${name}`
     return {key, name, file}
@@ -451,7 +451,6 @@ class CallgrindParser {
 
       case 'fl': {
         this.filename = this.parseNameWithCompression(value, this.savedFileNames)
-        this.calleeFilename = this.filename
         break
       }
 
@@ -479,6 +478,15 @@ class CallgrindParser {
         // since it'll just be copying the exact same frame over-and-over again,
         // but that might be better than ignoring it.
         this.parseCostLine(this.lines[this.lineNum++], 'child')
+
+        // This isn't specified anywhere in the spec, but empirically the and
+        // "cfn" scope should only persist for a single "call".
+        //
+        // This seems to be what KCacheGrind does too:
+        //
+        // https://github.com/KDE/kcachegrind/blob/ea4314db2785cb8f279fe884ee7f82445642b692/libcore/cachegrindloader.cpp#L1259
+        this.calleeFilename = null
+        this.calleeFunctionName = null
         break
       }
 

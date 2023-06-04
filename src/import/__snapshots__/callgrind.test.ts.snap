@@ -41,6 +41,61 @@ Object {
 }
 `;
 
+exports[`importFromCallgrind cfn reset 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": "alpha.c",
+      "key": "alpha.c:alpha",
+      "line": undefined,
+      "name": "alpha",
+      "selfWeight": 10,
+      "totalWeight": 50,
+    },
+    Frame {
+      "col": undefined,
+      "file": "beta.c",
+      "key": "beta.c:beta",
+      "line": undefined,
+      "name": "beta",
+      "selfWeight": 10,
+      "totalWeight": 10,
+    },
+    Frame {
+      "col": undefined,
+      "file": "alpha.c",
+      "key": "alpha.c:gamma",
+      "line": undefined,
+      "name": "gamma",
+      "selfWeight": 20,
+      "totalWeight": 20,
+    },
+    Frame {
+      "col": undefined,
+      "file": "alpha.c",
+      "key": "alpha.c:delta",
+      "line": undefined,
+      "name": "delta",
+      "selfWeight": 10,
+      "totalWeight": 20,
+    },
+  ],
+  "name": "callgrind.cfn-reset.log -- Instructions",
+  "stacks": Array [
+    "alpha;beta 10",
+    "alpha;gamma 10",
+    "alpha;delta;gamma 10",
+    "alpha;delta 10",
+    "alpha 10",
+  ],
+}
+`;
+
+exports[`importFromCallgrind cfn reset: indexToView 1`] = `0`;
+
+exports[`importFromCallgrind cfn reset: profileGroup.name 1`] = `"callgrind.cfn-reset.log"`;
+
 exports[`importFromCallgrind multiple event types 1`] = `
 Object {
   "frames": Array [
@@ -100,7 +155,7 @@ Object {
       "key": "file1.c:func1",
       "line": undefined,
       "name": "func1",
-      "selfWeight": 8888.888888888889,
+      "selfWeight": 15000,
       "totalWeight": 20000,
     },
     Frame {
@@ -109,14 +164,14 @@ Object {
       "key": "file2.c:func2",
       "line": undefined,
       "name": "func2",
-      "selfWeight": 14111.111111111111,
-      "totalWeight": 14111.111111111111,
+      "selfWeight": 8000,
+      "totalWeight": 8000,
     },
   ],
   "name": "callgrind.multiple-event-types.log -- Memory",
   "stacks": Array [
-    "main;func1;func2 10.85 KB",
-    "main;func1 8.68 KB",
+    "main;func1;func2 4.88 KB",
+    "main;func1 14.65 KB",
     "main;func2 2.93 KB",
     "main 14.65 KB",
   ],
