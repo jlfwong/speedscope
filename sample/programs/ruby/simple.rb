@@ -28,7 +28,8 @@ def d
   prod
 end
 
-profile = StackProf.run(mode: :wall, raw: true) do
+mode = (ARGV[0] || :wall).to_sym
+profile = StackProf.run(mode: mode, raw: true) do
   a
 end
 
