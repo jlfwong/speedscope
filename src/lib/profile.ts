@@ -406,7 +406,7 @@ export class Profile {
     for (let frame of this.frames) {
       // This function converts a mangled C++ name such as "__ZNK7Support6ColorFeqERKS0_"
       // into a human-readable symbol (in this case "Support::ColorF::==(Support::ColorF&)")
-      if (frame.name?.startsWith('__Z')) {
+      if (frame.name.startsWith('__Z')) {
         if (!demangleCpp) {
           demangleCpp = (await demangleCppModule).demangleCpp
         }
