@@ -4,7 +4,7 @@ import {Profile, FrameInfo, StackListProfileBuilder} from '../lib/profile'
 import {TimeFormatter} from '../lib/value-formatters'
 
 interface StackprofFrame {
-  name: string
+  name?: string
   file?: string
   line?: number
 }
@@ -34,10 +34,16 @@ export function importFromStackprof(stackprofProfile: StackprofProfile): Profile
     let stack: FrameInfo[] = []
     for (let j = 0; j < stackHeight; j++) {
       const id = raw[i++]
-      stack.push({
+      let frameName = frames[id].name;
+      if (frameName == null) {
+        frameName = '(unknown)';
+      }
+      const frame = {
         key: id,
         ...frames[id],
-      })
+        name: frameName,
+      }
+      stack.push(frame)
     }
     if (stack.length === 1 && stack[0].name === '(garbage collection)') {
       stack = prevStack.concat(stack)
