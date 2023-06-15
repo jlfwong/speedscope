@@ -10,7 +10,7 @@ Object {
       "line": 0,
       "name": "runtime.main",
       "selfWeight": 0,
-      "totalWeight": 136,
+      "totalWeight": 1360000000,
     },
     Frame {
       "col": undefined,
@@ -19,7 +19,7 @@ Object {
       "line": 0,
       "name": "main.main",
       "selfWeight": 0,
-      "totalWeight": 136,
+      "totalWeight": 1360000000,
     },
     Frame {
       "col": undefined,
@@ -27,8 +27,8 @@ Object {
       "key": "main.delta:/Users/jlfwong/code/speedscope/sample/programs/go/simple.go:0",
       "line": 0,
       "name": "main.delta",
-      "selfWeight": 22,
-      "totalWeight": 58,
+      "selfWeight": 220000000,
+      "totalWeight": 580000000,
     },
     Frame {
       "col": undefined,
@@ -36,8 +36,8 @@ Object {
       "key": "main.beta:/Users/jlfwong/code/speedscope/sample/programs/go/simple.go:0",
       "line": 0,
       "name": "main.beta",
-      "selfWeight": 39,
-      "totalWeight": 39,
+      "selfWeight": 390000000,
+      "totalWeight": 390000000,
     },
     Frame {
       "col": undefined,
@@ -45,8 +45,8 @@ Object {
       "key": "main.alpha:/Users/jlfwong/code/speedscope/sample/programs/go/simple.go:0",
       "line": 0,
       "name": "main.alpha",
-      "selfWeight": 48,
-      "totalWeight": 48,
+      "selfWeight": 480000000,
+      "totalWeight": 480000000,
     },
     Frame {
       "col": undefined,
@@ -54,8 +54,8 @@ Object {
       "key": "main.gamma:/Users/jlfwong/code/speedscope/sample/programs/go/simple.go:0",
       "line": 0,
       "name": "main.gamma",
-      "selfWeight": 27,
-      "totalWeight": 27,
+      "selfWeight": 270000000,
+      "totalWeight": 270000000,
     },
     Frame {
       "col": undefined,
@@ -64,7 +64,7 @@ Object {
       "line": 0,
       "name": "runtime.morestack",
       "selfWeight": 0,
-      "totalWeight": 11,
+      "totalWeight": 110000000,
     },
     Frame {
       "col": undefined,
@@ -73,7 +73,7 @@ Object {
       "line": 0,
       "name": "runtime.newstack",
       "selfWeight": 0,
-      "totalWeight": 11,
+      "totalWeight": 110000000,
     },
     Frame {
       "col": undefined,
@@ -81,8 +81,8 @@ Object {
       "key": "runtime.duffcopy:/usr/local/Cellar/go/1.10.1/libexec/src/runtime/duff_amd64.s:0",
       "line": 0,
       "name": "runtime.duffcopy",
-      "selfWeight": 11,
-      "totalWeight": 11,
+      "selfWeight": 110000000,
+      "totalWeight": 110000000,
     },
     Frame {
       "col": undefined,
@@ -91,7 +91,7 @@ Object {
       "line": 0,
       "name": "runtime.timerproc",
       "selfWeight": 0,
-      "totalWeight": 1,
+      "totalWeight": 10000000,
     },
     Frame {
       "col": undefined,
@@ -100,7 +100,7 @@ Object {
       "line": 0,
       "name": "runtime.goroutineReady",
       "selfWeight": 0,
-      "totalWeight": 1,
+      "totalWeight": 10000000,
     },
     Frame {
       "col": undefined,
@@ -109,7 +109,7 @@ Object {
       "line": 0,
       "name": "runtime.goready",
       "selfWeight": 0,
-      "totalWeight": 1,
+      "totalWeight": 10000000,
     },
     Frame {
       "col": undefined,
@@ -118,7 +118,7 @@ Object {
       "line": 0,
       "name": "runtime.systemstack",
       "selfWeight": 0,
-      "totalWeight": 1,
+      "totalWeight": 10000000,
     },
     Frame {
       "col": undefined,
@@ -127,7 +127,7 @@ Object {
       "line": 0,
       "name": "runtime.goready.func1",
       "selfWeight": 0,
-      "totalWeight": 1,
+      "totalWeight": 10000000,
     },
     Frame {
       "col": undefined,
@@ -136,7 +136,7 @@ Object {
       "line": 0,
       "name": "runtime.ready",
       "selfWeight": 0,
-      "totalWeight": 1,
+      "totalWeight": 10000000,
     },
     Frame {
       "col": undefined,
@@ -145,7 +145,7 @@ Object {
       "line": 0,
       "name": "runtime.wakep",
       "selfWeight": 0,
-      "totalWeight": 1,
+      "totalWeight": 10000000,
     },
     Frame {
       "col": undefined,
@@ -154,7 +154,7 @@ Object {
       "line": 0,
       "name": "runtime.startm",
       "selfWeight": 0,
-      "totalWeight": 1,
+      "totalWeight": 10000000,
     },
     Frame {
       "col": undefined,
@@ -163,7 +163,7 @@ Object {
       "line": 0,
       "name": "runtime.notewakeup",
       "selfWeight": 0,
-      "totalWeight": 1,
+      "totalWeight": 10000000,
     },
     Frame {
       "col": undefined,
@@ -172,7 +172,7 @@ Object {
       "line": 0,
       "name": "runtime.semawakeup",
       "selfWeight": 0,
-      "totalWeight": 1,
+      "totalWeight": 10000000,
     },
     Frame {
       "col": undefined,
@@ -181,7 +181,7 @@ Object {
       "line": 0,
       "name": "runtime.mach_semrelease",
       "selfWeight": 0,
-      "totalWeight": 1,
+      "totalWeight": 10000000,
     },
     Frame {
       "col": undefined,
@@ -189,8 +189,8 @@ Object {
       "key": "runtime.mach_semaphore_signal:/usr/local/Cellar/go/1.10.1/libexec/src/runtime/sys_darwin_amd64.s:0",
       "line": 0,
       "name": "runtime.mach_semaphore_signal",
-      "selfWeight": 1,
-      "totalWeight": 1,
+      "selfWeight": 10000000,
+      "totalWeight": 10000000,
     },
     Frame {
       "col": undefined,
@@ -199,7 +199,7 @@ Object {
       "line": 0,
       "name": "runtime.mstart",
       "selfWeight": 0,
-      "totalWeight": 2,
+      "totalWeight": 20000000,
     },
     Frame {
       "col": undefined,
@@ -208,7 +208,7 @@ Object {
       "line": 0,
       "name": "runtime.mstart1",
       "selfWeight": 0,
-      "totalWeight": 2,
+      "totalWeight": 20000000,
     },
     Frame {
       "col": undefined,
@@ -217,7 +217,7 @@ Object {
       "line": 0,
       "name": "runtime.sysmon",
       "selfWeight": 0,
-      "totalWeight": 2,
+      "totalWeight": 20000000,
     },
     Frame {
       "col": undefined,
@@ -225,21 +225,21 @@ Object {
       "key": "runtime.usleep:/usr/local/Cellar/go/1.10.1/libexec/src/runtime/sys_darwin_amd64.s:0",
       "line": 0,
       "name": "runtime.usleep",
-      "selfWeight": 2,
-      "totalWeight": 2,
+      "selfWeight": 20000000,
+      "totalWeight": 20000000,
     },
   ],
   "name": "simple.prof",
   "stacks": Array [
-    "runtime.main;main.main;main.delta;main.beta 14",
-    "runtime.main;main.main;main.alpha 26",
-    "runtime.main;main.main;main.gamma 27",
-    "runtime.morestack;runtime.newstack;runtime.duffcopy 11",
-    "runtime.main;main.main;main.beta 25",
-    "runtime.main;main.main;main.delta 22",
-    "runtime.main;main.main;main.delta;main.alpha 22",
-    "runtime.timerproc;runtime.goroutineReady;runtime.goready;runtime.systemstack;runtime.goready.func1;runtime.ready;runtime.wakep;runtime.startm;runtime.notewakeup;runtime.semawakeup;runtime.mach_semrelease;runtime.mach_semaphore_signal 1",
-    "runtime.mstart;runtime.mstart1;runtime.sysmon;runtime.usleep 2",
+    "runtime.main;main.main;main.delta;main.beta 140.00ms",
+    "runtime.main;main.main;main.alpha 260.00ms",
+    "runtime.main;main.main;main.gamma 270.00ms",
+    "runtime.morestack;runtime.newstack;runtime.duffcopy 110.00ms",
+    "runtime.main;main.main;main.beta 250.00ms",
+    "runtime.main;main.main;main.delta 220.00ms",
+    "runtime.main;main.main;main.delta;main.alpha 220.00ms",
+    "runtime.timerproc;runtime.goroutineReady;runtime.goready;runtime.systemstack;runtime.goready.func1;runtime.ready;runtime.wakep;runtime.startm;runtime.notewakeup;runtime.semawakeup;runtime.mach_semrelease;runtime.mach_semaphore_signal 10.00ms",
+    "runtime.mstart;runtime.mstart1;runtime.sysmon;runtime.usleep 20.00ms",
   ],
 }
 `;

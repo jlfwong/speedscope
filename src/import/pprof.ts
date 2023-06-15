@@ -8,6 +8,25 @@ interface SampleType {
   unit: string
 }
 
+// Find the index of the SampleType which should be used as our default
+function getSampleTypeIndex(profile: perftools.profiles.Profile): number {
+  const dflt = profile.defaultSampleType
+  const sampleTypes = profile.sampleType
+  const fallback = sampleTypes.length - 1
+
+  // string_table[0] will always be empty-string, so we can assume dflt === 0 is just the proto
+  // empty-value, and means no defaultSampleType was specified.
+  if (!dflt || !+dflt) {
+    return fallback
+  }
+
+  const idx = sampleTypes.findIndex(e => e.type === dflt)
+  if (idx === -1) {
+    return fallback
+  }
+  return idx
+}
+
 export function importAsPprofProfile(rawProfile: ArrayBuffer): Profile | null {
   if (rawProfile.byteLength === 0) return null
 
@@ -103,9 +122,7 @@ export function importAsPprofProfile(rawProfile: ArrayBuffer): Profile | null {
     unit: (type.unit && stringVal(type.unit)) || 'count',
   }))
 
-  const sampleTypeIndex = protoProfile.defaultSampleType
-    ? +protoProfile.defaultSampleType
-    : sampleTypes.length - 1
+  const sampleTypeIndex = getSampleTypeIndex(protoProfile)
   const sampleType = sampleTypes[sampleTypeIndex]
 
   const profileBuilder = new StackListProfileBuilder()
