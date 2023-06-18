@@ -5,6 +5,7 @@ def a
   for i in 0..100 do
     b
     c
+    e
   end
 end
 
@@ -28,7 +29,12 @@ def d
   prod
 end
 
-profile = StackProf.run(mode: :wall, raw: true) do
+def e
+  sleep 0.05
+end
+
+mode = (ARGV[0] || :wall).to_sym
+profile = StackProf.run(mode: mode, raw: true) do
   a
 end
 
