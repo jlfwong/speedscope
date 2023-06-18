@@ -17,7 +17,6 @@ export function importFromPapyrus(papyrusProfile: TextFileContent): Profile {
     .filter(line => line.match(/^$|^Log closed$|log opened/) === null)
   const startValue = Number(papyrusProfileLines[0].split(':')[0])
   const endValue = Number(lastElement(papyrusProfileLines).split(':')[0])
-  console.log(startValue, endValue)
   // Profile starts at zero even though I set totalWeight
   const profile = new CallTreeProfileBuilder(endValue - startValue)
   profile.setValueFormatter(new TimeFormatter('milliseconds'))
@@ -47,12 +46,17 @@ export function importFromPapyrus(papyrusProfile: TextFileContent): Profile {
       const leaveASAPFrame = leaveASAPStack.pop()
       if (leaveASAPFrame !== undefined) tryToLeaveFrame(at, leaveASAPFrame)
     } else {
-      // console.log(
-      //   `Tried to leave frame "${frame}" while "${lastElement(
-      //     frameStack,
-      //   )}" was at top. Trying to figure out a solution…`,
-      // )
-      leaveASAPStack.push(frame)
+      if (frameStack.includes(frame)) {
+        leaveASAPStack.push(frame)
+
+        console.log(
+          `Tried to leave frame "${frame}" while "${lastElement(
+            frameStack,
+          )}" was at top. Will continue to try leaving in next iteration.`,
+        )
+      } else {
+        console.log(`Tried to leave frame "${frame}" which was never entered. Ignoring line.`)
+      }
     }
   }
 
@@ -95,8 +99,6 @@ export function importFromPapyrus(papyrusProfile: TextFileContent): Profile {
   while (frameStack.length > 0) {
     leaveFrame(endValue)
   }
-
-  console.log(frameStack)
 
   return profile.build()
 }
