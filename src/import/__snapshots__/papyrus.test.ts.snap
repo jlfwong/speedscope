@@ -15,11 +15,11 @@ Object {
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "Stack 3053",
+      "key": "STACK 3053",
       "line": undefined,
-      "name": "Stack 3053",
-      "selfWeight": 84847,
-      "totalWeight": 84847,
+      "name": "STACK 3053",
+      "selfWeight": 84848,
+      "totalWeight": 84848,
     },
     Frame {
       "col": undefined,
@@ -29,15 +29,6 @@ Object {
       "name": "abc_example_quest..exampleFunction2",
       "selfWeight": 0,
       "totalWeight": 0,
-    },
-    Frame {
-      "col": undefined,
-      "file": undefined,
-      "key": "Stack 3208",
-      "line": undefined,
-      "name": "Stack 3208",
-      "selfWeight": 1,
-      "totalWeight": 1,
     },
     Frame {
       "col": undefined,
@@ -75,24 +66,17 @@ Object {
       "selfWeight": 0,
       "totalWeight": 0,
     },
-    Frame {
-      "col": undefined,
-      "file": undefined,
-      "key": "Stack 3949",
-      "line": undefined,
-      "name": "Stack 3949",
-      "selfWeight": 0,
-      "totalWeight": 0,
-    },
   ],
   "name": "script.log",
   "stacks": Array [
-    "Stack 3053 5.35s",
-    "Stack 3208 1.00ms",
-    "Stack 3053 1:19",
+    "STACK 3053 1:24",
   ],
 }
 `;
+
+exports[`importFromPapyrus script profile: indexToView 1`] = `0`;
+
+exports[`importFromPapyrus script profile: profileGroup.name 1`] = `"script.log"`;
 
 exports[`importFromPapyrus stack profile 1`] = `
 Object {
@@ -100,10 +84,10 @@ Object {
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "Stack 3185",
+      "key": "STACK 3185",
       "line": undefined,
-      "name": "Stack 3185",
-      "selfWeight": 66,
+      "name": "STACK 3185",
+      "selfWeight": 33,
       "totalWeight": 617,
     },
     Frame {
@@ -136,11 +120,29 @@ Object {
     Frame {
       "col": undefined,
       "file": undefined,
+      "key": "QUEUE Cell..IsInterior",
+      "line": undefined,
+      "name": "QUEUE Cell..IsInterior",
+      "selfWeight": 16,
+      "totalWeight": 16,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
       "key": "Cell..IsInterior",
       "line": undefined,
       "name": "Cell..IsInterior",
       "selfWeight": 0,
       "totalWeight": 0,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "QUEUE utility..WaitMenuMode",
+      "line": undefined,
+      "name": "QUEUE utility..WaitMenuMode",
+      "selfWeight": 17,
+      "totalWeight": 551,
     },
     Frame {
       "col": undefined,
@@ -154,11 +156,12 @@ Object {
   ],
   "name": "stack.log",
   "stacks": Array [
-    "Stack 3185 16.00ms",
-    "Stack 3185;abc_example_mod_quest..exampleFunction1 17.00ms",
-    "Stack 3185 33.00ms",
-    "Stack 3185;utility..WaitMenuMode 534.00ms",
-    "Stack 3185 17.00ms",
+    "STACK 3185 16.00ms",
+    "STACK 3185;abc_example_mod_quest..exampleFunction1 17.00ms",
+    "STACK 3185;QUEUE Cell..IsInterior 16.00ms",
+    "STACK 3185;QUEUE utility..WaitMenuMode 17.00ms",
+    "STACK 3185;QUEUE utility..WaitMenuMode;utility..WaitMenuMode 534.00ms",
+    "STACK 3185 17.00ms",
   ],
 }
 `;
