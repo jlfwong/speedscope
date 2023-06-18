@@ -18,7 +18,7 @@ export function importFromPapyrus(papyrusProfile: TextFileContent): Profile {
   const startValue = Number(papyrusProfileLines[0].split(':')[0])
   const endValue = Number(lastElement(papyrusProfileLines).split(':')[0])
   // Profile starts at zero even though I set totalWeight
-  const profile = new CallTreeProfileBuilder(endValue - startValue)
+  const profile = new CallTreeProfileBuilder()
   profile.setValueFormatter(new TimeFormatter('milliseconds'))
 
   // These two are kept in the profile, why are they protected?
@@ -63,7 +63,7 @@ export function importFromPapyrus(papyrusProfile: TextFileContent): Profile {
   papyrusProfileLines.forEach(line_str => {
     const line_arr = line_str.split(':')
     if (line_arr.length < 6) return // continue
-    const at = Number(line_arr[0])
+    const at = Number(line_arr[0]) - startValue
     const operation = line_arr[1]
     const stack_str = `Stack ${line_arr[2]}`
     const name = line_arr[5]
