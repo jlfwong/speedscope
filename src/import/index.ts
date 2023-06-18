@@ -23,6 +23,7 @@ import {decodeBase64} from '../lib/utils'
 import {importFromChromeHeapProfile} from './v8heapalloc'
 import {isTraceEventFormatted, importTraceEvents} from './trace-event'
 import {importFromCallgrind} from './callgrind'
+import {importFromPapyrus} from "./papyrus";
 
 export async function importProfileGroupFromText(
   fileName: string,
@@ -120,6 +121,9 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
   } else if (fileName.endsWith('-recording.json')) {
     console.log('Importing as Safari profile')
     return toGroup(importFromSafari(contents.parseAsJSON()))
+  } else if (fileName.endsWith(".log")) {
+    console.log("Importing as Papyrus profile")
+    return toGroup(importFromPapyrus(contents))
   } else if (fileName.startsWith('callgrind.')) {
     console.log('Importing as Callgrind profile')
     return importFromCallgrind(contents, fileName)
@@ -186,6 +190,11 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     if (/^[\w \t\(\)]*\tSymbol Name/.exec(contents.firstChunk())) {
       console.log('Importing as Instruments.app deep copy')
       return toGroup(importFromInstrumentsDeepCopy(contents))
+    }
+
+    if (/^(Stack_|Script_)\S+ log opened \(PC\)\n/.exec(contents.firstChunk())){
+      console.log("Importing as Papyrus profile")
+      return toGroup(importFromPapyrus(contents))
     }
 
     const fromLinuxPerf = importFromLinuxPerf(contents)
