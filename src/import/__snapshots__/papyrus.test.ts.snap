@@ -81,8 +81,8 @@ Object {
       "key": "Stack 3949",
       "line": undefined,
       "name": "Stack 3949",
-      "selfWeight": 47639,
-      "totalWeight": 47639,
+      "selfWeight": 0,
+      "totalWeight": 0,
     },
   ],
   "name": "script.log",
@@ -90,14 +90,9 @@ Object {
     "Stack 3053 5.35s",
     "Stack 3208 1.00ms",
     "Stack 3053 1:19",
-    "Stack 3949 47.64s",
   ],
 }
 `;
-
-exports[`importFromPapyrus script profile: indexToView 1`] = `0`;
-
-exports[`importFromPapyrus script profile: profileGroup.name 1`] = `"script.log"`;
 
 exports[`importFromPapyrus stack profile 1`] = `
 Object {
@@ -108,8 +103,8 @@ Object {
       "key": "Stack 3185",
       "line": undefined,
       "name": "Stack 3185",
-      "selfWeight": 50068,
-      "totalWeight": 50619,
+      "selfWeight": 66,
+      "totalWeight": 617,
     },
     Frame {
       "col": undefined,
@@ -163,7 +158,11 @@ Object {
     "Stack 3185;abc_example_mod_quest..exampleFunction1 17.00ms",
     "Stack 3185 33.00ms",
     "Stack 3185;utility..WaitMenuMode 534.00ms",
-    "Stack 3185 50.02s",
+    "Stack 3185 17.00ms",
   ],
 }
 `;
+
+exports[`importFromPapyrus stack profile: indexToView 1`] = `0`;
+
+exports[`importFromPapyrus stack profile: profileGroup.name 1`] = `"stack.log"`;

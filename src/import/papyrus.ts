@@ -16,7 +16,7 @@ export function importFromPapyrus(papyrusProfile: TextFileContent): Profile {
     .splitLines()
     .filter(line => line.match(/^$|^Log closed$|log opened/) === null)
   const startValue = Number(papyrusProfileLines[0].split(':')[0])
-  const endValue = Number(lastElement(papyrusProfileLines).split(':')[0])
+  const endValue = Number(lastElement(papyrusProfileLines).split(':')[0]) - startValue
   // Profile starts at zero even though I set totalWeight
   const profile = new CallTreeProfileBuilder()
   profile.setValueFormatter(new TimeFormatter('milliseconds'))
