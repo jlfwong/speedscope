@@ -1,0 +1,169 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`importFromPapyrus script profile 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "abc_example_quest..exampleFunction1",
+      "line": undefined,
+      "name": "abc_example_quest..exampleFunction1",
+      "selfWeight": 0,
+      "totalWeight": 0,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "Stack 3053",
+      "line": undefined,
+      "name": "Stack 3053",
+      "selfWeight": 84847,
+      "totalWeight": 84847,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "abc_example_quest..exampleFunction2",
+      "line": undefined,
+      "name": "abc_example_quest..exampleFunction2",
+      "selfWeight": 0,
+      "totalWeight": 0,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "Stack 3208",
+      "line": undefined,
+      "name": "Stack 3208",
+      "selfWeight": 1,
+      "totalWeight": 1,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "abc_example_quest..exampleFunction3",
+      "line": undefined,
+      "name": "abc_example_quest..exampleFunction3",
+      "selfWeight": 0,
+      "totalWeight": 0,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "abc_example_quest..exampleFunction4",
+      "line": undefined,
+      "name": "abc_example_quest..exampleFunction4",
+      "selfWeight": 0,
+      "totalWeight": 0,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "abc_example_quest..exampleFunction5",
+      "line": undefined,
+      "name": "abc_example_quest..exampleFunction5",
+      "selfWeight": 0,
+      "totalWeight": 0,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "abc_example_quest..exampleFunction6",
+      "line": undefined,
+      "name": "abc_example_quest..exampleFunction6",
+      "selfWeight": 0,
+      "totalWeight": 0,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "Stack 3949",
+      "line": undefined,
+      "name": "Stack 3949",
+      "selfWeight": 47639,
+      "totalWeight": 47639,
+    },
+  ],
+  "name": "script.log",
+  "stacks": Array [
+    "Stack 3053 5.35s",
+    "Stack 3208 1.00ms",
+    "Stack 3053 1:19",
+    "Stack 3949 47.64s",
+  ],
+}
+`;
+
+exports[`importFromPapyrus script profile: indexToView 1`] = `0`;
+
+exports[`importFromPapyrus script profile: profileGroup.name 1`] = `"script.log"`;
+
+exports[`importFromPapyrus stack profile 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "Stack 3185",
+      "line": undefined,
+      "name": "Stack 3185",
+      "selfWeight": 50068,
+      "totalWeight": 50619,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "Form..GetFormID",
+      "line": undefined,
+      "name": "Form..GetFormID",
+      "selfWeight": 0,
+      "totalWeight": 0,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "abc_example_mod_quest..exampleFunction1",
+      "line": undefined,
+      "name": "abc_example_mod_quest..exampleFunction1",
+      "selfWeight": 17,
+      "totalWeight": 17,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "Game..GetModName",
+      "line": undefined,
+      "name": "Game..GetModName",
+      "selfWeight": 0,
+      "totalWeight": 0,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "Cell..IsInterior",
+      "line": undefined,
+      "name": "Cell..IsInterior",
+      "selfWeight": 0,
+      "totalWeight": 0,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "utility..WaitMenuMode",
+      "line": undefined,
+      "name": "utility..WaitMenuMode",
+      "selfWeight": 534,
+      "totalWeight": 534,
+    },
+  ],
+  "name": "stack.log",
+  "stacks": Array [
+    "Stack 3185 16.00ms",
+    "Stack 3185;abc_example_mod_quest..exampleFunction1 17.00ms",
+    "Stack 3185 33.00ms",
+    "Stack 3185;utility..WaitMenuMode 534.00ms",
+    "Stack 3185 50.02s",
+  ],
+}
+`;

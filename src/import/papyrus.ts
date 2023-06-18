@@ -38,13 +38,14 @@ export function importFromPapyrus(papyrusProfile: TextFileContent): Profile {
     profile.leaveFrame(Frame.getOrInsert(nameSet, {name: frame, key: frame}), at)
   }
 
-  function tryToLeaveFrame(at: number, frame: string) {
+  function tryToLeaveFrame(at: number, frame: string): Boolean {
     if (lastElement(frameStack) === frame) {
       leaveFrame(at)
       // Every time we successfully leave a frame, try to leave from the last frame we put on the leaveASAPStack.
       // If we don't succeed, the frame is pushed back on the leaveASAPStack.
       const leaveASAPFrame = leaveASAPStack.pop()
       if (leaveASAPFrame !== undefined) tryToLeaveFrame(at, leaveASAPFrame)
+      return true
     } else {
       if (frameStack.includes(frame)) {
         leaveASAPStack.push(frame)
@@ -57,6 +58,7 @@ export function importFromPapyrus(papyrusProfile: TextFileContent): Profile {
       } else {
         console.log(`Tried to leave frame "${frame}" which was never entered. Ignoring line.`)
       }
+      return false
     }
   }
 
@@ -67,6 +69,12 @@ export function importFromPapyrus(papyrusProfile: TextFileContent): Profile {
     const operation = line_arr[1]
     const stack_str = `Stack ${line_arr[2]}`
     const name = line_arr[5]
+    if (operation === 'PUSH') {
+      enterFrame(at, name)
+    } else if (operation === 'POP') {
+      // If we can't leave the frame, continue
+      if (!tryToLeaveFrame(at, name)) return
+    }
     if (frameStack.length === 0) {
       enterFrame(at, stack_str)
     } else if (
@@ -75,11 +83,6 @@ export function importFromPapyrus(papyrusProfile: TextFileContent): Profile {
     ) {
       tryToLeaveFrame(at, lastElement(frameStack))
       enterFrame(at, stack_str)
-    }
-    if (operation === 'PUSH') {
-      enterFrame(at, name)
-    } else if (operation === 'POP') {
-      tryToLeaveFrame(at, name)
     }
     // There are other types of operations, namely QUEUE_PUSH and QUEUE_POP. Papyrus works with a Queue system, because
     // it is multithreaded, but only one thread can exist per script. (And we can only profile one script at a time.)

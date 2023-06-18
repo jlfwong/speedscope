@@ -1,0 +1,14 @@
+Script_abc_example_quest log opened (PC)
+47639:PUSH:3053:1:abcExampleQuest (24021278):abc_example_quest..exampleFunction1
+47639:POP:3053:1:abcExampleQuest (24021278):abc_example_quest..exampleFunction1
+52988:PUSH:3208:2:abcExampleQuest (24021278):abc_example_quest..exampleFunction2
+52988:POP:3208:2:abcExampleQuest (24021278):abc_example_quest..exampleFunction2
+52989:PUSH:3208:2:abcExampleQuest (24021278):abc_example_quest..exampleFunction3
+52989:PUSH:3053:3:None:abc_example_quest..exampleFunction4
+52989:POP:3208:2:abcExampleQuest (24021278):abc_example_quest..exampleFunction3
+52989:POP:3053:3:None:abc_example_quest..exampleFunction4
+132487:PUSH:3947:1:None:abc_example_quest..exampleFunction5
+132487:PUSH:3949:1:None:abc_example_quest..exampleFunction6
+132487:POP:3947:1:None:abc_example_quest..exampleFunction5
+132487:POP:3949:1:None:abc_example_quest..exampleFunction6
+Log closed

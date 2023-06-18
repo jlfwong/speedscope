@@ -1,9 +1,0 @@
-Stack_3053 log opened (PC)
-36254:START:3053
-36254:POP:3053:3:None:Debug..StartStackProfiling
-36256:QUEUE_PUSH:3053:3:None:PO3_SKSEFunctions.??.GetAllForms
-36269:PUSH:3053:3:None:PO3_SKSEFunctions..GetAllForms
-36272:POP:3053:3:None:PO3_SKSEFunctions..GetAllForms
-141213:PUSH:3053:3:None:Debug..StopStackProfiling
-141213:DONE:3053
-Log closed
