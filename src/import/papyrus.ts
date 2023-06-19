@@ -27,100 +27,155 @@ import {KeyedSet, lastOf} from '../lib/utils'
 import {TimeFormatter} from '../lib/value-formatters'
 import {TextFileContent} from './utils'
 
+type ParsedLine = {
+  at: number
+  event: string
+  stackInt: number
+  name: string
+}
+
 export function importFromPapyrus(papyrusProfile: TextFileContent): Profile {
   const profile = new CallTreeProfileBuilder()
   profile.setValueFormatter(new TimeFormatter('milliseconds'))
 
   const papyrusProfileLines = papyrusProfile
     .splitLines()
-    .filter(line => line.match(/^$|^Log closed$|log opened/) === null)
-  const startValue = parseInt(papyrusProfileLines[0].split(':')[0])
+    .filter(line => !/^$|^Log closed$|log opened/.exec(line))
+
+  let startValue = -1
+  const firstLineParsed = parseLine(papyrusProfileLines[0])
+  if (firstLineParsed === null) throw Error
+  startValue = firstLineParsed.at
   const lastLine = lastOf(papyrusProfileLines)
-  if (lastLine === null) throw Error("Tried to import empty file.")
-  const endValue = parseInt(lastLine.split(':')[0]) - startValue
+  if (lastLine === null) throw Error
+  const lastLineParsed = parseLine(lastLine)
+  if (lastLineParsed === null) throw Error
+  const endValue = lastLineParsed.at
 
   const nameSet = new KeyedSet<Frame>()
   const frameStack: string[] = []
   let lastEventAt = 0
 
-  const leaveASAPStack: string[] = []
   let lastQueueFrameName: string
   let lastQueueFrameAt: number = -1
 
-  function enterFrame(at: number, frameName: string) {
+  function enterFrame(stackInt: number, at: number, frameName: string) {
+    function enterFrameHelper(at: number, frameName: string) {
+      frameStack.push(frameName)
+      profile.enterFrame(Frame.getOrInsert(nameSet, {name: frameName, key: frameName}), at)
+      lastEventAt = at
+    }
     // Check if the last event was "QUEUE_PUSH"
     if (lastQueueFrameAt > -1) {
+      lastQueueFrameAt = -1
       // If the queue from last event matches our current frame,
       if (lastQueueFrameName === frameName && lastQueueFrameAt >= lastEventAt) {
         // first enter the queue frame at its earlier time
-        enterFrame(lastQueueFrameAt, `QUEUE ${frameName}`)
+        enterFrame(stackInt, lastQueueFrameAt, `QUEUE ${frameName}`)
       }
-      lastQueueFrameAt = -1
     }
-    frameStack.push(frameName)
-    profile.enterFrame(Frame.getOrInsert(nameSet, {name: frameName, key: frameName}), at)
-    lastEventAt = at
+    const stackFrameStr = `STACK ${stackInt}`
+    // If the uppermost STACK frame on the frameStack isn't stackFrameStr
+    if (
+      [...frameStack].reverse().find(frameName => frameName.startsWith('STACK ')) !== stackFrameStr
+    ) {
+      // If we're at the bottom of the frameStack, STACK frames are kept open as long as functions only run in that
+      // specific stack and closed with the function's end if the next function runs on a different stack.
+      if (frameStack.length === 1) leaveFrame(lastEventAt)
+      enterFrameHelper(at, stackFrameStr)
+    }
+    enterFrameHelper(at, frameName)
   }
 
   function leaveFrame(at: number) {
     const frame = frameStack.pop()
     if (frame === undefined) throw Error('Tried to leave frame when nothing was on stack.')
     profile.leaveFrame(Frame.getOrInsert(nameSet, {name: frame, key: frame}), at)
-    const topOfStack = lastOf(frameStack)
+    let topOfStack = lastOf(frameStack)
     // Technically, the frame is popped from queue once it is pushed onto the stack (once we have "entered the frame")
-    // but since we want to visualize meaningfully, we count from QUEUE_PUSH to POP and prefix with "QUEUE "
+    // but since we want to visualize meaningfully, we count from QUEUE_PUSH to POP and prefix with "QUEUE ".
     if (topOfStack !== null && topOfStack.startsWith('QUEUE ')) {
+      leaveFrame(at)
+      topOfStack = lastOf(frameStack)
+    }
+    if (frameStack.length > 1 && topOfStack !== null && topOfStack.startsWith('STACK ')) {
       leaveFrame(at)
     }
     lastEventAt = at
   }
 
-  function tryToLeaveFrame(at: number, frameName: string): Boolean {
+  function tryToLeaveFrame(stackInt: number, at: number, frameName: string) {
     if (lastOf(frameStack) === frameName) {
       leaveFrame(at)
-      // Every time we successfully leave a frame, try to leave from the last frame we put on the leaveASAPStack.
-      // If we don't succeed, the frame is pushed back on the leaveASAPStack.
-      const leaveASAPFrame = leaveASAPStack.pop()
-      if (leaveASAPFrame !== undefined) tryToLeaveFrame(at, leaveASAPFrame)
-      return true
     } else {
-      if (frameStack.includes(frameName)) {
-        leaveASAPStack.push(frameName)
-
+      if (lastEventAt === 0) {
         console.log(
-          `Tried to leave frame "${frameName}" while "${lastOf(
-            frameStack,
-          )}" was at top. Will continue to try leaving in next iteration.`,
+          `Tried to leave frame "${frameName}" which was never entered. Assuming it has been running since the start.`,
         )
+        enterFrame(stackInt, 0, frameName)
+        leaveFrame(at)
       } else {
-        console.log(`Tried to leave frame "${frameName}" which was never entered. Ignoring line.`)
+        console.log(
+          `Tried to leave frame "${frameName}" which was never entered. Other events have happened since the start, ignoring line.`,
+        )
       }
-      return false
     }
   }
 
-  papyrusProfileLines.forEach(line_str => {
-    const line_arr = line_str.split(':')
-    if (line_arr.length < 6) return // continue
-    const at = Number(line_arr[0]) - startValue
-    const event = line_arr[1]
-    const stackStr = `STACK ${line_arr[2]}`
-    const name = line_arr[5]
-    const topOfStack = lastOf(frameStack)
-    if (event === 'PUSH') {
-      enterFrame(at, name)
-    } else if (event === 'POP') {
-      // If we can't leave the frame, continue
-      if (!tryToLeaveFrame(at, name)) return
-    } else if (event === 'QUEUE_PUSH') {
-      lastQueueFrameName = name.replace(/\?/g, '')
-      lastQueueFrameAt = at
+  function parseLine(lineStr: string): ParsedLine | null {
+    if (lineStr === undefined) throw Error('Probably tried to import empty file.')
+    const lineArr = lineStr.split(':')
+    if (lineArr.length < 3) return null
+    if (startValue !== -1) {
+      return {
+        at: parseInt(lineArr[0]) - startValue,
+        event: lineArr[1],
+        stackInt: parseInt(lineArr[2]),
+        name: lineArr[5],
+      }
+    } else {
+      // When parsing the first line, we return an absolute `at` value to initialize `startValue`
+      return {
+        at: parseInt(lineArr[0]),
+        event: lineArr[1],
+        stackInt: parseInt(lineArr[2]),
+        name: lineArr[5],
+      }
     }
-    if (frameStack.length === 0) {
-      enterFrame(at, stackStr)
-    } else if (topOfStack !== null && topOfStack.startsWith('Stack ') && topOfStack !== stackStr) {
-      tryToLeaveFrame(at, topOfStack)
-      enterFrame(at, stackStr)
+  }
+
+  papyrusProfileLines.forEach((lineStr, i, papyrusProfileLines) => {
+    const parsedLine = parseLine(lineStr)
+    if (parsedLine === null) return // continue
+    if (parsedLine.event === 'PUSH') {
+      enterFrame(parsedLine.stackInt, parsedLine.at, parsedLine.name)
+      i += 1
+      let parsedNextLine = parseLine(papyrusProfileLines[i])
+      // Search all future events in the current event for one that leaves the current frame. If it exists, leave now.
+      // This way, we avoid speedscope choking on the possibly wrong order of events. The changed order is still
+      // functionally correct, as the function took less than a millisecond to execute, which is measured as 0 (ms).
+      while (parsedNextLine !== null && parsedNextLine.at === parsedLine.at) {
+        if (
+          parsedNextLine.name === parsedLine.name &&
+          parsedNextLine.stackInt === parsedLine.stackInt &&
+          parsedNextLine.event === 'POP'
+        ) {
+          tryToLeaveFrame(parsedNextLine.stackInt, parsedNextLine.at, parsedNextLine.name)
+          // Delete the line that we successfully parsed and imported such that it is not processed twice
+          papyrusProfileLines.splice(i, 1)
+          parsedNextLine = null
+        } else {
+          i += 1
+          if (i < papyrusProfileLines.length) parsedNextLine = parseLine(papyrusProfileLines[i])
+        }
+      }
+    } else if (parsedLine.event === 'POP') {
+      // If we can't leave the frame, continue
+      tryToLeaveFrame(parsedLine.stackInt, parsedLine.at, parsedLine.name)
+    } else if (parsedLine.event === 'QUEUE_PUSH') {
+      lastQueueFrameName = parsedLine.name.replace(/\?/g, '')
+      lastQueueFrameAt = parsedLine.at
+      return
     }
   })
 
