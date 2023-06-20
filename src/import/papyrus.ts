@@ -170,7 +170,6 @@ export function importFromPapyrus(papyrusProfile: TextFileContent): Profile {
         }
       }
     } else if (parsedLine.event === 'POP') {
-      // If we can't leave the frame, continue
       tryToLeaveFrame(parsedLine.stackInt, parsedLine.at, parsedLine.name)
     } else if (parsedLine.event === 'QUEUE_PUSH') {
       lastQueueFrameName = parsedLine.name.replace(/\?/g, '')
