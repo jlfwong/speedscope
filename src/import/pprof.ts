@@ -2,7 +2,7 @@ import {perftools} from './profile.proto.js'
 import {FrameInfo, StackListProfileBuilder, Profile} from '../lib/profile'
 import {lastOf} from '../lib/utils'
 import {TimeFormatter, ByteFormatter} from '../lib/value-formatters'
-import Long = require("long")
+import Long from 'long'
 
 interface SampleType {
   type: string
