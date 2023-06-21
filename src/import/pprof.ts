@@ -2,6 +2,7 @@ import {perftools} from './profile.proto.js'
 import {FrameInfo, StackListProfileBuilder, Profile} from '../lib/profile'
 import {lastOf} from '../lib/utils'
 import {TimeFormatter, ByteFormatter} from '../lib/value-formatters'
+import Long from 'long'
 
 interface SampleType {
   type: string
@@ -100,7 +101,12 @@ export function importAsPprofProfile(rawProfile: ArrayBuffer): Profile | null {
     if (lastLine == null) return null
 
     if (lastLine.functionId) {
-      return frameInfoByFunctionID.get(i32(lastLine.functionId)) || null
+      let funcFrame = frameInfoByFunctionID.get(i32(lastLine.functionId))
+      const line = lastLine.line instanceof Long ? lastLine.line.toNumber() : lastLine.line
+      if (line && line > 0 && funcFrame != null) {
+        funcFrame.line = line
+      }
+      return funcFrame || null
     } else {
       return null
     }
