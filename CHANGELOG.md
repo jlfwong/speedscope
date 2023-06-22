@@ -1,3 +1,12 @@
+## [1.15.2] - 2023-06-21
+
+### Fixed
+
+- Use more accurate line information for pprof profiles [[#430](https://github.com/jlfwong/speedscope/pull/430)] (by @dalehamel)
+- Stackprof: weight on-cpu samples by period rather than timestamp delta [[#425](https://github.com/jlfwong/speedscope/pull/425)] (by @manuelfelipe)
+- Prevent crashes when stackprof profiles frames are missing names [[#419](https://github.com/jlfwong/speedscope/pull/419)] (by @jez)
+- fix pprof defaultSampleType [[#424](https://github.com/jlfwong/speedscope/pull/424)] (by @vasi-stripe)
+
 ## [1.15.1] - 2023-06-04
 
 ### Fixed
