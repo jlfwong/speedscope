@@ -190,3 +190,7 @@ Object {
   ],
 }
 `;
+
+exports[`importFromPapyrus stack profile: indexToView 1`] = `0`;
+
+exports[`importFromPapyrus stack profile: profileGroup.name 1`] = `"stack.log"`;
