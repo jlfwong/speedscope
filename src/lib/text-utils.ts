@@ -43,8 +43,8 @@ export function buildTrimmedText(text: string, length: number): TrimmedTextResul
 
   let prefixLength = Math.floor(length / 2)
   const suffixLength = length - prefixLength - 1
-  const prefix = text.substr(0, prefixLength)
-  const suffix = text.substr(text.length - suffixLength, suffixLength)
+  const prefix = text.substring(0, prefixLength)
+  const suffix = text.substring(text.length - suffixLength, text.length)
   const trimmedString = prefix + ELLIPSIS + suffix
   return {
     trimmedString,
@@ -69,11 +69,11 @@ export function trimTextMid(
     0,
     text.length,
     n => {
-      return cachedMeasureTextWidth(ctx, buildTrimmedText(text, n).trimmedString)
+      return cachedMeasureTextWidth(ctx, buildTrimmedText(text, Math.floor(n)).trimmedString)
     },
     maxWidth,
   )
-  return buildTrimmedText(text, lo)
+  return buildTrimmedText(text, Math.floor(lo))
 }
 
 enum IndexTypeInTrimmed {
