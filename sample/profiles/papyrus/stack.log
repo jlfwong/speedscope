@@ -1,0 +1,24 @@
+Stack_3185 log opened (PC)
+50002:START:3185
+50002:POP:3185:3:None:Debug..StartStackProfiling
+50002:QUEUE_PUSH:3185:3: (00018A56):Location.??.GetFormID
+50018:PUSH:3185:3: (00018A56):Form..GetFormID
+50018:POP:3185:3: (00018A56):Form..GetFormID
+50018:PUSH:3185:3:None:abc_example_mod_quest..exampleFunction1
+50018:QUEUE_PUSH:3185:4: (00018A56):Location.??.GetFormID
+50035:PUSH:3185:4: (00018A56):Form..GetFormID
+50035:POP:3185:4: (00018A56):Form..GetFormID
+50035:PUSH:3185:4:None:Game..GetModName
+50035:POP:3185:4:None:Game..GetModName
+50035:POP:3185:3:None:abc_example_mod_quest..exampleFunction1
+50035:POP:3185:2:None:abc_example_mod_quest..exampleFunction2
+50035:QUEUE_PUSH:3185:2:WhiterunPLainsDistrict03 (0001A27A):Cell.??.IsInterior
+50051:PUSH:3185:2:WhiterunPLainsDistrict03 (0001A27A):Cell..IsInterior
+50051:POP:3185:2:WhiterunPLainsDistrict03 (0001A27A):Cell..IsInterior
+50051:POP:3185:1:abcExampleModQuest (24021278):abc_example_mod_quest..exampleFunction3
+50051:QUEUE_PUSH:3185:1:None:utility.??.WaitMenuMode
+50068:PUSH:3185:1:None:utility..WaitMenuMode
+50602:POP:3185:1:None:utility..WaitMenuMode
+50602:QUEUE_POP:3185:0:None:abc_example_mod_effect..OnEffectStart
+50619:POP:3185:0:None:abc_example_mod_effect..OnEffectStart
+Log closed

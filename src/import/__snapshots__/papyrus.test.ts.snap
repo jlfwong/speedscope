@@ -1,0 +1,196 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`importFromPapyrus script profile 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "STACK 3053",
+      "line": undefined,
+      "name": "STACK 3053",
+      "selfWeight": 200,
+      "totalWeight": 1250,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "abc_example_quest..exampleFunction1",
+      "line": undefined,
+      "name": "abc_example_quest..exampleFunction1",
+      "selfWeight": 1050,
+      "totalWeight": 1050,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "abc_example_quest..exampleFunction2",
+      "line": undefined,
+      "name": "abc_example_quest..exampleFunction2",
+      "selfWeight": 50,
+      "totalWeight": 50,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "STACK 3208",
+      "line": undefined,
+      "name": "STACK 3208",
+      "selfWeight": 0,
+      "totalWeight": 0,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "abc_example_quest..exampleFunction3",
+      "line": undefined,
+      "name": "abc_example_quest..exampleFunction3",
+      "selfWeight": 0,
+      "totalWeight": 0,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "abc_example_quest..exampleFunction4",
+      "line": undefined,
+      "name": "abc_example_quest..exampleFunction4",
+      "selfWeight": 0,
+      "totalWeight": 0,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "STACK 3947",
+      "line": undefined,
+      "name": "STACK 3947",
+      "selfWeight": 450,
+      "totalWeight": 1500,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "abc_example_quest..exampleFunction5",
+      "line": undefined,
+      "name": "abc_example_quest..exampleFunction5",
+      "selfWeight": 750,
+      "totalWeight": 1000,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "STACK 3949",
+      "line": undefined,
+      "name": "STACK 3949",
+      "selfWeight": 0,
+      "totalWeight": 250,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "abc_example_quest..exampleFunction6",
+      "line": undefined,
+      "name": "abc_example_quest..exampleFunction6",
+      "selfWeight": 250,
+      "totalWeight": 250,
+    },
+  ],
+  "name": "script.log",
+  "stacks": Array [
+    "STACK 3053;abc_example_quest..exampleFunction1 1.00s",
+    "STACK 3053 200.00ms",
+    "STACK 3053;abc_example_quest..exampleFunction2 50.00ms",
+    " 250.00ms",
+    "STACK 3947;abc_example_quest..exampleFunction5 250.00ms",
+    "STACK 3947;abc_example_quest..exampleFunction5;STACK 3949;abc_example_quest..exampleFunction6 250.00ms",
+    "STACK 3947;abc_example_quest..exampleFunction5 500.00ms",
+    "STACK 3947 450.00ms",
+    "STACK 3947;abc_example_quest..exampleFunction1 50.00ms",
+  ],
+}
+`;
+
+exports[`importFromPapyrus script profile: indexToView 1`] = `0`;
+
+exports[`importFromPapyrus script profile: profileGroup.name 1`] = `"script.log"`;
+
+exports[`importFromPapyrus stack profile 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "STACK 3185",
+      "line": undefined,
+      "name": "STACK 3185",
+      "selfWeight": 66,
+      "totalWeight": 617,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "Debug..StartStackProfiling",
+      "line": undefined,
+      "name": "Debug..StartStackProfiling",
+      "selfWeight": 0,
+      "totalWeight": 0,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "Form..GetFormID",
+      "line": undefined,
+      "name": "Form..GetFormID",
+      "selfWeight": 0,
+      "totalWeight": 0,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "abc_example_mod_quest..exampleFunction1",
+      "line": undefined,
+      "name": "abc_example_mod_quest..exampleFunction1",
+      "selfWeight": 17,
+      "totalWeight": 17,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "Game..GetModName",
+      "line": undefined,
+      "name": "Game..GetModName",
+      "selfWeight": 0,
+      "totalWeight": 0,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "Cell..IsInterior",
+      "line": undefined,
+      "name": "Cell..IsInterior",
+      "selfWeight": 0,
+      "totalWeight": 0,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "utility..WaitMenuMode",
+      "line": undefined,
+      "name": "utility..WaitMenuMode",
+      "selfWeight": 534,
+      "totalWeight": 534,
+    },
+  ],
+  "name": "stack.log",
+  "stacks": Array [
+    "STACK 3185 16.00ms",
+    "STACK 3185;abc_example_mod_quest..exampleFunction1 17.00ms",
+    "STACK 3185 33.00ms",
+    "STACK 3185;utility..WaitMenuMode 534.00ms",
+    "STACK 3185 17.00ms",
+  ],
+}
+`;
+
+exports[`importFromPapyrus stack profile: indexToView 1`] = `0`;
+
+exports[`importFromPapyrus stack profile: profileGroup.name 1`] = `"stack.log"`;
