@@ -4,6 +4,8 @@ import {ThemeProvider} from './views/themes/theme'
 
 console.log(`speedscope v${require('../package.json').version}`)
 
+/*
+TODO(jlfwong): Fix this
 declare const module: any
 if (module.hot) {
   module.hot.dispose(() => {
@@ -12,6 +14,7 @@ if (module.hot) {
   })
   module.hot.accept()
 }
+*/
 
 render(
   <ThemeProvider>
