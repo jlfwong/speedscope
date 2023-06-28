@@ -8,7 +8,7 @@ export interface ProfileDataSource {
 }
 
 export interface TextFileContent {
-  splitLines(): string[]
+  splitLines(): Iterable<string>
   firstChunk(): string
   parseAsJSON(): any
 }
@@ -19,7 +19,7 @@ export interface TextFileContent {
 //
 // We provide a simple splitLines() which returns simple strings under the
 // assumption that most extremely large text profiles will be broken into many
-// lines.  This isn't true in the general case, but will be true for most common
+// lines. This isn't true in the general case, but will be true for most common
 // large files.
 //
 // See: https://github.com/v8/v8/blob/8b663818fc311217c2cdaaab935f020578bfb7a8/src/objects/string.h#L479-L483
@@ -151,17 +151,26 @@ export class BufferBackedTextFileContent implements TextFileContent {
     }
   }
 
-  splitLines(): string[] {
-    let parts: string[] = this.chunks[0].split('\n')
-    for (let i = 1; i < this.chunks.length; i++) {
-      const chunkParts = this.chunks[i].split('\n')
-      if (chunkParts.length === 0) continue
-      if (parts.length > 0) {
-        parts[parts.length - 1] += chunkParts.shift()
+  splitLines(): Iterable<string> {
+    const iterator = function* (this: BufferBackedTextFileContent) {
+      let lineBuffer: string = ''
+      for (let chunk of this.chunks) {
+        const fragments = chunk.split('\n')
+        for (let i = 0; i < fragments.length; i++) {
+          if (i === 0) lineBuffer += fragments[i]
+          else {
+            yield lineBuffer
+            lineBuffer = fragments[i]
+          }
+        }
       }
-      parts = parts.concat(chunkParts)
+
+      yield lineBuffer
     }
-    return parts
+
+    return {
+      [Symbol.iterator]: iterator.bind(this),
+    }
   }
 
   firstChunk(): string {
