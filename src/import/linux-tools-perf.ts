@@ -23,8 +23,21 @@ interface PerfEvent {
   stack: PerfStackFrame[]
 }
 
-function parseEvent(rawEvent: string): PerfEvent | null {
-  const lines = rawEvent.split('\n').filter(l => !/^\s*#/.exec(l))
+function* parseEvents(contents: TextFileContent): Generator<PerfEvent | null> {
+  let buffer: string[] = []
+  for (let line of contents.splitLines()) {
+    if (line === '') {
+      yield parseEvent(buffer)
+      buffer = []
+    } else buffer.push(line)
+  }
+
+  if (buffer.length > 0) yield parseEvent(buffer)
+}
+
+// rawEvent is splitted into lines
+function parseEvent(rawEvent: string[]): PerfEvent | null {
+  const lines = rawEvent.filter(l => !/^\s*#/.exec(l))
 
   const event: PerfEvent = {
     command: null,
@@ -81,41 +94,12 @@ function parseEvent(rawEvent: string): PerfEvent | null {
   return event
 }
 
-function splitBlocks(contents: TextFileContent): string[] {
-  // In perf files, blocks are separated by '\n\n'.  If our input was a simple
-  // string, we could use str.split('\n\n'), but since we have a TextFileContent
-  // object which may be backed by several strings, we can't easily split this
-  // way.
-  //
-  // Instead, we'll split into lines, and then re-group runs of non-empty strings.
-  const blocks: string[] = []
-  let pending: string = ''
-  for (let line of contents.splitLines()) {
-    if (line === '') {
-      if (pending.length > 0) {
-        blocks.push(pending)
-      }
-      pending = line
-    } else {
-      if (pending.length > 0) {
-        pending += '\n'
-      }
-      pending += line
-    }
-  }
-  if (pending.length > 0) {
-    blocks.push(pending)
-  }
-  return blocks
-}
-
 export function importFromLinuxPerf(contents: TextFileContent): ProfileGroup | null {
   const profiles = new Map<string, StackListProfileBuilder>()
 
   let eventType: string | null = null
-  const events = splitBlocks(contents).map(parseEvent)
 
-  for (let event of events) {
+  for (let event of parseEvents(contents)) {
     if (event == null) continue
     if (eventType != null && eventType != event.eventType) continue
     if (event.time == null) continue
