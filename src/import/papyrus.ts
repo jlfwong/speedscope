@@ -38,9 +38,9 @@ export function importFromPapyrus(papyrusProfile: TextFileContent): Profile {
   const profile = new CallTreeProfileBuilder()
   profile.setValueFormatter(new TimeFormatter('milliseconds'))
 
-  const papyrusProfileLines = papyrusProfile
-    .splitLines()
-    .filter(line => !/^$|^Log closed$|log opened/.exec(line))
+  const papyrusProfileLines = [...papyrusProfile.splitLines()].filter(
+    line => !/^$|^Log closed$|log opened/.exec(line),
+  )
 
   let startValue = -1
   const firstLineParsed = parseLine(papyrusProfileLines[0])

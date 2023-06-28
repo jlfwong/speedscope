@@ -247,11 +247,18 @@ test('BufferBackedTextFileContent.firstChunk', async () => {
 })
 
 test('BufferBackedTextFileContent.splitLines', async () => {
-  await withMockedFileChunkSizeForTests(2, () => {
-    const str = 'may\nyour\nrope\nbe\nlong'
+  function testWithString(str: string) {
     const buffer = new TextEncoder().encode(str).buffer
     const content = new BufferBackedTextFileContent(buffer)
-    expect(content.splitLines()).toEqual(['may', 'your', 'rope', 'be', 'long'])
+    expect([...content.splitLines()]).toEqual(str.split('\n'))
+  }
+
+  await withMockedFileChunkSizeForTests(2, () => {
+    testWithString('may\nyour\nrope\nbe\nlong')
+    testWithString('one-single-line')
+    testWithString('multiple\n\nnew\n\nlines')
+    testWithString('end-with-new-line\n')
+    testWithString('')
   })
 })
 
