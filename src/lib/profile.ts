@@ -439,14 +439,13 @@ export class Profile {
 }
 
 export class StackListProfileBuilder extends Profile {
-  _appendSample(stack: FrameInfo[], weight: number, useAppendOrder: boolean) {
+  _appendSample(stack: Frame[], weight: number, useAppendOrder: boolean) {
     if (isNaN(weight)) throw new Error('invalid weight')
     let node = useAppendOrder ? this.appendOrderCalltreeRoot : this.groupedCalltreeRoot
 
     let framesInStack = new Set<Frame>()
 
-    for (let frameInfo of stack) {
-      const frame = Frame.getOrInsert(this.frames, frameInfo)
+    for (let frame of stack) {
       const last = useAppendOrder
         ? lastOf(node.children)
         : node.children.find(c => c.frame === frame)
@@ -500,8 +499,9 @@ export class StackListProfileBuilder extends Profile {
       throw new Error('Samples must have positive weights')
     }
 
-    this._appendSample(stack, weight, true)
-    this._appendSample(stack, weight, false)
+    const frames = stack.map(fr => Frame.getOrInsert(this.frames, fr))
+    this._appendSample(frames, weight, true)
+    this._appendSample(frames, weight, false)
   }
 
   private pendingSample: {
