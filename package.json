@@ -16,7 +16,7 @@
     "coverage": "npm run jest -- --coverage",
     "typecheck": "tsc --noEmit",
     "test": "./scripts/ci.sh",
-    "serve": "parcel assets/index.html --open --no-autoinstall"
+    "serve": "esbuild --serve --bundle src/speedscope.tsx --loader:.txt=file --outdir=assets --servedir=assets"
   },
   "files": [
     "bin/cli.js",
@@ -45,7 +45,6 @@
     "jsverify": "0.8.3",
     "jszip": "3.1.5",
     "pako": "1.0.6",
-    "parcel-bundler": "1.12.4",
     "preact": "10.4.1",
     "prettier": "2.0.4",
     "protobufjs": "6.8.8",
@@ -77,6 +76,7 @@
     ]
   },
   "dependencies": {
+    "esbuild": "0.18.9",
     "open": "7.2.0"
   }
 }
