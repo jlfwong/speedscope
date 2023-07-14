@@ -188,8 +188,15 @@ export class Profile {
   // as immutable.
   protected sortGroupedCallTree() {
     function visit(node: CallTreeNode) {
-      node.children.sort((a, b) => -(a.getTotalWeight() - b.getTotalWeight()))
-      node.children.forEach(visit)
+      const stack:Array<CallTreeNode> = [node]
+      while (stack.length > 0) {
+        const currentNode = stack.pop()
+
+        if (currentNode) {
+          currentNode.children.sort((a, b) => -(a.getTotalWeight() - b.getTotalWeight()))
+          stack.push(...currentNode.children)
+        }
+      }
     }
     visit(this.groupedCalltreeRoot)
   }
