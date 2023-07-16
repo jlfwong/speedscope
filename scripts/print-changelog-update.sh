@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Update changelog.md
+# Print changes since the last tagged release in a format to match CHANGELOG.md
 
 set -euo pipefail
 
