@@ -1,3 +1,12 @@
+## [1.16.0] - 2023-07-16
+
+- Automate more of the release process [[#439](https://github.com/jlfwong/speedscope/pull/439)] (by @jlfwong)
+- Improve profile builder performance [[#437](https://github.com/jlfwong/speedscope/pull/437)] (by @Goose97)
+- Fix crash when importing big linux perf tool files [[#435](https://github.com/jlfwong/speedscope/pull/435)] (by @Goose97)
+- Improve splitLines: return iterator instead [[#434](https://github.com/jlfwong/speedscope/pull/434)] (by @Goose97)
+- Fix trimTextMid [[#431](https://github.com/jlfwong/speedscope/pull/431)] (by @jlfwong)
+- Added support for Papyrus profiles [[#428](https://github.com/jlfwong/speedscope/pull/428)] (by @xieve)
+
 ## [1.15.2] - 2023-06-21
 
 ### Fixed
