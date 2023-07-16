@@ -43,9 +43,32 @@ git push --tags
 # Publish to npm
 npm publish
 
-# Create a new release on Github
-"$script_dir/prepare-zip-file.sh"
-gh release create "$tagname" --title "$tagname" --notes "$changelog_update" --attach "dist/release/speedscope-$version.zip"
-
 # Deploy the website
 npm run deploy
+
+# Create a new release on Github
+"$script_dir/prepare-zip-file.sh"
+
+# Don't double echo the below commands
+set +x
+
+echo
+echo
+echo "Visit https://github.com/jlfwong/speedscope/releases/new to create a new release."
+echo
+echo "tag: $tagname"
+echo "title: $tagname"
+echo "attachment: dist/release/speedscope-$version.zip"
+echo "$changelog_update"
+
+# NOTE: This part is almost-but-not-quite-automatable using a command like this:
+#
+#    gh release create "$tagname" --title "$tagname" --notes "$changelog_update"
+#      --attach "dist/release/speedscope-$version.zip"
+#
+# There are two problems.
+#
+# 1. The "--attach" flag doesn't exit
+# 2. I don't want the changelog notes to include the version and date like they do in CHANGELOG.md
+#
+# If 1. was solveable, then 2. would be easy to work-around.
