@@ -36,7 +36,7 @@ Ensure you have the Github CLI tools installed and you're authenticated. Try run
 
 Once ready to publish, run:
 
-scripts/publish-and-deploy.sh
+    scripts/publish-and-deploy.sh
 
 ## Verifying the release
 
