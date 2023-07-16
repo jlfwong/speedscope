@@ -9,7 +9,7 @@
 # - Deploying the website
 # - Create a new release in Github with the zip-file standalone version
 
-set -euox pipefail
+set -euxo pipefail
 
 if [ $# -lt 1 ]; then
   echo "Usage: $0 <minor | patch | version>"
