@@ -1,6 +1,13 @@
 #!/bin/bash
 
-# Update changelog.md
+# Run the full release process. This means...
+# - Bumping the version in package.json
+# - Updating the changelog
+# - Commiting and tagging the release
+# - Pushing to Github
+# - Publishing a new version to npm
+# - Deploying the website
+# - Create a new release in Github with the zip-file standalone version
 
 set -euox pipefail
 
