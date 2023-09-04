@@ -12,7 +12,7 @@
 
 # 使用
 
-访问https://www.speedscope.app，上传文件或者拖拽到页面上。配置文件不会上传到任何地方——应用程序完全在浏览器中。
+访问 <https://www.speedscope.app> ，上传文件或者拖拽到页面上。配置文件不会上传到任何地方——应用程序完全在浏览器中。
 
 ## 命令行中使用
 
@@ -24,7 +24,7 @@
 
 ## 独立使用
 
-如果你不想使用npm或者node下载，你也可以在这里下载独立的版本https://github.com/jlfwong/speedscope/releases.
+如果你不想使用npm或者node下载，你也可以在这里下载独立的版本 <https://github.com/jlfwong/speedscope/releases>.
 下载完一个版本的压缩文件之后，解压并在谷歌或者火狐浏览器中打开`index.html`文件即可。
 
 ## 支持的文件格式
