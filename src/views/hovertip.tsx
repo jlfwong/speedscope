@@ -18,7 +18,7 @@ export function Hovertip(props: HovertipProps) {
   const containerWidth = containerSize.x
   const containerHeight = containerSize.y
 
-  const OFFSET_FROM_MOUSE = 7
+  const OFFSET_FROM_MOUSE = 20
 
   const updateLocation = useCallback((el: HTMLDivElement | null) => {
     if (!el) return
