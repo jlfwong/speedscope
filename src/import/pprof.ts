@@ -129,6 +129,11 @@ export function importAsPprofProfile(rawProfile: ArrayBuffer): Profile | null {
   }))
 
   const sampleTypeIndex = getSampleTypeIndex(protoProfile)
+
+  if (sampleTypeIndex < 0 || sampleTypeIndex >= sampleTypes.length) {
+    return null
+  }
+
   const sampleType = sampleTypes[sampleTypeIndex]
 
   const profileBuilder = new StackListProfileBuilder()
@@ -149,7 +154,12 @@ export function importAsPprofProfile(rawProfile: ArrayBuffer): Profile | null {
   for (let s of protoProfile.sample) {
     const stack = s.locationId ? s.locationId.map(l => frameByLocationID.get(i32(l))) : []
     stack.reverse()
-    const value = s.value![sampleTypeIndex]
+
+    if (s.value == null || s.value.length <= sampleTypeIndex) {
+      return null
+    }
+
+    const value = s.value[sampleTypeIndex]
     profileBuilder.appendSampleWithWeight(stack.filter(f => f != null) as FrameInfo[], +value)
   }
 
