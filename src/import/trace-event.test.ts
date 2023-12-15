@@ -47,6 +47,10 @@ test('importTraceEvents bad E events', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/too-many-end-events.json')
 })
 
+test('importTraceEvents different number of start and end calls to same function at same timestamp', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/simultaneous-anonymous-calls.json')
+})
+
 test('importTraceEvents event re-ordering', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/must-retain-original-order.json')
 })
