@@ -172,6 +172,41 @@ exports[`importTraceEvents bad E events: indexToView 1`] = `0`;
 
 exports[`importTraceEvents bad E events: profileGroup.name 1`] = `"too-many-end-events.json"`;
 
+exports[`importTraceEvents different number of start and end calls to same function at same timestamp 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "anonymous",
+      "line": undefined,
+      "name": "anonymous",
+      "selfWeight": 5,
+      "totalWeight": 5,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "function1",
+      "line": undefined,
+      "name": "function1",
+      "selfWeight": 0,
+      "totalWeight": 2,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "anonymous 1.00µs",
+    "anonymous;anonymous;function1;anonymous 2.00µs",
+    "anonymous;anonymous;anonymous 2.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents different number of start and end calls to same function at same timestamp: indexToView 1`] = `0`;
+
+exports[`importTraceEvents different number of start and end calls to same function at same timestamp: profileGroup.name 1`] = `"simultaneous-anonymous-calls.json"`;
+
 exports[`importTraceEvents end event with empty stack 1`] = `
 Object {
   "frames": Array [
