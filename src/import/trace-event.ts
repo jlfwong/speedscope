@@ -81,18 +81,6 @@ function partitionByPidTid(events: ImportableTraceEvent[]): Map<string, Importab
   return map
 }
 
-function getNumberOfEventsAtTimestamp(queue: Array<BTraceEvent | ETraceEvent>, ts: number): number {
-  let count = 0
-  for (let i = 0; i < queue.length; i++) {
-    if (queue[i].ts > ts) {
-      // Only consider events with the same ts as the front of the queue.
-      break
-    }
-    count++
-  }
-  return count
-}
-
 function selectQueueToTakeFromNext(
   bEventQueue: BTraceEvent[],
   eEventQueue: ETraceEvent[],
@@ -112,21 +100,15 @@ function selectQueueToTakeFromNext(
   if (bts < ets) return 'B'
   if (ets < bts) return 'E'
 
-  // If the keys are the same then we need to check whether the number of begin events
-  // with that key are the same as the number of end events with that key for the given timestamp.
-  // - If the number of begin and end events are the same, then we have a zero duration event,
-  // and we should process the begin first
-  // - In all other cases we should process the end event first
-  if (frameInfoForEvent(bFront).key === frameInfoForEvent(eFront).key) {
-    const eEventCountAtTimestamp = getNumberOfEventsAtTimestamp(eEventQueue, eFront.ts)
-    const bEventCountAtTimestamp = getNumberOfEventsAtTimestamp(bEventQueue, bFront.ts)
+   // If we got here, the 'B' event queue and the 'E' event queue have events at
+  // the front with equal timestamps.
 
-    if (bEventCountAtTimestamp === eEventCountAtTimestamp) {
-      return 'B'
-    }
-  }
-
-  return 'E'
+  // If the front of the 'E' queue matches the front of the 'B' queue by key,
+  // then it means we have a zero duration event. Process the 'B' queue first
+  // to ensure it opens before we try to close it.
+  //
+  // Otherwise, process the 'E' queue first.
+  return frameInfoForEvent(bFront).key === frameInfoForEvent(eFront).key ? 'B' : 'E'
 }
 
 function convertToEventQueues(events: ImportableTraceEvent[]): [BTraceEvent[], ETraceEvent[]] {
