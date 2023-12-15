@@ -100,7 +100,7 @@ function selectQueueToTakeFromNext(
   if (bts < ets) return 'B'
   if (ets < bts) return 'E'
 
-   // If we got here, the 'B' event queue and the 'E' event queue have events at
+  // If we got here, the 'B' event queue and the 'E' event queue have events at
   // the front with equal timestamps.
 
   // If the front of the 'E' queue matches the front of the 'B' queue by key,
