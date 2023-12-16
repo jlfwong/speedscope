@@ -1,0 +1,14 @@
+[
+  {"pid": 0, "tid": 0, "ph": "B", "name": "anonymous", "ts": 0},
+  {"pid": 0, "tid": 0, "ph": "B", "name": "anonymous", "ts": 1, "args": { "parent": 1 }},
+  {"pid": 0, "tid": 0, "ph": "B", "name": "function1", "ts": 1, "args": { "parent": 2 }},
+  {"pid": 0, "tid": 0, "ph": "B", "name": "anonymous", "ts": 1, "args": { "parent": 3 }},
+  {"pid": 0, "tid": 0, "ph": "E", "name": "anonymous", "ts": 3, "args": { "parent": 3 }},
+  {"pid": 0, "tid": 0, "ph": "E", "name": "function1", "ts": 3, "args": { "parent": 2 }},
+  {"pid": 0, "tid": 0, "ph": "E", "name": "anonymous", "ts": 3, "args": { "parent": 1 }},
+  {"pid": 0, "tid": 0, "ph": "B", "name": "anonymous", "ts": 3, "args": { "parent": 1 }},
+  {"pid": 0, "tid": 0, "ph": "B", "name": "anonymous", "ts": 3, "args": { "parent": 8 }},
+  {"pid": 0, "tid": 0, "ph": "E", "name": "anonymous", "ts": 5, "args": { "parent": 8 }},
+  {"pid": 0, "tid": 0, "ph": "E", "name": "anonymous", "ts": 5, "args": { "parent": 1 }},
+  {"pid": 0, "tid": 0, "ph": "E", "name": "anonymous", "ts": 5}
+]

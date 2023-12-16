@@ -172,6 +172,68 @@ exports[`importTraceEvents bad E events: indexToView 1`] = `0`;
 
 exports[`importTraceEvents bad E events: profileGroup.name 1`] = `"too-many-end-events.json"`;
 
+exports[`importTraceEvents different number of start and end calls to same function at same timestamp 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "anonymous",
+      "line": undefined,
+      "name": "anonymous",
+      "selfWeight": 1,
+      "totalWeight": 5,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "anonymous {\\"parent\\":1}",
+      "line": undefined,
+      "name": "anonymous {\\"parent\\":1}",
+      "selfWeight": 0,
+      "totalWeight": 4,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "function1 {\\"parent\\":2}",
+      "line": undefined,
+      "name": "function1 {\\"parent\\":2}",
+      "selfWeight": 0,
+      "totalWeight": 2,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "anonymous {\\"parent\\":3}",
+      "line": undefined,
+      "name": "anonymous {\\"parent\\":3}",
+      "selfWeight": 2,
+      "totalWeight": 2,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "anonymous {\\"parent\\":8}",
+      "line": undefined,
+      "name": "anonymous {\\"parent\\":8}",
+      "selfWeight": 2,
+      "totalWeight": 2,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "anonymous 1.00µs",
+    "anonymous;anonymous {\\"parent\\":1};function1 {\\"parent\\":2};anonymous {\\"parent\\":3} 2.00µs",
+    "anonymous;anonymous {\\"parent\\":1};anonymous {\\"parent\\":8} 2.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents different number of start and end calls to same function at same timestamp: indexToView 1`] = `0`;
+
+exports[`importTraceEvents different number of start and end calls to same function at same timestamp: profileGroup.name 1`] = `"simultaneous-anonymous-calls.json"`;
+
 exports[`importTraceEvents end event with empty stack 1`] = `
 Object {
   "frames": Array [

@@ -103,12 +103,12 @@ function selectQueueToTakeFromNext(
   // If we got here, the 'B' event queue and the 'E' event queue have events at
   // the front with equal timestamps.
 
-  // If the front of the 'E' queue matches the front of the 'B' queue by name,
+  // If the front of the 'E' queue matches the front of the 'B' queue by key,
   // then it means we have a zero duration event. Process the 'B' queue first
   // to ensure it opens before we try to close it.
   //
   // Otherwise, process the 'E' queue first.
-  return bFront.name === eFront.name ? 'B' : 'E'
+  return frameInfoForEvent(bFront).key === frameInfoForEvent(eFront).key ? 'B' : 'E'
 }
 
 function convertToEventQueues(events: ImportableTraceEvent[]): [BTraceEvent[], ETraceEvent[]] {
