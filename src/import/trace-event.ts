@@ -229,11 +229,11 @@ function getThreadNamesByPidTid(events: TraceEvent[]): Map<string, string> {
 }
 
 function getEventName(event: TraceEvent): string {
-  return `${event.name || '(unnamed)'}`;
+  return `${event.name || '(unnamed)'}`
 }
 
 function keyForEvent(event: TraceEvent): string {
-  let key = getEventName(event);
+  let key = getEventName(event)
   if (event.args) {
     key += ` ${JSON.stringify(event.args)}`
   }
