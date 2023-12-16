@@ -228,19 +228,23 @@ function getThreadNamesByPidTid(events: TraceEvent[]): Map<string, string> {
   return threadNameByPidTid
 }
 
+function getEventName(event: TraceEvent): string {
+  return `${event.name || '(unnamed)'}`;
+}
+
 function keyForEvent(event: TraceEvent): string {
-  let name = `${event.name || '(unnamed)'}`
+  let key = getEventName(event);
   if (event.args) {
-    name += ` ${JSON.stringify(event.args)}`
+    key += ` ${JSON.stringify(event.args)}`
   }
-  return name
+  return key
 }
 
 function frameInfoForEvent(event: TraceEvent): FrameInfo {
   const key = keyForEvent(event)
   return {
-    name: key,
-    key: event.name || key,
+    name: getEventName(event),
+    key: key,
   }
 }
 
