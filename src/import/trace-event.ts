@@ -240,7 +240,7 @@ function frameInfoForEvent(event: TraceEvent): FrameInfo {
   const key = keyForEvent(event)
   return {
     name: key,
-    key: key,
+    key: event.name || key,
   }
 }
 
