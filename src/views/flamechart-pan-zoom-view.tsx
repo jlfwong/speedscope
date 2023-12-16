@@ -196,96 +196,103 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     const indirectlySelectedOutlineBatch = new BatchCanvasRectRenderer()
     const matchedFrameBatch = new BatchCanvasRectRenderer()
 
-    const renderFrameLabelAndChildren = (frame: FlamechartFrame, depth = 0) => {
-      const width = frame.end - frame.start
-      const y = this.props.renderInverted ? this.configSpaceSize().y - 1 - depth : depth
-      const configSpaceBounds = new Rect(new Vec2(frame.start, y), new Vec2(width, 1))
-
-      if (width < minConfigSpaceWidthToRender) return
-      if (configSpaceBounds.left() > this.props.configSpaceViewportRect.right()) return
-      if (configSpaceBounds.right() < this.props.configSpaceViewportRect.left()) return
-
-      if (this.props.renderInverted) {
-        if (configSpaceBounds.bottom() < this.props.configSpaceViewportRect.top()) return
-      } else {
-        if (configSpaceBounds.top() > this.props.configSpaceViewportRect.bottom()) return
-      }
-
-      if (configSpaceBounds.hasIntersectionWith(this.props.configSpaceViewportRect)) {
-        let physicalLabelBounds = configToPhysical.transformRect(configSpaceBounds)
-
-        if (physicalLabelBounds.left() < 0) {
-          physicalLabelBounds = physicalLabelBounds
-            .withOrigin(physicalLabelBounds.origin.withX(0))
-            .withSize(
-              physicalLabelBounds.size.withX(
-                physicalLabelBounds.size.x + physicalLabelBounds.left(),
-              ),
-            )
-        }
-        if (physicalLabelBounds.right() > physicalViewSize.x) {
-          physicalLabelBounds = physicalLabelBounds.withSize(
-            physicalLabelBounds.size.withX(physicalViewSize.x - physicalLabelBounds.left()),
-          )
+    const renderFrameLabelAndChildren = (frameInfo: {frame: FlamechartFrame; depth: number}) => {
+      const stack: Array<{frame: FlamechartFrame; depth: number}> = [frameInfo]
+      while (stack.length > 0) {
+        const info = stack.pop()
+        if (!info) {
+          continue
         }
 
-        if (physicalLabelBounds.width() > minWidthToRender) {
-          const match = this.props.searchResults?.getMatchForFrame(frame.node.frame)
+        const frame = info.frame
+        const depth = info.depth
+        const width = frame.end - frame.start
+        const y = this.props.renderInverted ? this.configSpaceSize().y - 1 - depth : depth
+        const configSpaceBounds = new Rect(new Vec2(frame.start, y), new Vec2(width, 1))
 
-          const trimmedText = trimTextMid(
-            ctx,
-            frame.node.frame.name,
-            physicalLabelBounds.width() - 2 * LABEL_PADDING_PX,
-          )
+        if (width < minConfigSpaceWidthToRender) return
+        if (configSpaceBounds.left() > this.props.configSpaceViewportRect.right()) return
+        if (configSpaceBounds.right() < this.props.configSpaceViewportRect.left()) return
 
-          if (match) {
-            const rangesToHighlightInTrimmedText = remapRangesToTrimmedText(
-              trimmedText,
-              match
+        if (this.props.renderInverted) {
+          if (configSpaceBounds.bottom() < this.props.configSpaceViewportRect.top()) return
+        } else {
+          if (configSpaceBounds.top() > this.props.configSpaceViewportRect.bottom()) return
+        }
+
+        if (configSpaceBounds.hasIntersectionWith(this.props.configSpaceViewportRect)) {
+          let physicalLabelBounds = configToPhysical.transformRect(configSpaceBounds)
+
+          if (physicalLabelBounds.left() < 0) {
+            physicalLabelBounds = physicalLabelBounds
+              .withOrigin(physicalLabelBounds.origin.withX(0))
+              .withSize(
+                physicalLabelBounds.size.withX(
+                  physicalLabelBounds.size.x + physicalLabelBounds.left(),
+                ),
+              )
+          }
+          if (physicalLabelBounds.right() > physicalViewSize.x) {
+            physicalLabelBounds = physicalLabelBounds.withSize(
+              physicalLabelBounds.size.withX(physicalViewSize.x - physicalLabelBounds.left()),
             )
-
-            // Once we have the character ranges to highlight, we need to
-            // actually do the highlighting.
-            let lastEndIndex = 0
-            let left = physicalLabelBounds.left() + LABEL_PADDING_PX
-
-            const padding = (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2 - 2
-            for (let [startIndex, endIndex] of rangesToHighlightInTrimmedText) {
-              left += cachedMeasureTextWidth(
-                ctx,
-                trimmedText.trimmedString.substring(lastEndIndex, startIndex),
-              )
-              const highlightWidth = cachedMeasureTextWidth(
-                ctx,
-                trimmedText.trimmedString.substring(startIndex, endIndex),
-              )
-              matchedTextHighlightBatch.rect({
-                x: left,
-                y: physicalLabelBounds.top() + padding,
-                w: highlightWidth,
-                h: physicalViewSpaceFrameHeight - 2 * padding,
-              })
-
-              left += highlightWidth
-              lastEndIndex = endIndex
-            }
           }
 
-          const batch = this.props.searchResults != null && !match ? fadedLabelBatch : labelBatch
-          batch.text({
-            text: trimmedText.trimmedString,
+          if (physicalLabelBounds.width() > minWidthToRender) {
+            const match = this.props.searchResults?.getMatchForFrame(frame.node.frame)
 
-            // This is specifying the position of the starting text baseline.
-            x: physicalLabelBounds.left() + LABEL_PADDING_PX,
-            y: Math.round(
-              physicalLabelBounds.bottom() -
-                (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2,
-            ),
-          })
+            const trimmedText = trimTextMid(
+              ctx,
+              frame.node.frame.name,
+              physicalLabelBounds.width() - 2 * LABEL_PADDING_PX,
+            )
+
+            if (match) {
+              const rangesToHighlightInTrimmedText = remapRangesToTrimmedText(trimmedText, match)
+
+              // Once we have the character ranges to highlight, we need to
+              // actually do the highlighting.
+              let lastEndIndex = 0
+              let left = physicalLabelBounds.left() + LABEL_PADDING_PX
+
+              const padding = (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2 - 2
+              for (let [startIndex, endIndex] of rangesToHighlightInTrimmedText) {
+                left += cachedMeasureTextWidth(
+                  ctx,
+                  trimmedText.trimmedString.substring(lastEndIndex, startIndex),
+                )
+                const highlightWidth = cachedMeasureTextWidth(
+                  ctx,
+                  trimmedText.trimmedString.substring(startIndex, endIndex),
+                )
+                matchedTextHighlightBatch.rect({
+                  x: left,
+                  y: physicalLabelBounds.top() + padding,
+                  w: highlightWidth,
+                  h: physicalViewSpaceFrameHeight - 2 * padding,
+                })
+
+                left += highlightWidth
+                lastEndIndex = endIndex
+              }
+            }
+
+            const batch = this.props.searchResults != null && !match ? fadedLabelBatch : labelBatch
+            batch.text({
+              text: trimmedText.trimmedString,
+
+              // This is specifying the position of the starting text baseline.
+              x: physicalLabelBounds.left() + LABEL_PADDING_PX,
+              y: Math.round(
+                physicalLabelBounds.bottom() -
+                  (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2,
+              ),
+            })
+          }
         }
-      }
-      for (let child of frame.children) {
-        renderFrameLabelAndChildren(child, depth + 1)
+        for (let child of frame.children) {
+          stack.push({frame: child, depth: depth + 1})
+        }
       }
     }
 
@@ -342,7 +349,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     }
 
     for (let frame of this.props.flamechart.getLayers()[0] || []) {
-      renderFrameLabelAndChildren(frame)
+      renderFrameLabelAndChildren({frame, depth: 0})
     }
 
     const theme = this.props.theme
