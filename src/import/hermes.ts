@@ -1,4 +1,5 @@
 import {CallTreeProfileBuilder, FrameInfo, Profile} from '../lib/profile'
+import { lastOf } from '../lib/utils';
 import { TimeFormatter } from '../lib/value-formatters';
 
 enum EventsPhase {
@@ -94,10 +95,17 @@ export interface HermesProfile {
   stackFrames: { [key in string]: HermesStackFrame };
 }
 
+function getEventName(name: string): string {
+  // Remove stuff in parentheses after the function name (Hermes profiles have this)
+  const strippedName = (name ?? '').replace(/\(.*?\)/g, '').trim();
+
+  return `${strippedName || '(unnamed)'}`
+}
+
 function frameInfoForEvent({ name, line, column }: HermesStackFrame): FrameInfo {
   return {
     key: `${name}:${line}:${column}`,
-    name,
+    name: getEventName(name),
     // TODO: --raw does not support the URL path to the file...maybe we should
     // just transform into a different profile format (like the speedscope one)
     // so that it can be used directly
@@ -140,6 +148,10 @@ function getActiveNodeArrays(profile: HermesProfile): Map<number, number[]> {
   return map;
 }
 
+export function isHermesProfile(profile: any): profile is HermesProfile {
+  return 'traceEvents' in profile && 'stackFrames' in profile;
+}
+
 export function importFromHermes(contents: HermesProfile): Profile | null {
   const profile = new CallTreeProfileBuilder()
   profile.setValueFormatter(new TimeFormatter('microseconds'))
@@ -169,7 +181,7 @@ export function importFromHermes(contents: HermesProfile): Profile | null {
 
   // We need to leave frames in the same order that we start them, so we keep 
   // a stack. At each new timestamp, first we check whether there is a end
-  const frameStack = [];
+  const frameStack: HermesStackFrame[] = [];
 
   type HandleSampleParams = {
     timestamp: number;
@@ -177,27 +189,115 @@ export function importFromHermes(contents: HermesProfile): Profile | null {
     lastActiveNodeIds: number[];
   }
 
+  function enterFrame(frame: HermesStackFrame, timestamp: number) {
+    // console.log(`entering frame: ${frame.name}`);
+    frameStack.push(frame);
+    profile.enterFrame(frameInfoForEvent(frame), timestamp)
+  }
+
+  function tryToLeaveFrame(frame: HermesStackFrame, timestamp: number) {
+    // console.log(`leaving frame: ${frame.name}`);
+    const lastActiveFrame = lastOf(frameStack)
+
+    if (lastActiveFrame == null) {
+      console.warn(
+        `Tried to end frame "${
+          frameInfoForEvent(frame).key
+        }", but the stack was empty. Doing nothing instead.`,
+      )
+      return
+    }
+
+    const frameInfo = frameInfoForEvent(frame)
+    const lastActiveFrameInfo = frameInfoForEvent(lastActiveFrame)
+
+    if (frame.name !== lastActiveFrame.name) {
+      console.warn(
+        `ts=${timestamp}: Tried to end "${frameInfo.key}" when "${lastActiveFrameInfo.key}" was on the top of the stack. Doing nothing instead.`,
+      )
+      return
+    }
+
+    if (frameInfo.key !== lastActiveFrameInfo.key) {
+      console.warn(
+        `ts=${timestamp}: Tried to end "${frameInfo.key}" when "${lastActiveFrameInfo.key}" was on the top of the stack. Ending ${lastActiveFrameInfo.key} instead.`,
+      )
+    }
+
+    frameStack.pop()
+    profile.leaveFrame(lastActiveFrameInfo, timestamp)
+  }
+
+  function getFrameById(stackId: string | number): HermesStackFrame {
+    return contents.stackFrames[String(stackId)];
+  }
+
   function handleSample({ timestamp, lastActiveNodeIds, activeNodeIds }: HandleSampleParams) {
     // Frames which are present only in the currentNodeIds and not in PreviousNodeIds
-    const startFrames = activeNodeIds
+    const startFrameIds = activeNodeIds
       .filter(id => !lastActiveNodeIds.includes(id))
-      .map(id => contents.stackFrames[id]!);
 
     // Frames which are present only in the PreviousNodeIds and not in CurrentNodeIds
-    const endFrames = lastActiveNodeIds
+    const endFrameIds = lastActiveNodeIds
       .filter(id => !activeNodeIds.includes(id))
-      .map(id => contents.stackFrames[id]!); 
 
-    startFrames.forEach(frame => {
-      profile.enterFrame(frameInfoForEvent(frame), timestamp)
-    })
+    // Before we take the first event in the 'E' queue, let's first see if
+    // there are any e events that exactly match the top of the stack.
+    // We'll prioritize first by key, then by name if we can't find a key
+    // match.
+    while (endFrameIds.length > 0) {
+      const stackTop = lastOf(frameStack)
 
-    endFrames.forEach(frame => {
-      profile.leaveFrame(frameInfoForEvent(frame), timestamp)
+      if (stackTop != null) {
+        const bFrameInfo = frameInfoForEvent(stackTop)
+
+        let swapped: boolean = false
+
+        for (let i = 1; i < endFrameIds.length; i++) {
+          const eEvent = getFrameById(endFrameIds[i])
+          const eFrameInfo = frameInfoForEvent(eEvent)
+
+          if (bFrameInfo.key === eFrameInfo.key) {
+            // We have a match! Process this one first.
+            const temp = endFrameIds[0]
+            endFrameIds[0] = endFrameIds[i]
+            endFrameIds[i] = temp
+            swapped = true
+            break
+          }
+        }
+
+        if (!swapped) {
+          // There was no key match, let's see if we can find a name match
+          for (let i = 1; i < endFrameIds.length; i++) {
+            const eEvent = getFrameById(endFrameIds[i])
+
+            if (eEvent.name === stackTop.name) {
+              // We have a match! Process this one first.
+              const temp = endFrameIds[0]
+              endFrameIds[0] = endFrameIds[i]
+              endFrameIds[i] = temp
+              swapped = true
+              break
+            }
+          }
+        }
+
+        // If swapped is still false at this point, it means we're about to
+        // pop a stack frame that doesn't even match by name. Bummer.
+      }
+
+      const endFrameId = endFrameIds.shift()!
+      tryToLeaveFrame(getFrameById(endFrameId), timestamp)
+    }
+
+    startFrameIds.forEach(frameId => {
+      const frame = contents.stackFrames[frameId]
+      enterFrame(frame, timestamp)
     })
   }
 
-  let timestamp =  Number(contents.samples[0].ts);
+  let currentTimestamp =  Number(contents.samples[0].ts);
   let lastActiveNodeIds: number[] = [];
 
   for (let i = 0; i < contents.samples.length; i++) {
@@ -207,14 +307,14 @@ export function importFromHermes(contents: HermesProfile): Profile | null {
 
     if (!node) throw new Error(`Missing node ${nodeId}`);
 
-    timestamp += timeDelta;
+    currentTimestamp += timeDelta;
     const activeNodeIds = getActiveNodeIds(nodeId);
 
-    handleSample({ timestamp, lastActiveNodeIds, activeNodeIds }) 
+    handleSample({ timestamp: currentTimestamp, lastActiveNodeIds, activeNodeIds }) 
     lastActiveNodeIds = activeNodeIds;
   }
 
-  handleSample({ timestamp, lastActiveNodeIds, activeNodeIds: [] })
+  handleSample({ timestamp: currentTimestamp, lastActiveNodeIds, activeNodeIds: [] })
 
   profile.setName('Hermes Profiler');
   return profile.build();

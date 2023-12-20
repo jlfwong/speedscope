@@ -25,6 +25,7 @@ import {isTraceEventFormatted, importTraceEvents} from './trace-event'
 import {importFromCallgrind} from './callgrind'
 import {importFromPapyrus} from "./papyrus";
 import {importFromHermes} from "./hermes";
+import { isHermesProfile } from './hermes'
 
 export async function importProfileGroupFromText(
   fileName: string,
@@ -139,8 +140,9 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     } else if (parsed['systemHost'] && parsed['systemHost']['name'] == 'Firefox') {
       console.log('Importing as Firefox profile')
       return toGroup(importFromFirefox(parsed))
-    } else if (importFromHermes(parsed)) {
-      return importFromHermes(parsed);
+    } else if (isHermesProfile(parsed)) {
+      console.log('Importing as Hermes Profile')
+      return toGroup(importFromHermes(parsed));
     } else if (isChromeTimeline(parsed)) {
       console.log('Importing as Chrome Timeline')
       return importFromChromeTimeline(parsed, fileName)
