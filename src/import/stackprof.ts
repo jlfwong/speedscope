@@ -33,9 +33,9 @@ export function importFromStackprof(stackprofProfile: StackprofProfile): Profile
     let stack: FrameInfo[] = []
     for (let j = 0; j < stackHeight; j++) {
       const id = raw[i++]
-      let frameName = frames[id].name;
+      let frameName = frames[id].name
       if (frameName == null) {
-        frameName = '(unknown)';
+        frameName = '(unknown)'
       }
       const frame = {
         key: id,

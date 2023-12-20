@@ -416,7 +416,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   async maybeLoadHashParamProfile() {
-    const {profileURL} = this.props.hashParams;
+    const {profileURL} = this.props.hashParams
     if (profileURL) {
       if (!canUseXHR) {
         alert(

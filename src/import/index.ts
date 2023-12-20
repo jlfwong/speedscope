@@ -23,9 +23,9 @@ import {decodeBase64} from '../lib/utils'
 import {importFromChromeHeapProfile} from './v8heapalloc'
 import {isTraceEventFormatted, importTraceEvents} from './trace-event'
 import {importFromCallgrind} from './callgrind'
-import {importFromPapyrus} from "./papyrus";
-import {importFromHermes} from "./hermes";
-import { isHermesProfile } from './hermes'
+import {importFromPapyrus} from './papyrus'
+import {importFromHermes} from './hermes'
+import {isHermesProfile} from './hermes'
 
 export async function importProfileGroupFromText(
   fileName: string,
@@ -142,7 +142,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
       return toGroup(importFromFirefox(parsed))
     } else if (isHermesProfile(parsed)) {
       console.log('Importing as Hermes Profile')
-      return toGroup(importFromHermes(parsed));
+      return toGroup(importFromHermes(parsed))
     } else if (isChromeTimeline(parsed)) {
       console.log('Importing as Chrome Timeline')
       return importFromChromeTimeline(parsed, fileName)
@@ -194,8 +194,8 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
       return toGroup(importFromInstrumentsDeepCopy(contents))
     }
 
-    if (/^(Stack_|Script_|Obj_)\S+ log opened \(PC\)\n/.exec(contents.firstChunk())){
-      console.log("Importing as Papyrus profile")
+    if (/^(Stack_|Script_|Obj_)\S+ log opened \(PC\)\n/.exec(contents.firstChunk())) {
+      console.log('Importing as Papyrus profile')
       return toGroup(importFromPapyrus(contents))
     }
 
