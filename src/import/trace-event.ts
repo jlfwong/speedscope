@@ -84,7 +84,7 @@ export interface Sample {
   pid: number
   tid: string
   weight: string
-  // Will refer to an element in the stackFrames object of the Hermes Profile
+  // Will refer to an element in the stackFrames object
   sf: number
   stackFrameData?: StackFrame
 }
