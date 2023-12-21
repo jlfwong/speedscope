@@ -1,14 +1,14 @@
 import {FrameInfo} from '../lib/profile'
 import {lastOf} from '../lib/utils'
-import { ProfileBuilderInfo, Sample, StackFrame, TraceEventJsonObject } from './trace-event'
+import {ProfileBuilderInfo, Sample, StackFrame, TraceEventJsonObject} from './trace-event'
 
 /**
  * The chrome json trace event spec only specifies name and category
  * as required stack frame properties
- * 
+ *
  * https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview#heading=h.b4y98p32171
  */
-function frameInfoForEvent({ name, category }: StackFrame): FrameInfo {
+function frameInfoForEvent({name, category}: StackFrame): FrameInfo {
   return {
     key: `${name}:${category}`,
     name: name,
@@ -65,7 +65,11 @@ function getTimeDeltas(contents: TraceEventJsonObject) {
   return timeDeltas
 }
 
-export function constructProfileFromJsonObject(contents: TraceEventJsonObject, samplesForPidTid: Sample[], { profileBuilder }: ProfileBuilderInfo)  {
+export function constructProfileFromJsonObject(
+  contents: TraceEventJsonObject,
+  samplesForPidTid: Sample[],
+  {profileBuilder}: ProfileBuilderInfo,
+) {
   const activeNodeArraysById = getActiveNodeArrays(contents)
 
   /**

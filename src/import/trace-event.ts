@@ -1,7 +1,7 @@
 import {sortBy, zeroPad, getOrInsert, lastOf} from '../lib/utils'
 import {ProfileGroup, CallTreeProfileBuilder, FrameInfo, Profile} from '../lib/profile'
 import {TimeFormatter} from '../lib/value-formatters'
-import { constructProfileFromJsonObject } from './trace-event-json'
+import {constructProfileFromJsonObject} from './trace-event-json'
 
 // This file concerns import from the "Trace Event Format", authored by Google
 // and used for Google's own chrome://trace.
@@ -100,7 +100,9 @@ function pidTidKey(pid: number, tid: number): string {
   return `${zeroPad('' + pid, 10)}:${zeroPad('' + tid, 10)}`
 }
 
-function partitionByPidTid<T extends { tid: number | string; pid: number | string}>(events: T[]): Map<string, T[]> {
+function partitionByPidTid<T extends {tid: number | string; pid: number | string}>(
+  events: T[],
+): Map<string, T[]> {
   const map = new Map<string, T[]>()
 
   for (let ev of events) {
@@ -325,9 +327,7 @@ function partitionToProfileBuilderPairs(events: TraceEvent[]): [string, ProfileB
   return profilePairs
 }
 
-function constructProfileFromTraceEvents(
-  { profileBuilder, importableEvents }: ProfileBuilderInfo
-) {
+function constructProfileFromTraceEvents({profileBuilder, importableEvents}: ProfileBuilderInfo) {
   // The trace event format is hard to deal with because it specifically
   // allows events to be recorded out of order, *but* event ordering is still
   // important for events with the same timestamp. Because of this, rather
@@ -466,7 +466,10 @@ function constructProfileFromTraceEvents(
 /**
  * Partition by thread and then build the profile appropriately based on the format
  */
-function constructProfileGroup(events: TraceEvent[], buildFunction: (info: ProfileBuilderInfo) => void): ProfileGroup {
+function constructProfileGroup(
+  events: TraceEvent[],
+  buildFunction: (info: ProfileBuilderInfo) => void,
+): ProfileGroup {
   const profileBuilderPairs = partitionToProfileBuilderPairs(events)
 
   const profilePairs = profileBuilderPairs.map(([key, info]): [string, Profile] => {
@@ -551,12 +554,12 @@ export function importTraceEvents(
   rawProfile: {traceEvents: TraceEvent[]} | TraceEvent[] | TraceEventJsonObject,
 ): ProfileGroup {
   if (isTraceEventJsonObject(rawProfile)) {
-    const samplesByPidTid = partitionByPidTid(rawProfile.samples)    
+    const samplesByPidTid = partitionByPidTid(rawProfile.samples)
 
     function jsonObjectTraceBuilder(info: ProfileBuilderInfo) {
-      const { pid, tid } = info;
-      const key = pidTidKey(pid, tid);
-      const samples = samplesByPidTid.get(key);
+      const {pid, tid} = info
+      const key = pidTidKey(pid, tid)
+      const samples = samplesByPidTid.get(key)
 
       if (!samples) {
         throw new Error(`Could not find samples for key: ${key}`)
