@@ -73,7 +73,7 @@ export function constructProfileFromJsonObject(
   const activeNodeArraysById = getActiveNodeArrays(contents)
 
   /**
-   * The hermes format maintains an object of stack frames where the
+   * The json object format maintains an object of stack frames where the
    * key is the frame id and the value is the stack frame object.
    */
   function getFrameById(frameId: string | number): StackFrame {
