@@ -33,27 +33,7 @@ enum EventsPhase {
   LINKED_ID_EVENTS = '=',
 }
 
-interface HermesTraceEvent {
-  name?: string
-  cat?: string
-  // tracing clock timestamp
-  ts?: string
-  pid?: number
-  tid?: number
-  // event type (phase)
-  ph: EventsPhase
-  // id for a stackFrame object
-  sf?: number
-  // thread clock timestamp
-  tts?: number
-  // a fixed color name
-  cname?: string
-  args?: {
-    [key in string]: any
-  }
-}
-
-export interface HermesStackFrame {
+export interface StackFrame {
   line: string
   column: string
   funcLine: string
@@ -64,7 +44,7 @@ export interface HermesStackFrame {
   parent?: number
 }
 
-export interface HermesSample {
+export interface Sample {
   cpu: string
   name: string
   ts: string
@@ -73,16 +53,16 @@ export interface HermesSample {
   weight: string
   // Will refer to an element in the stackFrames object of the Hermes Profile
   sf: number
-  stackFrameData?: HermesStackFrame
+  stackFrameData?: StackFrame
 }
 
 /**
  * Hermes Profile Interface
  */
 export interface HermesProfile {
-  traceEvents: HermesTraceEvent[]
-  samples: HermesSample[]
-  stackFrames: {[key in string]: HermesStackFrame}
+  traceEvents: TraceEvent[]
+  samples: Sample[]
+  stackFrames: {[key in string]: StackFrame}
 }
 
 export function isHermesProfile(profile: any): profile is HermesProfile {
@@ -124,7 +104,7 @@ export function getEventDetails(input: string): ParsedEventDetails {
   }
 }
 
-function frameInfoForEvent(stackFrame: HermesStackFrame): FrameInfo {
+function frameInfoForEvent(stackFrame: StackFrame): FrameInfo {
   const {name, file, line, col} = getEventDetails(stackFrame.name)
 
   const lineNumber = line ?? Number(stackFrame.line)
@@ -176,7 +156,7 @@ function getTimeDeltas(contents: HermesProfile) {
   const timeDeltas: number[] = []
   let lastTimeStamp = Number(contents.samples[0].ts)
 
-  contents.samples.forEach((sample: HermesSample, idx: number) => {
+  contents.samples.forEach((sample: Sample, idx: number) => {
     if (idx === 0) {
       timeDeltas.push(0)
     } else {
@@ -199,7 +179,7 @@ export function importFromHermes(contents: HermesProfile): Profile | null {
    * The hermes format maintains an object of stack frames where the
    * key is the frame id and the value is the stack frame object.
    */
-  function getFrameById(frameId: string | number): HermesStackFrame {
+  function getFrameById(frameId: string | number): StackFrame {
     return contents.stackFrames[String(frameId)]
   }
 
@@ -215,13 +195,13 @@ export function importFromHermes(contents: HermesProfile): Profile | null {
 
   // We need to leave frames in the same order that we start them, so we keep a stack
   // of frames that are currently open
-  const frameStack: HermesStackFrame[] = []
+  const frameStack: StackFrame[] = []
 
   /**
    * Enter a frame, pushing it to the top of the stack so that we keep track of what functions
    * are currently being executed
    */
-  function enterFrame(frame: HermesStackFrame, timestamp: number) {
+  function enterFrame(frame: StackFrame, timestamp: number) {
     frameStack.push(frame)
     profile.enterFrame(frameInfoForEvent(frame), timestamp)
   }
@@ -231,7 +211,7 @@ export function importFromHermes(contents: HermesProfile): Profile | null {
    * next thing to leave (top of the stack). If this is not the case we warn, and then leave
    * the frame at the top of the stack
    */
-  function tryToLeaveFrame(frame: HermesStackFrame, timestamp: number) {
+  function tryToLeaveFrame(frame: StackFrame, timestamp: number) {
     const lastActiveFrame = lastOf(frameStack)
 
     if (lastActiveFrame == null) {
