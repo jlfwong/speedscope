@@ -99,11 +99,11 @@ function pidTidKey(pid: number, tid: number): string {
   return `${zeroPad('' + pid, 10)}:${zeroPad('' + tid, 10)}`
 }
 
-function partitionByPidTid<T extends { tid: number; pid: number}>(events: T[]): Map<string, T[]> {
+function partitionByPidTid<T extends { tid: number | string; pid: number | string}>(events: T[]): Map<string, T[]> {
   const map = new Map<string, T[]>()
 
   for (let ev of events) {
-    const list = getOrInsert(map, pidTidKey(ev.pid, ev.tid), () => [])
+    const list = getOrInsert(map, pidTidKey(Number(ev.pid), Number(ev.tid)), () => [])
     list.push(ev)
   }
 
@@ -325,7 +325,7 @@ function partitionToProfileBuilderPairs(events: TraceEvent[]): [string, ProfileB
 }
 
 
-function constructProfileFromJsonObject(contents: TraceEventJsonObject, info: ProfileBuilderInfo)  {
+function constructProfileFromJsonObject(contents: TraceEventJsonObject, samplesForPidTid: Sample[])  {
   // TODO
 }
 
@@ -555,11 +555,20 @@ export function importTraceEvents(
   rawProfile: {traceEvents: TraceEvent[]} | TraceEvent[] | TraceEventJsonObject,
 ): ProfileGroup {
   if (isTraceEventJsonObject(rawProfile)) {
-    function jsonObjectBuilder(info: ProfileBuilderInfo) {
-      return constructProfileFromJsonObject(rawProfile as TraceEventJsonObject, info)
+    const samplesByPidTid = partitionByPidTid(rawProfile.samples)    
+
+    function jsonObjectTraceBuilder({ pid, tid }: ProfileBuilderInfo) {
+      const key = pidTidKey(pid, tid);
+      const samples = samplesByPidTid.get(key);
+
+      if (!samples) {
+        throw new Error(`Could not find samples for key: ${key}`)
+      }
+
+      return constructProfileFromJsonObject(rawProfile as TraceEventJsonObject, samples)
     }
 
-    return constructProfileGroup(rawProfile.traceEvents, jsonObjectBuilder)
+    return constructProfileGroup(rawProfile.traceEvents, jsonObjectTraceBuilder)
   } else if (isTraceEventListObject(rawProfile)) {
     return constructProfileGroup(rawProfile.traceEvents, constructProfileFromTraceEvents)
   } else if (isTraceEventList(rawProfile)) {
