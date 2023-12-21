@@ -1,6 +1,7 @@
 import {sortBy, zeroPad, getOrInsert, lastOf} from '../lib/utils'
 import {ProfileGroup, CallTreeProfileBuilder, FrameInfo, Profile} from '../lib/profile'
 import {TimeFormatter} from '../lib/value-formatters'
+import { constructProfileFromJsonObject } from './trace-event-json'
 
 // This file concerns import from the "Trace Event Format", authored by Google
 // and used for Google's own chrome://trace.
@@ -273,7 +274,7 @@ function frameInfoForEvent(event: TraceEvent): FrameInfo {
   }
 }
 
-type ProfileBuilderInfo = {
+export type ProfileBuilderInfo = {
   profileBuilder: CallTreeProfileBuilder
   importableEvents: ImportableTraceEvent[]
   pid: number
@@ -322,11 +323,6 @@ function partitionToProfileBuilderPairs(events: TraceEvent[]): [string, ProfileB
   })
 
   return profilePairs
-}
-
-
-function constructProfileFromJsonObject(contents: TraceEventJsonObject, samplesForPidTid: Sample[])  {
-  // TODO
 }
 
 function constructProfileFromTraceEvents(
@@ -557,7 +553,8 @@ export function importTraceEvents(
   if (isTraceEventJsonObject(rawProfile)) {
     const samplesByPidTid = partitionByPidTid(rawProfile.samples)    
 
-    function jsonObjectTraceBuilder({ pid, tid }: ProfileBuilderInfo) {
+    function jsonObjectTraceBuilder(info: ProfileBuilderInfo) {
+      const { pid, tid } = info;
       const key = pidTidKey(pid, tid);
       const samples = samplesByPidTid.get(key);
 
@@ -565,7 +562,7 @@ export function importTraceEvents(
         throw new Error(`Could not find samples for key: ${key}`)
       }
 
-      return constructProfileFromJsonObject(rawProfile as TraceEventJsonObject, samples)
+      return constructProfileFromJsonObject(rawProfile as TraceEventJsonObject, samples, info)
     }
 
     return constructProfileGroup(rawProfile.traceEvents, jsonObjectTraceBuilder)

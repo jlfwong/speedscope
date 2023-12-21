@@ -122,3 +122,7 @@ test('importTraceEvents invalid x nesting', async () => {
 test('importTraceEvents event reordering name match', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/event-reordering-name-match.json')
 })
+
+test('importTraceEvents simple json profile', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/simple-json.json')
+})

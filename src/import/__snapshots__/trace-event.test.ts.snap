@@ -1240,6 +1240,10 @@ Object {
 }
 `;
 
+exports[`importTraceEvents simple json profile: indexToView 1`] = `0`;
+
+exports[`importTraceEvents simple json profile: profileGroup.name 1`] = `"simple-json.json"`;
+
 exports[`importTraceEvents simple object 1`] = `
 Object {
   "frames": Array [

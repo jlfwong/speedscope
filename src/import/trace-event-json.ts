@@ -1,97 +1,24 @@
-import {CallTreeProfileBuilder, FrameInfo, Profile} from '../lib/profile'
+import {FrameInfo} from '../lib/profile'
 import {lastOf} from '../lib/utils'
-import {TimeFormatter} from '../lib/value-formatters'
-
-export interface StackFrame {
-  line: string
-  column: string
-  funcLine: string
-  funcColumn: string
-  name: string
-  category: string
-  // A parent function may or may not exist
-  parent?: number
-}
-
-export interface Sample {
-  cpu: string
-  name: string
-  ts: string
-  pid: number
-  tid: string
-  weight: string
-  // Will refer to an element in the stackFrames object of the Hermes Profile
-  sf: number
-  stackFrameData?: StackFrame
-}
+import { ProfileBuilderInfo, Sample, StackFrame, TraceEventJsonObject } from './trace-event'
 
 /**
- * Hermes Profile Interface
+ * The chrome json trace event spec only specifies name and category
+ * as required stack frame properties
+ * 
+ * https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview#heading=h.b4y98p32171
  */
-export interface HermesProfile {
-  traceEvents: TraceEvent[]
-  samples: Sample[]
-  stackFrames: {[key in string]: StackFrame}
-}
-
-export function isHermesProfile(profile: any): profile is HermesProfile {
-  return 'traceEvents' in profile && 'stackFrames' in profile && 'samples' in profile
-}
-
-type ParsedEventDetails = {
-  name: string
-  file: string
-  line: number
-  col: number
-}
-
-/**
- * Hermes appends the file, line, and column information inside the name field, so it looks like this:
- *
- * useRecoilValue(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:111183:42)
- */
-export function getEventDetails(input: string): ParsedEventDetails {
-  // Regular expression to match the required format, allowing for an optional name
-  const regex = /^(.*?)(?:\((.+):(\d+):(\d+)\))?$/
-
-  // Match the input string against the regex pattern
-  const match = input.match(regex)
-  if (!match || match.length < 5) {
-    throw new Error('Input string does not match the expected format.')
-  }
-
-  // Extract matched groups with a default name "(unnamed)" if the name is empty
-  const [, name, file, line, col] = match
-  const parsedName = name || '(unnamed)'
-
-  // Return the parsed data as an object
+function frameInfoForEvent({ name, category }: StackFrame): FrameInfo {
   return {
-    name: parsedName,
-    file: file || '',
-    line: line ? parseInt(line, 10) : 0,
-    col: col ? parseInt(col, 10) : 0,
-  }
-}
-
-function frameInfoForEvent(stackFrame: StackFrame): FrameInfo {
-  const {name, file, line, col} = getEventDetails(stackFrame.name)
-
-  const lineNumber = line ?? Number(stackFrame.line)
-  const colNumber = col ?? Number(stackFrame.column)
-
-  return {
-    key: `${name}:${file}:${lineNumber}:${colNumber}`,
-    name,
-    file,
-    line: line ?? Number(stackFrame.line),
-    col: col ?? Number(stackFrame.column),
+    key: `${name}:${category}`,
+    name: name,
   }
 }
 
 /**
  * Initialization function to enable O(1) access to the set of active nodes in the stack by node ID.
  */
-function getActiveNodeArrays(profile: HermesProfile): Map<number, number[]> {
+function getActiveNodeArrays(profile: TraceEventJsonObject): Map<number, number[]> {
   const map: Map<number, number[]> = new Map<number, number[]>()
 
   // Given a nodeId, `getActiveNodes` gets all the parent nodes in reversed call order
@@ -121,7 +48,7 @@ function getActiveNodeArrays(profile: HermesProfile): Map<number, number[]> {
  * Returns an array containing the time difference in microseconds between the previous
  * sample and the current sample
  */
-function getTimeDeltas(contents: HermesProfile) {
+function getTimeDeltas(contents: TraceEventJsonObject) {
   const timeDeltas: number[] = []
   let lastTimeStamp = Number(contents.samples[0].ts)
 
@@ -138,10 +65,7 @@ function getTimeDeltas(contents: HermesProfile) {
   return timeDeltas
 }
 
-export function importFromHermes(contents: HermesProfile): Profile | null {
-  const profile = new CallTreeProfileBuilder()
-  profile.setValueFormatter(new TimeFormatter('microseconds'))
-
+export function constructProfileFromJsonObject(contents: TraceEventJsonObject, samplesForPidTid: Sample[], { profileBuilder }: ProfileBuilderInfo)  {
   const activeNodeArraysById = getActiveNodeArrays(contents)
 
   /**
@@ -172,7 +96,7 @@ export function importFromHermes(contents: HermesProfile): Profile | null {
    */
   function enterFrame(frame: StackFrame, timestamp: number) {
     frameStack.push(frame)
-    profile.enterFrame(frameInfoForEvent(frame), timestamp)
+    profileBuilder.enterFrame(frameInfoForEvent(frame), timestamp)
   }
 
   /**
@@ -209,7 +133,7 @@ export function importFromHermes(contents: HermesProfile): Profile | null {
     }
 
     frameStack.pop()
-    profile.leaveFrame(lastActiveFrameInfo, timestamp)
+    profileBuilder.leaveFrame(lastActiveFrameInfo, timestamp)
   }
 
   /**
@@ -298,7 +222,4 @@ export function importFromHermes(contents: HermesProfile): Profile | null {
   }
 
   handleSample([], lastActiveNodeIds, currentTimestamp)
-
-  profile.setName('Hermes Profile')
-  return profile.build()
 }
