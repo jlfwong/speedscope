@@ -530,6 +530,90 @@ exports[`importTraceEvents mismatched name: indexToView 1`] = `0`;
 
 exports[`importTraceEvents mismatched name: profileGroup.name 1`] = `"mismatched-name.json"`;
 
+exports[`importTraceEvents multi-thread json object profile 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "[root]:root",
+      "line": undefined,
+      "name": "[root]",
+      "selfWeight": 20770,
+      "totalWeight": 34096,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "function1:JavaScript",
+      "line": undefined,
+      "name": "function1",
+      "selfWeight": 13326,
+      "totalWeight": 13326,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "[GC Young Gen]:Metadata",
+      "line": undefined,
+      "name": "[GC Young Gen]",
+      "selfWeight": 0,
+      "totalWeight": 0,
+    },
+  ],
+  "name": "hermes (pid 7512), mqt_js (tid 1)",
+  "stacks": Array [
+    "[root] 20.77ms",
+    "[root];function1 13.33ms",
+  ],
+}
+`;
+
+exports[`importTraceEvents multi-thread json object profile 2`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "[root thread 2]:root",
+      "line": undefined,
+      "name": "[root thread 2]",
+      "selfWeight": 30770,
+      "totalWeight": 54096,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "function3:JavaScript",
+      "line": undefined,
+      "name": "function3",
+      "selfWeight": 13326,
+      "totalWeight": 13326,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "function4:Metadata",
+      "line": undefined,
+      "name": "function4",
+      "selfWeight": 10000,
+      "totalWeight": 10000,
+    },
+  ],
+  "name": "hermes (pid 7512, tid 2)",
+  "stacks": Array [
+    "[root thread 2] 20.77ms",
+    "[root thread 2];function3 13.33ms",
+    "[root thread 2];function4 10.00ms",
+    "[root thread 2] 10.00ms",
+  ],
+}
+`;
+
+exports[`importTraceEvents multi-thread json object profile: indexToView 1`] = `0`;
+
+exports[`importTraceEvents multi-thread json object profile: profileGroup.name 1`] = `"multi-thread-json-object.json"`;
+
 exports[`importTraceEvents multiprocess 1`] = `
 Object {
   "frames": Array [
