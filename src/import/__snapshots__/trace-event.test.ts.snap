@@ -1240,6 +1240,66 @@ Object {
 }
 `;
 
+exports[`importTraceEvents simple json profile 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "[root]:root",
+      "line": undefined,
+      "name": "[root]",
+      "selfWeight": 30779,
+      "totalWeight": 64710,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "function1(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:1:1):JavaScript",
+      "line": undefined,
+      "name": "function1(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:1:1)",
+      "selfWeight": 13326,
+      "totalWeight": 13326,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "function2(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:418874:4):JavaScript",
+      "line": undefined,
+      "name": "function2(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:418874:4)",
+      "selfWeight": 0,
+      "totalWeight": 10605,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "function3(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:17:3):JavaScript",
+      "line": undefined,
+      "name": "function3(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:17:3)",
+      "selfWeight": 10605,
+      "totalWeight": 10605,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "[GC Young Gen]:Metadata",
+      "line": undefined,
+      "name": "[GC Young Gen]",
+      "selfWeight": 10000,
+      "totalWeight": 10000,
+    },
+  ],
+  "name": "hermes (pid 7512), mqt_js (tid 7695)",
+  "stacks": Array [
+    "[root] 20.77ms",
+    "[root];function1(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:1:1) 13.33ms",
+    "[root];function2(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:418874:4);function3(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:17:3) 10.61ms",
+    "[root] 10.01ms",
+    "[root];[GC Young Gen] 10.00ms",
+  ],
+}
+`;
+
 exports[`importTraceEvents simple json profile: indexToView 1`] = `0`;
 
 exports[`importTraceEvents simple json profile: profileGroup.name 1`] = `"simple-json.json"`;
