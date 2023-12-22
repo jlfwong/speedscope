@@ -48,11 +48,11 @@ function getActiveNodeArrays(profile: TraceEventJsonObject): Map<number, number[
  * Returns an array containing the time difference in microseconds between the previous
  * sample and the current sample
  */
-function getTimeDeltas(contents: TraceEventJsonObject) {
+function getTimeDeltas(samples: Sample[]) {
   const timeDeltas: number[] = []
-  let lastTimeStamp = Number(contents.samples[0].ts)
+  let lastTimeStamp = Number(samples[0].ts)
 
-  contents.samples.forEach((sample: Sample, idx: number) => {
+  samples.forEach((sample: Sample, idx: number) => {
     if (idx === 0) {
       timeDeltas.push(0)
     } else {
@@ -209,10 +209,10 @@ export function constructProfileFromJsonObject(
   let currentTimestamp = 0
   let lastActiveNodeIds: number[] = []
 
-  const timeDeltas = getTimeDeltas(contents)
+  const timeDeltas = getTimeDeltas(samplesForPidTid)
 
-  for (let i = 0; i < contents.samples.length; i++) {
-    const nodeId = contents.samples[i].sf
+  for (let i = 0; i < samplesForPidTid.length; i++) {
+    const nodeId = samplesForPidTid[i].sf
     const timeDelta = Math.max(timeDeltas[i], 0)
     const node = getFrameById(nodeId)
 
