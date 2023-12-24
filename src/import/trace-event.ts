@@ -94,11 +94,17 @@ interface Sample {
   stackFrameData?: StackFrame
 }
 
-interface ChromeTraceWithSamples {
+interface TraceWithSamples {
   traceEvents: TraceEvent[]
   samples: Sample[]
   stackFrames: {[key in string]: StackFrame}
 }
+
+interface TraceEventObject {
+  traceEvents: TraceEvent[]
+}
+
+type Trace = TraceEvent[] | TraceEventObject | TraceWithSamples
 
 function pidTidKey(pid: number, tid: number): string {
   // We zero-pad the PID and TID to make sorting them by pid/tid pair later easier.
@@ -510,11 +516,11 @@ function frameInfoForSampleFrame({name, category}: StackFrame): FrameInfo {
 }
 
 function getActiveFrames(
-  stackFrames: ChromeTraceWithSamples['stackFrames'],
+  stackFrames: TraceWithSamples['stackFrames'],
   frameId: number,
 ): FrameInfo[] {
   const frames = []
-  let parent: number | undefined = stackFrames[frameId].parent
+  let parent: number | undefined = frameId;
 
   while (parent) {
     const frame: StackFrame = stackFrames[parent]
@@ -531,7 +537,7 @@ function getActiveFrames(
 }
 
 function constructProfileFromSampleList(
-  contents: ChromeTraceWithSamples,
+  contents: TraceWithSamples,
   samples: Sample[],
   name: string,
 ) {
@@ -545,6 +551,7 @@ function constructProfileFromSampleList(
   samples.forEach((sample, index) => {
     const timeDelta = timeDeltas[index]
     const activeFrames = getActiveFrames(contents.stackFrames, sample.sf)
+    console.log(activeFrames);
 
     profileBuilder.appendSampleWithWeight(activeFrames, timeDelta)
   })
@@ -552,9 +559,6 @@ function constructProfileFromSampleList(
   return profileBuilder.build()
 }
 
-/**
- * Partition by thread and then build the profile appropriately based on the format
- */
 function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
   const importableEvents = filterIgnoredEventTypes(events)
   const partitionedTraceEvents = partitionByPidTid(importableEvents)
@@ -585,10 +589,7 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
   }
 }
 
-/**
- * Partition by thread and then build the profile appropriately based on the format
- */
-function sampleListToProfileGroup(contents: ChromeTraceWithSamples): ProfileGroup {
+function sampleListToProfileGroup(contents: TraceWithSamples): ProfileGroup {
   const importableEvents = filterIgnoredEventTypes(contents.traceEvents)
   const partitionedTraceEvents = partitionByPidTid(importableEvents)
   const partitionedSamples = partitionByPidTid(contents.samples)
@@ -657,34 +658,30 @@ function isTraceEventList(maybeEventList: any): maybeEventList is TraceEvent[] {
 
 function isTraceEventListObject(
   maybeTraceEventObject: any,
-): maybeTraceEventObject is {traceEvents: TraceEvent[]} {
+): maybeTraceEventObject is TraceEventObject {
   if (!('traceEvents' in maybeTraceEventObject)) return false
   return isTraceEventList(maybeTraceEventObject['traceEvents'])
 }
 
 function isTraceEventWithSamples(
   maybeTraceEventObject: any,
-): maybeTraceEventObject is ChromeTraceWithSamples {
+): maybeTraceEventObject is TraceWithSamples {
   return (
     'traceEvents' in maybeTraceEventObject &&
     'stackFrames' in maybeTraceEventObject &&
     'samples' in maybeTraceEventObject &&
-    isTraceEventFormatted(maybeTraceEventObject['traceEvents'])
+    isTraceEventList(maybeTraceEventObject['traceEvents'])
   )
 }
 
-export function isTraceEventFormatted(
-  rawProfile: any,
-): rawProfile is {traceEvents: TraceEvent[]} | TraceEvent[] {
+export function isTraceEventFormatted(rawProfile: any): rawProfile is Trace {
   // We're only going to support the JSON formatted profiles for now.
   // The spec also discusses support for data embedded in ftrace supported data: https://lwn.net/Articles/365835/.
 
   return isTraceEventListObject(rawProfile) || isTraceEventList(rawProfile)
 }
 
-export function importTraceEvents(
-  rawProfile: {traceEvents: TraceEvent[]} | TraceEvent[] | ChromeTraceWithSamples,
-): ProfileGroup {
+export function importTraceEvents(rawProfile: Trace): ProfileGroup {
   if (isTraceEventWithSamples(rawProfile)) {
     return sampleListToProfileGroup(rawProfile)
   } else if (isTraceEventListObject(rawProfile)) {
