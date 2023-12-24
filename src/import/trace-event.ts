@@ -1,5 +1,5 @@
 import {sortBy, zeroPad, getOrInsert, lastOf} from '../lib/utils'
-import {ProfileGroup, CallTreeProfileBuilder, FrameInfo, Profile} from '../lib/profile'
+import {ProfileGroup, CallTreeProfileBuilder, FrameInfo, Profile, StackListProfileBuilder} from '../lib/profile'
 import {TimeFormatter} from '../lib/value-formatters'
 import {constructProfileFromJsonObject} from './trace-event-json'
 
@@ -89,7 +89,7 @@ export interface Sample {
   stackFrameData?: StackFrame
 }
 
-export interface TraceEventJsonObject {
+export interface TraceEventWithSamples {
   traceEvents: TraceEvent[]
   samples: Sample[]
   stackFrames: {[key in string]: StackFrame}
@@ -290,44 +290,45 @@ export type ProfileBuilderInfo = {
  *
  * See https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview#heading=h.xqopa5m0e28f
  */
-function partitionToProfileBuilderPairs(events: TraceEvent[]): [string, ProfileBuilderInfo][] {
-  const importableEvents = filterIgnoredEventTypes(events)
-  const partitionedTraceEvents = partitionByPidTid(importableEvents)
-
+function getProfileNameByPidTid(
+  events: TraceEvent[],
+  partitionedTraceEvents: Map<string, TraceEvent[]>,
+): Map<string, string> {
   const processNamesByPid = getProcessNamesByPid(events)
   const threadNamesByPidTid = getThreadNamesByPidTid(events)
 
-  const profilePairs: [string, ProfileBuilderInfo][] = []
+  const profileNamesByPidTid = new Map<string, string>()
 
   partitionedTraceEvents.forEach(importableEvents => {
     if (importableEvents.length === 0) return
 
     const {pid, tid} = importableEvents[0]
 
-    const profileBuilder = new CallTreeProfileBuilder()
-    profileBuilder.setValueFormatter(new TimeFormatter('microseconds'))
+    // const profileBuilder = new CallTreeProfileBuilder()
+    // profileBuilder.setValueFormatter(new TimeFormatter('microseconds'))
 
     const profileKey = pidTidKey(pid, tid)
     const processName = processNamesByPid.get(pid)
     const threadName = threadNamesByPidTid.get(profileKey)
 
     if (processName != null && threadName != null) {
-      profileBuilder.setName(`${processName} (pid ${pid}), ${threadName} (tid ${tid})`)
+      profileNamesByPidTid.set(
+        profileKey,
+        `${processName} (pid ${pid}), ${threadName} (tid ${tid})`,
+      )
     } else if (processName != null) {
-      profileBuilder.setName(`${processName} (pid ${pid}, tid ${tid})`)
+      profileNamesByPidTid.set(profileKey, `${processName} (pid ${pid}, tid ${tid})`)
     } else if (threadName != null) {
-      profileBuilder.setName(`${threadName} (pid ${pid}, tid ${tid})`)
+      profileNamesByPidTid.set(profileKey, `${threadName} (pid ${pid}, tid ${tid})`)
     } else {
-      profileBuilder.setName(`pid ${pid}, tid ${tid}`)
+      profileNamesByPidTid.set(profileKey, `pid ${pid}, tid ${tid}`)
     }
-
-    profilePairs.push([profileKey, {pid, tid, profileBuilder, importableEvents}])
   })
 
-  return profilePairs
+  return profileNamesByPidTid
 }
 
-function constructProfileFromTraceEvents({profileBuilder, importableEvents}: ProfileBuilderInfo) {
+function constructProfileFromTraceEvents(importableEvents: ImportableTraceEvent[], name: string): Profile {
   // The trace event format is hard to deal with because it specifically
   // allows events to be recorded out of order, *but* event ordering is still
   // important for events with the same timestamp. Because of this, rather
@@ -345,6 +346,10 @@ function constructProfileFromTraceEvents({profileBuilder, importableEvents}: Pro
   // events in 'ts' order, breaking ties in whatever order causes the 'E'
   // events to match whatever is on the top of the stack.
   const [bEventQueue, eEventQueue] = convertToEventQueues(importableEvents)
+
+  const profileBuilder = new CallTreeProfileBuilder()
+  profileBuilder.setValueFormatter(new TimeFormatter('microseconds'))
+  profileBuilder.setName(name);
 
   const frameStack: BTraceEvent[] = []
   const enterFrame = (b: BTraceEvent) => {
@@ -461,21 +466,83 @@ function constructProfileFromTraceEvents({profileBuilder, importableEvents}: Pro
     console.warn(`Frame "${frame.key}" was still open at end of profile. Closing automatically.`)
     profileBuilder.leaveFrame(frame, profileBuilder.getTotalWeight())
   }
+
+  return profileBuilder.build();
+}
+
+function constructProfileFromSampleList(samples: Sample[], name: string) {
+  const profileBuilder = new StackListProfileBuilder()
+
+  profileBuilder.setValueFormatter(new TimeFormatter('microseconds'))
+  profileBuilder.setName(name); 
+
+  // TODO
 }
 
 /**
  * Partition by thread and then build the profile appropriately based on the format
  */
-function constructProfileGroup(
+function eventListToProfileGroup(
   events: TraceEvent[],
-  buildFunction: (info: ProfileBuilderInfo) => void,
 ): ProfileGroup {
-  const profileBuilderPairs = partitionToProfileBuilderPairs(events)
+  const importableEvents = filterIgnoredEventTypes(events)
+  const partitionedTraceEvents = partitionByPidTid(importableEvents)
+  const profileNamesByPidTid = getProfileNameByPidTid(events, partitionedTraceEvents)
 
-  const profilePairs = profileBuilderPairs.map(([key, info]): [string, Profile] => {
-    buildFunction(info)
+  const profilePairs: [string, Profile][] = []
 
-    return [key, info.profileBuilder.build()]
+  profileNamesByPidTid.forEach((name, pidTidKey) => {
+    const importableEventsForPidTid = partitionedTraceEvents.get(pidTidKey);
+
+    if (!importableEventsForPidTid) {
+      throw new Error(`Could not find events for key: ${importableEventsForPidTid}`)
+    }
+
+    profilePairs.push([
+      pidTidKey,
+      constructProfileFromTraceEvents(importableEventsForPidTid, name),
+    ])
+  })
+
+  // For now, we just sort processes by pid & tid.
+  // TODO: The standard specifies that metadata events with the name
+  // "process_sort_index" and "thread_sort_index" can be used to influence the
+  // order, but for simplicity we'll ignore that until someone complains :)
+  sortBy(profilePairs, p => p[0])
+
+  return {
+    name: '',
+    indexToView: 0,
+    profiles: profilePairs.map(p => p[1]),
+  }
+}
+
+/**
+ * Partition by thread and then build the profile appropriately based on the format
+ */
+function sampleListToProfileGroup(contents: TraceEventWithSamples): ProfileGroup {
+  const importableEvents = filterIgnoredEventTypes(contents.traceEvents)
+  const partitionedTraceEvents = partitionByPidTid(importableEvents)
+  const partitionedSamples = partitionByPidTid(contents.samples);
+  const profileNamesByPidTid = getProfileNameByPidTid(contents.traceEvents, partitionedTraceEvents)
+
+  const profilePairs: [string, Profile][] = []
+
+  profileNamesByPidTid.forEach((name, pidTidKey) => {
+    const samplesForPidTid = partitionedSamples.get(pidTidKey);
+
+    if (!samplesForPidTid) {
+      throw new Error(`Could not find samples for key: ${samplesForPidTid}`)
+    }
+
+    if (samplesForPidTid.length === 0) {
+      return;
+    }
+
+    profilePairs.push([
+      pidTidKey,
+      constructProfileFromSampleList(samples, name),
+    ])
   })
 
   // For now, we just sort processes by pid & tid.
@@ -530,9 +597,9 @@ function isTraceEventListObject(
   return isTraceEventList(maybeTraceEventObject['traceEvents'])
 }
 
-function isTraceEventJsonObject(
+function isTraceEventWithSamples(
   maybeTraceEventObject: any,
-): maybeTraceEventObject is TraceEventJsonObject {
+): maybeTraceEventObject is TraceEventWithSamples {
   return (
     'traceEvents' in maybeTraceEventObject &&
     'stackFrames' in maybeTraceEventObject &&
@@ -551,28 +618,14 @@ export function isTraceEventFormatted(
 }
 
 export function importTraceEvents(
-  rawProfile: {traceEvents: TraceEvent[]} | TraceEvent[] | TraceEventJsonObject,
+  rawProfile: {traceEvents: TraceEvent[]} | TraceEvent[] | TraceEventWithSamples,
 ): ProfileGroup {
-  if (isTraceEventJsonObject(rawProfile)) {
-    const samplesByPidTid = partitionByPidTid(rawProfile.samples)
-
-    function jsonObjectTraceBuilder(info: ProfileBuilderInfo) {
-      const {pid, tid} = info
-      const key = pidTidKey(pid, tid)
-      const samples = samplesByPidTid.get(key)
-
-      if (!samples) {
-        throw new Error(`Could not find samples for key: ${key}`)
-      }
-
-      return constructProfileFromJsonObject(rawProfile as TraceEventJsonObject, samples, info)
-    }
-
-    return constructProfileGroup(rawProfile.traceEvents, jsonObjectTraceBuilder)
+  if (isTraceEventWithSamples(rawProfile)) {
+    return sampleListToProfileGroup(rawProfile)
   } else if (isTraceEventListObject(rawProfile)) {
-    return constructProfileGroup(rawProfile.traceEvents, constructProfileFromTraceEvents)
+    return eventListToProfileGroup(rawProfile.traceEvents)
   } else if (isTraceEventList(rawProfile)) {
-    return constructProfileGroup(rawProfile, constructProfileFromTraceEvents)
+    return eventListToProfileGroup(rawProfile)
   } else {
     const _exhaustiveCheck: never = rawProfile
     return _exhaustiveCheck
