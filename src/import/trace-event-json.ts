@@ -1,6 +1,6 @@
 import {FrameInfo} from '../lib/profile'
 import {lastOf} from '../lib/utils'
-import {ProfileBuilderInfo, Sample, StackFrame, TraceEventWithSamples} from './trace-event'
+import {ProfileBuilderInfo, Sample, StackFrame, ChromeTraceWithSamples} from './trace-event'
 
 /**
  * The chrome json trace event spec only specifies name and category
@@ -18,7 +18,7 @@ function frameInfoForEvent({name, category}: StackFrame): FrameInfo {
 /**
  * Initialization function to enable O(1) access to the set of active nodes in the stack by node ID.
  */
-function getActiveNodeArrays(profile: TraceEventWithSamples): Map<number, number[]> {
+function getActiveNodeArrays(profile: ChromeTraceWithSamples): Map<number, number[]> {
   const map: Map<number, number[]> = new Map<number, number[]>()
 
   // Given a nodeId, `getActiveNodes` gets all the parent nodes in reversed call order
@@ -66,7 +66,7 @@ function getTimeDeltas(samples: Sample[]) {
 }
 
 export function constructProfileFromJsonObject(
-  contents: TraceEventWithSamples,
+  contents: ChromeTraceWithSamples,
   samplesForPidTid: Sample[],
   {profileBuilder}: ProfileBuilderInfo,
 ) {

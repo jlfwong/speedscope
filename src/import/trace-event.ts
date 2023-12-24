@@ -89,7 +89,7 @@ export interface Sample {
   stackFrameData?: StackFrame
 }
 
-export interface TraceEventWithSamples {
+export interface ChromeTraceWithSamples {
   traceEvents: TraceEvent[]
   samples: Sample[]
   stackFrames: {[key in string]: StackFrame}
@@ -470,13 +470,19 @@ function constructProfileFromTraceEvents(importableEvents: ImportableTraceEvent[
   return profileBuilder.build();
 }
 
-function constructProfileFromSampleList(samples: Sample[], name: string) {
+function constructProfileFromSampleList(contents: ChromeTraceWithSamples, samples: Sample[], name: string) {
   const profileBuilder = new StackListProfileBuilder()
 
   profileBuilder.setValueFormatter(new TimeFormatter('microseconds'))
   profileBuilder.setName(name); 
 
-  // TODO
+  // For each sample, get the time difference, and all the active stack frames
+  // then call appendSampleWithWeight
+  samples.forEach(sample => {
+    // TODO
+  })
+
+  return profileBuilder.build();
 }
 
 /**
@@ -520,7 +526,7 @@ function eventListToProfileGroup(
 /**
  * Partition by thread and then build the profile appropriately based on the format
  */
-function sampleListToProfileGroup(contents: TraceEventWithSamples): ProfileGroup {
+function sampleListToProfileGroup(contents: ChromeTraceWithSamples): ProfileGroup {
   const importableEvents = filterIgnoredEventTypes(contents.traceEvents)
   const partitionedTraceEvents = partitionByPidTid(importableEvents)
   const partitionedSamples = partitionByPidTid(contents.samples);
@@ -541,7 +547,7 @@ function sampleListToProfileGroup(contents: TraceEventWithSamples): ProfileGroup
 
     profilePairs.push([
       pidTidKey,
-      constructProfileFromSampleList(samples, name),
+      constructProfileFromSampleList(contents, samples, name),
     ])
   })
 
@@ -599,7 +605,7 @@ function isTraceEventListObject(
 
 function isTraceEventWithSamples(
   maybeTraceEventObject: any,
-): maybeTraceEventObject is TraceEventWithSamples {
+): maybeTraceEventObject is ChromeTraceWithSamples {
   return (
     'traceEvents' in maybeTraceEventObject &&
     'stackFrames' in maybeTraceEventObject &&
@@ -618,7 +624,7 @@ export function isTraceEventFormatted(
 }
 
 export function importTraceEvents(
-  rawProfile: {traceEvents: TraceEvent[]} | TraceEvent[] | TraceEventWithSamples,
+  rawProfile: {traceEvents: TraceEvent[]} | TraceEvent[] | ChromeTraceWithSamples,
 ): ProfileGroup {
   if (isTraceEventWithSamples(rawProfile)) {
     return sampleListToProfileGroup(rawProfile)
