@@ -1,7 +1,12 @@
 import {sortBy, zeroPad, getOrInsert, lastOf} from '../lib/utils'
-import {ProfileGroup, CallTreeProfileBuilder, FrameInfo, Profile, StackListProfileBuilder} from '../lib/profile'
+import {
+  ProfileGroup,
+  CallTreeProfileBuilder,
+  FrameInfo,
+  Profile,
+  StackListProfileBuilder,
+} from '../lib/profile'
 import {TimeFormatter} from '../lib/value-formatters'
-import {constructProfileFromJsonObject} from './trace-event-json'
 
 // This file concerns import from the "Trace Event Format", authored by Google
 // and used for Google's own chrome://trace.
@@ -66,7 +71,7 @@ interface XTraceEvent extends TraceEvent {
 // The trace format supports a number of event types that we ignore.
 type ImportableTraceEvent = BTraceEvent | ETraceEvent | XTraceEvent
 
-export interface StackFrame {
+interface StackFrame {
   line: string
   column: string
   funcLine: string
@@ -77,7 +82,7 @@ export interface StackFrame {
   parent?: number
 }
 
-export interface Sample {
+interface Sample {
   cpu: string
   name: string
   ts: string
@@ -89,7 +94,7 @@ export interface Sample {
   stackFrameData?: StackFrame
 }
 
-export interface ChromeTraceWithSamples {
+interface ChromeTraceWithSamples {
   traceEvents: TraceEvent[]
   samples: Sample[]
   stackFrames: {[key in string]: StackFrame}
@@ -304,9 +309,6 @@ function getProfileNameByPidTid(
 
     const {pid, tid} = importableEvents[0]
 
-    // const profileBuilder = new CallTreeProfileBuilder()
-    // profileBuilder.setValueFormatter(new TimeFormatter('microseconds'))
-
     const profileKey = pidTidKey(pid, tid)
     const processName = processNamesByPid.get(pid)
     const threadName = threadNamesByPidTid.get(profileKey)
@@ -328,7 +330,10 @@ function getProfileNameByPidTid(
   return profileNamesByPidTid
 }
 
-function constructProfileFromTraceEvents(importableEvents: ImportableTraceEvent[], name: string): Profile {
+function constructProfileFromTraceEvents(
+  importableEvents: ImportableTraceEvent[],
+  name: string,
+): Profile {
   // The trace event format is hard to deal with because it specifically
   // allows events to be recorded out of order, *but* event ordering is still
   // important for events with the same timestamp. Because of this, rather
@@ -349,7 +354,7 @@ function constructProfileFromTraceEvents(importableEvents: ImportableTraceEvent[
 
   const profileBuilder = new CallTreeProfileBuilder()
   profileBuilder.setValueFormatter(new TimeFormatter('microseconds'))
-  profileBuilder.setName(name);
+  profileBuilder.setName(name)
 
   const frameStack: BTraceEvent[] = []
   const enterFrame = (b: BTraceEvent) => {
@@ -467,30 +472,90 @@ function constructProfileFromTraceEvents(importableEvents: ImportableTraceEvent[
     profileBuilder.leaveFrame(frame, profileBuilder.getTotalWeight())
   }
 
-  return profileBuilder.build();
+  return profileBuilder.build()
 }
 
-function constructProfileFromSampleList(contents: ChromeTraceWithSamples, samples: Sample[], name: string) {
+/**
+ * Returns an array containing the time difference in microseconds between the previous
+ * sample and the current sample
+ */
+function getTimeDeltasForSamples(samples: Sample[]) {
+  const timeDeltas: number[] = []
+  let lastTimeStamp = Number(samples[0].ts)
+
+  samples.forEach((sample: Sample, idx: number) => {
+    if (idx === 0) {
+      timeDeltas.push(0)
+    } else {
+      const timeDiff = Number(sample.ts) - lastTimeStamp
+      lastTimeStamp = Number(sample.ts)
+      timeDeltas.push(timeDiff)
+    }
+  })
+
+  return timeDeltas
+}
+
+/**
+ * The chrome json trace event spec only specifies name and category
+ * as required stack frame properties
+ *
+ * https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview#heading=h.b4y98p32171
+ */
+function frameInfoForSampleFrame({name, category}: StackFrame): FrameInfo {
+  return {
+    key: `${name}:${category}`,
+    name: name,
+  }
+}
+
+function getActiveFrames(
+  stackFrames: ChromeTraceWithSamples['stackFrames'],
+  frameId: number,
+): FrameInfo[] {
+  const frames = []
+  let parent: number | undefined = stackFrames[frameId].parent
+
+  while (parent) {
+    const frame: StackFrame = stackFrames[parent]
+
+    if (!frame) {
+      throw new Error(`Could not find frame for id ${parent}`)
+    }
+
+    frames.push(frameInfoForSampleFrame(frame))
+    parent = frame.parent
+  }
+
+  return frames.reverse()
+}
+
+function constructProfileFromSampleList(
+  contents: ChromeTraceWithSamples,
+  samples: Sample[],
+  name: string,
+) {
   const profileBuilder = new StackListProfileBuilder()
 
   profileBuilder.setValueFormatter(new TimeFormatter('microseconds'))
-  profileBuilder.setName(name); 
+  profileBuilder.setName(name)
 
-  // For each sample, get the time difference, and all the active stack frames
-  // then call appendSampleWithWeight
-  samples.forEach(sample => {
-    // TODO
+  const timeDeltas = getTimeDeltasForSamples(samples)
+
+  samples.forEach((sample, index) => {
+    const timeDelta = timeDeltas[index]
+    const activeFrames = getActiveFrames(contents.stackFrames, sample.sf)
+
+    profileBuilder.appendSampleWithWeight(activeFrames, timeDelta)
   })
 
-  return profileBuilder.build();
+  return profileBuilder.build()
 }
 
 /**
  * Partition by thread and then build the profile appropriately based on the format
  */
-function eventListToProfileGroup(
-  events: TraceEvent[],
-): ProfileGroup {
+function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
   const importableEvents = filterIgnoredEventTypes(events)
   const partitionedTraceEvents = partitionByPidTid(importableEvents)
   const profileNamesByPidTid = getProfileNameByPidTid(events, partitionedTraceEvents)
@@ -498,16 +563,13 @@ function eventListToProfileGroup(
   const profilePairs: [string, Profile][] = []
 
   profileNamesByPidTid.forEach((name, pidTidKey) => {
-    const importableEventsForPidTid = partitionedTraceEvents.get(pidTidKey);
+    const importableEventsForPidTid = partitionedTraceEvents.get(pidTidKey)
 
     if (!importableEventsForPidTid) {
       throw new Error(`Could not find events for key: ${importableEventsForPidTid}`)
     }
 
-    profilePairs.push([
-      pidTidKey,
-      constructProfileFromTraceEvents(importableEventsForPidTid, name),
-    ])
+    profilePairs.push([pidTidKey, constructProfileFromTraceEvents(importableEventsForPidTid, name)])
   })
 
   // For now, we just sort processes by pid & tid.
@@ -529,26 +591,23 @@ function eventListToProfileGroup(
 function sampleListToProfileGroup(contents: ChromeTraceWithSamples): ProfileGroup {
   const importableEvents = filterIgnoredEventTypes(contents.traceEvents)
   const partitionedTraceEvents = partitionByPidTid(importableEvents)
-  const partitionedSamples = partitionByPidTid(contents.samples);
+  const partitionedSamples = partitionByPidTid(contents.samples)
   const profileNamesByPidTid = getProfileNameByPidTid(contents.traceEvents, partitionedTraceEvents)
 
   const profilePairs: [string, Profile][] = []
 
   profileNamesByPidTid.forEach((name, pidTidKey) => {
-    const samplesForPidTid = partitionedSamples.get(pidTidKey);
+    const samplesForPidTid = partitionedSamples.get(pidTidKey)
 
     if (!samplesForPidTid) {
       throw new Error(`Could not find samples for key: ${samplesForPidTid}`)
     }
 
     if (samplesForPidTid.length === 0) {
-      return;
+      return
     }
 
-    profilePairs.push([
-      pidTidKey,
-      constructProfileFromSampleList(contents, samples, name),
-    ])
+    profilePairs.push([pidTidKey, constructProfileFromSampleList(contents, samplesForPidTid, name)])
   })
 
   // For now, we just sort processes by pid & tid.
