@@ -123,10 +123,10 @@ test('importTraceEvents event reordering name match', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/event-reordering-name-match.json')
 })
 
-test('importTraceEvents simple json profile', async () => {
-  await checkProfileSnapshot('./sample/profiles/trace-event/simple-json.json')
+test('importTraceEvents simple profile with samples', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/simple-with-samples.json')
 })
 
-test('importTraceEvents multi-thread json object profile', async () => {
-  await checkProfileSnapshot('./sample/profiles/trace-event/multi-thread-json-object.json')
+test('importTraceEvents multi-thread profile with samples', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/multi-thread-with-samples.json')
 })

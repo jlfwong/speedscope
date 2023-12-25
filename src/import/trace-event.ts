@@ -482,7 +482,7 @@ function constructProfileFromTraceEvents(
 }
 
 /**
- * Returns an array containing the time difference in microseconds between the current 
+ * Returns an array containing the time difference in microseconds between the current
  * sample and the next sample
  */
 function getTimeDeltasForSamples(samples: Sample[]) {
@@ -490,8 +490,8 @@ function getTimeDeltasForSamples(samples: Sample[]) {
   let lastTimeStamp = Number(samples[0].ts)
 
   samples.forEach((sample: Sample, idx: number) => {
-    if (idx === 0) return;
-    
+    if (idx === 0) return
+
     const timeDiff = Number(sample.ts) - lastTimeStamp
     lastTimeStamp = Number(sample.ts)
     timeDeltas.push(timeDiff)
@@ -549,7 +549,7 @@ function constructProfileFromSampleList(
   const timeDeltas = getTimeDeltasForSamples(samples)
 
   samples.forEach((sample, index) => {
-    const timeDelta = timeDeltas[index];
+    const timeDelta = timeDeltas[index]
     const activeFrames = getActiveFramesForSample(contents.stackFrames, sample.sf)
 
     profileBuilder.appendSampleWithWeight(activeFrames, timeDelta)
