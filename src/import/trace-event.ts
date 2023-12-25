@@ -520,7 +520,7 @@ function getActiveFrames(
   frameId: number,
 ): FrameInfo[] {
   const frames = []
-  let parent: number | undefined = frameId;
+  let parent: number | undefined = frameId
 
   while (parent) {
     const frame: StackFrame = stackFrames[parent]
@@ -551,7 +551,6 @@ function constructProfileFromSampleList(
   samples.forEach((sample, index) => {
     const timeDelta = timeDeltas[index]
     const activeFrames = getActiveFrames(contents.stackFrames, sample.sf)
-    console.log(activeFrames);
 
     profileBuilder.appendSampleWithWeight(activeFrames, timeDelta)
   })
