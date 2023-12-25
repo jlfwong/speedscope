@@ -515,7 +515,7 @@ function frameInfoForSampleFrame({name, category}: StackFrame): FrameInfo {
   }
 }
 
-function getActiveFrames(
+function getActiveFramesForSample(
   stackFrames: TraceWithSamples['stackFrames'],
   frameId: number,
 ): FrameInfo[] {
@@ -550,7 +550,7 @@ function constructProfileFromSampleList(
 
   samples.forEach((sample, index) => {
     const timeDelta = timeDeltas[index]
-    const activeFrames = getActiveFrames(contents.stackFrames, sample.sf)
+    const activeFrames = getActiveFramesForSample(contents.stackFrames, sample.sf)
 
     profileBuilder.appendSampleWithWeight(activeFrames, timeDelta)
   })
@@ -565,14 +565,17 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
 
   const profilePairs: [string, Profile][] = []
 
-  profileNamesByPidTid.forEach((name, pidTidKey) => {
-    const importableEventsForPidTid = partitionedTraceEvents.get(pidTidKey)
+  profileNamesByPidTid.forEach((name, profileKey) => {
+    const importableEventsForPidTid = partitionedTraceEvents.get(profileKey)
 
     if (!importableEventsForPidTid) {
       throw new Error(`Could not find events for key: ${importableEventsForPidTid}`)
     }
 
-    profilePairs.push([pidTidKey, constructProfileFromTraceEvents(importableEventsForPidTid, name)])
+    profilePairs.push([
+      profileKey,
+      constructProfileFromTraceEvents(importableEventsForPidTid, name),
+    ])
   })
 
   // For now, we just sort processes by pid & tid.
@@ -596,8 +599,8 @@ function sampleListToProfileGroup(contents: TraceWithSamples): ProfileGroup {
 
   const profilePairs: [string, Profile][] = []
 
-  profileNamesByPidTid.forEach((name, pidTidKey) => {
-    const samplesForPidTid = partitionedSamples.get(pidTidKey)
+  profileNamesByPidTid.forEach((name, profileKey) => {
+    const samplesForPidTid = partitionedSamples.get(profileKey)
 
     if (!samplesForPidTid) {
       throw new Error(`Could not find samples for key: ${samplesForPidTid}`)
@@ -607,7 +610,10 @@ function sampleListToProfileGroup(contents: TraceWithSamples): ProfileGroup {
       return
     }
 
-    profilePairs.push([pidTidKey, constructProfileFromSampleList(contents, samplesForPidTid, name)])
+    profilePairs.push([
+      profileKey,
+      constructProfileFromSampleList(contents, samplesForPidTid, name),
+    ])
   })
 
   // For now, we just sort processes by pid & tid.
@@ -655,9 +661,7 @@ function isTraceEventList(maybeEventList: any): maybeEventList is TraceEvent[] {
   return true
 }
 
-function isTraceEventListObject(
-  maybeTraceEventObject: any,
-): maybeTraceEventObject is TraceEventObject {
+function isTraceEventObject(maybeTraceEventObject: any): maybeTraceEventObject is TraceEventObject {
   if (!('traceEvents' in maybeTraceEventObject)) return false
   return isTraceEventList(maybeTraceEventObject['traceEvents'])
 }
@@ -677,13 +681,13 @@ export function isTraceEventFormatted(rawProfile: any): rawProfile is Trace {
   // We're only going to support the JSON formatted profiles for now.
   // The spec also discusses support for data embedded in ftrace supported data: https://lwn.net/Articles/365835/.
 
-  return isTraceEventListObject(rawProfile) || isTraceEventList(rawProfile)
+  return isTraceEventObject(rawProfile) || isTraceEventList(rawProfile)
 }
 
 export function importTraceEvents(rawProfile: Trace): ProfileGroup {
   if (isTraceEventWithSamples(rawProfile)) {
     return sampleListToProfileGroup(rawProfile)
-  } else if (isTraceEventListObject(rawProfile)) {
+  } else if (isTraceEventObject(rawProfile)) {
     return eventListToProfileGroup(rawProfile.traceEvents)
   } else if (isTraceEventList(rawProfile)) {
     return eventListToProfileGroup(rawProfile)
