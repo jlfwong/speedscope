@@ -123,6 +123,10 @@ test('importTraceEvents event reordering name match', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/event-reordering-name-match.json')
 })
 
+test('importTraceEvents simple hermes profile', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/simple-hermes.json')
+})
+
 test('importTraceEvents simple profile with samples', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/simple-with-samples.json')
 })

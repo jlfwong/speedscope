@@ -1315,6 +1315,41 @@ Object {
 }
 `;
 
+exports[`importTraceEvents simple hermes profile 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": null,
+      "file": null,
+      "key": "[root] {\\"name\\":\\"[root]\\",\\"category\\":\\"root\\",\\"url\\":null,\\"line\\":null,\\"column\\":null,\\"params\\":null,\\"allocatedCategory\\":\\"root\\",\\"allocatedName\\":\\"[root]\\"}",
+      "line": null,
+      "name": "[root]",
+      "selfWeight": 2,
+      "totalWeight": 14,
+    },
+    Frame {
+      "col": 12,
+      "file": "/Users/example/test_project/node_modules/metro-runtime/src/polyfills/require.js",
+      "key": "beta {\\"line\\":54,\\"column\\":12,\\"funcLine\\":\\"1\\",\\"funcColumn\\":\\"1\\",\\"name\\":\\"beta\\",\\"category\\":\\"JavaScript\\",\\"parent\\":1,\\"url\\":\\"/Users/example/test_project/node_modules/metro-runtime/src/polyfills/require.js\\",\\"params\\":null,\\"allocatedCategory\\":\\"JavaScript\\",\\"allocatedName\\":\\"beta\\"}",
+      "line": 54,
+      "name": "beta",
+      "selfWeight": 12,
+      "totalWeight": 12,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "[root] 1.00µs",
+    "[root];beta 12.00µs",
+    "[root] 1.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents simple hermes profile: indexToView 1`] = `0`;
+
+exports[`importTraceEvents simple hermes profile: profileGroup.name 1`] = `"simple-hermes.json"`;
+
 exports[`importTraceEvents simple object 1`] = `
 Object {
   "frames": Array [

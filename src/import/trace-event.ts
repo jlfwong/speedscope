@@ -48,10 +48,44 @@ interface TraceEvent {
   cat?: string
 
   // Any arguments provided for the event. Some of the event types have required argument fields, otherwise, you can put any information you wish in here. The arguments are displayed in Trace Viewer when you view an event in the analysis section.
-  args: any
+  args?: any
 
   // A fixed color name to associate with the event. If provided, cname must be one of the names listed in trace-viewer's base color scheme's reserved color names list
   cname?: string
+}
+
+enum ExporterSource {
+  HERMES = 'HERMES',
+  UNKNOWN = 'UNKNOWN',
+}
+
+interface HermesTraceEventArgs {
+  line: number | null
+  column: number | null
+  funcLine?: string | null
+  funcColumn?: string | null
+  name: string
+  category: string
+  parent?: number
+  url: string | null
+  params: string | null
+  allocatedCategory: string
+  allocatedName: string
+}
+
+const requiredHermesArguments: Array<keyof HermesTraceEventArgs> = [
+  'line',
+  'column',
+  'name',
+  'category',
+  'url',
+  'params',
+  'allocatedCategory',
+  'allocatedName',
+]
+
+type HermesTraceEvent = TraceEvent & {
+  args: HermesTraceEventArgs
 }
 
 interface BTraceEvent extends TraceEvent {
@@ -151,7 +185,7 @@ function selectQueueToTakeFromNext(
   // to ensure it opens before we try to close it.
   //
   // Otherwise, process the 'E' queue first.
-  return frameInfoForEvent(bFront).key === frameInfoForEvent(eFront).key ? 'B' : 'E'
+  return keyForEvent(bFront) === keyForEvent(eFront) ? 'B' : 'E'
 }
 
 function convertToEventQueues(events: ImportableTraceEvent[]): [BTraceEvent[], ETraceEvent[]] {
@@ -271,16 +305,36 @@ function getThreadNamesByPidTid(events: TraceEvent[]): Map<string, string> {
   return threadNameByPidTid
 }
 
-function keyForEvent(event: TraceEvent): string {
-  let name = `${event.name || '(unnamed)'}`
-  if (event.args) {
-    name += ` ${JSON.stringify(event.args)}`
-  }
-  return name
+function getEventName(event: TraceEvent): string {
+  return `${event.name || '(unnamed)'}`
 }
 
-function frameInfoForEvent(event: TraceEvent): FrameInfo {
+function keyForEvent(event: TraceEvent): string {
+  let key = getEventName(event)
+  if (event.args) {
+    key += ` ${JSON.stringify(event.args)}`
+  }
+  return key
+}
+
+function frameInfoForEvent(
+  event: TraceEvent,
+  exporterSource: ExporterSource = ExporterSource.UNKNOWN,
+): FrameInfo {
   const key = keyForEvent(event)
+
+  // In Hermes profiles we have additional guaranteed metadata we can use to
+  // more accurately populate profiles with info such as line + col number
+  if (exporterSource === ExporterSource.HERMES) {
+    return {
+      name: getEventName(event),
+      key: key,
+      file: event.args.url,
+      line: event.args.line,
+      col: event.args.column,
+    }
+  }
+
   return {
     name: key,
     key: key,
@@ -329,7 +383,11 @@ function getProfileNameByPidTid(
   return profileNamesByPidTid
 }
 
-function eventListToProfile(importableEvents: ImportableTraceEvent[], name: string): Profile {
+function eventListToProfile(
+  importableEvents: ImportableTraceEvent[],
+  name: string,
+  exporterSource: ExporterSource = ExporterSource.UNKNOWN,
+): Profile {
   // The trace event format is hard to deal with because it specifically
   // allows events to be recorded out of order, *but* event ordering is still
   // important for events with the same timestamp. Because of this, rather
@@ -355,7 +413,7 @@ function eventListToProfile(importableEvents: ImportableTraceEvent[], name: stri
   const frameStack: BTraceEvent[] = []
   const enterFrame = (b: BTraceEvent) => {
     frameStack.push(b)
-    profileBuilder.enterFrame(frameInfoForEvent(b), b.ts)
+    profileBuilder.enterFrame(frameInfoForEvent(b, exporterSource), b.ts)
   }
 
   const tryToLeaveFrame = (e: ETraceEvent) => {
@@ -364,14 +422,14 @@ function eventListToProfile(importableEvents: ImportableTraceEvent[], name: stri
     if (b == null) {
       console.warn(
         `Tried to end frame "${
-          frameInfoForEvent(e).key
+          frameInfoForEvent(e, exporterSource).key
         }", but the stack was empty. Doing nothing instead.`,
       )
       return
     }
 
-    const eFrameInfo = frameInfoForEvent(e)
-    const bFrameInfo = frameInfoForEvent(b)
+    const eFrameInfo = frameInfoForEvent(e, exporterSource)
+    const bFrameInfo = frameInfoForEvent(b, exporterSource)
 
     if (e.name !== b.name) {
       console.warn(
@@ -404,7 +462,7 @@ function eventListToProfile(importableEvents: ImportableTraceEvent[], name: stri
         // match.
         const stackTop = lastOf(frameStack)
         if (stackTop != null) {
-          const bFrameInfo = frameInfoForEvent(stackTop)
+          const bFrameInfo = frameInfoForEvent(stackTop, exporterSource)
 
           let swapped: boolean = false
 
@@ -415,7 +473,7 @@ function eventListToProfile(importableEvents: ImportableTraceEvent[], name: stri
               break
             }
 
-            const eFrameInfo = frameInfoForEvent(eEvent)
+            const eFrameInfo = frameInfoForEvent(eEvent, exporterSource)
             if (bFrameInfo.key === eFrameInfo.key) {
               // We have a match! Process this one first.
               const temp = eEventQueue[0]
@@ -463,7 +521,7 @@ function eventListToProfile(importableEvents: ImportableTraceEvent[], name: stri
   }
 
   for (let i = frameStack.length - 1; i >= 0; i--) {
-    const frame = frameInfoForEvent(frameStack[i])
+    const frame = frameInfoForEvent(frameStack[i], exporterSource)
     console.warn(`Frame "${frame.key}" was still open at end of profile. Closing automatically.`)
     profileBuilder.leaveFrame(frame, profileBuilder.getTotalWeight())
   }
@@ -544,7 +602,10 @@ function sampleListToProfile(contents: TraceWithSamples, samples: Sample[], name
   return profileBuilder.build()
 }
 
-function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
+function eventListToProfileGroup(
+  events: TraceEvent[],
+  exporterSource: ExporterSource = ExporterSource.UNKNOWN,
+): ProfileGroup {
   const importableEvents = filterIgnoredEventTypes(events)
   const partitionedTraceEvents = partitionByPidTid(importableEvents)
   const profileNamesByPidTid = getProfileNameByPidTid(events, partitionedTraceEvents)
@@ -558,7 +619,10 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
       throw new Error(`Could not find events for key: ${importableEventsForPidTid}`)
     }
 
-    profilePairs.push([profileKey, eventListToProfile(importableEventsForPidTid, name)])
+    profilePairs.push([
+      profileKey,
+      eventListToProfile(importableEventsForPidTid, name, exporterSource),
+    ])
   })
 
   // For now, we just sort processes by pid & tid.
@@ -641,6 +705,23 @@ function isTraceEventList(maybeEventList: any): maybeEventList is TraceEvent[] {
   return true
 }
 
+function isHermesTraceEvent(traceEventArgs: any): traceEventArgs is HermesTraceEventArgs {
+  if (!traceEventArgs) {
+    return false
+  }
+
+  return requiredHermesArguments.every(prop => prop in traceEventArgs)
+}
+
+function isHermesTraceEventList(maybeEventList: any): maybeEventList is HermesTraceEvent[] {
+  if (!isTraceEventList(maybeEventList)) return false
+
+  // We just check the first element to avoid iterating over all trace events,
+  // and asumme that if the first one is formatted like a hermes profile then
+  // all events will be
+  return isHermesTraceEvent(maybeEventList[0].args)
+}
+
 function isTraceEventObject(maybeTraceEventObject: any): maybeTraceEventObject is TraceEventObject {
   if (!('traceEvents' in maybeTraceEventObject)) return false
   return isTraceEventList(maybeTraceEventObject['traceEvents'])
@@ -669,6 +750,8 @@ export function importTraceEvents(rawProfile: Trace): ProfileGroup {
     return sampleListToProfileGroup(rawProfile)
   } else if (isTraceEventObject(rawProfile)) {
     return eventListToProfileGroup(rawProfile.traceEvents)
+  } else if (isHermesTraceEventList(rawProfile)) {
+    return eventListToProfileGroup(rawProfile, ExporterSource.HERMES)
   } else if (isTraceEventList(rawProfile)) {
     return eventListToProfileGroup(rawProfile)
   } else {
