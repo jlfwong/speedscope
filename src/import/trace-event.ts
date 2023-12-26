@@ -329,10 +329,7 @@ function getProfileNameByPidTid(
   return profileNamesByPidTid
 }
 
-function eventListToProfile(
-  importableEvents: ImportableTraceEvent[],
-  name: string,
-): Profile {
+function eventListToProfile(importableEvents: ImportableTraceEvent[], name: string): Profile {
   // The trace event format is hard to deal with because it specifically
   // allows events to be recorded out of order, *but* event ordering is still
   // important for events with the same timestamp. Because of this, rather
@@ -529,11 +526,7 @@ function getActiveFramesForSample(
   return frames.reverse()
 }
 
-function sampleListToProfile(
-  contents: TraceWithSamples,
-  samples: Sample[],
-  name: string,
-): Profile {
+function sampleListToProfile(contents: TraceWithSamples, samples: Sample[], name: string): Profile {
   const profileBuilder = new StackListProfileBuilder()
 
   profileBuilder.setValueFormatter(new TimeFormatter('microseconds'))
@@ -565,10 +558,7 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
       throw new Error(`Could not find events for key: ${importableEventsForPidTid}`)
     }
 
-    profilePairs.push([
-      profileKey,
-      eventListToProfile(importableEventsForPidTid, name),
-    ])
+    profilePairs.push([profileKey, eventListToProfile(importableEventsForPidTid, name)])
   })
 
   // For now, we just sort processes by pid & tid.
@@ -603,10 +593,7 @@ function sampleListToProfileGroup(contents: TraceWithSamples): ProfileGroup {
       return
     }
 
-    profilePairs.push([
-      profileKey,
-      sampleListToProfile(contents, samplesForPidTid, name),
-    ])
+    profilePairs.push([profileKey, sampleListToProfile(contents, samplesForPidTid, name)])
   })
 
   // For now, we just sort processes by pid & tid.
