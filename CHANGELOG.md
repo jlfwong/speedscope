@@ -1,3 +1,8 @@
+## [1.18.0] - 2023-12-26
+
+- Add hermes-specific support for the trace event format [[#458](https://github.com/jlfwong/speedscope/pull/458)] (by @zacharyfmarion)
+- Update README-ADMINS.md with npm login instructions [[#457](https://github.com/jlfwong/speedscope/pull/457)] (by @jlfwong)
+
 ## [1.17.0] - 2023-12-25
 
 - Upgrade prettier, update prettier & react-hooks eslint plugins [[#456](https://github.com/jlfwong/speedscope/pull/456)] (by @jlfwong)
