@@ -588,8 +588,6 @@ function sampleListToProfile(contents: TraceWithSamples, samples: Sample[], name
 }
 
 function eventListToProfileGroup(events: TraceEvent[], isHermesProfile = false): ProfileGroup {
-  console.log({isHermesProfile})
-
   const importableEvents = filterIgnoredEventTypes(events)
   const partitionedTraceEvents = partitionByPidTid(importableEvents)
   const profileNamesByPidTid = getProfileNameByPidTid(events, partitionedTraceEvents)
@@ -705,13 +703,7 @@ function isHermesTraceEvent(traceEventArgs: any): traceEventArgs is HermesTraceE
     return false
   }
 
-  for (const prop of requiredProperties) {
-    if (!(prop in traceEventArgs)) {
-      return false
-    }
-  }
-
-  return true
+  return requiredProperties.every(prop => prop in traceEventArgs)
 }
 
 function isHermesTraceEventList(maybeEventList: any): maybeEventList is HermesTraceEvent[] {
