@@ -1,0 +1,127 @@
+{
+  "traceEvents": [
+    {
+      "name": "process_name",
+      "ph": "M",
+      "cat": "__metadata",
+      "pid": 7512,
+      "ts": "11550183666",
+      "tid": "-1",
+      "args": {
+        "name": "hermes"
+      }
+    },
+    {
+      "name": "thread_name",
+      "ph": "M",
+      "cat": "__metadata",
+      "pid": 7512,
+      "ts": "11550183666",
+      "tid": "7695",
+      "args": {
+        "name": "mqt_js"
+      }
+    },
+    {
+      "name": "mqt_js",
+      "cat": "mqt_js",
+      "ph": "X",
+      "dur": 0,
+      "pid": 7512,
+      "ts": "11550183666",
+      "tid": "7695",
+      "args": {}
+    }
+  ],
+  "samples": [
+    {
+      "cpu": "-1",
+      "name": "",
+      "ts": "11552125241",
+      "pid": 7512,
+      "tid": "7695",
+      "weight": "1",
+      "sf": 1
+    },
+    {
+      "cpu": "-1",
+      "name": "",
+      "ts": "11552129681",
+      "pid": 7512,
+      "tid": "7695",
+      "weight": "1",
+      "sf": 1
+    },
+    {
+      "cpu": "-1",
+      "name": "",
+      "ts": "11552146011",
+      "pid": 7512,
+      "tid": "7695",
+      "weight": "1",
+      "sf": 2
+    },
+    {
+      "cpu": "-1",
+      "name": "",
+      "ts": "11552159337",
+      "pid": 7512,
+      "tid": "7695",
+      "weight": "1",
+      "sf": 4
+    },
+    {
+      "cpu": "-1",
+      "name": "",
+      "ts": "11552169942",
+      "pid": 7512,
+      "tid": "7695",
+      "weight": "1",
+      "sf": 1
+    },
+    {
+      "cpu": "-1",
+      "name": "",
+      "ts": "11552179951",
+      "pid": 7512,
+      "tid": "7695",
+      "weight": "1",
+      "sf": 5
+    },
+    {
+      "cpu": "-1",
+      "name": "",
+      "ts": "11552189951",
+      "pid": 7512,
+      "tid": "7695",
+      "weight": "1",
+      "sf": 5
+    }
+  ],
+  "stackFrames": {
+    "1": {
+      "name": "[root]",
+      "category": "root"
+    },
+    "2": {
+      "name": "function1(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:1:1)",
+      "category": "JavaScript",
+      "parent": 1
+    },
+    "3": {
+      "name": "function2(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:418874:4)",
+      "category": "JavaScript",
+      "parent": 1
+    },
+    "4": {
+      "name": "function3(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:17:3)",
+      "category": "JavaScript",
+      "parent": 3
+    },
+    "5": {
+      "name": "[GC Young Gen]",
+      "category": "Metadata",
+      "parent": 1
+    }
+  }
+}

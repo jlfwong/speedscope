@@ -1,5 +1,5 @@
-import { readFileSync } from 'fs';
-import { importProfileGroupFromText } from '.'
+import {readFileSync} from 'fs'
+import {importProfileGroupFromText} from '.'
 import {checkProfileSnapshot} from '../lib/test-utils'
 
 test('importFromStackprof', async () => {
@@ -20,9 +20,11 @@ describe('importCpuProfileWithProperWeights', () => {
   })
 
   test('uses samples count for weight when importing cpu profile', async () => {
-
     const profileFile = readFileSync('./sample/profiles/stackprof/simple-cpu-stackprof.json')
-    const profileGroup = await importProfileGroupFromText('simple-cpu-stackprof.json', profileFile.toString())
+    const profileGroup = await importProfileGroupFromText(
+      'simple-cpu-stackprof.json',
+      profileFile.toString(),
+    )
     expect(profileGroup).not.toBeNull()
 
     if (profileGroup) {

@@ -1,0 +1,150 @@
+{
+    "traceEvents": [
+      {
+        "name": "process_name",
+        "ph": "M",
+        "cat": "__metadata",
+        "pid": 7512,
+        "ts": "11550183666",
+        "tid": "-1",
+        "args": {
+          "name": "hermes"
+        }
+      },
+      {
+        "name": "thread_name",
+        "ph": "M",
+        "cat": "__metadata",
+        "pid": 7512,
+        "ts": "11550183666",
+        "tid": "1",
+        "args": {
+          "name": "mqt_js"
+        }
+      },
+      {
+        "name": "mqt_js",
+        "cat": "mqt_js",
+        "ph": "X",
+        "dur": 0,
+        "pid": 7512,
+        "ts": "11550183666",
+        "tid": "1",
+        "args": {}
+      },
+      {
+        "name": "mqt_js",
+        "cat": "mqt_js",
+        "ph": "X",
+        "dur": 0,
+        "pid": 7512,
+        "ts": "11550183666",
+        "tid": "2",
+        "args": {}
+      }
+    ],
+    "samples": [
+      {
+        "cpu": "-1",
+        "name": "",
+        "ts": "11552125241",
+        "pid": 7512,
+        "tid": "1",
+        "weight": "1",
+        "sf": 1
+      },
+      {
+        "cpu": "-1",
+        "name": "",
+        "ts": "11552125241",
+        "pid": 7512,
+        "tid": "2",
+        "weight": "1",
+        "sf": 4
+      },
+      {
+        "cpu": "-1",
+        "name": "",
+        "ts": "11552146011",
+        "pid": 7512,
+        "tid": "1",
+        "weight": "1",
+        "sf": 2
+      },
+      {
+        "cpu": "-1",
+        "name": "",
+        "ts": "11552146011",
+        "pid": 7512,
+        "tid": "2",
+        "weight": "1",
+        "sf": 5
+      },
+      {
+        "cpu": "-1",
+        "name": "",
+        "ts": "11552159337",
+        "pid": 7512,
+        "tid": "1",
+        "weight": "1",
+        "sf": 3
+      },
+      {
+        "cpu": "-1",
+        "name": "",
+        "ts": "11552159337",
+        "pid": 7512,
+        "tid": "2",
+        "weight": "1",
+        "sf": 6
+      },
+      {
+        "cpu": "-1",
+        "name": "",
+        "ts": "11552169337",
+        "pid": 7512,
+        "tid": "2",
+        "weight": "1",
+        "sf": 4
+      },
+      {
+        "cpu": "-1",
+        "name": "",
+        "ts": "11552179337",
+        "pid": 7512,
+        "tid": "2",
+        "weight": "1",
+        "sf": 4
+      }
+    ],
+    "stackFrames": {
+      "1": {
+        "name": "[root]",
+        "category": "root"
+      },
+      "2": {
+        "name": "function1",
+        "category": "JavaScript",
+        "parent": 1
+      },
+      "3": {
+        "name": "[GC Young Gen]",
+        "category": "Metadata",
+        "parent": 1
+      },
+      "4": {
+        "name": "[root thread 2]",
+        "category": "root"
+      },
+      "5": {
+        "name": "function3",
+        "category": "JavaScript",
+        "parent": 4
+      },
+      "6": {
+        "name": "function4",
+        "category": "Metadata",
+        "parent": 4
+      } 
+    }
+  }

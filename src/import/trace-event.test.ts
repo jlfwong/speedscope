@@ -122,3 +122,11 @@ test('importTraceEvents invalid x nesting', async () => {
 test('importTraceEvents event reordering name match', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/event-reordering-name-match.json')
 })
+
+test('importTraceEvents simple profile with samples', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/simple-with-samples.json')
+})
+
+test('importTraceEvents multi-thread profile with samples', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/multi-thread-with-samples.json')
+})

@@ -23,7 +23,7 @@ import {decodeBase64} from '../lib/utils'
 import {importFromChromeHeapProfile} from './v8heapalloc'
 import {isTraceEventFormatted, importTraceEvents} from './trace-event'
 import {importFromCallgrind} from './callgrind'
-import {importFromPapyrus} from "./papyrus";
+import {importFromPapyrus} from './papyrus'
 
 export async function importProfileGroupFromText(
   fileName: string,
@@ -189,8 +189,8 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
       return toGroup(importFromInstrumentsDeepCopy(contents))
     }
 
-    if (/^(Stack_|Script_|Obj_)\S+ log opened \(PC\)\n/.exec(contents.firstChunk())){
-      console.log("Importing as Papyrus profile")
+    if (/^(Stack_|Script_|Obj_)\S+ log opened \(PC\)\n/.exec(contents.firstChunk())) {
+      console.log('Importing as Papyrus profile')
       return toGroup(importFromPapyrus(contents))
     }
 
