@@ -48,7 +48,7 @@ interface TraceEvent {
   cat?: string
 
   // Any arguments provided for the event. Some of the event types have required argument fields, otherwise, you can put any information you wish in here. The arguments are displayed in Trace Viewer when you view an event in the analysis section.
-  args: any
+  args?: any
 
   // A fixed color name to associate with the event. If provided, cname must be one of the names listed in trace-viewer's base color scheme's reserved color names list
   cname?: string
@@ -169,10 +169,7 @@ function selectQueueToTakeFromNext(
   // to ensure it opens before we try to close it.
   //
   // Otherwise, process the 'E' queue first.
-  const bFrontKey = keyForEvent(bFront)
-  const eFrontKey = keyForEvent(eFront)
-
-  return bFrontKey === eFrontKey ? 'B' : 'E'
+  return keyForEvent(bFront) === keyForEvent(eFront) ? 'B' : 'E'
 }
 
 function convertToEventQueues(events: ImportableTraceEvent[]): [BTraceEvent[], ETraceEvent[]] {
@@ -304,7 +301,10 @@ function keyForEvent(event: TraceEvent): string {
   return key
 }
 
-function frameInfoForEvent(event: TraceEvent, isHermesProfile: boolean): FrameInfo {
+function frameInfoForEvent<T extends boolean>(
+  event: T extends true ? HermesTraceEvent : TraceEvent,
+  isHermesProfile: T,
+): FrameInfo {
   const key = keyForEvent(event)
 
   // In Hermes profiles we have additional guaranteed metadata we can use to
@@ -313,10 +313,9 @@ function frameInfoForEvent(event: TraceEvent, isHermesProfile: boolean): FrameIn
     return {
       name: getEventName(event),
       key: key,
-      // Hermes specific
-      file: event?.args?.url,
-      line: event?.args?.line,
-      col: event?.args?.column,
+      file: event.args.url,
+      line: event.args.line,
+      col: event.args.column,
     }
   }
 
@@ -371,7 +370,7 @@ function getProfileNameByPidTid(
 function eventListToProfile(
   importableEvents: ImportableTraceEvent[],
   name: string,
-  isHermesProfile = false,
+  isHermesProfile: boolean = false,
 ): Profile {
   // The trace event format is hard to deal with because it specifically
   // allows events to be recorded out of order, *but* event ordering is still
