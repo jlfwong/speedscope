@@ -329,7 +329,7 @@ function getProfileNameByPidTid(
   return profileNamesByPidTid
 }
 
-function constructProfileFromTraceEvents(
+function eventListToProfile(
   importableEvents: ImportableTraceEvent[],
   name: string,
 ): Profile {
@@ -529,7 +529,7 @@ function getActiveFramesForSample(
   return frames.reverse()
 }
 
-function constructProfileFromSampleList(
+function sampleListToProfile(
   contents: TraceWithSamples,
   samples: Sample[],
   name: string,
@@ -567,7 +567,7 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
 
     profilePairs.push([
       profileKey,
-      constructProfileFromTraceEvents(importableEventsForPidTid, name),
+      eventListToProfile(importableEventsForPidTid, name),
     ])
   })
 
@@ -605,7 +605,7 @@ function sampleListToProfileGroup(contents: TraceWithSamples): ProfileGroup {
 
     profilePairs.push([
       profileKey,
-      constructProfileFromSampleList(contents, samplesForPidTid, name),
+      sampleListToProfile(contents, samplesForPidTid, name),
     ])
   })
 
