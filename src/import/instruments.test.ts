@@ -3,7 +3,6 @@ import * as path from 'path'
 import {dumpProfile, checkProfileSnapshot} from '../lib/test-utils'
 
 import * as JSZip from 'jszip'
-import {FileSystemEntry} from './file-system-entry'
 import {importFromFileSystemDirectoryEntry} from '.'
 
 describe('importFromInstrumentsDeepCopy', () => {
@@ -24,7 +23,10 @@ describe('importFromInstrumentsDeepCopy', () => {
   })
 })
 
-class ZipBackedFileSystemEntry implements FileSystemEntry {
+// This is a bit of a weird type signature. I'm making this almost a
+// FileSystemEntry, but ignoring the parts of the API I don't use anywhere and
+// are a pain to implement.
+class ZipBackedFileSystemEntry implements Omit<FileSystemEntry, 'filesystem' | 'getParent'> {
   readonly isFile: boolean
   readonly isDirectory: boolean
   readonly name: string
@@ -73,7 +75,7 @@ class ZipBackedFileSystemEntry implements FileSystemEntry {
         const ret: FileSystemEntry[] = []
         this.zipDir.forEach((relativePath: string, file: {name: string}) => {
           if (relativePath.split('/').length === (relativePath.endsWith('/') ? 2 : 1)) {
-            ret.push(new ZipBackedFileSystemEntry(this.zip, file.name))
+            ret.push((new ZipBackedFileSystemEntry(this.zip, file.name) as any) as FileSystemEntry)
           }
         })
         cb(ret)
@@ -90,7 +92,10 @@ describe('importFromInstrumentsTrace', () => {
         JSZip.loadAsync(data).then(resolve)
       })
     })
-    const root = new ZipBackedFileSystemEntry(zip, 'simple-time-profile.trace')
+    const root: FileSystemDirectoryEntry = new ZipBackedFileSystemEntry(
+      zip,
+      'simple-time-profile.trace',
+    ) as any
     const profileGroup = await importFromFileSystemDirectoryEntry(root)
     const profile = profileGroup.profiles[profileGroup.indexToView]
     expect(dumpProfile(profile)).toMatchSnapshot()

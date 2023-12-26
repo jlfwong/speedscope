@@ -105,6 +105,6 @@ export async function expectImportFailure(filepath: string) {
     await importProfilesFromArrayBuffer(path.basename(filepath), arrayBuffer)
     fail('Expected import to fail but it succeeded')
   } catch (error) {
-    expect(error.message).toMatchSnapshot()
+    expect((error as Error).message).toMatchSnapshot()
   }
 }

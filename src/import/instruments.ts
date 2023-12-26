@@ -10,7 +10,6 @@ import {
 } from '../lib/profile'
 import {sortBy, getOrThrow, getOrInsert, lastOf, getOrElse, zeroPad} from '../lib/utils'
 import {ByteFormatter, TimeFormatter} from '../lib/value-formatters'
-import {FileSystemDirectoryEntry, FileSystemEntry, FileSystemFileEntry} from './file-system-entry'
 import {MaybeCompressedDataReader, TextFileContent} from './utils'
 
 function parseTSV<T>(contents: TextFileContent): T[] {

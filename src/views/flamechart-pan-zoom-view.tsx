@@ -631,7 +631,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
       this.onMouseDrag(ev)
       return
     }
-    this.hoveredLabel = null
+
     const logicalViewSpaceMouse = new Vec2(ev.offsetX, ev.offsetY)
     const physicalViewSpaceMouse = this.logicalToPhysicalViewSpace().transformPosition(
       logicalViewSpaceMouse,
@@ -660,6 +660,21 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
         setHoveredLabel(child, depth + 1)
       }
     }
+
+    // This is a dumb hack to get around what appears to be a bug in
+    // TypeScript's reachability analysis. If I do the this.hoveredLabel = null
+    // in the outer function body, the code below accessing
+    // this.hoveredLabel!.node inside of the `if (this.hoveredLabel) {`
+    // complains that "no property node on never", indicating that it thinks
+    // that codepath is unreachable.
+    //
+    // Because this.hoveredLabel is accessed in the bound function
+    // setHoveredLabel, the codepath is obviously reachable, but the type
+    // checker is confused about this for some reason.
+    const clearHoveredLabel = () => {
+      this.hoveredLabel = null
+    }
+    clearHoveredLabel()
 
     for (let frame of this.props.flamechart.getLayers()[0] || []) {
       setHoveredLabel(frame)
