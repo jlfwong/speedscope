@@ -97,7 +97,7 @@ interface Sample {
 interface TraceWithSamples {
   traceEvents: TraceEvent[]
   samples: Sample[]
-  stackFrames: {[key in string]: StackFrame}
+  stackFrames: {[key: string]: StackFrame}
 }
 
 interface TraceEventObject {
@@ -285,13 +285,6 @@ function frameInfoForEvent(event: TraceEvent): FrameInfo {
     name: key,
     key: key,
   }
-}
-
-export type ProfileBuilderInfo = {
-  profileBuilder: CallTreeProfileBuilder
-  importableEvents: ImportableTraceEvent[]
-  pid: number
-  tid: number
 }
 
 /**
@@ -485,7 +478,7 @@ function constructProfileFromTraceEvents(
  * Returns an array containing the time difference in microseconds between the current
  * sample and the next sample
  */
-function getTimeDeltasForSamples(samples: Sample[]) {
+function getTimeDeltasForSamples(samples: Sample[]): number[] {
   const timeDeltas: number[] = []
   let lastTimeStamp = Number(samples[0].ts)
 
@@ -516,7 +509,7 @@ function frameInfoForSampleFrame({name, category}: StackFrame): FrameInfo {
 }
 
 function getActiveFramesForSample(
-  stackFrames: TraceWithSamples['stackFrames'],
+  stackFrames: {[key: string]: StackFrame},
   frameId: number,
 ): FrameInfo[] {
   const frames = []
@@ -540,7 +533,7 @@ function constructProfileFromSampleList(
   contents: TraceWithSamples,
   samples: Sample[],
   name: string,
-) {
+): Profile {
   const profileBuilder = new StackListProfileBuilder()
 
   profileBuilder.setValueFormatter(new TimeFormatter('microseconds'))
