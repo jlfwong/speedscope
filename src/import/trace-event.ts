@@ -145,7 +145,6 @@ function partitionByPidTid<T extends {tid: number | string; pid: number | string
 function selectQueueToTakeFromNext(
   bEventQueue: BTraceEvent[],
   eEventQueue: ETraceEvent[],
-  isHermesProfile: boolean,
 ): 'B' | 'E' {
   if (bEventQueue.length === 0 && eEventQueue.length === 0) {
     throw new Error('This method should not be given both queues empty')
@@ -170,8 +169,8 @@ function selectQueueToTakeFromNext(
   // to ensure it opens before we try to close it.
   //
   // Otherwise, process the 'E' queue first.
-  const bFrontKey = keyForEvent(bFront, isHermesProfile)
-  const eFrontKey = keyForEvent(eFront, isHermesProfile)
+  const bFrontKey = keyForEvent(bFront)
+  const eFrontKey = keyForEvent(eFront)
 
   return bFrontKey === eFrontKey ? 'B' : 'E'
 }
@@ -293,22 +292,31 @@ function getThreadNamesByPidTid(events: TraceEvent[]): Map<string, string> {
   return threadNameByPidTid
 }
 
-function keyForEvent(event: TraceEvent, isHermesProfile: boolean): string {
-  let name = `${event.name || '(unnamed)'}`
+function getEventName(event: TraceEvent): string {
+  return `${event.name || '(unnamed)'}`
+}
+
+function keyForEvent(event: TraceEvent): string {
+  let key = getEventName(event)
   if (event.args) {
-    name += ` ${JSON.stringify(event.args)}`
+    key += ` ${JSON.stringify(event.args)}`
   }
-  return name
+  return key
 }
 
 function frameInfoForEvent(event: TraceEvent, isHermesProfile: boolean): FrameInfo {
-  const key = keyForEvent(event, isHermesProfile)
+  const key = keyForEvent(event)
 
+  // In Hermes profiles we have additional guaranteed metadata we can use to
+  // more accurately populate profiles with info such as line + col number
   if (isHermesProfile) {
-    // TODO
     return {
-      name: key,
+      name: getEventName(event),
       key: key,
+      // Hermes specific
+      file: event?.args?.url,
+      line: event?.args?.line,
+      col: event?.args?.column,
     }
   }
 
@@ -426,7 +434,7 @@ function eventListToProfile(
   }
 
   while (bEventQueue.length > 0 || eEventQueue.length > 0) {
-    const queueName = selectQueueToTakeFromNext(bEventQueue, eEventQueue, isHermesProfile)
+    const queueName = selectQueueToTakeFromNext(bEventQueue, eEventQueue)
     switch (queueName) {
       case 'B': {
         enterFrame(bEventQueue.shift()!)
