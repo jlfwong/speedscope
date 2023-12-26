@@ -1,5 +1,4 @@
 import {Profile, ProfileGroup} from '../lib/profile'
-import {FileSystemDirectoryEntry} from './file-system-entry'
 
 import {
   importFromChromeCPUProfile,
