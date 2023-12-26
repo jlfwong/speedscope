@@ -268,12 +268,14 @@ export const ProfileTableView = memo(
       [sandwichContext],
     )
 
-    const onTotalClick = useCallback((ev: MouseEvent) => onSortClick(SortField.TOTAL, ev), [
-      onSortClick,
-    ])
-    const onSelfClick = useCallback((ev: MouseEvent) => onSortClick(SortField.SELF, ev), [
-      onSortClick,
-    ])
+    const onTotalClick = useCallback(
+      (ev: MouseEvent) => onSortClick(SortField.TOTAL, ev),
+      [onSortClick],
+    )
+    const onSelfClick = useCallback(
+      (ev: MouseEvent) => onSortClick(SortField.SELF, ev),
+      [onSortClick],
+    )
     const onSymbolNameClick = useCallback(
       (ev: MouseEvent) => onSortClick(SortField.SYMBOL_NAME, ev),
       [onSortClick],

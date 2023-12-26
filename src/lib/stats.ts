@@ -76,7 +76,11 @@ class Panel {
   private GRAPH_WIDTH = 74 * PR
   private GRAPH_HEIGHT = 30 * PR
 
-  constructor(private name: string, private fg: string, private bg: string) {
+  constructor(
+    private name: string,
+    private fg: string,
+    private bg: string,
+  ) {
     this.canvas.width = this.WIDTH
     this.canvas.height = this.HEIGHT
     this.canvas.style.cssText = 'width:80px;height:48px'

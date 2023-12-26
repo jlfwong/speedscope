@@ -99,7 +99,10 @@ export class CallTreeNode extends HasWeights {
     this.frozen = true
   }
 
-  constructor(readonly frame: Frame, readonly parent: CallTreeNode | null) {
+  constructor(
+    readonly frame: Frame,
+    readonly parent: CallTreeNode | null,
+  ) {
     super()
   }
 }

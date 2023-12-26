@@ -70,7 +70,10 @@ export class ViewportRectangleRenderer {
   private material: Graphics.Material
   private buffer: Graphics.VertexBuffer
 
-  constructor(private gl: Graphics.Context, theme: Theme) {
+  constructor(
+    private gl: Graphics.Context,
+    theme: Theme,
+  ) {
     const vertices = [
       [-1, 1],
       [1, 1],

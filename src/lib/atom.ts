@@ -82,7 +82,10 @@ if (process.env.NODE_ENV === 'development') {
 
 export class Atom<T> {
   private observers: AtomListener[] = []
-  constructor(protected state: T, debugKey: string) {
+  constructor(
+    protected state: T,
+    debugKey: string,
+  ) {
     if (process.env.NODE_ENV === 'development') {
       if (hotReloadStash?.has(debugKey)) {
         // If we have a stored value from a previous hot reload, use that

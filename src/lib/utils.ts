@@ -213,17 +213,15 @@ export function lazyStatic<T>(cb: () => T): () => T {
   }
 }
 
-const base64lookupTable = lazyStatic(
-  (): Map<string, number> => {
-    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-    const ret = new Map<string, number>()
-    for (let i = 0; i < alphabet.length; i++) {
-      ret.set(alphabet.charAt(i), i)
-    }
-    ret.set('=', -1)
-    return ret
-  },
-)
+const base64lookupTable = lazyStatic((): Map<string, number> => {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+  const ret = new Map<string, number>()
+  for (let i = 0; i < alphabet.length; i++) {
+    ret.set(alphabet.charAt(i), i)
+  }
+  ret.set('=', -1)
+  return ret
+})
 
 // NOTE: There are probably simpler solutions to this problem, but I have this written already, so
 // until we run into problems with this, let's just use this.

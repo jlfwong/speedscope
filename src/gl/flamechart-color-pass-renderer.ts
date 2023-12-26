@@ -102,7 +102,10 @@ export class FlamechartColorPassRenderer {
   private material: Graphics.Material
   private buffer: Graphics.VertexBuffer
 
-  constructor(private gl: Graphics.Context, theme: Theme) {
+  constructor(
+    private gl: Graphics.Context,
+    theme: Theme,
+  ) {
     const vertices = [
       {pos: [-1, 1], uv: [0, 1]},
       {pos: [1, 1], uv: [1, 1]},

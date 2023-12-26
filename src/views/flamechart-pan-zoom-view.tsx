@@ -543,12 +543,10 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
   private zoom(logicalViewSpaceCenter: Vec2, multiplier: number) {
     this.interactionLock = 'zoom'
 
-    const physicalCenter = this.logicalToPhysicalViewSpace().transformPosition(
-      logicalViewSpaceCenter,
-    )
-    const configSpaceCenter = this.configSpaceToPhysicalViewSpace().inverseTransformPosition(
-      physicalCenter,
-    )
+    const physicalCenter =
+      this.logicalToPhysicalViewSpace().transformPosition(logicalViewSpaceCenter)
+    const configSpaceCenter =
+      this.configSpaceToPhysicalViewSpace().inverseTransformPosition(physicalCenter)
     if (!configSpaceCenter) return
 
     const zoomTransform = AffineTransform.withTranslation(configSpaceCenter.times(-1))
@@ -633,12 +631,10 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     }
 
     const logicalViewSpaceMouse = new Vec2(ev.offsetX, ev.offsetY)
-    const physicalViewSpaceMouse = this.logicalToPhysicalViewSpace().transformPosition(
-      logicalViewSpaceMouse,
-    )
-    const configSpaceMouse = this.configSpaceToPhysicalViewSpace().inverseTransformPosition(
-      physicalViewSpaceMouse,
-    )
+    const physicalViewSpaceMouse =
+      this.logicalToPhysicalViewSpace().transformPosition(logicalViewSpaceMouse)
+    const configSpaceMouse =
+      this.configSpaceToPhysicalViewSpace().inverseTransformPosition(physicalViewSpaceMouse)
 
     if (!configSpaceMouse) return
 

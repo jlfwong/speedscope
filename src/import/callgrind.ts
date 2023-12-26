@@ -95,7 +95,10 @@ class CallGraph {
   private totalWeights = new Map<Frame, number>()
   private childrenTotalWeights = new Map<Frame, Map<Frame, number>>()
 
-  constructor(private fileName: string, private fieldName: string) {}
+  constructor(
+    private fileName: string,
+    private fieldName: string,
+  ) {}
 
   private getOrInsertFrame(info: FrameInfo): Frame {
     return Frame.getOrInsert(this.frameSet, info)
@@ -345,7 +348,10 @@ class CallgrindParser {
   private savedFileNames: {[id: string]: string} = {}
   private savedFunctionNames: {[id: string]: string} = {}
 
-  constructor(contents: TextFileContent, private importedFileName: string) {
+  constructor(
+    contents: TextFileContent,
+    private importedFileName: string,
+  ) {
     this.lines = [...contents.splitLines()]
     this.lineNum = 0
   }
