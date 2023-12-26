@@ -34,6 +34,8 @@ Ensure you have the Github CLI tools installed and you're authenticated. Try run
     gh auth status
     npm whoami
 
+In your default browser, ensure that you're logged into your npm account, otherwise you'll see a 404 page when you open the authenticate link during the npm publish.
+
 Once ready to publish, run:
 
     scripts/publish-and-deploy.sh
