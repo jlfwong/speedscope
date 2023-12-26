@@ -5,7 +5,10 @@ export function clamp(x: number, minVal: number, maxVal: number) {
 }
 
 export class Vec2 {
-  constructor(readonly x: number, readonly y: number) {}
+  constructor(
+    readonly x: number,
+    readonly y: number,
+  ) {}
   withX(x: number) {
     return new Vec2(x, this.y)
   }
@@ -251,7 +254,10 @@ export class AffineTransform {
 }
 
 export class Rect {
-  constructor(readonly origin: Vec2, readonly size: Vec2) {}
+  constructor(
+    readonly origin: Vec2,
+    readonly size: Vec2,
+  ) {}
 
   isEmpty() {
     return this.width() == 0 || this.height() == 0

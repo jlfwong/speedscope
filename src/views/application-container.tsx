@@ -20,10 +20,10 @@ import {Application} from './application'
 export const ApplicationContainer = memo(() => {
   const canvas = useAtom(glCanvasAtom)
   const theme = useTheme()
-  const canvasContext = useMemo(() => (canvas ? getCanvasContext({theme, canvas}) : null), [
-    theme,
-    canvas,
-  ])
+  const canvasContext = useMemo(
+    () => (canvas ? getCanvasContext({theme, canvas}) : null),
+    [theme, canvas],
+  )
 
   return (
     <ProfileSearchContextProvider>

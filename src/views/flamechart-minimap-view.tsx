@@ -308,9 +308,8 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     const logicalSpaceMouse = this.windowToLogicalViewSpace().transformPosition(
       new Vec2(ev.clientX, ev.clientY),
     )
-    const physicalSpaceMouse = this.logicalToPhysicalViewSpace().transformPosition(
-      logicalSpaceMouse,
-    )
+    const physicalSpaceMouse =
+      this.logicalToPhysicalViewSpace().transformPosition(logicalSpaceMouse)
     return this.configSpaceToPhysicalViewSpace().inverseTransformPosition(physicalSpaceMouse)
   }
 

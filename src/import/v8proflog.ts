@@ -87,8 +87,8 @@ function codeToFrameInfo(code: Code, v8log: V8LogProfile): FrameInfo {
           matches[1].length > 0
             ? matches[1]
             : file
-            ? `(anonymous ${file.split('/').pop()}:${line})`
-            : '(anonymous)'
+              ? `(anonymous ${file.split('/').pop()}:${line})`
+              : '(anonymous)'
         return {
           key: name,
           name: functionName,

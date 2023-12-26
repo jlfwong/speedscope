@@ -204,7 +204,10 @@ export class StringBackedTextFileContent implements TextFileContent {
 }
 
 export class TextProfileDataSource implements ProfileDataSource {
-  constructor(private fileName: string, private contents: string) {}
+  constructor(
+    private fileName: string,
+    private contents: string,
+  ) {}
   async name() {
     return this.fileName
   }

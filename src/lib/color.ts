@@ -20,14 +20,14 @@ export class Color {
       hPrime < 1
         ? [C, X, 0]
         : hPrime < 2
-        ? [X, C, 0]
-        : hPrime < 3
-        ? [0, C, X]
-        : hPrime < 4
-        ? [0, X, C]
-        : hPrime < 5
-        ? [X, 0, C]
-        : [C, 0, X]
+          ? [X, C, 0]
+          : hPrime < 3
+            ? [0, C, X]
+            : hPrime < 4
+              ? [0, X, C]
+              : hPrime < 5
+                ? [X, 0, C]
+                : [C, 0, X]
 
     const m = L - (0.3 * R1 + 0.59 * G1 + 0.11 * B1)
 

@@ -42,7 +42,10 @@ test('getOrInsert', () => {
 })
 
 class ValueType {
-  private constructor(readonly a: string, readonly num: number) {}
+  private constructor(
+    readonly a: string,
+    readonly num: number,
+  ) {}
   get key() {
     return `${this.a}_${this.num}`
   }

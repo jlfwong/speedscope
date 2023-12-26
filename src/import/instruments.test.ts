@@ -35,7 +35,10 @@ class ZipBackedFileSystemEntry implements Omit<FileSystemEntry, 'filesystem' | '
   private zipDir: any | null
   private zipFile: JSZip.JSZipObject | null
 
-  constructor(private zip: JSZip, fullPath: string) {
+  constructor(
+    private zip: JSZip,
+    fullPath: string,
+  ) {
     this.fullPath = fullPath
 
     this.zipFile = zip.file(fullPath)
@@ -75,7 +78,7 @@ class ZipBackedFileSystemEntry implements Omit<FileSystemEntry, 'filesystem' | '
         const ret: FileSystemEntry[] = []
         this.zipDir.forEach((relativePath: string, file: {name: string}) => {
           if (relativePath.split('/').length === (relativePath.endsWith('/') ? 2 : 1)) {
-            ret.push((new ZipBackedFileSystemEntry(this.zip, file.name) as any) as FileSystemEntry)
+            ret.push(new ZipBackedFileSystemEntry(this.zip, file.name) as any as FileSystemEntry)
           }
         })
         cb(ret)

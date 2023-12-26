@@ -39,7 +39,10 @@ export function exactMatchStrings(text: string, pattern: string): [number, numbe
 // A utility class for storing cached search results to avoid recomputation when
 // the search results & profile did not change.
 export class ProfileSearchResults {
-  constructor(readonly profile: Profile, readonly searchQuery: string) {}
+  constructor(
+    readonly profile: Profile,
+    readonly searchQuery: string,
+  ) {}
 
   private matches: Map<Frame, [number, number][] | null> | null = null
   getMatchForFrame(frame: Frame): [number, number][] | null {
@@ -65,7 +68,10 @@ interface CachedFlamechartResult {
 }
 
 export class FlamechartSearchResults {
-  constructor(readonly flamechart: Flamechart, readonly profileResults: ProfileSearchResults) {}
+  constructor(
+    readonly flamechart: Flamechart,
+    readonly profileResults: ProfileSearchResults,
+  ) {}
 
   private matches: CachedFlamechartResult | null = null
   private getResults(): CachedFlamechartResult {
