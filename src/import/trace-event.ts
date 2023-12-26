@@ -54,6 +54,11 @@ interface TraceEvent {
   cname?: string
 }
 
+enum ExporterSource {
+  HERMES = 'HERMES',
+  UNKNOWN = 'UNKNOWN',
+}
+
 interface HermesTraceEventArgs {
   line: number | null
   column: number | null
@@ -67,6 +72,17 @@ interface HermesTraceEventArgs {
   allocatedCategory: string
   allocatedName: string
 }
+
+const requiredHermesArguments: Array<keyof HermesTraceEventArgs> = [
+  'line',
+  'column',
+  'name',
+  'category',
+  'url',
+  'params',
+  'allocatedCategory',
+  'allocatedName',
+]
 
 type HermesTraceEvent = TraceEvent & {
   args: HermesTraceEventArgs
@@ -301,15 +317,15 @@ function keyForEvent(event: TraceEvent): string {
   return key
 }
 
-function frameInfoForEvent<T extends boolean>(
-  event: T extends true ? HermesTraceEvent : TraceEvent,
-  isHermesProfile: T,
+function frameInfoForEvent(
+  event: TraceEvent,
+  exporterSource: ExporterSource = ExporterSource.UNKNOWN,
 ): FrameInfo {
   const key = keyForEvent(event)
 
   // In Hermes profiles we have additional guaranteed metadata we can use to
   // more accurately populate profiles with info such as line + col number
-  if (isHermesProfile) {
+  if (exporterSource === ExporterSource.HERMES) {
     return {
       name: getEventName(event),
       key: key,
@@ -370,7 +386,7 @@ function getProfileNameByPidTid(
 function eventListToProfile(
   importableEvents: ImportableTraceEvent[],
   name: string,
-  isHermesProfile: boolean = false,
+  exporterSource: ExporterSource = ExporterSource.UNKNOWN,
 ): Profile {
   // The trace event format is hard to deal with because it specifically
   // allows events to be recorded out of order, *but* event ordering is still
@@ -397,7 +413,7 @@ function eventListToProfile(
   const frameStack: BTraceEvent[] = []
   const enterFrame = (b: BTraceEvent) => {
     frameStack.push(b)
-    profileBuilder.enterFrame(frameInfoForEvent(b, isHermesProfile), b.ts)
+    profileBuilder.enterFrame(frameInfoForEvent(b, exporterSource), b.ts)
   }
 
   const tryToLeaveFrame = (e: ETraceEvent) => {
@@ -406,14 +422,14 @@ function eventListToProfile(
     if (b == null) {
       console.warn(
         `Tried to end frame "${
-          frameInfoForEvent(e, isHermesProfile).key
+          frameInfoForEvent(e, exporterSource).key
         }", but the stack was empty. Doing nothing instead.`,
       )
       return
     }
 
-    const eFrameInfo = frameInfoForEvent(e, isHermesProfile)
-    const bFrameInfo = frameInfoForEvent(b, isHermesProfile)
+    const eFrameInfo = frameInfoForEvent(e, exporterSource)
+    const bFrameInfo = frameInfoForEvent(b, exporterSource)
 
     if (e.name !== b.name) {
       console.warn(
@@ -446,7 +462,7 @@ function eventListToProfile(
         // match.
         const stackTop = lastOf(frameStack)
         if (stackTop != null) {
-          const bFrameInfo = frameInfoForEvent(stackTop, isHermesProfile)
+          const bFrameInfo = frameInfoForEvent(stackTop, exporterSource)
 
           let swapped: boolean = false
 
@@ -457,7 +473,7 @@ function eventListToProfile(
               break
             }
 
-            const eFrameInfo = frameInfoForEvent(eEvent, isHermesProfile)
+            const eFrameInfo = frameInfoForEvent(eEvent, exporterSource)
             if (bFrameInfo.key === eFrameInfo.key) {
               // We have a match! Process this one first.
               const temp = eEventQueue[0]
@@ -505,7 +521,7 @@ function eventListToProfile(
   }
 
   for (let i = frameStack.length - 1; i >= 0; i--) {
-    const frame = frameInfoForEvent(frameStack[i], isHermesProfile)
+    const frame = frameInfoForEvent(frameStack[i], exporterSource)
     console.warn(`Frame "${frame.key}" was still open at end of profile. Closing automatically.`)
     profileBuilder.leaveFrame(frame, profileBuilder.getTotalWeight())
   }
@@ -586,7 +602,10 @@ function sampleListToProfile(contents: TraceWithSamples, samples: Sample[], name
   return profileBuilder.build()
 }
 
-function eventListToProfileGroup(events: TraceEvent[], isHermesProfile = false): ProfileGroup {
+function eventListToProfileGroup(
+  events: TraceEvent[],
+  exporterSource: ExporterSource = ExporterSource.UNKNOWN,
+): ProfileGroup {
   const importableEvents = filterIgnoredEventTypes(events)
   const partitionedTraceEvents = partitionByPidTid(importableEvents)
   const profileNamesByPidTid = getProfileNameByPidTid(events, partitionedTraceEvents)
@@ -602,7 +621,7 @@ function eventListToProfileGroup(events: TraceEvent[], isHermesProfile = false):
 
     profilePairs.push([
       profileKey,
-      eventListToProfile(importableEventsForPidTid, name, isHermesProfile),
+      eventListToProfile(importableEventsForPidTid, name, exporterSource),
     ])
   })
 
@@ -687,28 +706,20 @@ function isTraceEventList(maybeEventList: any): maybeEventList is TraceEvent[] {
 }
 
 function isHermesTraceEvent(traceEventArgs: any): traceEventArgs is HermesTraceEventArgs {
-  const requiredProperties: Array<keyof HermesTraceEventArgs> = [
-    'line',
-    'column',
-    'name',
-    'category',
-    'url',
-    'params',
-    'allocatedCategory',
-    'allocatedName',
-  ]
-
   if (!traceEventArgs) {
     return false
   }
 
-  return requiredProperties.every(prop => prop in traceEventArgs)
+  return requiredHermesArguments.every(prop => prop in traceEventArgs)
 }
 
 function isHermesTraceEventList(maybeEventList: any): maybeEventList is HermesTraceEvent[] {
   if (!isTraceEventList(maybeEventList)) return false
 
-  return maybeEventList.every(el => isHermesTraceEvent(el.args))
+  // We just check the first element to avoid iterating over all trace events,
+  // and asumme that if the first one is formatted like a hermes profile then
+  // all events will be
+  return isHermesTraceEvent(maybeEventList[0].args)
 }
 
 function isTraceEventObject(maybeTraceEventObject: any): maybeTraceEventObject is TraceEventObject {
@@ -740,7 +751,7 @@ export function importTraceEvents(rawProfile: Trace): ProfileGroup {
   } else if (isTraceEventObject(rawProfile)) {
     return eventListToProfileGroup(rawProfile.traceEvents)
   } else if (isHermesTraceEventList(rawProfile)) {
-    return eventListToProfileGroup(rawProfile, true)
+    return eventListToProfileGroup(rawProfile, ExporterSource.HERMES)
   } else if (isTraceEventList(rawProfile)) {
     return eventListToProfileGroup(rawProfile)
   } else {
