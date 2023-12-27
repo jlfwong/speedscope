@@ -1,7 +1,6 @@
 English | [简体中文](./README-zh_CN.md)
 # 🔬speedscope 
-
-A fast, interactive web-based viewer for performance profiles. An alternative viewer for [FlameGraphs][1]. Will happily display multi-megabyte profiles without crashing your browser.
+A fast, interactive web-based viewer for performance profiles. Supports import from a variety of profiles in a variety of languages (JS, Ruby, Python, Go & more). Try it here: https://www.speedscope.app
 
 Given raw profiling data, speedscope allows you to interactively explore the data to get insight into what's slow in your application, or allocating all the memory, or whatever data is represented in the profiling data.
 
@@ -10,27 +9,7 @@ Given raw profiling data, speedscope allows you to interactively explore the dat
 [0]: https://en.wikipedia.org/wiki/Profiling_(computer_programming)#Statistical_profilers
 [1]: https://github.com/brendangregg/FlameGraph
 
-# Usage
-
-Visit https://www.speedscope.app, then either browse to find a profile file or drag-and-drop one onto the page. The profiles are not uploaded anywhere -- the application is totally in-browser.
-
-## Command line usage
-
-For offline use, or convenience in the terminal, you can also install speedscope
-via npm:
-
-    npm install -g speedscope
-
-Invoking `speedscope /path/to/profile` will load speedscope in your default browser.
-
-## Self-contained directory
-
-If you don't have npm or node installed, you can also download a
-self-contained version from https://github.com/jlfwong/speedscope/releases.
-After you download the zip file from a release, simply unzip it and open the
-contained `index.html` in Chrome or Firefox.
-
-## Supported file formats
+# Supported file formats
 
 speedscope is designed to ingest profiles from a variety of different profilers for different programming languages & environments. Click the links below for documentation on how to import from a specific source.
 
@@ -39,6 +18,7 @@ speedscope is designed to ingest profiles from a variety of different profilers 
   - [Importing from Firefox](https://github.com/jlfwong/speedscope/wiki/Importing-from-Firefox)
   - [Importing from Safari](https://github.com/jlfwong/speedscope/wiki/Importing-from-Safari)
   - [Importing from Node.js](https://github.com/jlfwong/speedscope/wiki/Importing-from-Node.js)
+  - [Importing from Hermes (for React Native)](https://github.com/jlfwong/speedscope/wiki/Importing-from-Hermes)
 - Ruby
   - [Importing from stackprof](https://github.com/jlfwong/speedscope/wiki/Importing-from-stackprof-(ruby))
   - [Importing from rbspy](https://github.com/jlfwong/speedscope/wiki/Importing-from-rbspy-(ruby))
@@ -62,6 +42,25 @@ speedscope is designed to ingest profiles from a variety of different profilers 
 - [Importing from custom sources](https://github.com/jlfwong/speedscope/wiki/Importing-from-custom-sources)
 
 Contributions to add support for additional formats are welcome! See issues with the ["import source" tag](https://github.com/jlfwong/speedscope/issues?q=is%3Aissue+is%3Aopen+label%3A%22import+source%22).
+# Usage
+
+Visit https://www.speedscope.app, then either browse to find a profile file or drag-and-drop one onto the page. The profiles are not uploaded anywhere -- the application is totally in-browser.
+
+## Command line usage
+
+For offline use, or convenience in the terminal, you can also install speedscope
+via npm:
+
+    npm install -g speedscope
+
+Invoking `speedscope /path/to/profile` will load speedscope in your default browser.
+
+## Self-contained directory
+
+If you don't have npm or node installed, you can also download a
+self-contained version from https://github.com/jlfwong/speedscope/releases.
+After you download the zip file from a release, simply unzip it and open the
+contained `index.html` in Chrome or Firefox.
 
 ## Importing via URL
 
