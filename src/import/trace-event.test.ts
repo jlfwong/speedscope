@@ -127,6 +127,10 @@ test('importTraceEvents simple hermes profile', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/simple-hermes.json')
 })
 
+test('importTraceEvents hermes profile with multiple frames', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/simple-hermes.json')
+})
+
 test('importTraceEvents simple profile with samples', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/simple-with-samples.json')
 })

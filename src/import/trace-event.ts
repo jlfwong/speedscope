@@ -185,7 +185,7 @@ function selectQueueToTakeFromNext(
   // to ensure it opens before we try to close it.
   //
   // Otherwise, process the 'E' queue first.
-  return keyForEvent(bFront) === keyForEvent(eFront) ? 'B' : 'E'
+  return getEventId(bFront) === getEventId(eFront) ? 'B' : 'E'
 }
 
 function convertToEventQueues(events: ImportableTraceEvent[]): [BTraceEvent[], ETraceEvent[]] {
@@ -309,7 +309,13 @@ function getEventName(event: TraceEvent): string {
   return `${event.name || '(unnamed)'}`
 }
 
-function keyForEvent(event: TraceEvent): string {
+/**
+ * Attempt to construct a unique identifier for an event. Note that this
+ * is different from the frame key, as in some cases we don't want to include
+ * some arguments to allow from frame grouping (e.g. parent in the case of
+ * hermes profiles)
+ */
+function getEventId(event: TraceEvent): string {
   let key = getEventName(event)
   if (event.args) {
     key += ` ${JSON.stringify(event.args)}`
@@ -321,8 +327,6 @@ function frameInfoForEvent(
   event: TraceEvent,
   exporterSource: ExporterSource = ExporterSource.UNKNOWN,
 ): FrameInfo {
-  const key = keyForEvent(event)
-
   // In Hermes profiles we have additional guaranteed metadata we can use to
   // more accurately populate profiles with info such as line + col number
   if (exporterSource === ExporterSource.HERMES) {
@@ -336,6 +340,8 @@ function frameInfoForEvent(
       col: event.args.column,
     }
   }
+
+  const key = getEventId(event)
 
   return {
     name: key,
