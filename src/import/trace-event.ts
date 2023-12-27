@@ -326,9 +326,11 @@ function frameInfoForEvent(
   // In Hermes profiles we have additional guaranteed metadata we can use to
   // more accurately populate profiles with info such as line + col number
   if (exporterSource === ExporterSource.HERMES) {
+    const hermesFrameKey = `${event.name}:${event.args.url}:${event.args.line}:${event.args.column}`
+
     return {
       name: getEventName(event),
-      key: key,
+      key: hermesFrameKey,
       file: event.args.url,
       line: event.args.line,
       col: event.args.column,
