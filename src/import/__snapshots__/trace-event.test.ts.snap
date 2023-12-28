@@ -404,6 +404,41 @@ exports[`importTraceEvents event reordering name match: indexToView 1`] = `0`;
 
 exports[`importTraceEvents event reordering name match: profileGroup.name 1`] = `"event-reordering-name-match.json"`;
 
+exports[`importTraceEvents hermes profile with multiple frames 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": null,
+      "file": null,
+      "key": "[root]:null:null:null",
+      "line": null,
+      "name": "[root]",
+      "selfWeight": 2,
+      "totalWeight": 14,
+    },
+    Frame {
+      "col": 12,
+      "file": "/Users/example/test_project/node_modules/metro-runtime/src/polyfills/require.js",
+      "key": "beta:/Users/example/test_project/node_modules/metro-runtime/src/polyfills/require.js:54:12",
+      "line": 54,
+      "name": "beta",
+      "selfWeight": 12,
+      "totalWeight": 12,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "[root] 1.00µs",
+    "[root];beta 12.00µs",
+    "[root] 1.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents hermes profile with multiple frames: indexToView 1`] = `0`;
+
+exports[`importTraceEvents hermes profile with multiple frames: profileGroup.name 1`] = `"simple-hermes.json"`;
+
 exports[`importTraceEvents invalid x nesting 1`] = `
 Object {
   "frames": Array [
@@ -1321,7 +1356,7 @@ Object {
     Frame {
       "col": null,
       "file": null,
-      "key": "[root] {\\"name\\":\\"[root]\\",\\"category\\":\\"root\\",\\"url\\":null,\\"line\\":null,\\"column\\":null,\\"params\\":null,\\"allocatedCategory\\":\\"root\\",\\"allocatedName\\":\\"[root]\\"}",
+      "key": "[root]:null:null:null",
       "line": null,
       "name": "[root]",
       "selfWeight": 2,
@@ -1330,7 +1365,7 @@ Object {
     Frame {
       "col": 12,
       "file": "/Users/example/test_project/node_modules/metro-runtime/src/polyfills/require.js",
-      "key": "beta {\\"line\\":54,\\"column\\":12,\\"funcLine\\":\\"1\\",\\"funcColumn\\":\\"1\\",\\"name\\":\\"beta\\",\\"category\\":\\"JavaScript\\",\\"parent\\":1,\\"url\\":\\"/Users/example/test_project/node_modules/metro-runtime/src/polyfills/require.js\\",\\"params\\":null,\\"allocatedCategory\\":\\"JavaScript\\",\\"allocatedName\\":\\"beta\\"}",
+      "key": "beta:/Users/example/test_project/node_modules/metro-runtime/src/polyfills/require.js:54:12",
       "line": 54,
       "name": "beta",
       "selfWeight": 12,
