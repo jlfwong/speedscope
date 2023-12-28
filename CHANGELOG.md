@@ -1,3 +1,8 @@
+## [1.19.0] - 2023-12-27
+
+- Improve hermes profile frame keys to better group frames [[#459](https://github.com/jlfwong/speedscope/pull/459)] (by @zacharyfmarion)
+- Update README.md
+
 ## [1.18.0] - 2023-12-26
 
 - Add hermes-specific support for the trace event format [[#458](https://github.com/jlfwong/speedscope/pull/458)] (by @zacharyfmarion)
