@@ -140,7 +140,7 @@ interface TraceEventObject {
 
 type Trace = TraceEvent[] | TraceEventObject | TraceWithSamples
 
-function pidTidKey(pid: number, tid: number): string {
+function pidTidKey(pid: number | number, tid: number | number): string {
   // We zero-pad the PID and TID to make sorting them by pid/tid pair later easier.
   return `${zeroPad('' + pid, 10)}:${zeroPad('' + tid, 10)}`
 }
@@ -349,14 +349,50 @@ function frameInfoForEvent(
   }
 }
 
-/**
- * Constructs an array mapping pid-tid keys to profile builders. Both the traceEvent[]
- * format and the sample + stack frame based object format specify the process and thread
- * names based on metadata so we share this logic.
- *
- * See https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview#heading=h.xqopa5m0e28f
- */
-function getProfileNameByPidTid(
+function getProfileNameFromPidTid(
+  processName: string | undefined,
+  threadName: string | undefined,
+  pid: number,
+  tid: number,
+): string {
+  if (processName != null && threadName != null) {
+    return `${processName} (pid ${pid}), ${threadName} (tid ${tid})`
+  } else if (processName != null) {
+    return `${processName} (pid ${pid}, tid ${tid})`
+  } else if (threadName != null) {
+    return `${threadName} (pid ${pid}, tid ${tid})`
+  } else {
+    return `pid ${pid}, tid ${tid}`
+  }
+}
+
+function getProfileNamesFromSamples(
+  events: TraceEvent[],
+  partitionedSamples: Map<string, Sample[]>,
+): Map<string, string> {
+  const processNamesByPid = getProcessNamesByPid(events)
+  const threadNamesByPidTid = getThreadNamesByPidTid(events)
+
+  const profileNamesByPidTid = new Map<string, string>()
+
+  partitionedSamples.forEach(samples => {
+    if (samples.length === 0) return
+
+    const pid = Number(samples[0].pid)
+    const tid = Number(samples[0].tid)
+
+    const profileKey = pidTidKey(pid, tid)
+    const processName = processNamesByPid.get(pid)
+    const threadName = threadNamesByPidTid.get(profileKey)
+    const profileName = getProfileNameFromPidTid(processName, threadName, pid, tid)
+
+    profileNamesByPidTid.set(profileKey, profileName)
+  })
+
+  return profileNamesByPidTid
+}
+
+function getProfileNamesFromTraceEvents(
   events: TraceEvent[],
   partitionedTraceEvents: Map<string, TraceEvent[]>,
 ): Map<string, string> {
@@ -373,19 +409,9 @@ function getProfileNameByPidTid(
     const profileKey = pidTidKey(pid, tid)
     const processName = processNamesByPid.get(pid)
     const threadName = threadNamesByPidTid.get(profileKey)
+    const profileName = getProfileNameFromPidTid(processName, threadName, pid, tid)
 
-    if (processName != null && threadName != null) {
-      profileNamesByPidTid.set(
-        profileKey,
-        `${processName} (pid ${pid}), ${threadName} (tid ${tid})`,
-      )
-    } else if (processName != null) {
-      profileNamesByPidTid.set(profileKey, `${processName} (pid ${pid}, tid ${tid})`)
-    } else if (threadName != null) {
-      profileNamesByPidTid.set(profileKey, `${threadName} (pid ${pid}, tid ${tid})`)
-    } else {
-      profileNamesByPidTid.set(profileKey, `pid ${pid}, tid ${tid}`)
-    }
+    profileNamesByPidTid.set(profileKey, profileName)
   })
 
   return profileNamesByPidTid
@@ -616,7 +642,7 @@ function eventListToProfileGroup(
 ): ProfileGroup {
   const importableEvents = filterIgnoredEventTypes(events)
   const partitionedTraceEvents = partitionByPidTid(importableEvents)
-  const profileNamesByPidTid = getProfileNameByPidTid(events, partitionedTraceEvents)
+  const profileNamesByPidTid = getProfileNamesFromTraceEvents(events, partitionedTraceEvents)
 
   const profilePairs: [string, Profile][] = []
 
@@ -647,10 +673,8 @@ function eventListToProfileGroup(
 }
 
 function sampleListToProfileGroup(contents: TraceWithSamples): ProfileGroup {
-  const importableEvents = filterIgnoredEventTypes(contents.traceEvents)
-  const partitionedTraceEvents = partitionByPidTid(importableEvents)
   const partitionedSamples = partitionByPidTid(contents.samples)
-  const profileNamesByPidTid = getProfileNameByPidTid(contents.traceEvents, partitionedTraceEvents)
+  const profileNamesByPidTid = getProfileNamesFromSamples(contents.traceEvents, partitionedSamples)
 
   const profilePairs: [string, Profile][] = []
 
