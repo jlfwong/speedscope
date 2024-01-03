@@ -140,7 +140,7 @@ interface TraceEventObject {
 
 type Trace = TraceEvent[] | TraceEventObject | TraceWithSamples
 
-function pidTidKey(pid: number | number, tid: number | number): string {
+function pidTidKey(pid: number, tid: number): string {
   // We zero-pad the PID and TID to make sorting them by pid/tid pair later easier.
   return `${zeroPad('' + pid, 10)}:${zeroPad('' + tid, 10)}`
 }
@@ -349,7 +349,7 @@ function frameInfoForEvent(
   }
 }
 
-function getProfileNameFromPidTid(
+function getProfileName(
   processName: string | undefined,
   threadName: string | undefined,
   pid: number,
@@ -384,7 +384,7 @@ function getProfileNamesFromSamples(
     const profileKey = pidTidKey(pid, tid)
     const processName = processNamesByPid.get(pid)
     const threadName = threadNamesByPidTid.get(profileKey)
-    const profileName = getProfileNameFromPidTid(processName, threadName, pid, tid)
+    const profileName = getProfileName(processName, threadName, pid, tid)
 
     profileNamesByPidTid.set(profileKey, profileName)
   })
@@ -409,7 +409,7 @@ function getProfileNamesFromTraceEvents(
     const profileKey = pidTidKey(pid, tid)
     const processName = processNamesByPid.get(pid)
     const threadName = threadNamesByPidTid.get(profileKey)
-    const profileName = getProfileNameFromPidTid(processName, threadName, pid, tid)
+    const profileName = getProfileName(processName, threadName, pid, tid)
 
     profileNamesByPidTid.set(profileKey, profileName)
   })
