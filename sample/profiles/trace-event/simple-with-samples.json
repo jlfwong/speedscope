@@ -21,16 +21,6 @@
       "args": {
         "name": "mqt_js"
       }
-    },
-    {
-      "name": "mqt_js",
-      "cat": "mqt_js",
-      "ph": "X",
-      "dur": 0,
-      "pid": 7512,
-      "ts": "11550183666",
-      "tid": "7695",
-      "args": {}
     }
   ],
   "samples": [
