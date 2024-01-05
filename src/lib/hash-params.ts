@@ -2,6 +2,7 @@ import {ViewMode} from '../lib/view-mode'
 
 export interface HashParams {
   profileURL?: string
+  profileAccepts?: string
   title?: string
   localProfilePath?: string
   viewMode?: ViewMode
@@ -36,6 +37,8 @@ export function getHashParams(hashContents = window.location.hash): HashParams {
         result.title = value
       } else if (key === 'localProfilePath') {
         result.localProfilePath = value
+      } else if (key === 'profileAccepts') {
+        result.profileAccepts = value
       } else if (key === 'view') {
         const mode = getViewMode(value)
         if (mode !== null) {
