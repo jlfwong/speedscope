@@ -1,3 +1,7 @@
+## [1.20.0] - 2024-01-12
+
+- Partition based on samples instead of traceEvents when importing a sample-based chrome trace [[#460](https://github.com/jlfwong/speedscope/pull/460)] (by @zacharyfmarion)
+
 ## [1.19.0] - 2023-12-27
 
 - Improve hermes profile frame keys to better group frames [[#459](https://github.com/jlfwong/speedscope/pull/459)] (by @zacharyfmarion)
