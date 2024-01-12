@@ -1,3 +1,3 @@
-speedscope@1.19.0
-Wed Dec 27 23:57:31 EST 2023
-a3c0b15935fe125130ef371ec79dbe1c5e744b63
+speedscope@1.20.0
+Fri Jan 12 09:57:49 PST 2024
+68fd88ceaf93d89aa27f3f0a20a27c9cfdc015c5
