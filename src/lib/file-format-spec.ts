@@ -65,7 +65,7 @@ export namespace FileFormat {
     unit: ValueUnit
 
     // The starting value of the profile. This will typically be a timestamp.
-    // All event values will be relative to this startValue.
+    // All event values will be displayed relative to this startValue.
     startValue: number
 
     // The final value of the profile. This will typically be a timestamp. This
@@ -93,7 +93,7 @@ export namespace FileFormat {
     unit: ValueUnit
 
     // The starting value of the profile. This will typically be a timestamp.
-    // All event values will be relative to this startValue.
+    // All event values will be displayed relative to this startValue.
     startValue: number
 
     // The final value of the profile. This will typically be a timestamp. This
