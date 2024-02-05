@@ -70,6 +70,7 @@ interface GLCanvasProps {
 }
 export class GLCanvas extends StatelessComponent<GLCanvasProps> {
   private canvas: HTMLCanvasElement | null = null
+  private inResize = false
 
   private ref = (canvas: Element | null) => {
     if (canvas instanceof HTMLCanvasElement) {
@@ -93,6 +94,7 @@ export class GLCanvas extends StatelessComponent<GLCanvasProps> {
   private maybeResize = () => {
     if (!this.container) return
     if (!this.props.canvasContext) return
+    if (this.inResize) return
 
     let {width, height} = this.container.getBoundingClientRect()
 
@@ -101,12 +103,14 @@ export class GLCanvas extends StatelessComponent<GLCanvasProps> {
     const widthInPixels = width * window.devicePixelRatio
     const heightInPixels = height * window.devicePixelRatio
 
+    this.inResize = true
     this.props.canvasContext.gl.resize(
       widthInPixels,
       heightInPixels,
       widthInAppUnits,
       heightInAppUnits,
     )
+    this.inResize = false
   }
 
   onWindowResize = () => {
