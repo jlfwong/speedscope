@@ -1,0 +1,7 @@
+@font-face{
+	font-family: 'Source Code Pro';
+	font-weight: 400;
+	font-style: normal;
+	font-stretch: normal;
+	src: url('../node_modules/source-code-pro/TTF/SourceCodePro-Regular.ttf') format('truetype');
+}
