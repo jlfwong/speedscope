@@ -168,6 +168,7 @@ export type ApplicationProps = {
 
 export class Application extends StatelessComponent<ApplicationProps> {
   private async loadProfile(loader: () => Promise<ProfileGroup | null>) {
+    this.props.setError(false)
     this.props.setLoading(true)
     await new Promise(resolve => setTimeout(resolve, 0))
 
