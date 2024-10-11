@@ -13,13 +13,14 @@ export interface StackprofProfile {
   frames: {[number: string]: StackprofFrame}
   mode: string
   raw: number[]
+  raw_lines: number[]
   raw_timestamp_deltas: number[]
   samples: number
   interval: number
 }
 
 export function importFromStackprof(stackprofProfile: StackprofProfile): Profile {
-  const {frames, mode, raw, raw_timestamp_deltas, interval} = stackprofProfile
+  const {frames, mode, raw, raw_lines, raw_timestamp_deltas, interval} = stackprofProfile
   const profile = new StackListProfileBuilder()
   profile.setValueFormatter(new TimeFormatter('microseconds')) // default to time format unless we're in object mode
 
@@ -33,6 +34,7 @@ export function importFromStackprof(stackprofProfile: StackprofProfile): Profile
     let stack: FrameInfo[] = []
     for (let j = 0; j < stackHeight; j++) {
       const id = raw[i++]
+      const lineNo = raw_lines ? raw_lines[i - 1] : frames[id].line
       let frameName = frames[id].name
       if (frameName == null) {
         frameName = '(unknown)'
@@ -40,6 +42,7 @@ export function importFromStackprof(stackprofProfile: StackprofProfile): Profile
       const frame = {
         key: id,
         ...frames[id],
+        line: lineNo,
         name: frameName,
       }
       stack.push(frame)
