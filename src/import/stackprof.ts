@@ -40,7 +40,10 @@ export function importFromStackprof(stackprofProfile: StackprofProfile): Profile
         frameName = '(unknown)'
       }
       const frame = {
-        key: id,
+        // Use a similar trick to https://github.com/tmm1/stackprof/pull/213
+        // generates a unique key for the name id + call line.
+        // Converts to a string to prevent truncation from BigInt to number
+        key: ((BigInt(id) << BigInt(16)) | BigInt(lineNo ? lineNo : 0)).toString(10),
         ...frames[id],
         line: lineNo,
         name: frameName,
