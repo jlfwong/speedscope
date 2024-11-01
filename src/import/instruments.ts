@@ -110,12 +110,12 @@ export function importFromInstrumentsDeepCopy(contents: TextFileContent): Profil
 
   const stack: FrameInfoWithWeight[] = []
   let cumulativeValue: number = 0
-  let firstRowShift: number = rows[0]['Symbol Names']
+  let leadingFirstRowSpaces: number = rows[0]['Symbol Names']
     ? rows[0]['Symbol Names'].lastIndexOf(' ') + 1
     : 0
 
   for (let row of rows) {
-    const symbolName = row['Symbol Name'] || row['Symbol Names']?.slice(firstRowShift)
+    const symbolName = row['Symbol Name'] || row['Symbol Names']?.slice(leadingFirstRowSpaces)
     if (!symbolName) continue
     const trimmedSymbolName = symbolName.trim()
     let stackDepth = symbolName.length - trimmedSymbolName.length
