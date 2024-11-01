@@ -12,6 +12,10 @@ describe('importFromInstrumentsDeepCopy', () => {
     )
   })
 
+  test('time profile, version 16', async () => {
+    await checkProfileSnapshot('./sample/profiles/Instruments/16.0/simple-time-profile-deep-copy.txt')
+  })
+
   test('allocations profile', async () => {
     await checkProfileSnapshot(
       './sample/profiles/Instruments/7.3.1/random-allocations-deep-copy.txt',

@@ -1,0 +1,95 @@
+Weight	Self Weight	Symbol Names
+4.93 s  100.0%	0 s	   start
+4.93 s  99.9%	0 s	    main
+2.45 s   0.0%	846.00 ms	     delta()
+797.00 ms   0.0%	786.00 ms	      alpha()
+9.00 ms   0.0%	0 s	       leakMemory()
+8.00 ms   0.0%	1.00 ms	        szone_malloc_should_clear
+6.00 ms   0.0%	4.00 ms	         small_malloc_should_clear
+2.00 ms   0.0%	2.00 ms	          small_malloc_from_free_list
+1.00 ms   0.0%	1.00 ms	         small_malloc_from_free_list
+1.00 ms   0.0%	1.00 ms	        _malloc_zone_malloc
+2.00 ms   0.0%	2.00 ms	       _malloc_zone_malloc
+795.00 ms   0.0%	778.00 ms	      beta()
+14.00 ms   0.0%	1.00 ms	       leakMemory()
+11.00 ms   0.0%	2.00 ms	        szone_malloc_should_clear
+9.00 ms   0.0%	3.00 ms	         small_malloc_should_clear
+5.00 ms   0.0%	5.00 ms	          small_malloc_from_free_list
+1.00 ms   0.0%	1.00 ms	          rack_get_thread_index
+1.00 ms   0.0%	1.00 ms	        nanov2_malloc_type
+1.00 ms   0.0%	1.00 ms	        DYLD-STUB$$malloc
+2.00 ms   0.0%	2.00 ms	       nanov2_malloc_type
+1.00 ms   0.0%	1.00 ms	       _malloc_zone_malloc
+10.00 ms   0.0%	0 s	      leakMemory()
+7.00 ms   0.0%	3.00 ms	       szone_malloc_should_clear
+4.00 ms   0.0%	3.00 ms	        small_malloc_should_clear
+1.00 ms   0.0%	0 s	         mvm_allocate_pages_plat
+1.00 ms   0.0%	1.00 ms	          _kernelrpc_mach_vm_map_trap
+2.00 ms   0.0%	2.00 ms	       small_malloc_should_clear
+1.00 ms   0.0%	1.00 ms	       _malloc_zone_malloc
+3.00 ms   0.0%	3.00 ms	      _malloc_zone_malloc
+838.00 ms   0.0%	827.00 ms	     gamma()
+9.00 ms   0.0%	1.00 ms	      leakMemory()
+5.00 ms   0.0%	0 s	       szone_malloc_should_clear
+4.00 ms   0.0%	1.00 ms	        small_malloc_should_clear
+3.00 ms   0.0%	3.00 ms	         small_malloc_from_free_list
+1.00 ms   0.0%	1.00 ms	        rack_get_thread_index
+1.00 ms   0.0%	1.00 ms	       small_malloc_should_clear
+1.00 ms   0.0%	1.00 ms	       _malloc_zone_malloc
+1.00 ms   0.0%	1.00 ms	       nanov2_malloc_type
+2.00 ms   0.0%	2.00 ms	      _malloc_zone_malloc
+834.00 ms   0.0%	824.00 ms	     beta()
+9.00 ms   0.0%	0 s	      leakMemory()
+7.00 ms   0.0%	0 s	       szone_malloc_should_clear
+6.00 ms   0.0%	1.00 ms	        small_malloc_should_clear
+4.00 ms   0.0%	4.00 ms	         small_malloc_from_free_list
+1.00 ms   0.0%	1.00 ms	         rack_get_thread_index
+1.00 ms   0.0%	1.00 ms	        rack_get_thread_index
+1.00 ms   0.0%	1.00 ms	       nanov2_malloc_type
+1.00 ms   0.0%	1.00 ms	       small_malloc_should_clear
+1.00 ms   0.0%	1.00 ms	      _malloc_zone_malloc
+803.00 ms   0.0%	788.00 ms	     alpha()
+14.00 ms   0.0%	0 s	      leakMemory()
+11.00 ms   0.0%	1.00 ms	       szone_malloc_should_clear
+10.00 ms   0.0%	3.00 ms	        small_malloc_should_clear
+5.00 ms   0.0%	5.00 ms	         small_malloc_from_free_list
+2.00 ms   0.0%	2.00 ms	         rack_get_thread_index
+1.00 ms   0.0%	1.00 ms	       nanov2_malloc_type
+1.00 ms   0.0%	1.00 ms	       small_malloc_should_clear
+1.00 ms   0.0%	1.00 ms	       _malloc_zone_malloc
+1.00 ms   0.0%	1.00 ms	      _malloc_zone_malloc
+4.00 ms   0.1%	0 s	    dyld4::start(dyld4::KernelArgs*, void*, void*)::$_0::operator()() const
+4.00 ms   0.1%	0 s	     dyld4::prepare(dyld4::APIs&, dyld3::MachOAnalyzer const*)
+3.00 ms   0.0%	0 s	      dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)
+3.00 ms   0.0%	0 s	       mach_o::Header::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool&) block_pointer) const
+3.00 ms   0.0%	0 s	        mach_o::Header::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const
+3.00 ms   0.0%	0 s	         invocation function for block in mach_o::Header::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool&) block_pointer) const
+3.00 ms   0.0%	0 s	          invocation function for block in dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)
+3.00 ms   0.0%	0 s	           dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)
+3.00 ms   0.0%	0 s	            dyld4::Loader::forEachPath(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)
+3.00 ms   0.0%	0 s	             dyld4::ProcessConfig::PathOverrides::forEachPathVariant(char const*, dyld3::Platform, bool, bool, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer) const
+3.00 ms   0.0%	0 s	              dyld4::Loader::forEachResolvedAtPathVar(dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, dyld4::ProcessConfig::PathOverrides::Type, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)
+3.00 ms   0.0%	0 s	               invocation function for block in dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)
+3.00 ms   0.0%	0 s	                dyld4::Loader::makeDyldCacheLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, unsigned int, mach_o::Layout const*)
+3.00 ms   0.0%	0 s	                 dyld4::RuntimeState::findPrebuiltLoader(char const*) const
+3.00 ms   0.0%	0 s	                  dyld4::PrebuiltLoader::isValid(dyld4::RuntimeState const&) const
+3.00 ms   0.0%	0 s	                   dyld4::PrebuiltLoader::invalidateInIsolation(dyld4::RuntimeState const&) const
+3.00 ms   0.0%	0 s	                    dyld4::ProcessConfig::PathOverrides::forEachPathVariant(char const*, dyld3::Platform, bool, bool, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer) const
+3.00 ms   0.0%	0 s	                     invocation function for block in dyld4::PrebuiltLoader::invalidateInIsolation(dyld4::RuntimeState const&) const
+3.00 ms   0.0%	0 s	                      dyld4::SyscallDelegate::fileExists(char const*, dyld4::FileID*, int*) const
+3.00 ms   0.0%	0 s	                       dyld3::stat(char const*, stat*)
+3.00 ms   0.0%	3.00 ms	                        stat
+1.00 ms   0.0%	0 s	      dyld4::APIs::runAllInitializersForMain()
+1.00 ms   0.0%	0 s	       dyld4::Loader::runInitializersBottomUpPlusUpwardLinks(dyld4::RuntimeState&) const
+1.00 ms   0.0%	0 s	        dyld4::Loader::runInitializersBottomUpPlusUpwardLinks(dyld4::RuntimeState&) const::$_0::operator()() const
+1.00 ms   0.0%	0 s	         dyld4::Loader::runInitializersBottomUp(dyld4::RuntimeState&, dyld3::Array<dyld4::Loader const*>&, dyld3::Array<dyld4::Loader const*>&) const
+1.00 ms   0.0%	0 s	          dyld4::Loader::runInitializersBottomUp(dyld4::RuntimeState&, dyld3::Array<dyld4::Loader const*>&, dyld3::Array<dyld4::Loader const*>&) const
+1.00 ms   0.0%	0 s	           dyld4::Loader::runInitializersBottomUp(dyld4::RuntimeState&, dyld3::Array<dyld4::Loader const*>&, dyld3::Array<dyld4::Loader const*>&) const
+1.00 ms   0.0%	0 s	            dyld4::PrebuiltLoader::runInitializers(dyld4::RuntimeState&) const
+1.00 ms   0.0%	0 s	             dyld4::Loader::findAndRunAllInitializers(dyld4::RuntimeState&) const
+1.00 ms   0.0%	0 s	              dyld3::MachOAnalyzer::forEachInitializer(Diagnostics&, dyld3::MachOAnalyzer::VMAddrConverter const&, void (unsigned int) block_pointer, void const*) const
+1.00 ms   0.0%	0 s	               dyld3::MachOFile::forEachSection(void (dyld3::MachOFile::SectionInfo const&, bool, bool&) block_pointer) const
+1.00 ms   0.0%	0 s	                dyld3::MachOFile::forEachLoadCommand(Diagnostics&, void (load_command const*, bool&) block_pointer) const
+1.00 ms   0.0%	0 s	                 invocation function for block in dyld3::MachOFile::forEachSection(void (dyld3::MachOFile::SectionInfo const&, bool, bool&) block_pointer) const
+1.00 ms   0.0%	0 s	                  invocation function for block in dyld3::MachOAnalyzer::forEachInitializer(Diagnostics&, dyld3::MachOAnalyzer::VMAddrConverter const&, void (unsigned int) block_pointer, void const*) const
+1.00 ms   0.0%	1.00 ms	                   _GLOBAL__sub_I_stdlib_typed_new.cpp
