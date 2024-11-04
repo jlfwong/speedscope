@@ -13,7 +13,9 @@ describe('importFromInstrumentsDeepCopy', () => {
   })
 
   test('time profile, version 16', async () => {
-    await checkProfileSnapshot('./sample/profiles/Instruments/16.0/simple-time-profile-deep-copy.txt')
+    await checkProfileSnapshot(
+      './sample/profiles/Instruments/16.0/simple-time-profile-deep-copy.txt',
+    )
   })
 
   test('allocations profile', async () => {
