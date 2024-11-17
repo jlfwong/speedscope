@@ -38,12 +38,14 @@ interface PastedTimeProfileRow {
   Weight?: string
   'Source Path'?: string
   'Symbol Name'?: string
+  'Symbol Names'?: string
 }
 
 interface PastedAllocationsProfileRow {
   'Bytes Used'?: string
   'Source Path'?: string
   'Symbol Name'?: string
+  'Symbol Names'?: string
 }
 
 interface FrameInfoWithWeight extends FrameInfo {
@@ -108,9 +110,12 @@ export function importFromInstrumentsDeepCopy(contents: TextFileContent): Profil
 
   const stack: FrameInfoWithWeight[] = []
   let cumulativeValue: number = 0
+  let leadingFirstRowSpaces: number = rows[0]['Symbol Names']
+    ? rows[0]['Symbol Names'].lastIndexOf(' ') + 1
+    : 0
 
   for (let row of rows) {
-    const symbolName = row['Symbol Name']
+    const symbolName = row['Symbol Name'] || row['Symbol Names']?.slice(leadingFirstRowSpaces)
     if (!symbolName) continue
     const trimmedSymbolName = symbolName.trim()
     let stackDepth = symbolName.length - trimmedSymbolName.length
