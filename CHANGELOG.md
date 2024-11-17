@@ -1,3 +1,10 @@
+## [1.21.0] - 2024-11-16
+
+- Add support for Instruments 16 Time Profile Deep Copy [[#484](https://github.com/jlfwong/speedscope/pull/484)] (by @robert3005)
+- Fix bug where import after error continues failing [[#463](https://github.com/jlfwong/speedscope/pull/463)] (by @tom93)
+- Bundle the font [[#472](https://github.com/jlfwong/speedscope/pull/472)] (by @Krinkle)
+- Clarify specification of startValue in speedscope file format [[#464](https://github.com/jlfwong/speedscope/pull/464)] (by @tom93)
+
 ## [1.20.0] - 2024-01-12
 
 - Partition based on samples instead of traceEvents when importing a sample-based chrome trace [[#460](https://github.com/jlfwong/speedscope/pull/460)] (by @zacharyfmarion)
