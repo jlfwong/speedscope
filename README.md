@@ -34,6 +34,9 @@ speedscope is designed to ingest profiles from a variety of different profilers 
   - [Importing from pprof](https://github.com/jlfwong/speedscope/wiki/Importing-from-pprof-(go))  
 - Rust
   - [flamescope](https://github.com/coolreader18/flamescope)
+- Java
+  - [Importing from async‐profiler (Java)
+](https://github.com/jlfwong/speedscope/wiki/Importing-from-async%E2%80%90profiler-(Java))
 - Native code
   - [Importing from Instruments.app](https://github.com/jlfwong/speedscope/wiki/Importing-from-Instruments.app) (macOS)
   - [Importing from `perf`](https://github.com/jlfwong/speedscope/wiki/Importing-from-perf-(linux)) (linux)
