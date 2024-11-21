@@ -425,7 +425,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   async maybeLoadHashParamProfile() {
-    const {profileURL} = this.props.hashParams
+    const {profileURL, profileAccepts} = this.props.hashParams
     if (profileURL) {
       if (!canUseXHR) {
         alert(
@@ -434,7 +434,14 @@ export class Application extends StatelessComponent<ApplicationProps> {
         return
       }
       this.loadProfile(async () => {
-        const response: Response = await fetch(profileURL)
+        const fetchOpts: RequestInit = {}
+        if (profileAccepts) {
+          fetchOpts['headers'] = {
+            Accept: profileAccepts,
+          }
+        }
+
+        const response: Response = await fetch(profileURL, fetchOpts)
         let filename = new URL(profileURL, window.location.href).pathname
         if (filename.includes('/')) {
           filename = filename.slice(filename.lastIndexOf('/') + 1)
