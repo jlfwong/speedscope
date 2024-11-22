@@ -13,13 +13,14 @@ export interface StackprofProfile {
   frames: {[number: string]: StackprofFrame}
   mode: string
   raw: number[]
+  raw_lines: number[]
   raw_timestamp_deltas: number[]
   samples: number
   interval: number
 }
 
 export function importFromStackprof(stackprofProfile: StackprofProfile): Profile {
-  const {frames, mode, raw, raw_timestamp_deltas, interval} = stackprofProfile
+  const {frames, mode, raw, raw_lines, raw_timestamp_deltas, interval} = stackprofProfile
   const profile = new StackListProfileBuilder()
   profile.setValueFormatter(new TimeFormatter('microseconds')) // default to time format unless we're in object mode
 
@@ -33,13 +34,18 @@ export function importFromStackprof(stackprofProfile: StackprofProfile): Profile
     let stack: FrameInfo[] = []
     for (let j = 0; j < stackHeight; j++) {
       const id = raw[i++]
+      const lineNo = raw_lines ? raw_lines[i - 1] : frames[id].line
       let frameName = frames[id].name
       if (frameName == null) {
         frameName = '(unknown)'
       }
       const frame = {
-        key: id,
+        // Use a similar trick to https://github.com/tmm1/stackprof/pull/213
+        // generates a unique key for the name id + call line.
+        // Converts to a string to prevent truncation from BigInt to number
+        key: ((BigInt(id) << BigInt(16)) | BigInt(lineNo ? lineNo : 0)).toString(10),
         ...frames[id],
+        line: lineNo,
         name: frameName,
       }
       stack.push(frame)

@@ -6,7 +6,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "sample/programs/ruby/simple.rb",
-      "key": 5352342240,
+      "key": "350771101040640",
       "line": undefined,
       "name": "<main>",
       "selfWeight": 0,
@@ -15,7 +15,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/mcorrea/src/github.com/dalehamel/speedscope/sample/programs/ruby/simple.rb",
-      "key": 4530376200,
+      "key": "296902734643200",
       "line": undefined,
       "name": "<main>",
       "selfWeight": 0,
@@ -24,7 +24,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/mcorrea/src/github.com/dalehamel/speedscope/sample/programs/ruby/simple.rb",
-      "key": 4530486680,
+      "key": "296909975060517",
       "line": 37,
       "name": "block in <main>",
       "selfWeight": 0,
@@ -33,7 +33,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/mcorrea/src/github.com/dalehamel/speedscope/sample/programs/ruby/simple.rb",
-      "key": 5335911080,
+      "key": "349694268538884",
       "line": 4,
       "name": "Object#a",
       "selfWeight": 0,
@@ -42,7 +42,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/mcorrea/src/github.com/dalehamel/speedscope/sample/programs/ruby/simple.rb",
-      "key": 5335911040,
+      "key": "349694265917452",
       "line": 12,
       "name": "Object#b",
       "selfWeight": 0,
@@ -51,7 +51,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/mcorrea/src/github.com/dalehamel/speedscope/sample/programs/ruby/simple.rb",
-      "key": 5335909920,
+      "key": "349694192517144",
       "line": 24,
       "name": "Object#d",
       "selfWeight": 331000,
@@ -60,7 +60,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/mcorrea/src/github.com/dalehamel/speedscope/sample/programs/ruby/simple.rb",
-      "key": 5335910560,
+      "key": "349694234460178",
       "line": 18,
       "name": "Object#c",
       "selfWeight": 0,
@@ -69,7 +69,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/mcorrea/src/github.com/dalehamel/speedscope/sample/programs/ruby/simple.rb",
-      "key": 5335909880,
+      "key": "349694189895712",
       "line": 32,
       "name": "Object#e",
       "selfWeight": 79000,
@@ -78,7 +78,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "",
-      "key": 1,
+      "key": "65536",
       "line": undefined,
       "name": "(garbage collection)",
       "selfWeight": 0,
@@ -87,7 +87,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "",
-      "key": 5,
+      "key": "327680",
       "line": undefined,
       "name": "(sweeping)",
       "selfWeight": 71000,
@@ -96,7 +96,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "",
-      "key": 3,
+      "key": "196608",
       "line": undefined,
       "name": "(marking)",
       "selfWeight": 8000,
@@ -454,7 +454,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "simple.rb",
-      "key": 70098912279220,
+      "key": "4594002315130961920",
       "line": undefined,
       "name": "<main>",
       "selfWeight": 0,
@@ -463,7 +463,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/jlfwong/code/speedscope/sample/programs/ruby/simple.rb",
-      "key": 70098928804560,
+      "key": "4594003398135644160",
       "line": undefined,
       "name": "<main>",
       "selfWeight": 0,
@@ -472,7 +472,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/jlfwong/code/speedscope/sample/programs/ruby/simple.rb",
-      "key": 70098916424940,
+      "key": "4594002586824867871",
       "line": 31,
       "name": "block in <main>",
       "selfWeight": 0,
@@ -481,7 +481,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/jlfwong/code/speedscope/sample/programs/ruby/simple.rb",
-      "key": 70098916485880,
+      "key": "4594002590818631684",
       "line": 4,
       "name": "Object#a",
       "selfWeight": 0,
@@ -490,7 +490,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/jlfwong/code/speedscope/sample/programs/ruby/simple.rb",
-      "key": 70098916485860,
+      "key": "4594002590817320971",
       "line": 11,
       "name": "Object#b",
       "selfWeight": 0,
@@ -499,7 +499,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/jlfwong/code/speedscope/sample/programs/ruby/simple.rb",
-      "key": 70098916485820,
+      "key": "4594002590814699543",
       "line": 23,
       "name": "Object#d",
       "selfWeight": 1087582,
@@ -508,7 +508,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "",
-      "key": 313,
+      "key": "20512768",
       "line": undefined,
       "name": "(garbage collection)",
       "selfWeight": 464022,
@@ -517,7 +517,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/jlfwong/code/speedscope/sample/programs/ruby/simple.rb",
-      "key": 70098916485840,
+      "key": "4594002590816010257",
       "line": 17,
       "name": "Object#c",
       "selfWeight": 0,
@@ -1305,7 +1305,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "../../alexcoco/speedscope/sample/programs/ruby/object.rb",
-      "key": 4317728280,
+      "key": "282966640558080",
       "line": undefined,
       "name": "<main>",
       "selfWeight": 0,
@@ -1314,7 +1314,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/alex/src/github.com/alexcoco/speedscope/sample/programs/ruby/object.rb",
-      "key": 4376547240,
+      "key": "286821399920640",
       "line": undefined,
       "name": "<main>",
       "selfWeight": 0,
@@ -1323,7 +1323,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "<cfunc>",
-      "key": 4379035920,
+      "key": "286984498053120",
       "line": null,
       "name": "StackProf.run",
       "selfWeight": 0,
@@ -1332,7 +1332,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/alex/src/github.com/alexcoco/speedscope/sample/programs/ruby/object.rb",
-      "key": 4317464320,
+      "key": "282949341675541",
       "line": 21,
       "name": "block in <main>",
       "selfWeight": 1,
@@ -1341,7 +1341,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/alex/src/github.com/alexcoco/speedscope/sample/programs/ruby/object.rb",
-      "key": 4379033920,
+      "key": "286984366981124",
       "line": 4,
       "name": "Object#a",
       "selfWeight": 2,
@@ -1350,7 +1350,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "<cfunc>",
-      "key": 4317869400,
+      "key": "282975888998400",
       "line": null,
       "name": "Range#each",
       "selfWeight": 0,
@@ -1359,7 +1359,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/alex/src/github.com/alexcoco/speedscope/sample/programs/ruby/object.rb",
-      "key": 4379033880,
+      "key": "286984364359691",
       "line": 11,
       "name": "Object#b",
       "selfWeight": 1,
@@ -1368,7 +1368,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "<cfunc>",
-      "key": 4318054440,
+      "key": "282988015779840",
       "line": null,
       "name": "Class#new",
       "selfWeight": 4,
@@ -1377,7 +1377,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/alex/src/github.com/alexcoco/speedscope/sample/programs/ruby/object.rb",
-      "key": 4379033840,
+      "key": "286984361738255",
       "line": 15,
       "name": "Object#c",
       "selfWeight": 2,
@@ -1386,7 +1386,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "<cfunc>",
-      "key": 4317868920,
+      "key": "282975857541120",
       "line": null,
       "name": "Range#to_a",
       "selfWeight": 1,
@@ -1395,7 +1395,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "<cfunc>",
-      "key": 4379016640,
+      "key": "286983234519040",
       "line": null,
       "name": "Enumerable#to_a",
       "selfWeight": 36,
@@ -1404,7 +1404,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "<internal:array>",
-      "key": 4317563560,
+      "key": "282955845468220",
       "line": 60,
       "name": "Array#sample",
       "selfWeight": 20,
@@ -1413,7 +1413,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "<cfunc>",
-      "key": 4317922760,
+      "key": "282979385999360",
       "line": null,
       "name": "Array#sort",
       "selfWeight": 36,
@@ -1500,7 +1500,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "../../alexcoco/speedscope/sample/programs/ruby/object.rb",
-      "key": 4317728280,
+      "key": "282966640558080",
       "line": undefined,
       "name": "<main>",
       "selfWeight": 0,
@@ -1509,7 +1509,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/alex/src/github.com/alexcoco/speedscope/sample/programs/ruby/object.rb",
-      "key": 4376547240,
+      "key": "286821399920640",
       "line": undefined,
       "name": "<main>",
       "selfWeight": 0,
@@ -1518,7 +1518,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "<cfunc>",
-      "key": 4379035920,
+      "key": "286984498053120",
       "line": null,
       "name": "StackProf.run",
       "selfWeight": 0,
@@ -1527,7 +1527,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/alex/src/github.com/alexcoco/speedscope/sample/programs/ruby/object.rb",
-      "key": 4317464320,
+      "key": "282949341675541",
       "line": 21,
       "name": "block in <main>",
       "selfWeight": 1,
@@ -1536,7 +1536,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/alex/src/github.com/alexcoco/speedscope/sample/programs/ruby/object.rb",
-      "key": 4379033920,
+      "key": "286984366981124",
       "line": 4,
       "name": "Object#a",
       "selfWeight": 2,
@@ -1545,7 +1545,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "<cfunc>",
-      "key": 4317869400,
+      "key": "282975888998400",
       "line": null,
       "name": "Range#each",
       "selfWeight": 0,
@@ -1554,7 +1554,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/alex/src/github.com/alexcoco/speedscope/sample/programs/ruby/object.rb",
-      "key": 4379033880,
+      "key": "286984364359691",
       "line": 11,
       "name": "Object#b",
       "selfWeight": 1,
@@ -1563,7 +1563,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "<cfunc>",
-      "key": 4318054440,
+      "key": "282988015779840",
       "line": null,
       "name": "Class#new",
       "selfWeight": 4,
@@ -1572,7 +1572,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "/Users/alex/src/github.com/alexcoco/speedscope/sample/programs/ruby/object.rb",
-      "key": 4379033840,
+      "key": "286984361738255",
       "line": 15,
       "name": "Object#c",
       "selfWeight": 2,
@@ -1581,7 +1581,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "<cfunc>",
-      "key": 4317868920,
+      "key": "282975857541120",
       "line": null,
       "name": "Range#to_a",
       "selfWeight": 1,
@@ -1590,7 +1590,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "<cfunc>",
-      "key": 4379016640,
+      "key": "286983234519040",
       "line": null,
       "name": "Enumerable#to_a",
       "selfWeight": 36,
@@ -1599,7 +1599,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "<internal:array>",
-      "key": 4317563560,
+      "key": "282955845468220",
       "line": 60,
       "name": "Array#sample",
       "selfWeight": 20,
@@ -1608,7 +1608,7 @@ Object {
     Frame {
       "col": undefined,
       "file": "<cfunc>",
-      "key": 4317922760,
+      "key": "282979385999360",
       "line": null,
       "name": "(unknown)",
       "selfWeight": 36,
