@@ -1,7 +1,6 @@
 import {lastOf, KeyedSet} from './utils'
 import {ValueFormatter, RawValueFormatter} from './value-formatters'
 import {FileFormat} from './file-format-spec'
-const demangleCppModule = import('./demangle-cpp')
 
 export interface FrameInfo {
   key: string | number
@@ -404,16 +403,16 @@ export class Profile {
 
   // Demangle symbols for readability
   async demangle() {
-    let demangleCpp: ((name: string) => string) | null = null
+    let demangle: ((name: string) => string) | null = null
 
     for (let frame of this.frames) {
-      // This function converts a mangled C++ name such as "__ZNK7Support6ColorFeqERKS0_"
-      // into a human-readable symbol (in this case "Support::ColorF::==(Support::ColorF&)")
-      if (frame.name.startsWith('__Z')) {
-        if (!demangleCpp) {
-          demangleCpp = (await demangleCppModule).demangleCpp
+      // This function converts a mangled C++ and Rust name into a human-readable symbol.
+      if (frame.name.startsWith('__Z') || frame.name.startsWith('_R') || frame.name.startsWith('_Z')) {
+        if (!demangle) {
+          const demangleModule = await import('./demangle')
+          demangle = await demangleModule.loadDemangling()
         }
-        frame.name = demangleCpp(frame.name)
+        frame.name = demangle(frame.name)
       }
     }
   }
