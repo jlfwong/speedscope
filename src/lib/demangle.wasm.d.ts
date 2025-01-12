@@ -1,5 +1,5 @@
 interface WasmDemangleModule {
-    wasm_demangle(mangled: string): string
+  wasm_demangle(mangled: string): string
 }
 
-export default function ModuleFactory(options?: unknown): Promise<WasmDemangleModule>;
+export default function ModuleFactory(options?: unknown): Promise<WasmDemangleModule>

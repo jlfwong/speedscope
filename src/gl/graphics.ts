@@ -25,7 +25,7 @@
 
 // NOTE: This file intentionally has no dependencies.
 
-declare const process: any;
+declare const process: any
 
 // Dependencies & polyfills for import from skew
 const RELEASE =

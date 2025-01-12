@@ -407,7 +407,11 @@ export class Profile {
 
     for (let frame of this.frames) {
       // This function converts a mangled C++ and Rust name into a human-readable symbol.
-      if (frame.name.startsWith('__Z') || frame.name.startsWith('_R') || frame.name.startsWith('_Z')) {
+      if (
+        frame.name.startsWith('__Z') ||
+        frame.name.startsWith('_R') ||
+        frame.name.startsWith('_Z')
+      ) {
         if (!demangle) {
           const demangleModule = await import('./demangle')
           demangle = await demangleModule.loadDemangling()

@@ -56,7 +56,10 @@ async function importFromFileSystemDirectoryEntry(entry: FileSystemDirectoryEntr
   return (await importModule).importFromFileSystemDirectoryEntry(entry)
 }
 
-const exampleProfileURL = new URL('../../sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt', import.meta.url)
+const exampleProfileURL = new URL(
+  '../../sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt',
+  import.meta.url,
+)
 
 function isFileSystemDirectoryEntry(entry: FileSystemEntry): entry is FileSystemDirectoryEntry {
   return entry != null && entry.isDirectory

@@ -19,5 +19,7 @@ test('demangle', async () => {
   expect(demangle('_RNvCskwGfYPst2Cb_3foo16example_function')).toBe('foo::example_function')
 
   // Rust legacy mangling
-  expect(demangle('_ZN3std2fs8Metadata7created17h8df207f105c5d474E')).toBe('std::fs::Metadata::created::h8df207f105c5d474')
+  expect(demangle('_ZN3std2fs8Metadata7created17h8df207f105c5d474E')).toBe(
+    'std::fs::Metadata::created::h8df207f105c5d474',
+  )
 })
