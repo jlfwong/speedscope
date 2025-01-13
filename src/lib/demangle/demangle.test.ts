@@ -22,4 +22,7 @@ test('demangle', async () => {
   expect(demangle('_ZN3std2fs8Metadata7created17h8df207f105c5d474E')).toBe(
     'std::fs::Metadata::created::h8df207f105c5d474',
   )
+
+  // False positive
+  expect(demangle('_ZoomIn')).toBe('_ZoomIn')
 })
