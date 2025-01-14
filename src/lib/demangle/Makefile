@@ -5,15 +5,18 @@ LDFLAGS_COMMON = \
     -s EXPORTED_FUNCTIONS=_demangle,_free \
     -s MODULARIZE=1 \
     -s WASM=1 \
-    -s FILESYSTEM=0
+    -s FILESYSTEM=0 \
+    -s MINIMAL_RUNTIME=1
 
-# To use inside speedscope, we have to disable EXPORT_ES6 as otherwise
-# jest complain because it doesn't support es6 module export. It doesn't happen
-# with .ts because they are compiled to compatible js.
+# We have to disable EXPORT_ES6 as otherwise since esbuild cannot transpile that
+# into umd or anything else. 
+# .ts files throughout the project can do this just fine because they are
+# transpiled to compatible js.
 ifeq ($(TEST),1)
     LDFLAGS = $(LDFLAGS_COMMON) -s EXPORT_ES6=1
 else
-    LDFLAGS = $(LDFLAGS_COMMON) -s SINGLE_FILE=1 -s ENVIRONMENT=web
+    # SINGLE_FILE=1 embeds the wasm as base64.
+    LDFLAGS = $(LDFLAGS_COMMON) -s ASSERTIONS=0 -s SINGLE_FILE=1 -s ENVIRONMENT=web
 endif
 
 SRC_FILES = \
@@ -22,14 +25,18 @@ SRC_FILES = \
     gcc/libiberty/cp-demangle.c \
     demangle.c
 POST_JS = demangle.post.js
+EMSCRIPTEN_OUTPUT = demangle.wasm.esnext.js
 OUTPUT = demangle.wasm.js
 
 all: $(OUTPUT)
 
-$(OUTPUT): $(SRC_FILES) $(POST_JS)
-	$(EMCC) $(CFLAGS) $(SRC_FILES) $(LDFLAGS) --post-js $(POST_JS) --no-entry -o $(OUTPUT)
+$(OUTPUT): $(EMSCRIPTEN_OUTPUT)
+	npx --yes esbuild $< --target=es2020 > $@
+
+$(EMSCRIPTEN_OUTPUT): $(SRC_FILES) $(POST_JS)
+	$(EMCC) $(CFLAGS) $(SRC_FILES) $(LDFLAGS) --post-js $(POST_JS) --extern-post-js extern.post.js --no-entry -o $@
 
 clean:
-	rm -f $(OUTPUT)
+	rm -f $(EMSCRIPTEN_OUTPUT) $(OUTPUT)
 
 .PHONY: all clean
