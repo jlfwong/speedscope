@@ -1,11 +1,13 @@
 import createWasmDemangleModule from './demangle.wasm'
 
+const wasmDemangleModulePromise = createWasmDemangleModule().then((module) => module)
+
 const cache = new Map<string, string>()
 
 export async function loadDemangling(): Promise<(name: string) => string> {
   // This function converts a mangled C++ name such as "__ZNK7Support6ColorFeqERKS0_"
   // into a human-readable symbol (in this case "Support::ColorF::==(Support::ColorF&)")
-  const wasmDemangleModule = await createWasmDemangleModule()
+  const wasmDemangleModule = await wasmDemangleModulePromise
   return cached(wasmDemangleModule.wasm_demangle)
 }
 
