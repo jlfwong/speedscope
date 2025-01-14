@@ -56,8 +56,7 @@ async function importFromFileSystemDirectoryEntry(entry: FileSystemDirectoryEntr
   return (await importModule).importFromFileSystemDirectoryEntry(entry)
 }
 
-declare function require(x: string): any
-const exampleProfileURL = require('../../sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt')
+import exampleProfileURL from 'url:../../sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt'
 
 function isFileSystemDirectoryEntry(entry: FileSystemEntry): entry is FileSystemDirectoryEntry {
   return entry != null && entry.isDirectory
