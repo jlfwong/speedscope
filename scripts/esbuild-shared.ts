@@ -17,6 +17,7 @@ export const buildOptions: esbuild.BuildOptions = {
   entryNames: '[name]-[hash]',
   chunkNames: '[name]-[hash]',
   assetNames: '[name]-[hash]',
+  sourcemap: true,
   bundle: true,
   format: 'esm',
   splitting: true,

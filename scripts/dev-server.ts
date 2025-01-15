@@ -8,20 +8,23 @@ async function main() {
     outdir,
     write: false,
     metafile: true,
+    plugins: [
+      {
+        name: 'speedscope-dev-server',
+        setup(build) {
+          build.onEnd(buildResult => {
+            generateIndexHtml({
+              buildResult,
+              outdir,
+              servingProtocol: 'http',
+            })
+          })
+        },
+      },
+    ],
   })
 
-  // TODO(jlfwong): This only builds the index file once at the server boot. It
-  // would be nice to have this rebuild on demand, but I don't see an API
-  // available from esbuild that would let me intercept to do this.
-  //
-  // I could just build my own server to do this and call rebuild manually, but
-  // this is good enough for now.
-  let buildResult = await ctx.rebuild()
-  generateIndexHtml({
-    buildResult,
-    outdir,
-    servingProtocol: 'http',
-  })
+  await ctx.rebuild()
 
   let {host, port} = await ctx.serve({
     servedir: outdir,
