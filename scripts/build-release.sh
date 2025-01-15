@@ -26,5 +26,6 @@ node scripts/generate-file-format-schema-json.js > "$OUTDIR"/file-format-schema.
 # https://github.com/jlfwong/speedscope/pull/412
 cp assets/source-code-pro/LICENSE.md "$OUTDIR"/source-code-pro.LICENSE.md
 
+# TODO(jlfwong): minify CSS & append hashes
 # Build the compiled assets
-node_modules/.bin/parcel build assets/index.html --no-cache --out-dir "$OUTDIR" --public-url "./" --detailed-report
+node scripts/build.mjs "$OUTDIR"

@@ -16,7 +16,7 @@
     "coverage": "npm run jest -- --coverage",
     "typecheck": "tsc --noEmit",
     "test": "./scripts/ci.sh",
-    "serve": "node scripts/dev-server.mjs"
+    "serve": "tsx scripts/dev-server.ts"
   },
   "files": [
     "bin/cli.js",
@@ -51,6 +51,7 @@
     "protobufjs": "6.8.8",
     "source-map": "0.6.1",
     "ts-jest": "24.3.0",
+    "tsx": "4.19.2",
     "typescript": "5.3.3",
     "typescript-json-schema": "0.42.0",
     "uglify-es": "3.2.2",
