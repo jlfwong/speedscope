@@ -28,7 +28,17 @@ export const buildOptions: esbuild.BuildOptions = {
   },
 }
 
-export const generateIndexHtml = (buildResult: esbuild.BuildResult, outdir: string) => {
+interface GenerateIndexHtmlOptions {
+  buildResult: esbuild.BuildResult
+  outdir: string
+  servingProtocol: 'file' | 'http'
+}
+
+export const generateIndexHtml = ({
+  buildResult,
+  outdir,
+  servingProtocol,
+}: GenerateIndexHtmlOptions) => {
   const outputs = buildResult.metafile!.outputs
 
   function getOutput(entryPoint: string): [string, esbuild.Metafile['outputs'][string]] {
@@ -44,7 +54,6 @@ export const generateIndexHtml = (buildResult: esbuild.BuildResult, outdir: stri
   const mainChunkName = path.basename(mainChunkPath)
 
   const mainChunkCssPath = mainChunk.cssBundle!
-
   const cssChunk = outputs[mainChunkCssPath]
 
   const fontPath = cssChunk.imports.find(i => i.path.endsWith('.woff2'))!.path
@@ -56,6 +65,10 @@ export const generateIndexHtml = (buildResult: esbuild.BuildResult, outdir: stri
   const asyncDependencyNames = mainChunk.imports
     .filter(i => i.kind === 'dynamic-import')
     .map(i => path.basename(i.path))
+
+  // If we're serving from a file protocol, we can't use module
+  // scripts
+  const scriptType = servingProtocol === 'file' ? '' : ' type="module"'
 
   const favicon16x16Path = getHashedFilePath('assets/favicon-16x16.png')
   const favicon32x32Path = getHashedFilePath('assets/favicon-32x32.png')
@@ -74,12 +87,22 @@ export const generateIndexHtml = (buildResult: esbuild.BuildResult, outdir: stri
     <link rel="icon" type="image/x-icon" href="${faviconIcoPath}">
   </head>
   <body>
-    <script src="${mainChunkName}" type="module"></script>
-    ${syncDependencyNames.map(dep => `<script src="${dep}" type="module"></script>`).join('\n    ')}
+    <script src="${mainChunkName}"${scriptType}></script>
+    ${syncDependencyNames.map(dep => `<script src="${dep}"${scriptType}></script>`).join('\n    ')}
     ${asyncDependencyNames
-      .map(dep => `<script src="${dep}" type="module" async></script>`)
+      .map(
+        dep =>
+          `<script src="${dep}"${scriptType}${
+            servingProtocol === 'file' ? '' : ' async'
+          }></script>`,
+      )
       .join('\n    ')}
-    <link rel="preload" href="${fontName}" as="font" type="font/woff2" crossorigin>
+    ${
+      /* Preload is blocked by CORS, so we can't use it with file:/// URLs */
+      servingProtocol === 'file'
+        ? ''
+        : `<link rel="preload" href="${fontName}" as="font" type="font/woff2" crossorigin>`
+    }
   </body>
 </html>
 `

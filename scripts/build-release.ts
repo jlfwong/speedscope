@@ -8,10 +8,18 @@ async function main() {
     ...buildOptions,
     minify: true,
     metafile: true,
+    format: 'cjs',
+    splitting: false,
     outdir,
   })
 
-  generateIndexHtml(buildResult, outdir)
+  generateIndexHtml({
+    buildResult,
+    outdir,
+    servingProtocol: 'file',
+  })
+
+  console.log(`Successfully built to ${outdir}`)
 }
 
 main()

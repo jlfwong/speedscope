@@ -17,7 +17,11 @@ async function main() {
   // I could just build my own server to do this and call rebuild manually, but
   // this is good enough for now.
   let buildResult = await ctx.rebuild()
-  generateIndexHtml(buildResult, outdir)
+  generateIndexHtml({
+    buildResult,
+    outdir,
+    servingProtocol: 'http',
+  })
 
   let {host, port} = await ctx.serve({
     servedir: outdir,
