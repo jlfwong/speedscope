@@ -2,7 +2,12 @@
 
 set -euxo pipefail
 
-OUTDIR=`pwd`/dist/release
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <output_directory>"
+    exit 1
+fi
+
+OUTDIR="$1"
 
 # Clean out the release directory
 rm -rf "$OUTDIR"
