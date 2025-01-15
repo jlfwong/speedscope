@@ -19,6 +19,7 @@ import {canUseXHR} from '../app-state'
 import {ProfileGroupState} from '../app-state/profile-group'
 import {HashParams} from '../lib/hash-params'
 import {StatelessComponent} from '../lib/preact-helpers'
+import {SandwichViewContainer} from './sandwich-view'
 
 const importModule = import('../import')
 
