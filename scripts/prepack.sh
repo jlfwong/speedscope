@@ -2,12 +2,37 @@
 
 set -euxo pipefail
 
-if [ $# -ne 1 ]; then
-    echo "Usage: $0 <output_directory>"
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --outdir)
+      OUTDIR="$2"
+      shift 2
+      ;;
+    --protocol)
+      PROTOCOL="$2"
+      shift 2
+      ;;
+    *)
+      echo "Unknown argument: $1"
+      echo "Usage: $0 --outdir <output_directory> --protocol <serving_protocol>"
+      echo "serving_protocol must be either 'http' or 'file'"
+      exit 1
+      ;;
+  esac
+done
+
+# Validate required arguments
+if [ -z "${OUTDIR:-}" ] || [ -z "${PROTOCOL:-}" ]; then
+    echo "Usage: $0 --outdir <output_directory> --protocol <serving_protocol>"
+    echo "serving_protocol must be either 'http' or 'file'"
     exit 1
 fi
 
-OUTDIR="$1"
+if [ "$PROTOCOL" != "http" ] && [ "$PROTOCOL" != "file" ]; then
+    echo "Error: serving_protocol must be either 'http' or 'file'"
+    exit 1
+fi
 
 # Clean out the release directory
 rm -rf "$OUTDIR"
@@ -25,4 +50,4 @@ node scripts/generate-file-format-schema-json.js > "$OUTDIR"/file-format-schema.
 # https://github.com/jlfwong/speedscope/pull/412
 cp assets/source-code-pro/LICENSE.md "$OUTDIR"/source-code-pro.LICENSE.md
 
-node_modules/.bin/tsx scripts/build-release.ts "$OUTDIR"
+node_modules/.bin/tsx scripts/build-release.ts --outdir "$OUTDIR" --protocol "$PROTOCOL"

@@ -9,7 +9,7 @@
   },
   "scripts": {
     "deploy": "./scripts/deploy.sh",
-    "prepack": "./scripts/prepack.sh \"$(pwd)/dist/release\"",
+    "prepack": "./scripts/prepack.sh --outdir \"$(pwd)/dist/release\" --protocol file",
     "prettier": "prettier --write 'src/**/*.ts' 'src/**/*.tsx'",
     "lint": "eslint 'src/**/*.ts' 'src/**/*.tsx'",
     "jest": "./scripts/test-setup.sh && jest --runInBand",

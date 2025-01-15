@@ -7,12 +7,10 @@
 set -euxo pipefail
 
 SRCDIR=`pwd`
-OUTDIR=`mktemp -d -t speedscope-unpacked`
+OUTDIR=`pwd`/dist/http-release
 
-# Untar the package
-pushd "$OUTDIR"
-PACKEDNAME=`npm pack speedscope | tail -n1`
-tar -xvvf "$PACKEDNAME"
+# Build the release with http protocol
+./scripts/prepack.sh --outdir "$OUTDIR" --protocol http
 
 # Create a shallow clone of the repository
 TMPDIR=`mktemp -d -t speedscope-deploy`
@@ -22,7 +20,7 @@ git clone --depth 1 git@github.com:jlfwong/speedscope.git -b gh-pages
 # Copy the build artifacts into the shallow clone
 pushd speedscope
 rm -rf *
-cp -R "$OUTDIR"/package/dist/release/** .
+cp -R "$OUTDIR"/* .
 
 # Set the CNAME record
 echo www.speedscope.app > CNAME
@@ -37,7 +35,7 @@ function ctrl_c() {
   if [[ $REPLY =~ ^yes$ ]]
   then
     git add --all
-    git commit -m "Deploy $PACKEDNAME"
+    git commit -m "Deploy $(date +%Y-%m-%d)"
     git push origin HEAD:gh-pages
     rm -rf "$TMPDIR"
     exit 0
