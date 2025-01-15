@@ -16,7 +16,7 @@
     "coverage": "npm run jest -- --coverage",
     "typecheck": "tsc --noEmit",
     "test": "./scripts/ci.sh",
-    "serve": "esbuild --serve --bundle src/speedscope.tsx --loader:.txt=file --outdir=assets --servedir=assets"
+    "serve": "node scripts/dev-server.mjs"
   },
   "files": [
     "bin/cli.js",
