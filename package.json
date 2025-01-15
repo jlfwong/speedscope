@@ -38,6 +38,7 @@
     "@typescript-eslint/parser": "6.16.0",
     "acorn": "7.2.0",
     "aphrodite": "2.1.0",
+    "esbuild": "0.24.2",
     "eslint": "8.0.0",
     "eslint-plugin-prettier": "5.1.2",
     "eslint-plugin-react-hooks": "4.6.0",
@@ -76,7 +77,6 @@
     ]
   },
   "dependencies": {
-    "esbuild": "0.18.9",
     "open": "7.2.0"
   }
 }
