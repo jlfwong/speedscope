@@ -1,6 +1,6 @@
 import createWasmDemangleModule from './demangle.wasm'
 
-const wasmDemangleModulePromise = createWasmDemangleModule().then((module) => module)
+const wasmDemangleModulePromise = createWasmDemangleModule().then(module => module)
 
 const cache = new Map<string, string>()
 
