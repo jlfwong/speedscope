@@ -8,7 +8,7 @@ async function main() {
     ...buildOptions,
     minify: true,
     metafile: true,
-    format: 'cjs',
+    format: 'iife',
     splitting: false,
     outdir,
   })
