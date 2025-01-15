@@ -2,7 +2,7 @@ import * as esbuild from 'esbuild'
 import {buildOptions, generateIndexHtml} from './esbuild-shared'
 
 async function main() {
-  const outdir = 'assets/dist'
+  const outdir = 'dist'
   let ctx = await esbuild.context({
     ...buildOptions,
     outdir,
