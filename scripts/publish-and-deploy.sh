@@ -11,6 +11,12 @@
 
 set -euxo pipefail
 
+# Typecheck
+node_modules/.bin/tsc --noEmit
+
+# Run unit tests
+npm run jest
+
 if [ $# -lt 1 ]; then
   echo "Usage: $0 <minor | patch | version>"
   echo "e.g. $0 patch"
