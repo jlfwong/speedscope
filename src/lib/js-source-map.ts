@@ -6,24 +6,11 @@
 // URL, but I want speedscope to work standalone offline. This means that the remaining
 // options require some way of having a local URL that corresponds the .wasm file.
 //
-// Also as of writing, speedscope is bundled with Parcel v1. Trying to import
-// a .wasm file in Parcel v1 tries to load the wasm module itself, which is not
-// what I'm trying to do -- I want SourceMapConsumer.initialize to be the thing
-// booting the WebAssembly, not Parcel itself.
-//
-// One way of getting around this problem is to modify the build system to
-// copy the .wasm file from node_modules/source-map/lib/mappings.wasm. I could do
-// this, but it's a bit of a pain.
-//
-// Another would be to use something like
-// import("url:../node_modules/source-map/lib/mappings.wasm"), and then pass the
-// resulting URL to SourceMapConsumer.initialize. This is also kind of a pain,
-// because I can only do that if I upgrade to Parcel v2. Ultimately, I'd like to
-// use esbuild rather than parcel at all, so for now I'm just punting on this by
-// using an old-version of source-map which doesn't depend on wasm.
-
 // This is rarely used, so let's load it async to avoid bloating the initial
 // bundle.
+//
+// TODO(jlfwong): Revisit using the newer, wasm-based version of source-map now
+// that we're using esbuild for bundling.
 import type {MappingItem, RawSourceMap, SourceMapConsumer} from 'source-map'
 const sourceMapModule = import('source-map')
 
