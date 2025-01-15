@@ -26,7 +26,8 @@
 // NOTE: This file intentionally has no dependencies.
 
 // Dependencies & polyfills for import from skew
-const RELEASE = process.env.NODE_ENV === 'production'
+const RELEASE =
+  typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'production'
 
 function assert(condition: boolean) {
   if (!RELEASE) {
