@@ -3,7 +3,7 @@ import * as esbuild from 'esbuild'
 let ctx = await esbuild.context({
   entryPoints: ['src/speedscope.tsx'],
   bundle: true,
-  outdir: 'assets',
+  outdir: 'assets/dist',
   format: 'esm',
   splitting: true,
   loader: {

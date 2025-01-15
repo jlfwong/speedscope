@@ -4,5 +4,4 @@ dist
 .idea
 coverage
 .vscode
-assets/*.js
-assets/*.txt
+assets/dist
