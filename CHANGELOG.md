@@ -1,3 +1,25 @@
+## [1.21.1] - 2025-01-15
+
+- Fix dev-server and source maps
+- Make the deploy script do a separate build rather than using the unpacked contents from npm
+- Make output dir an argument to prepack.sh
+- Move testing to the publish and deploy script, rename build-release to prepack
+- Switch build to IIFE
+- Get a version of the file:/// local build working again
+- Fix the build-release.sh script
+- Add back accidentally deleted import
+- Add comment with caveat about dev-server.ts
+- Deal with CSS and favicons
+- Start dynamically building index.html file
+- Move compiled JS assets into assets/dist
+- Switch to using a build script, enable code splitting
+- Update comment in js-source-map.ts
+- Update esbuild dep
+- Very basic version working
+- Revert "Upgrade to parcel 2.13.3" [[#492](https://github.com/jlfwong/speedscope/pull/492)] (by @jlfwong)
+- Upgrade to parcel 2.13.3 [[#492](https://github.com/jlfwong/speedscope/pull/492)] (by @jlfwong)
+- Add link to async-profiler wiki page to README
+
 ## [1.21.0] - 2024-11-16
 
 - Add support for Instruments 16 Time Profile Deep Copy [[#484](https://github.com/jlfwong/speedscope/pull/484)] (by @robert3005)
