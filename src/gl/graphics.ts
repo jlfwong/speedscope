@@ -25,8 +25,6 @@
 
 // NOTE: This file intentionally has no dependencies.
 
-declare const process: any
-
 // Dependencies & polyfills for import from skew
 const RELEASE =
   typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'production'
