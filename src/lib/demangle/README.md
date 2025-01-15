@@ -5,6 +5,8 @@ using emscripten.
 
 # Build dependencies
 
+## emscripten 4.0.0
+
 Follow the official `emsdk` installation instructions:
 
 https://emscripten.org/docs/getting_started/downloads.html#installation-instructions-using-the-emsdk-recommended
