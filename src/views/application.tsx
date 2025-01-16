@@ -28,7 +28,7 @@ const importModule = import('../import')
 // We put them all in one place so we can directly control the relative priority
 // of these.
 importModule.then(() => {})
-import('../lib/demangle-cpp').then(() => {})
+import('../lib/demangle').then(() => {})
 import('source-map').then(() => {})
 
 async function importProfilesFromText(
