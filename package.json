@@ -1,6 +1,6 @@
 {
   "name": "speedscope",
-  "version": "1.21.0",
+  "version": "1.21.2",
   "description": "",
   "repository": "jlfwong/speedscope",
   "main": "index.js",
@@ -9,14 +9,14 @@
   },
   "scripts": {
     "deploy": "./scripts/deploy.sh",
-    "prepack": "./scripts/build-release.sh",
+    "prepack": "./scripts/prepack.sh --outdir \"$(pwd)/dist/release\" --protocol file",
     "prettier": "prettier --write 'src/**/*.ts' 'src/**/*.tsx'",
     "lint": "eslint 'src/**/*.ts' 'src/**/*.tsx'",
     "jest": "./scripts/test-setup.sh && jest --runInBand",
     "coverage": "npm run jest -- --coverage",
     "typecheck": "tsc --noEmit",
     "test": "./scripts/ci.sh",
-    "serve": "parcel assets/index.html --open --no-autoinstall"
+    "serve": "tsx scripts/dev-server.ts"
   },
   "files": [
     "bin/cli.js",
@@ -38,6 +38,7 @@
     "@typescript-eslint/parser": "6.16.0",
     "acorn": "7.2.0",
     "aphrodite": "2.1.0",
+    "esbuild": "0.24.2",
     "eslint": "8.0.0",
     "eslint-plugin-prettier": "5.1.2",
     "eslint-plugin-react-hooks": "4.6.0",
@@ -45,12 +46,12 @@
     "jsverify": "0.8.3",
     "jszip": "3.1.5",
     "pako": "1.0.6",
-    "parcel-bundler": "1.12.4",
     "preact": "10.4.1",
     "prettier": "3.1.1",
     "protobufjs": "6.8.8",
     "source-map": "0.6.1",
     "ts-jest": "24.3.0",
+    "tsx": "4.19.2",
     "typescript": "5.3.3",
     "typescript-json-schema": "0.42.0",
     "uglify-es": "3.2.2",

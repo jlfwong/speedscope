@@ -66,6 +66,8 @@ declare const module: any
 if (process.env.NODE_ENV === 'development') {
   ;(window as any)['Atom'] = AtomDev = {}
 
+  /*
+  TODO(jlfwong): Fix this
   module.hot.dispose(() => {
     if (AtomDev) {
       hotReloadStash = new Map()
@@ -76,6 +78,7 @@ if (process.env.NODE_ENV === 'development') {
 
     ;(window as any)['Atom_hotReloadStash'] = hotReloadStash
   })
+  */
 
   hotReloadStash = (window as any)['Atom_hotReloadStash'] || null
 }

@@ -1,3 +1,10 @@
+## [1.21.2] - 2025-01-15
+
+- Switch from parcel to esbuild [[#432](https://github.com/jlfwong/speedscope/pull/432)] (by @jlfwong)
+- Revert "Upgrade to parcel 2.13.3" [[#492](https://github.com/jlfwong/speedscope/pull/492)] (by @jlfwong)
+- Upgrade to parcel 2.13.3 [[#492](https://github.com/jlfwong/speedscope/pull/492)] (by @jlfwong)
+- Add link to async-profiler wiki page to README
+
 ## [1.21.0] - 2024-11-16
 
 - Add support for Instruments 16 Time Profile Deep Copy [[#484](https://github.com/jlfwong/speedscope/pull/484)] (by @robert3005)

@@ -5,11 +5,11 @@
 
 set -euxo pipefail
 
-TMPDIR=`mktemp -d -t speedscope-test-installation`
+TESTDIR=`mktemp -d -t speedscope-test-installation`
 PACKEDNAME=`npm pack | tail -n1`
 
-mv "$PACKEDNAME" "$TMPDIR"
-cd "$TMPDIR"
+mv "$PACKEDNAME" "$TESTDIR"
+cd "$TESTDIR"
 tar -xvvf "$PACKEDNAME"
 cd package
 npm install
@@ -17,4 +17,4 @@ npm install
 set +x
 echo
 echo "Run the following command to switch into the test directory"
-echo cd "$TMPDIR"/package
+echo cd "$TESTDIR"/package
