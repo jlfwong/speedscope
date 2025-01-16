@@ -25,18 +25,15 @@ SRC_FILES = \
     gcc/libiberty/cp-demangle.c \
     demangle.c
 POST_JS = demangle.post.js
-EMSCRIPTEN_OUTPUT = demangle.wasm.esnext.js
+EXTERN_POST_JS = demangle.extern.post.js
 OUTPUT = demangle.wasm.js
 
 all: $(OUTPUT)
 
-$(OUTPUT): $(EMSCRIPTEN_OUTPUT)
-	npx --yes esbuild $< --target=es2020 > $@
-
-$(EMSCRIPTEN_OUTPUT): $(SRC_FILES) $(POST_JS)
-	$(EMCC) $(CFLAGS) $(SRC_FILES) $(LDFLAGS) --post-js $(POST_JS) --extern-post-js extern.post.js --no-entry -o $@
+$(OUTPUT): $(SRC_FILES) $(POST_JS)
+	$(EMCC) $(CFLAGS) $(SRC_FILES) $(LDFLAGS) --post-js $(POST_JS) --extern-post-js $(EXTERN_POST_JS) --no-entry -o $@
 
 clean:
-	rm -f $(EMSCRIPTEN_OUTPUT) $(OUTPUT)
+	rm -f $(OUTPUT)
 
 .PHONY: all clean
