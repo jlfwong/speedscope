@@ -1,0 +1,580 @@
+trace    6061 150520.991529:   16949152 task-clock:ppp: 
+	    aaaac1479980 _RINvNtCslw2YnFSxGUT_10ppv_lite867generic5dmap2NtB2_13u32x4_genericNCNvXsy_B2_BI_NtNtNtCsTACXlTRjQ_4core3ops5arith3Add3add0ECs2zQ9tAH61OF_11rand_chacha+0x144 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.008480:   16949152 task-clock:ppp: 
+	    aaaac147a5b4 _RNvXs1_NtCsTACXlTRjQ_4core7convertNtNtCslw2YnFSxGUT_10ppv_lite867generic13u32x4_genericINtB5_4IntoNtBy_14vec128_storageE4intoCs2zQ9tAH61OF_11rand_chacha+0x4 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac14737e7 _RNvXsl_NtCs2zQ9tAH61OF_11rand_chacha6chachaNtB5_12ChaCha12CoreNtNtCseBIf0Yfsj9G_9rand_core5block12BlockRngCore8generateCsiznFMVuT3yX_4rand+0x6463 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.025430:   16949152 task-clock:ppp: 
+	    aaaac147a5b4 _RNvXs1_NtCsTACXlTRjQ_4core7convertNtNtCslw2YnFSxGUT_10ppv_lite867generic13u32x4_genericINtB5_4IntoNtBy_14vec128_storageE4intoCs2zQ9tAH61OF_11rand_chacha+0x4 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1475c23 _RNvXsl_NtCs2zQ9tAH61OF_11rand_chacha6chachaNtB5_12ChaCha12CoreNtNtCseBIf0Yfsj9G_9rand_core5block12BlockRngCore8generateCsiznFMVuT3yX_4rand+0x889f (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.042380:   16949152 task-clock:ppp: 
+	    aaaac146a13c _RNvNvNtNtCsTACXlTRjQ_4core5slice3raw18from_raw_parts_mut18precondition_checkCs8K9WJNlS7Dz_5trace+0xf8 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.059329:   16949152 task-clock:ppp: 
+	    aaaac1469fa8 _RNvNvNtNtCsTACXlTRjQ_4core5slice3raw14from_raw_parts18precondition_checkCs8K9WJNlS7Dz_5trace+0xcc (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.076276:   16949152 task-clock:ppp: 
+	    aaaac146b198 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecIBw_dEEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x54 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.093223:   16949152 task-clock:ppp: 
+	    aaaac146b198 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecIBw_dEEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x54 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.110172:   16949152 task-clock:ppp: 
+	    aaaac1469f2c _RNvNvNtNtCsTACXlTRjQ_4core5slice3raw14from_raw_parts18precondition_checkCs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.127121:   16949152 task-clock:ppp: 
+	    aaaac146b25c _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecdEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x80 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.144070:   16949152 task-clock:ppp: 
+	    aaaac146b25c _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecdEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x80 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.161018:   16949152 task-clock:ppp: 
+	    aaaac1469494 _RNvCs8K9WJNlS7Dz_5trace17multiply_matrices+0x2d4 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.177971:   16949152 task-clock:ppp: 
+	    aaaac1468014 _RNvXs0_NtNtCsTACXlTRjQ_4core5slice5indexjINtB5_10SliceIndexSINtNtCsfiKabdrepoq_5alloc3vec3VecdEE5indexCs8K9WJNlS7Dz_5trace+0x20 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.194918:   16949152 task-clock:ppp: 
+	    aaaac1469f2c _RNvNvNtNtCsTACXlTRjQ_4core5slice3raw14from_raw_parts18precondition_checkCs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.211872:   16949152 task-clock:ppp: 
+	    aaaac14680d4 _RNvXs0_NtNtCsTACXlTRjQ_4core5slice5indexjINtB5_10SliceIndexSdE5indexCs8K9WJNlS7Dz_5trace+0x20 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.228819:   16949152 task-clock:ppp: 
+	    aaaac146a14c _RNvNvNtNtCsTACXlTRjQ_4core5slice3raw18from_raw_parts_mut18precondition_checkCs8K9WJNlS7Dz_5trace+0x108 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.245765:   16949152 task-clock:ppp: 
+	    aaaac146a1c8 _RNvNvMs9_NtCsTACXlTRjQ_4core3numj13unchecked_add18precondition_checkCs8K9WJNlS7Dz_5trace+0x1c (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.262716:   16949152 task-clock:ppp: 
+	    aaaac1469494 _RNvCs8K9WJNlS7Dz_5trace17multiply_matrices+0x2d4 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.279663:   16949152 task-clock:ppp: 
+	    aaaac146b2c4 _RNvXsc_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecIBw_dEEINtNtNtCsTACXlTRjQ_4core3ops5index8IndexMutjE9index_mutCs8K9WJNlS7Dz_5trace+0x54 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.296613:   16949152 task-clock:ppp: 
+	    aaaac146b35c _RNvXsc_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecdEINtNtNtCsTACXlTRjQ_4core3ops5index8IndexMutjE9index_mutCs8K9WJNlS7Dz_5trace+0x54 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.313561:   16949152 task-clock:ppp: 
+	    aaaac146b198 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecIBw_dEEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x54 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.330511:   16949152 task-clock:ppp: 
+	    aaaac146b170 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecIBw_dEEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x2c (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.347462:   16949152 task-clock:ppp: 
+	    aaaac146b35c _RNvXsc_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecdEINtNtNtCsTACXlTRjQ_4core3ops5index8IndexMutjE9index_mutCs8K9WJNlS7Dz_5trace+0x54 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.364409:   16949152 task-clock:ppp: 
+	    aaaac146a14c _RNvNvNtNtCsTACXlTRjQ_4core5slice3raw18from_raw_parts_mut18precondition_checkCs8K9WJNlS7Dz_5trace+0x108 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.381358:   16949152 task-clock:ppp: 
+	    aaaac146b264 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecdEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x88 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.398307:   16949152 task-clock:ppp: 
+	    aaaac146b198 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecIBw_dEEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x54 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.415256:   16949152 task-clock:ppp: 
+	    aaaac146b2c8 _RNvXsc_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecIBw_dEEINtNtNtCsTACXlTRjQ_4core3ops5index8IndexMutjE9index_mutCs8K9WJNlS7Dz_5trace+0x58 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.432207:   16949152 task-clock:ppp: 
+	    aaaac1469468 _RNvCs8K9WJNlS7Dz_5trace17multiply_matrices+0x2a8 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.449154:   16949152 task-clock:ppp: 
+	    aaaac146b388 _RNvXsc_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecdEINtNtNtCsTACXlTRjQ_4core3ops5index8IndexMutjE9index_mutCs8K9WJNlS7Dz_5trace+0x80 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.466104:   16949152 task-clock:ppp: 
+	    aaaac1468b54 _RNvXsF_NtNtCsTACXlTRjQ_4core4iter5rangejNtB5_4Step17forward_uncheckedCs8K9WJNlS7Dz_5trace+0x38 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.483053:   16949152 task-clock:ppp: 
+	    aaaac146b198 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecIBw_dEEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x54 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.500005:   16949152 task-clock:ppp: 
+	    aaaac14798b4 _RINvNtCslw2YnFSxGUT_10ppv_lite867generic5dmap2NtB2_13u32x4_genericNCNvXsy_B2_BI_NtNtNtCsTACXlTRjQ_4core3ops5arith3Add3add0ECs2zQ9tAH61OF_11rand_chacha+0x78 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.516952:   16949152 task-clock:ppp: 
+	    aaaac147823c _RNCNkNvNtNtCsiznFMVuT3yX_4rand4rngs6thread14THREAD_RNG_KEY00B9_+0x24 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.533903:   16949152 task-clock:ppp: 
+	    aaaac146f758 _RNvXsl_NtCs2zQ9tAH61OF_11rand_chacha6chachaNtB5_12ChaCha12CoreNtNtCseBIf0Yfsj9G_9rand_core5block12BlockRngCore8generateCsiznFMVuT3yX_4rand+0x23d4 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.550852:   16949152 task-clock:ppp: 
+	    aaaac146a18c _RNvNvNtNtCsTACXlTRjQ_4core5slice3raw18from_raw_parts_mut18precondition_checkCs8K9WJNlS7Dz_5trace+0x148 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.567799:   16949152 task-clock:ppp: 
+	    aaaac14683b4 _RNvXs3_NtNtCsTACXlTRjQ_4core4iter5rangeINtNtNtB9_3ops5range5RangejENtB5_17RangeIteratorImpl9spec_nextCs8K9WJNlS7Dz_5trace+0x28 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.584753:   16949152 task-clock:ppp: 
+	    aaaac146b230 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecdEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x54 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.601700:   16949152 task-clock:ppp: 
+	    aaaac146b230 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecdEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x54 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.618648:   16949152 task-clock:ppp: 
+	    aaaac1468430 _RNvXs4_NtNtCsTACXlTRjQ_4core4iter5rangeINtNtNtB9_3ops5range5RangejENtNtNtB7_6traits8iterator8Iterator4nextCs8K9WJNlS7Dz_5trace+0x14 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.635610:   16949152 task-clock:ppp: 
+	    aaaac146b230 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecdEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x54 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.652560:   16949152 task-clock:ppp: 
+	    aaaac146b198 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecIBw_dEEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x54 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.669508:   16949152 task-clock:ppp: 
+	    aaaac146b198 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecIBw_dEEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x54 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.686460:   16949152 task-clock:ppp: 
+	    aaaac146b230 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecdEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x54 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.703442:   16949152 task-clock:ppp: 
+	    aaaac1468014 _RNvXs0_NtNtCsTACXlTRjQ_4core5slice5indexjINtB5_10SliceIndexSINtNtCsfiKabdrepoq_5alloc3vec3VecdEE5indexCs8K9WJNlS7Dz_5trace+0x20 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.720393:   16949152 task-clock:ppp: 
+	    aaaac146b230 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecdEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x54 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.737340:   16949152 task-clock:ppp: 
+	    aaaac146b208 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecdEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x2c (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.754289:   16949152 task-clock:ppp: 
+	    aaaac1469f2c _RNvNvNtNtCsTACXlTRjQ_4core5slice3raw14from_raw_parts18precondition_checkCs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.771239:   16949152 task-clock:ppp: 
+	    aaaac146a14c _RNvNvNtNtCsTACXlTRjQ_4core5slice3raw18from_raw_parts_mut18precondition_checkCs8K9WJNlS7Dz_5trace+0x108 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.788187:   16949152 task-clock:ppp: 
+	    aaaac14683ac _RNvXs3_NtNtCsTACXlTRjQ_4core4iter5rangeINtNtNtB9_3ops5range5RangejENtB5_17RangeIteratorImpl9spec_nextCs8K9WJNlS7Dz_5trace+0x20 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.805136:   16949152 task-clock:ppp: 
+	    aaaac1468148 _RNvXs0_NtNtCsTACXlTRjQ_4core5slice5indexjINtB5_10SliceIndexSdE9index_mutCs8K9WJNlS7Dz_5trace+0x3c (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.822085:   16949152 task-clock:ppp: 
+	    aaaac1468b3c _RNvXsF_NtNtCsTACXlTRjQ_4core4iter5rangejNtB5_4Step17forward_uncheckedCs8K9WJNlS7Dz_5trace+0x20 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.839034:   16949152 task-clock:ppp: 
+	    aaaac146b230 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecdEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x54 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.855986:   16949152 task-clock:ppp: 
+	    aaaac1468074 _RNvXs0_NtNtCsTACXlTRjQ_4core5slice5indexjINtB5_10SliceIndexSINtNtCsfiKabdrepoq_5alloc3vec3VecdEE9index_mutCs8K9WJNlS7Dz_5trace+0x20 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.872936:   16949152 task-clock:ppp: 
+	    aaaac146b1c8 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecIBw_dEEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x84 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.889885:   16949152 task-clock:ppp: 
+	    aaaac1469468 _RNvCs8K9WJNlS7Dz_5trace17multiply_matrices+0x2a8 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.906831:   16949152 task-clock:ppp: 
+	    aaaac146a1c8 _RNvNvMs9_NtCsTACXlTRjQ_4core3numj13unchecked_add18precondition_checkCs8K9WJNlS7Dz_5trace+0x1c (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.923780:   16949152 task-clock:ppp: 
+	    aaaac146b35c _RNvXsc_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecdEINtNtNtCsTACXlTRjQ_4core3ops5index8IndexMutjE9index_mutCs8K9WJNlS7Dz_5trace+0x54 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.940732:   16949152 task-clock:ppp: 
+	    aaaac146b230 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecdEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x54 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.957678:   16949152 task-clock:ppp: 
+	    aaaac146b35c _RNvXsc_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecdEINtNtNtCsTACXlTRjQ_4core3ops5index8IndexMutjE9index_mutCs8K9WJNlS7Dz_5trace+0x54 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.974631:   16949152 task-clock:ppp: 
+	    aaaac1469f2c _RNvNvNtNtCsTACXlTRjQ_4core5slice3raw14from_raw_parts18precondition_checkCs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150521.991577:   16949152 task-clock:ppp: 
+	    aaaac146a064 _RNvNvNtNtCsTACXlTRjQ_4core5slice3raw18from_raw_parts_mut18precondition_checkCs8K9WJNlS7Dz_5trace+0x20 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.008526:   16949152 task-clock:ppp: 
+	    aaaac146b208 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecdEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x2c (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.025476:   16949152 task-clock:ppp: 
+	    aaaac1479cb4 _RNCNvXs1o_NtCslw2YnFSxGUT_10ppv_lite867genericNtB8_13u32x4_genericNtNtNtCsTACXlTRjQ_4core3ops3bit6BitXor6bitxor0Cs2zQ9tAH61OF_11rand_chacha+0x1c (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1474db7 _RNvXsl_NtCs2zQ9tAH61OF_11rand_chacha6chachaNtB5_12ChaCha12CoreNtNtCseBIf0Yfsj9G_9rand_core5block12BlockRngCore8generateCsiznFMVuT3yX_4rand+0x7a33 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.042426:   16949152 task-clock:ppp: 
+	    aaaac147b12c _RNvXsB_NtNtCsTACXlTRjQ_4core4iter5rangemNtB5_4Step17forward_uncheckedCs2zQ9tAH61OF_11rand_chacha+0x28 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.059376:   16949152 task-clock:ppp: 
+	    aaaac146eb1c _RNvXsl_NtCs2zQ9tAH61OF_11rand_chacha6chachaNtB5_12ChaCha12CoreNtNtCseBIf0Yfsj9G_9rand_core5block12BlockRngCore8generateCsiznFMVuT3yX_4rand+0x1798 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.076324:   16949152 task-clock:ppp: 
+	    aaaac146a1c8 _RNvNvMs9_NtCsTACXlTRjQ_4core3numj13unchecked_add18precondition_checkCs8K9WJNlS7Dz_5trace+0x1c (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.093274:   16949152 task-clock:ppp: 
+	    aaaac1469f44 _RNvNvNtNtCsTACXlTRjQ_4core5slice3raw14from_raw_parts18precondition_checkCs8K9WJNlS7Dz_5trace+0x68 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.110224:   16949152 task-clock:ppp: 
+	    aaaac1468b3c _RNvXsF_NtNtCsTACXlTRjQ_4core4iter5rangejNtB5_4Step17forward_uncheckedCs8K9WJNlS7Dz_5trace+0x20 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.127170:   16949152 task-clock:ppp: 
+	    aaaac146a064 _RNvNvNtNtCsTACXlTRjQ_4core5slice3raw18from_raw_parts_mut18precondition_checkCs8K9WJNlS7Dz_5trace+0x20 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.144122:   16949152 task-clock:ppp: 
+	    aaaac1469fbc _RNvNvNtNtCsTACXlTRjQ_4core5slice3raw14from_raw_parts18precondition_checkCs8K9WJNlS7Dz_5trace+0xe0 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.161068:   16949152 task-clock:ppp: 
+	    aaaac146b230 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecdEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x54 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.178016:   16949152 task-clock:ppp: 
+	    aaaac146944c _RNvCs8K9WJNlS7Dz_5trace17multiply_matrices+0x28c (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.194967:   16949152 task-clock:ppp: 
+	    aaaac1468b3c _RNvXsF_NtNtCsTACXlTRjQ_4core4iter5rangejNtB5_4Step17forward_uncheckedCs8K9WJNlS7Dz_5trace+0x20 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.211916:   16949152 task-clock:ppp: 
+	    aaaac1469f1c _RNvNvNtNtCsTACXlTRjQ_4core5slice3raw14from_raw_parts18precondition_checkCs8K9WJNlS7Dz_5trace+0x40 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.228865:   16949152 task-clock:ppp: 
+	    aaaac146a13c _RNvNvNtNtCsTACXlTRjQ_4core5slice3raw18from_raw_parts_mut18precondition_checkCs8K9WJNlS7Dz_5trace+0xf8 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.245814:   16949152 task-clock:ppp: 
+	    aaaac1468098 _RNvXs0_NtNtCsTACXlTRjQ_4core5slice5indexjINtB5_10SliceIndexSINtNtCsfiKabdrepoq_5alloc3vec3VecdEE9index_mutCs8K9WJNlS7Dz_5trace+0x44 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.262763:   16949152 task-clock:ppp: 
+	    aaaac1469f40 _RNvNvNtNtCsTACXlTRjQ_4core5slice3raw14from_raw_parts18precondition_checkCs8K9WJNlS7Dz_5trace+0x64 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.279716:   16949152 task-clock:ppp: 
+	    aaaac146a13c _RNvNvNtNtCsTACXlTRjQ_4core5slice3raw18from_raw_parts_mut18precondition_checkCs8K9WJNlS7Dz_5trace+0xf8 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.296663:   16949152 task-clock:ppp: 
+	    aaaac146b264 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecdEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x88 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.313611:   16949152 task-clock:ppp: 
+	    aaaac146a0a8 _RNvNvNtNtCsTACXlTRjQ_4core5slice3raw18from_raw_parts_mut18precondition_checkCs8K9WJNlS7Dz_5trace+0x64 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.330560:   16949152 task-clock:ppp: 
+	    aaaac146b230 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecdEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x54 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.347509:   16949152 task-clock:ppp: 
+	    aaaac146a18c _RNvNvNtNtCsTACXlTRjQ_4core5slice3raw18from_raw_parts_mut18precondition_checkCs8K9WJNlS7Dz_5trace+0x148 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.364458:   16949152 task-clock:ppp: 
+	    aaaac14693c8 _RNvCs8K9WJNlS7Dz_5trace17multiply_matrices+0x208 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.381407:   16949152 task-clock:ppp: 
+	    aaaac146b388 _RNvXsc_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecdEINtNtNtCsTACXlTRjQ_4core3ops5index8IndexMutjE9index_mutCs8K9WJNlS7Dz_5trace+0x80 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.398356:   16949152 task-clock:ppp: 
+	    aaaac1468b3c _RNvXsF_NtNtCsTACXlTRjQ_4core4iter5rangejNtB5_4Step17forward_uncheckedCs8K9WJNlS7Dz_5trace+0x20 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.415306:   16949152 task-clock:ppp: 
+	    aaaac1468128 _RNvXs0_NtNtCsTACXlTRjQ_4core5slice5indexjINtB5_10SliceIndexSdE9index_mutCs8K9WJNlS7Dz_5trace+0x1c (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.432255:   16949152 task-clock:ppp: 
+	    aaaac146b180 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecIBw_dEEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x3c (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.449204:   16949152 task-clock:ppp: 
+	    aaaac146b198 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecIBw_dEEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x54 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.466153:   16949152 task-clock:ppp: 
+	    aaaac146b1d0 _RNvXsb_NtCsfiKabdrepoq_5alloc3vecINtB5_3VecIBw_dEEINtNtNtCsTACXlTRjQ_4core3ops5index5IndexjE5indexCs8K9WJNlS7Dz_5trace+0x8c (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.483102:   16949152 task-clock:ppp: 
+	    aaaac146a094 _RNvNvNtNtCsTACXlTRjQ_4core5slice3raw18from_raw_parts_mut18precondition_checkCs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.500051:   16949152 task-clock:ppp: 
+	    aaaac14680d4 _RNvXs0_NtNtCsTACXlTRjQ_4core5slice5indexjINtB5_10SliceIndexSdE5indexCs8K9WJNlS7Dz_5trace+0x20 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.517003:   16949152 task-clock:ppp: 
+	    aaaac14680d4 _RNvXs0_NtNtCsTACXlTRjQ_4core5slice5indexjINtB5_10SliceIndexSdE5indexCs8K9WJNlS7Dz_5trace+0x20 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.533950:   16949152 task-clock:ppp: 
+	    aaaac14799b4 _RINvNtCslw2YnFSxGUT_10ppv_lite867generic5dmap2NtB2_13u32x4_genericNCNvXsy_B2_BI_NtNtNtCsTACXlTRjQ_4core3ops5arith3Add3add0ECs2zQ9tAH61OF_11rand_chacha+0x178 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.550901:   16949152 task-clock:ppp: 
+	    aaaac1479d54 _RNCNvXsj_NtCslw2YnFSxGUT_10ppv_lite867genericNtB7_13u32x4_genericNtNtB9_5types16RotateEachWord3224rotate_each_word_right160Cs2zQ9tAH61OF_11rand_chacha+0x24 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac146e9d3 _RNvXsl_NtCs2zQ9tAH61OF_11rand_chacha6chachaNtB5_12ChaCha12CoreNtNtCseBIf0Yfsj9G_9rand_core5block12BlockRngCore8generateCsiznFMVuT3yX_4rand+0x164f (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.567849:   16949152 task-clock:ppp: 
+	    aaaac1470a1c _RNvXsl_NtCs2zQ9tAH61OF_11rand_chacha6chachaNtB5_12ChaCha12CoreNtNtCseBIf0Yfsj9G_9rand_core5block12BlockRngCore8generateCsiznFMVuT3yX_4rand+0x3698 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.584797:   16949152 task-clock:ppp: 
+	    aaaac1468014 _RNvXs0_NtNtCsTACXlTRjQ_4core5slice5indexjINtB5_10SliceIndexSINtNtCsfiKabdrepoq_5alloc3vec3VecdEE5indexCs8K9WJNlS7Dz_5trace+0x20 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
+trace    6061 150522.601749:   16949152 task-clock:ppp: 
+	    aaaac146a14c _RNvNvNtNtCsTACXlTRjQ_4core5slice3raw18from_raw_parts_mut18precondition_checkCs8K9WJNlS7Dz_5trace+0x108 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    aaaac1469a1c _RINvNtCse0yjq9ZQveU_3std2rt10lang_startuECs8K9WJNlS7Dz_5trace+0x50 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+	    ffff804d8598 __libc_start_main+0x98 (/usr/lib/aarch64-linux-gnu/libc.so.6)
+	    aaaac1467b30 _start+0x30 (/trace/target/debug/deps/trace-0f0e4af093fa4f97)
+
