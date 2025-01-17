@@ -1,3 +1,8 @@
+## [1.22.0] - 2025-01-16
+
+- Add an example trace with rust mangling
+- Add support for Rust v0 symbol mangling scheme  [[#491](https://github.com/jlfwong/speedscope/pull/491)] (by @cerisier)
+
 ## [1.21.2] - 2025-01-15
 
 - Switch from parcel to esbuild [[#432](https://github.com/jlfwong/speedscope/pull/432)] (by @jlfwong)
