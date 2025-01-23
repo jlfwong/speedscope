@@ -37,6 +37,8 @@ speedscope is designed to ingest profiles from a variety of different profilers 
 - Java
   - [Importing from async‐profiler (Java)
 ](https://github.com/jlfwong/speedscope/wiki/Importing-from-async%E2%80%90profiler-(Java))
+- Erlang/Elixir
+  - [eflambe](https://github.com/Stratus3D/eflambe)
 - Native code
   - [Importing from Instruments.app](https://github.com/jlfwong/speedscope/wiki/Importing-from-Instruments.app) (macOS)
   - [Importing from `perf`](https://github.com/jlfwong/speedscope/wiki/Importing-from-perf-(linux)) (linux)
