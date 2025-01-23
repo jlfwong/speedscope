@@ -13,8 +13,6 @@ Given raw profiling data, speedscope allows you to interactively explore the dat
 
 speedscope is designed to ingest profiles from a variety of different profilers for different programming languages & environments. Click the links below for documentation on how to import from a specific source.
 
-- Erlang/Elixir
-  - [eflambe](https://github.com/Stratus3D/eflambe)
 - JavaScript
   - [Importing from Chrome](https://github.com/jlfwong/speedscope/wiki/Importing-from-Chrome)
   - [Importing from Firefox](https://github.com/jlfwong/speedscope/wiki/Importing-from-Firefox)
@@ -39,6 +37,8 @@ speedscope is designed to ingest profiles from a variety of different profilers 
 - Java
   - [Importing from async‐profiler (Java)
 ](https://github.com/jlfwong/speedscope/wiki/Importing-from-async%E2%80%90profiler-(Java))
+- Erlang/Elixir
+  - [eflambe](https://github.com/Stratus3D/eflambe)
 - Native code
   - [Importing from Instruments.app](https://github.com/jlfwong/speedscope/wiki/Importing-from-Instruments.app) (macOS)
   - [Importing from `perf`](https://github.com/jlfwong/speedscope/wiki/Importing-from-perf-(linux)) (linux)
