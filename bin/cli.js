@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+const fsPromises = require('fs/promises')
 const path = require('path')
 const fs = require('fs')
 const os = require('os')
@@ -81,20 +82,43 @@ async function main() {
       }
     }
 
-    const filePrefix = `speedscope-${+new Date()}-${process.pid}`
-    const jsPath = path.join(os.tmpdir(), `${filePrefix}.js`)
-    console.log(`Creating temp file ${jsPath}`)
-    fs.writeFileSync(jsPath, jsSource)
-    urlToOpen += `#localProfilePath=${jsPath}`
+
+    const tmp_directory = path.join(os.tmpdir(),`SpeedScope`)
+
+    try {
+      fs.mkdirSync(tmp_directory)
+    } catch ( exception ){
+
+      if( exception.code != 'EEXIST' ){
+        console.error(`Failed to create temporary directory 'SpeedScope'`)
+        throw exception
+      }
+    }
+
+    console.log(`Created temporary folder ${tmp_directory}`)
+
+    const tmp_folder = await fsPromises
+      .mkdtemp(`${ tmp_directory }${ path.sep }`)
+      .catch(( exception ) => {
+        console.error(`Failed to create /tmp/ folder`)
+        throw exception
+      })
+
+    const path_source = path.join(tmp_folder,`Source.js`)
+
+    console.log(`Creating temp file ${path_source}`)
+    fs.writeFileSync(path_source, jsSource)
+    urlToOpen += `#localProfilePath=${path_source}`
 
     // For some silly reason, the OS X open command ignores any query parameters or hash parameters
     // passed as part of the URL. To get around this weird issue, we'll create a local HTML file
     // that just redirects.
-    const htmlPath = path.join(os.tmpdir(), `${filePrefix}.html`)
-    console.log(`Creating temp file ${htmlPath}`)
-    fs.writeFileSync(htmlPath, `<script>window.location=${JSON.stringify(urlToOpen)}</script>`)
+    const path_wrapper = path.join(tmp_folder,`Wrapper.html`)
 
-    urlToOpen = `file://${htmlPath}`
+    console.log(`Creating temp file ${path_wrapper}`)
+    fs.writeFileSync(path_wrapper, `<script>window.location=${JSON.stringify(urlToOpen)}</script>`)
+
+    urlToOpen = `file://${path_wrapper}`
   }
 
   console.log('Opening', urlToOpen, 'in your default browser')
