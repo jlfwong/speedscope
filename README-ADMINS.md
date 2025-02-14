@@ -21,10 +21,10 @@ cd /var/folders/l0/qtd9z14973s2tw81vmzwkyp00000gp/T/speedscope-test-installation
 
 Run this command, to switch to the test directory.
 
-Inside of here, run `bin/cli.js`. This should open a copy of speedscope in browser.
+Inside of here, run `bin/cli.mjs`. This should open a copy of speedscope in browser.
 Try importing a profile from disk via the browse button and make sure it works.
 
-Next, try running `bin/cli.js dist/release/perf-vertx*`. This should immediately open
+Next, try running `bin/cli.mjs dist/release/perf-vertx*`. This should immediately open
 speedscope in browser, and the perf-vertx file should load immediately.
 
 ## Create & publish the new release
