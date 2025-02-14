@@ -56,7 +56,9 @@ async function main() {
   }
 
   if (process.argv.includes('--version') || process.argv.includes('-v')) {
-    console.log('v' + require('../package.json').version)
+    const json = fs.readFileSync(path.resolve(__dirname, '../package.json'), { encoding: 'utf-8' })
+    const { version } = JSON.parse(json)
+    console.log(`v${version}`)
     return
   }
 
