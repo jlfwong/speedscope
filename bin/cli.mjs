@@ -1,10 +1,14 @@
 #!/usr/bin/env node
-const path = require('path')
-const fs = require('fs')
-const os = require('os')
-const stream = require('stream')
+import path from 'node:path'
+import fs from 'node:fs'
+import os from 'node:os'
+import stream from 'node:stream'
+import { fileURLToPath } from 'node:url'
 
-const open = require('open')
+import open from 'open'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const helpString = `Usage: speedscope [filepath]
 
@@ -52,7 +56,9 @@ async function main() {
   }
 
   if (process.argv.includes('--version') || process.argv.includes('-v')) {
-    console.log('v' + require('../package.json').version)
+    const json = fs.readFileSync(path.resolve(__dirname, '../package.json'), { encoding: 'utf-8' })
+    const { version } = JSON.parse(json)
+    console.log(`v${version}`)
     return
   }
 
@@ -87,14 +93,16 @@ async function main() {
     fs.writeFileSync(jsPath, jsSource)
     urlToOpen += `#localProfilePath=${jsPath}`
 
-    // For some silly reason, the OS X open command ignores any query parameters or hash parameters
+    // For some silly reason, the macOS `open` and Windows `start` commands ignore hash parameters
     // passed as part of the URL. To get around this weird issue, we'll create a local HTML file
     // that just redirects.
-    const htmlPath = path.join(os.tmpdir(), `${filePrefix}.html`)
-    console.log(`Creating temp file ${htmlPath}`)
-    fs.writeFileSync(htmlPath, `<script>window.location=${JSON.stringify(urlToOpen)}</script>`)
+    if (process.platform === 'darwin' || process.platform === 'win32') {
+      const htmlPath = path.join(os.tmpdir(), `${filePrefix}.html`)
+      console.log(`Creating temp file ${htmlPath}`)
+      fs.writeFileSync(htmlPath, `<script>window.location=${JSON.stringify(urlToOpen)}</script>`)
 
-    urlToOpen = `file://${htmlPath}`
+      urlToOpen = `file://${htmlPath}`
+    }
   }
 
   console.log('Opening', urlToOpen, 'in your default browser')

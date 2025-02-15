@@ -5,7 +5,7 @@
   "repository": "jlfwong/speedscope",
   "main": "index.js",
   "bin": {
-    "speedscope": "./bin/cli.js"
+    "speedscope": "./bin/cli.mjs"
   },
   "scripts": {
     "deploy": "./scripts/deploy.sh",
@@ -19,7 +19,7 @@
     "serve": "tsx scripts/dev-server.ts"
   },
   "files": [
-    "bin/cli.js",
+    "bin/cli.mjs",
     "dist/release/**",
     "!*.map"
   ],
@@ -78,6 +78,6 @@
     ]
   },
   "dependencies": {
-    "open": "7.2.0"
+    "open": "10.1.0"
   }
 }
