@@ -1,3 +1,3 @@
-speedscope@1.22.1
-Sat Feb 15 12:55:32 PST 2025
-b17f7eeee8b6e52b286e49e5d7b2ed74be24f18c
+speedscope@1.22.2
+Sat Feb 15 13:02:51 PST 2025
+1c254dcb3e2b4f6d921340d20e972d9d27b788f4
