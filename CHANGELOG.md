@@ -1,3 +1,10 @@
+## [1.22.1] - 2025-02-15
+
+- Update to working `open`, switch to ESM [[#499](https://github.com/jlfwong/speedscope/pull/499)] (by @flying-sheep)
+- Revert "Fix broken CLI dependency `open`" [[#498](https://github.com/jlfwong/speedscope/pull/498)] (by @flying-sheep)
+- Fix broken CLI dependency `open` [[#498](https://github.com/jlfwong/speedscope/pull/498)] (by @flying-sheep)
+- Update README.md [[#496](https://github.com/jlfwong/speedscope/pull/496)] (by @dkuku)
+
 ## [1.22.0] - 2025-01-16
 
 - Add an example trace with rust mangling
