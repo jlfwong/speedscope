@@ -93,10 +93,10 @@ async function main() {
     fs.writeFileSync(jsPath, jsSource)
     urlToOpen += `#localProfilePath=${jsPath}`
 
-    // For some silly reason, the OS X open command ignores any query parameters or hash parameters
+    // For some silly reason, the macOS `open` and Windows `start` commands ignore hash parameters
     // passed as part of the URL. To get around this weird issue, we'll create a local HTML file
     // that just redirects.
-    if (process.platform === 'darwin') {
+    if (process.platform === 'darwin' || process.platform === 'win32') {
       const htmlPath = path.join(os.tmpdir(), `${filePrefix}.html`)
       console.log(`Creating temp file ${htmlPath}`)
       fs.writeFileSync(htmlPath, `<script>window.location=${JSON.stringify(urlToOpen)}</script>`)
