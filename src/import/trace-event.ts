@@ -6,7 +6,7 @@ import {
   Profile,
   StackListProfileBuilder,
 } from '../lib/profile'
-import {TimeFormatter} from '../lib/value-formatters'
+import {RawValueFormatter} from '../lib/value-formatters'
 
 // This file concerns import from the "Trace Event Format", authored by Google
 // and used for Google's own chrome://trace.
@@ -441,7 +441,7 @@ function eventListToProfile(
   const [bEventQueue, eEventQueue] = convertToEventQueues(importableEvents)
 
   const profileBuilder = new CallTreeProfileBuilder()
-  profileBuilder.setValueFormatter(new TimeFormatter('microseconds'))
+  profileBuilder.setValueFormatter(new RawValueFormatter())
   profileBuilder.setName(name)
 
   const frameStack: BTraceEvent[] = []
@@ -621,7 +621,7 @@ function getActiveFramesForSample(
 function sampleListToProfile(contents: TraceWithSamples, samples: Sample[], name: string): Profile {
   const profileBuilder = new StackListProfileBuilder()
 
-  profileBuilder.setValueFormatter(new TimeFormatter('microseconds'))
+  profileBuilder.setValueFormatter(new RawValueFormatter())
   profileBuilder.setName(name)
 
   const timeDeltas = getTimeDeltasForSamples(samples)

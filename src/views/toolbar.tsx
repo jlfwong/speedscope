@@ -25,7 +25,6 @@ function useSetViewMode(setViewMode: (viewMode: ViewMode) => void, viewMode: Vie
 function ToolbarLeftContent(props: ToolbarProps) {
   const style = getStyle(useTheme())
   const setChronoFlameChart = useSetViewMode(viewModeAtom.set, ViewMode.CHRONO_FLAME_CHART)
-  const setLeftHeavyFlameGraph = useSetViewMode(viewModeAtom.set, ViewMode.LEFT_HEAVY_FLAME_GRAPH)
   const setSandwichView = useSetViewMode(viewModeAtom.set, ViewMode.SANDWICH_VIEW)
 
   if (!props.activeProfileState) return null
@@ -39,16 +38,7 @@ function ToolbarLeftContent(props: ToolbarProps) {
         )}
         onClick={setChronoFlameChart}
       >
-        <span className={css(style.emoji)}>🕰</span>Time Order
-      </div>
-      <div
-        className={css(
-          style.toolbarTab,
-          props.viewMode === ViewMode.LEFT_HEAVY_FLAME_GRAPH && style.toolbarTabActive,
-        )}
-        onClick={setLeftHeavyFlameGraph}
-      >
-        <span className={css(style.emoji)}>⬅️</span>Left Heavy
+        Time Order
       </div>
       <div
         className={css(
@@ -57,7 +47,7 @@ function ToolbarLeftContent(props: ToolbarProps) {
         )}
         onClick={setSandwichView}
       >
-        <span className={css(style.emoji)}>🥪</span>Sandwich
+        Summary
       </div>
     </div>
   )
@@ -153,7 +143,7 @@ function ToolbarCenterContent(props: ToolbarProps): JSX.Element {
       )
     }
   }
-  return <Fragment>{'🔬speedscope'}</Fragment>
+  return <Fragment>{'trace viewer'}</Fragment>
 }
 
 function ToolbarRightContent(props: ToolbarProps) {
@@ -162,12 +152,12 @@ function ToolbarRightContent(props: ToolbarProps) {
 
   const exportFile = (
     <div className={css(style.toolbarTab)} onClick={props.saveFile}>
-      <span className={css(style.emoji)}>⤴️</span>Export
+      Export
     </div>
   )
   const importFile = (
     <div className={css(style.toolbarTab)} onClick={props.browseForFile}>
-      <span className={css(style.emoji)}>⤵️</span>Import
+      Import
     </div>
   )
 
@@ -196,8 +186,6 @@ function ToolbarRightContent(props: ToolbarProps) {
     <div className={css(style.toolbarRight)}>
       {props.activeProfileState && exportFile}
       {importFile}
-      {colorSchemeToggle}
-      {help}
     </div>
   )
 }
@@ -256,8 +244,8 @@ const getStyle = withTheme(theme =>
       marginTop: Sizes.SEPARATOR_HEIGHT,
       height: Sizes.TOOLBAR_TAB_HEIGHT,
       lineHeight: `${Sizes.TOOLBAR_TAB_HEIGHT}px`,
-      paddingLeft: 2,
-      paddingRight: 8,
+      paddingLeft: 6,
+      paddingRight: 6,
       display: 'inline-block',
       marginLeft: 2,
       transition: `all ${Duration.HOVER_CHANGE} ease-in`,

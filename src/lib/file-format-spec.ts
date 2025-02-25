@@ -77,7 +77,7 @@ export namespace FileFormat {
 
     // List of events that occured as part of this profile.
     // The "at" field of every event must be in non-decreasing order.
-    events: (OpenFrameEvent | CloseFrameEvent)[]
+    events: (OpenFrameEvent | CloseFrameEvent | InterruptEvent)[]
   }
 
   // List of indices into the frame array
@@ -122,6 +122,7 @@ export namespace FileFormat {
   export enum EventType {
     OPEN_FRAME = 'O',
     CLOSE_FRAME = 'C',
+    INTERRUPT = 'I',
   }
 
   interface IEvent {
@@ -139,6 +140,12 @@ export namespace FileFormat {
 
   interface CloseFrameEvent extends IEvent {
     type: EventType.CLOSE_FRAME
+    // An index into the frames array in the shared data within the profile
+    frame: number
+  }
+
+  interface InterruptEvent extends IEvent {
+    type: EventType.INTERRUPT
     // An index into the frames array in the shared data within the profile
     frame: number
   }
