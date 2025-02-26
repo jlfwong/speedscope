@@ -11,7 +11,13 @@ export interface FlamechartFrame {
   children: FlamechartFrame[]
 }
 
+export interface FlameChartEvent {
+  start: number
+  name: string
+}
+
 type StackLayer = FlamechartFrame[]
+type InstantEvent = FlameChartEvent
 
 interface FlamechartDataSource {
   getTotalWeight(): number
@@ -21,6 +27,7 @@ interface FlamechartDataSource {
   forEachCall(
     openFrame: (node: CallTreeNode, value: number) => void,
     closeFrame: (node: CallTreeNode, value: number) => void,
+    addInstantEvent: (event: InstantEvent) => void,
   ): void
 
   getColorBucketForFrame(f: Frame): number
@@ -29,6 +36,7 @@ interface FlamechartDataSource {
 export class Flamechart {
   // Bottom to top
   private layers: StackLayer[] = []
+  private instantEvents: InstantEvent[] = []
   private totalWeight: number = 0
   private minFrameWidth: number = 1
 
@@ -37,6 +45,9 @@ export class Flamechart {
   }
   getLayers() {
     return this.layers
+  }
+  getInstantEvents() {
+    return this.instantEvents
   }
   getColorBucketForFrame(frame: Frame) {
     return this.source.getColorBucketForFrame(frame)
@@ -140,8 +151,19 @@ export class Flamechart {
       this.minFrameWidth = Math.min(this.minFrameWidth, stackTop.end - stackTop.start)
     }
 
+    const addInstantEvent = (event: InstantEvent) => {
+      this.instantEvents.push(event)
+    }
+
+    // dev-only: add some instant events to the flamechart
+    if (0) {
+      addInstantEvent({start: 100, name: 'Event 1'})
+      addInstantEvent({start: 200, name: 'Event 2'})
+      addInstantEvent({start: 300, name: 'Event 3'})
+    }
+
     this.totalWeight = source.getTotalWeight()
-    source.forEachCall(openFrame, closeFrame)
+    source.forEachCall(openFrame, closeFrame, addInstantEvent)
 
     if (!isFinite(this.minFrameWidth)) this.minFrameWidth = 1
   }

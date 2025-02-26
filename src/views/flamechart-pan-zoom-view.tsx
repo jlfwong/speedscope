@@ -72,6 +72,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
   private overlayCtx: CanvasRenderingContext2D | null = null
 
   private hoveredLabel: FlamechartFrameLabel | null = null
+  private hoveredEvent: {index: number; name: string; position: number} | null = null
 
   private getStyle() {
     return getFlamechartStyle(this.props.theme)
@@ -178,6 +179,8 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     const physicalViewSize = this.physicalViewSize()
 
     ctx.clearRect(0, 0, physicalViewSize.x, physicalViewSize.y)
+
+    this.renderVerticalIndicatorLines(ctx, physicalViewSize)
 
     ctx.font = `${physicalViewSpaceFontSize}px/${physicalViewSpaceFrameHeight}px ${FontFamily.MONOSPACE}`
     ctx.textBaseline = 'alphabetic'
@@ -373,6 +376,159 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     }
 
     this.renderTimeIndicators()
+  }
+
+  private renderVerticalIndicatorLines(ctx: CanvasRenderingContext2D, physicalViewSize: Vec2) {
+    // Get the events from the flamechart
+    const events = this.props.flamechart.getInstantEvents()
+
+    // If there are no events, don't render anything
+    if (!events || events.length === 0) return
+
+    // More muted colors that still stand out but aren't too bright
+    const colors = [
+      '#E0A458', // Muted gold/amber
+    ]
+
+    // Line properties
+    const lineWidth = 1 * window.devicePixelRatio
+
+    // Get the current view's config space bounds
+    const viewportRect = this.props.configSpaceViewportRect
+
+    // Render each event line if it's in the current viewport
+    events.forEach((event, index) => {
+      const position = event.start
+
+      if (position >= viewportRect.left() && position <= viewportRect.right()) {
+        // Convert the config space position to physical space
+        const physicalX = this.configSpaceToPhysicalViewSpace().transformPosition(
+          new Vec2(position, 0),
+        )?.x
+
+        if (physicalX !== undefined) {
+          const color = colors[index % colors.length]
+          const isHovered = this.hoveredEvent && this.hoveredEvent.index === index
+
+          // Draw the line - adjust appearance based on hover state
+          if (isHovered) {
+            ctx.globalAlpha = 0.6
+            ctx.lineWidth = lineWidth * 1.5
+          } else {
+            ctx.globalAlpha = 0.3
+            ctx.lineWidth = lineWidth
+          }
+
+          ctx.strokeStyle = color
+
+          ctx.beginPath()
+          ctx.moveTo(physicalX, 0)
+          ctx.lineTo(physicalX, physicalViewSize.y)
+          ctx.stroke()
+
+          // Reset opacity for text
+          ctx.globalAlpha = 1.0
+
+          // Add the event name as a label at the bottom of the line
+          const fontSize = 12 * window.devicePixelRatio
+          ctx.font = `${fontSize}px sans-serif`
+          ctx.fillStyle = color
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'bottom'
+
+          // Draw text with slight offset from the bottom
+          const textY = physicalViewSize.y - 5 * window.devicePixelRatio
+
+          // Get text dimensions for label background
+          const textWidth = ctx.measureText(event.name).width
+          const padding = 3 * window.devicePixelRatio
+
+          // Highlight the label background if it's being hovered
+          if (isHovered) {
+            ctx.fillStyle = 'rgba(60, 60, 60, 0.9)'
+          } else {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'
+          }
+
+          // Draw label background
+          ctx.fillRect(
+            physicalX - textWidth / 2 - padding,
+            textY - fontSize - padding,
+            textWidth + padding * 2,
+            fontSize + padding * 2,
+          )
+
+          // Draw text on top of background
+          ctx.fillStyle = color
+          ctx.fillText(event.name, physicalX, textY)
+
+          // Draw tooltip if this event label is being hovered
+          if (isHovered) {
+            this.renderEventTooltip(ctx, event, physicalX, physicalViewSize)
+          }
+        }
+      }
+    })
+
+    // Reset context properties
+    ctx.globalAlpha = 1.0
+    ctx.textAlign = 'left'
+    ctx.textBaseline = 'alphabetic'
+    ctx.font = `${FontSize.LABEL * window.devicePixelRatio}px/${
+      this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT * window.devicePixelRatio
+    }px ${FontFamily.MONOSPACE}`
+  }
+
+  private renderEventTooltip(
+    ctx: CanvasRenderingContext2D,
+    event: any,
+    physicalX: number,
+    physicalViewSize: Vec2,
+  ) {
+    const theme = this.props.theme
+    const fontSize = 14 * window.devicePixelRatio
+    ctx.font = `${fontSize}px sans-serif`
+
+    // Format the tooltip content
+    const timeText = `Time: ${this.props.flamechart.formatValue(event.start)}`
+    const nameText = `Event: ${event.name}`
+
+    // Calculate tooltip dimensions
+    const timeWidth = ctx.measureText(timeText).width
+    const nameWidth = ctx.measureText(nameText).width
+    const tooltipWidth = Math.max(timeWidth, nameWidth) + 20 * window.devicePixelRatio
+    const tooltipHeight = fontSize * 3 + 20 * window.devicePixelRatio
+
+    // Position tooltip to avoid going off-screen
+    let tooltipX = physicalX + 15 * window.devicePixelRatio
+    if (tooltipX + tooltipWidth > physicalViewSize.x) {
+      tooltipX = physicalX - tooltipWidth - 15 * window.devicePixelRatio
+    }
+
+    // Place tooltip in upper part of the view
+    const tooltipY = 15 * window.devicePixelRatio
+
+    // Draw tooltip background with border
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)'
+    ctx.fillRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight)
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)'
+    ctx.lineWidth = 1 * window.devicePixelRatio
+    ctx.strokeRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight)
+
+    // Draw tooltip text
+    ctx.fillStyle = '#FFFFFF'
+    ctx.textAlign = 'left'
+    ctx.textBaseline = 'top'
+    ctx.fillText(
+      nameText,
+      tooltipX + 10 * window.devicePixelRatio,
+      tooltipY + 10 * window.devicePixelRatio,
+    )
+    ctx.fillText(
+      timeText,
+      tooltipX + 10 * window.devicePixelRatio,
+      tooltipY + 10 * window.devicePixelRatio + fontSize + 5 * window.devicePixelRatio,
+    )
   }
 
   private renderTimeIndicators() {
@@ -571,10 +727,11 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     this.lastDragPos = logicalMousePos
 
     // When panning by scrolling, the element under
-    // the cursor will change, so clear the hovered label.
+    // the cursor will change, so clear the hovered state.
     if (this.hoveredLabel) {
       this.props.onNodeHover(null)
     }
+    this.hoveredEvent = null
   }
 
   private onDblClick = (ev: MouseEvent) => {
@@ -638,6 +795,66 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
     if (!configSpaceMouse) return
 
+    // Check if mouse is hovering over an event label or line
+    this.hoveredEvent = null
+    const events = this.props.flamechart.getInstantEvents()
+    if (events && events.length > 0) {
+      const viewportRect = this.props.configSpaceViewportRect
+      const physicalViewSize = this.physicalViewSize()
+
+      events.forEach((event, index) => {
+        const position = event.start
+        if (position >= viewportRect.left() && position <= viewportRect.right()) {
+          // Convert the config space position to physical space
+          const physicalX = this.configSpaceToPhysicalViewSpace().transformPosition(
+            new Vec2(position, 0),
+          )?.x
+
+          if (physicalX !== undefined) {
+            // Check if mouse is near the line (10px threshold)
+            const lineHoverThreshold = 10 * window.devicePixelRatio
+            const isNearLine = Math.abs(physicalViewSpaceMouse.x - physicalX) <= lineHoverThreshold
+
+            // Calculate label dimensions
+            const fontSize = 12 * window.devicePixelRatio
+            const padding = 3 * window.devicePixelRatio
+            const textY = physicalViewSize.y - 5 * window.devicePixelRatio
+
+            // We need to measure text width to determine label bounds
+            if (this.overlayCtx) {
+              this.overlayCtx.font = `${fontSize}px sans-serif`
+              const textWidth = this.overlayCtx.measureText(event.name).width
+
+              // Define the label's rectangular area
+              const labelRect = {
+                left: physicalX - textWidth / 2 - padding,
+                top: textY - fontSize - padding,
+                right: physicalX + textWidth / 2 + padding,
+                bottom: textY + padding,
+              }
+
+              // Check if mouse is inside the label rectangle
+              const isOverLabel =
+                physicalViewSpaceMouse.x >= labelRect.left &&
+                physicalViewSpaceMouse.x <= labelRect.right &&
+                physicalViewSpaceMouse.y >= labelRect.top &&
+                physicalViewSpaceMouse.y <= labelRect.bottom
+
+              // If hovering over either the line or label, set the hover state
+              if (isNearLine || isOverLabel) {
+                this.hoveredEvent = {
+                  index,
+                  name: event.name,
+                  position: position,
+                }
+              }
+            }
+          }
+        }
+      })
+    }
+
+    // Original frame hover logic
     const setHoveredLabel = (frame: FlamechartFrame, depth = 0) => {
       const width = frame.end - frame.start
       const y = this.props.renderInverted ? this.configSpaceSize().y - 1 - depth : depth
@@ -657,16 +874,6 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
       }
     }
 
-    // This is a dumb hack to get around what appears to be a bug in
-    // TypeScript's reachability analysis. If I do the this.hoveredLabel = null
-    // in the outer function body, the code below accessing
-    // this.hoveredLabel!.node inside of the `if (this.hoveredLabel) {`
-    // complains that "no property node on never", indicating that it thinks
-    // that codepath is unreachable.
-    //
-    // Because this.hoveredLabel is accessed in the bound function
-    // setHoveredLabel, the codepath is obviously reachable, but the type
-    // checker is confused about this for some reason.
     const clearHoveredLabel = () => {
       this.hoveredLabel = null
     }
@@ -687,6 +894,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
   private onMouseLeave = (ev: MouseEvent) => {
     this.hoveredLabel = null
+    this.hoveredEvent = null
     this.props.onNodeHover(null)
     this.renderCanvas()
   }

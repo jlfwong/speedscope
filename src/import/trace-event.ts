@@ -102,8 +102,12 @@ interface XTraceEvent extends TraceEvent {
   tdur?: number
 }
 
+interface ITraceEvent extends TraceEvent {
+  ph: 'I'
+}
+
 // The trace format supports a number of event types that we ignore.
-type ImportableTraceEvent = BTraceEvent | ETraceEvent | XTraceEvent
+type ImportableTraceEvent = BTraceEvent | ETraceEvent | XTraceEvent | ITraceEvent
 
 interface StackFrame {
   line: string
@@ -161,34 +165,83 @@ function partitionByPidTid<T extends {tid: number | string; pid: number | string
 function selectQueueToTakeFromNext(
   bEventQueue: BTraceEvent[],
   eEventQueue: ETraceEvent[],
-): 'B' | 'E' {
-  if (bEventQueue.length === 0 && eEventQueue.length === 0) {
-    throw new Error('This method should not be given both queues empty')
+  iEventQueue: ITraceEvent[],
+): 'B' | 'E' | 'I' {
+  if (bEventQueue.length === 0 && eEventQueue.length === 0 && iEventQueue.length === 0) {
+    throw new Error('This method should not be given all queues empty')
   }
-  if (eEventQueue.length === 0) return 'B'
-  if (bEventQueue.length === 0) return 'E'
 
+  // Check if any queues are empty - handle these cases first
+  if (bEventQueue.length === 0) {
+    if (eEventQueue.length === 0) {
+      return 'I' // Only I queue has elements
+    }
+    if (iEventQueue.length === 0) {
+      return 'E' // Only E queue has elements
+    }
+    // Both E and I queues have elements
+    return iEventQueue[0].ts <= eEventQueue[0].ts ? 'I' : 'E'
+  }
+
+  if (eEventQueue.length === 0) {
+    if (iEventQueue.length === 0) {
+      return 'B' // Only B queue has elements
+    }
+    if (bEventQueue.length === 0) {
+      return 'I' // Only I queue has elements
+    }
+    // Both B and I queues have elements
+    return iEventQueue[0].ts <= bEventQueue[0].ts ? 'I' : 'B'
+  }
+
+  if (iEventQueue.length === 0) {
+    // Only B and E queues have elements - use original logic
+    const bFront = bEventQueue[0]
+    const eFront = eEventQueue[0]
+
+    if (bFront.ts < eFront.ts) return 'B'
+    if (eFront.ts < bFront.ts) return 'E'
+
+    return getEventId(bFront) === getEventId(eFront) ? 'B' : 'E'
+  }
+
+  // All three queues have elements - compare timestamps
   const bFront = bEventQueue[0]
   const eFront = eEventQueue[0]
+  const iFront = iEventQueue[0]
 
   const bts = bFront.ts
   const ets = eFront.ts
+  const its = iFront.ts
 
-  if (bts < ets) return 'B'
-  if (ets < bts) return 'E'
+  // Find the earliest timestamp
+  if (bts < ets && bts < its) return 'B'
+  if (ets < bts && ets < its) return 'E'
+  if (its < bts && its < ets) return 'I'
 
-  // If we got here, the 'B' event queue and the 'E' event queue have events at
-  // the front with equal timestamps.
+  // Handle ties
+  if (bts === ets && bts === its) {
+    // If all three timestamps are equal, prioritize B for zero-duration events
+    if (getEventId(bFront) === getEventId(eFront)) return 'B'
+    // Otherwise, instant events take priority
+    return 'I'
+  }
 
-  // If the front of the 'E' queue matches the front of the 'B' queue by key,
-  // then it means we have a zero duration event. Process the 'B' queue first
-  // to ensure it opens before we try to close it.
-  //
-  // Otherwise, process the 'E' queue first.
-  return getEventId(bFront) === getEventId(eFront) ? 'B' : 'E'
+  if (bts === ets) {
+    // If B and E have equal timestamps
+    return getEventId(bFront) === getEventId(eFront) ? 'B' : 'E'
+  }
+
+  if (bts === its) return 'I' // Prioritize instant events when tied with B
+  if (ets === its) return 'I' // Prioritize instant events when tied with E
+
+  // This shouldn't happen given the comparisons above, but TypeScript needs it
+  return 'B'
 }
 
-function convertToEventQueues(events: ImportableTraceEvent[]): [BTraceEvent[], ETraceEvent[]] {
+function convertToEventQueues(
+  events: ImportableTraceEvent[],
+): [BTraceEvent[], ETraceEvent[], ITraceEvent[]] {
   const beginEvents: BTraceEvent[] = []
   const endEvents: ETraceEvent[] = []
 
@@ -205,6 +258,7 @@ function convertToEventQueues(events: ImportableTraceEvent[]): [BTraceEvent[], E
 
   // Next, combine B, E, and X events into two timestamp ordered queues.
   const xEvents: XTraceEvent[] = []
+  const iEvents: ITraceEvent[] = []
   for (let ev of events) {
     switch (ev.ph) {
       case 'B': {
@@ -219,6 +273,12 @@ function convertToEventQueues(events: ImportableTraceEvent[]): [BTraceEvent[], E
 
       case 'X': {
         xEvents.push(ev)
+        break
+      }
+
+      case 'I': {
+        console.log('I event', ev)
+        iEvents.push(ev)
         break
       }
 
@@ -267,8 +327,9 @@ function convertToEventQueues(events: ImportableTraceEvent[]): [BTraceEvent[], E
 
   beginEvents.sort(compareTimestamps)
   endEvents.sort(compareTimestamps)
+  iEvents.sort(compareTimestamps)
 
-  return [beginEvents, endEvents]
+  return [beginEvents, endEvents, iEvents]
 }
 
 function filterIgnoredEventTypes(events: TraceEvent[]): ImportableTraceEvent[] {
@@ -278,6 +339,7 @@ function filterIgnoredEventTypes(events: TraceEvent[]): ImportableTraceEvent[] {
       case 'B':
       case 'E':
       case 'X':
+      case 'I':
         ret.push(ev as ImportableTraceEvent)
     }
   }
@@ -438,7 +500,7 @@ function eventListToProfile(
   // ties by the order the events occurred in the file, and deal with 'E'
   // events in 'ts' order, breaking ties in whatever order causes the 'E'
   // events to match whatever is on the top of the stack.
-  const [bEventQueue, eEventQueue] = convertToEventQueues(importableEvents)
+  const [bEventQueue, eEventQueue, iEventQueue] = convertToEventQueues(importableEvents)
 
   const profileBuilder = new CallTreeProfileBuilder()
   profileBuilder.setValueFormatter(new RawValueFormatter())
@@ -448,6 +510,10 @@ function eventListToProfile(
   const enterFrame = (b: BTraceEvent) => {
     frameStack.push(b)
     profileBuilder.enterFrame(frameInfoForEvent(b, exporterSource), b.ts)
+  }
+
+  const addInstantEvent = (i: ITraceEvent) => {
+    profileBuilder.addInstantEvent(frameInfoForEvent(i, exporterSource), i.ts)
   }
 
   const tryToLeaveFrame = (e: ETraceEvent) => {
@@ -482,9 +548,14 @@ function eventListToProfile(
     profileBuilder.leaveFrame(bFrameInfo, e.ts)
   }
 
-  while (bEventQueue.length > 0 || eEventQueue.length > 0) {
-    const queueName = selectQueueToTakeFromNext(bEventQueue, eEventQueue)
+  while (bEventQueue.length > 0 || eEventQueue.length > 0 || iEventQueue.length > 0) {
+    const queueName = selectQueueToTakeFromNext(bEventQueue, eEventQueue, iEventQueue)
     switch (queueName) {
+      case 'I': {
+        const i = iEventQueue.shift()!
+        addInstantEvent(i)
+        break
+      }
       case 'B': {
         enterFrame(bEventQueue.shift()!)
         break

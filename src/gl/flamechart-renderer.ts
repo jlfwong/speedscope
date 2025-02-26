@@ -378,4 +378,3 @@ export class FlamechartRenderer {
     })
   }
 }
-
