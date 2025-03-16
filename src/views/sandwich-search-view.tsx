@@ -39,6 +39,7 @@ export const SandwichSearchView = memo(() => {
       numResults={numResults}
       selectPrev={selectPrev}
       selectNext={selectNext}
+      toggleOnlyMatches={null}
     />
   )
 })

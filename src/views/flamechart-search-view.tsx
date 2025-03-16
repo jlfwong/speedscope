@@ -10,6 +10,8 @@ import {Rect, Vec2} from '../lib/math'
 import {h, createContext, ComponentChildren} from 'preact'
 import {Flamechart} from '../lib/flamechart'
 import {CallTreeNode} from '../lib/profile'
+import {useAtom} from '../lib/atom'
+import {onlyMatchesAtom} from '../app-state'
 
 export const FlamechartSearchContext = createContext<FlamechartSearchData | null>(null)
 
@@ -65,6 +67,7 @@ export const FlamechartSearchContextProvider = ({
 
 export const FlamechartSearchView = memo(() => {
   const flamechartData = useContext(FlamechartSearchContext)
+  const onlyMatches = useAtom(onlyMatchesAtom)
 
   // TODO(jlfwong): This pattern is pretty gross, but I really don't want values
   // that can be undefined or null.
@@ -83,6 +86,10 @@ export const FlamechartSearchView = memo(() => {
     if (selectedNode == null) return null
     return searchResults.indexOf(selectedNode)
   }, [searchResults, selectedNode])
+
+  const toggleOnlyMatches = useCallback(() => {
+    onlyMatchesAtom.set(!onlyMatches)
+  }, [onlyMatches])
 
   const selectAndZoomToMatch = useCallback(
     (match: FlamechartSearchMatch) => {
@@ -146,6 +153,7 @@ export const FlamechartSearchView = memo(() => {
       numResults={numResults}
       selectPrev={selectPrev}
       selectNext={selectNext}
+      toggleOnlyMatches={toggleOnlyMatches}
     />
   )
 })
