@@ -1,0 +1,38 @@
+@ inst_retired.any [35705 samples]
+
+# comment ok
+// ignored
+
+20.86%  [7447]     zfs_lz4_compress @ /boot/kernel/zfs.ko
+ 100.0%  [7447]      zio_compress_data
+  100.0%  [7447]       zio_write_compress
+   100.0%  [7447]        zio_execute
+    100.0%  [7447]         taskqueue_run_locked @ /boot/kernel/kernel
+     100.0%  [7447]          taskqueue_thread_loop
+      100.0%  [7447]           fork_exit
+
+14.44%  [5156]     fletcher_2_native @ /boot/kernel/zfs.ko
+ 50.62%  [2610]      arc_cksum_verify
+  66.02%  [1723]       arc_buf_thaw
+   86.48%  [1490]        dmu_buf_will_dirty_impl
+    99.93%  [1489]         dmu_write_uio_dnode
+     100.0%  [1489]          zfs_write
+      100.0%  [1489]           zfs_freebsd_write
+       100.0%  [1489]            VOP_WRITE_APV @ /boot/kernel/kernel
+        100.0%  [1489]             vn_write
+         100.0%  [1489]              vn_io_fault_doio
+          100.0%  [1489]               vn_io_fault1
+           100.0%  [1489]                vn_io_fault
+            100.0%  [1489]                 dofilewrite
+             100.0%  [1489]                  kern_pwritev
+              100.0%  [1489]                   sys_pwrite
+               100.0%  [1489]                    amd64_syscall
+    00.07%  [1]            dmu_write_impl @ /boot/kernel/zfs.ko
+     100.0%  [1]             dmu_write
+      100.0%  [1]              metaslab_set_unflushed_txg
+       100.0%  [1]               metaslab_unflushed_bump
+        100.0%  [1]                spa_flush_metaslabs
+         100.0%  [1]                 spa_sync
+          100.0%  [1]                  txg_sync_thread
+           100.0%  [1]                   fork_exit @ /boot/kernel/kernel
+invalid line

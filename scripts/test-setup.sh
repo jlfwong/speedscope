@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 for f in `find sample/profiles -name '*.zip' | grep -v Instruments`; do

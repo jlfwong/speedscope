@@ -23,6 +23,7 @@ import {importFromChromeHeapProfile} from './v8heapalloc'
 import {isTraceEventFormatted, importTraceEvents} from './trace-event'
 import {importFromCallgrind} from './callgrind'
 import {importFromPapyrus} from './papyrus'
+import {importFromPMCStatCallGraph} from './pmcstat-callgraph'
 
 export async function importProfileGroupFromText(
   fileName: string,
@@ -123,6 +124,9 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
   } else if (fileName.startsWith('callgrind.')) {
     console.log('Importing as Callgrind profile')
     return importFromCallgrind(contents, fileName)
+  } else if (fileName.endsWith('.pmcstat.graph')) {
+    console.log('Importing as pmcstat callgraph format')
+    return toGroup(importFromPMCStatCallGraph(contents))
   }
 
   // Second pass: Try to guess what file format it is based on structure
@@ -203,6 +207,12 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     if (fromBGFlameGraph) {
       console.log('Importing as collapsed stack format')
       return toGroup(fromBGFlameGraph)
+    }
+
+    const fromPMCStatCallGraph = importFromPMCStatCallGraph(contents)
+    if (fromPMCStatCallGraph) {
+      console.log('Importing as pmcstat callgraph format')
+      return toGroup(fromPMCStatCallGraph)
     }
   }
 
