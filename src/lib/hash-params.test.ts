@@ -22,6 +22,9 @@ test('getHashParams', () => {
   expect(getHashParams('#title=hello%20world')).toEqual({
     title: 'hello world',
   })
+  expect(getHashParams('#profileAccepts=application%2Fjson')).toEqual({
+    profileAccepts: 'application/json',
+  })
   expect(getHashParams('#abc=bcd')).toEqual({})
   expect(getHashParams('garbage')).toEqual({})
 })
