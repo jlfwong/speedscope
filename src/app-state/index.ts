@@ -14,6 +14,9 @@ export const flattenRecursionAtom = new Atom<boolean>(false, 'flattenRecursion')
 export const searchIsActiveAtom = new Atom<boolean>(false, 'searchIsActive')
 export const searchQueryAtom = new Atom<string>('', 'searchQueryAtom')
 
+// True if the flamechart should only show the matching frames when searching.
+export const onlyMatchesAtom = new Atom<boolean>(false, 'onlyMatches')
+
 // Which top-level view should be displayed
 export const viewModeAtom = new Atom<ViewMode>(ViewMode.CHRONO_FLAME_CHART, 'viewMode')
 
