@@ -1,3 +1,7 @@
+## [1.23.0] - 2025-07-06
+
+- Add support for FreeBSD's pmcstat callgraph format [[#502](https://github.com/jlfwong/speedscope/pull/502)] (by @ryan-moeller)
+
 ## [1.22.2] - 2025-02-15
 
 - 1.22.1
