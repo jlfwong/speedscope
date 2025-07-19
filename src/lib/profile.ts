@@ -330,6 +330,33 @@ export class Profile {
     return flattenedProfile
   }
 
+  getProfileSlice(start: number, end: number): Profile {
+    const builder = new CallTreeProfileBuilder()
+
+    let lastValue = 0
+
+    function openFrame(node: CallTreeNode, value: number) {
+      builder.enterFrame(
+        node.frame,
+        (lastValue = value >= end || value < start ? lastValue : value - start),
+      )
+    }
+    function closeFrame(node: CallTreeNode, value: number) {
+      builder.leaveFrame(
+        node.frame,
+        (lastValue = value >= end || value < start ? lastValue : value - start),
+      )
+    }
+
+    this.forEachCall(openFrame, closeFrame)
+
+    const slice = builder.build()
+    slice.name = this.name
+    slice.valueFormatter = this.valueFormatter
+
+    return slice
+  }
+
   getInvertedProfileForCallersOf(focalFrameInfo: FrameInfo): Profile {
     const focalFrame = Frame.getOrInsert(this.frames, focalFrameInfo)
     const builder = new StackListProfileBuilder()
