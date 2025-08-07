@@ -2,10 +2,25 @@ import {Profile} from '../lib/profile'
 import {h, JSX, ComponentChild, Ref} from 'preact'
 import {useCallback, useState, useMemo, useEffect, useRef} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
-import {ZIndex, Sizes} from './style'
+import {ZIndex, Sizes, FontSize} from './style'
 import {fuzzyMatchStrings} from '../lib/fuzzy-find'
-import {sortBy} from '../lib/utils'
+import {sortBy, formatPercent} from '../lib/utils'
 import {useTheme, withTheme} from './themes/theme'
+
+enum SortField {
+  NAME = 'name',
+  WEIGHT = 'weight',
+}
+
+enum SortDirection {
+  ASCENDING = 'ascending',
+  DESCENDING = 'descending',
+}
+
+interface SortMethod {
+  field: SortField
+  direction: SortDirection
+}
 
 interface ProfileSelectRowProps {
   setProfileIndexToView: (profileIndex: number) => void
@@ -17,8 +32,9 @@ interface ProfileSelectRowProps {
   indexInProfileGroup: number
   indexInFilteredListView: number
   profileCount: number
-  nodeRef?: Ref<HTMLDivElement>
+  nodeRef?: Ref<HTMLTableRowElement>
   closeProfileSelect: () => void
+  totalNonIdleWeightSum: number
 }
 
 function highlightRanges(
@@ -38,6 +54,30 @@ function highlightRanges(
   return <span>{spans}</span>
 }
 
+function SortIcon({activeDirection}: {activeDirection: SortDirection | null}) {
+  const theme = useTheme()
+  const style = getStyle(theme)
+
+  const upFill =
+    activeDirection === SortDirection.ASCENDING ? theme.fgPrimaryColor : theme.fgSecondaryColor
+  const downFill =
+    activeDirection === SortDirection.DESCENDING ? theme.fgPrimaryColor : theme.fgSecondaryColor
+
+  return (
+    <svg
+      width="8"
+      height="10"
+      viewBox="0 0 8 10"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={css(style.sortIcon)}
+    >
+      <path d="M0 4L4 0L8 4H0Z" fill={upFill} />
+      <path d="M0 4L4 0L8 4H0Z" transform="translate(0 10) scale(1 -1)" fill={downFill} />
+    </svg>
+  )
+}
+
 export function ProfileSelectRow({
   setProfileIndexToView,
   setHoveredProfileIndex,
@@ -50,6 +90,7 @@ export function ProfileSelectRow({
   indexInProfileGroup,
   matchedRanges,
   indexInFilteredListView,
+  totalNonIdleWeightSum,
 }: ProfileSelectRowProps) {
   const style = getStyle(useTheme())
 
@@ -66,8 +107,8 @@ export function ProfileSelectRow({
   )
 
   const name = profile.getName()
-
-  const maxDigits = 1 + Math.floor(Math.log10(profileCount))
+  const weight = profile.getTotalNonIdleWeight()
+  const weightPerc = totalNonIdleWeightSum > 0 ? (100.0 * weight) / totalNonIdleWeightSum : 0
 
   const highlightedClassName = css(style.highlighted)
   const highlighted = useMemo(() => {
@@ -75,11 +116,8 @@ export function ProfileSelectRow({
     return result
   }, [name, matchedRanges, highlightedClassName])
 
-  // TODO(jlfwong): There's a really gnarly edge-case here where the highlighted
-  // ranges are part of the text truncated by ellipsis. I'm just going to punt
-  // on solving for that.
   return (
-    <div
+    <tr
       ref={nodeRef}
       onMouseUp={onMouseUp}
       onMouseEnter={onMouseEnter}
@@ -91,14 +129,11 @@ export function ProfileSelectRow({
         hovered && style.profileRowHovered,
       )}
     >
-      <span
-        className={css(style.profileIndex, selected && style.profileIndexSelected)}
-        style={{width: maxDigits + 'em'}}
-      >
-        {indexInProfileGroup + 1}:
-      </span>{' '}
-      {highlighted}
-    </div>
+      <td className={css(style.nameCell)}>{highlighted}</td>
+      <td className={css(style.weightCell)}>
+        {profile.formatValue(weight)} ({formatPercent(weightPerc)})
+      </td>
+    </tr>
   )
 }
 
@@ -121,7 +156,11 @@ interface FilteredProfile {
   score: number
 }
 
-function getSortedFilteredProfiles(profiles: Profile[], filterText: string): FilteredProfile[] {
+function getSortedFilteredProfiles(
+  profiles: Profile[],
+  filterText: string,
+  sortMethod: SortMethod,
+): FilteredProfile[] {
   const filtered: FilteredProfile[] = []
   for (let i = 0; i < profiles.length; i++) {
     const profile = profiles[i]
@@ -133,7 +172,29 @@ function getSortedFilteredProfiles(profiles: Profile[], filterText: string): Fil
       ...match,
     })
   }
-  sortBy(filtered, p => -p.score)
+
+  // Apply sorting
+  if (sortMethod.field === SortField.NAME) {
+    filtered.sort((a, b) => {
+      const nameA = a.profile.getName().toLowerCase()
+      const nameB = b.profile.getName().toLowerCase()
+      if (sortMethod.direction === SortDirection.ASCENDING) {
+        return nameA.localeCompare(nameB)
+      } else {
+        return nameB.localeCompare(nameA)
+      }
+    })
+  } else if (sortMethod.field === SortField.WEIGHT) {
+    sortBy(filtered, p =>
+      sortMethod.direction === SortDirection.ASCENDING
+        ? p.profile.getTotalNonIdleWeight()
+        : -p.profile.getTotalNonIdleWeight(),
+    )
+  } else {
+    // Default to fuzzy search score
+    sortBy(filtered, p => -p.score)
+  }
+
   return filtered
 }
 
@@ -147,6 +208,10 @@ export function ProfileSelect({
   const style = getStyle(useTheme())
 
   const [filterText, setFilterText] = useState('')
+  const [sortMethod, setSortMethod] = useState<SortMethod>({
+    field: SortField.WEIGHT,
+    direction: SortDirection.DESCENDING,
+  })
 
   const onFilterTextChange = useCallback(
     (ev: Event) => {
@@ -169,13 +234,41 @@ export function ProfileSelect({
     [visible],
   )
 
+  const onSortClick = useCallback(
+    (field: SortField, ev: MouseEvent) => {
+      ev.preventDefault()
+      ev.stopPropagation()
+
+      if (sortMethod.field === field) {
+        // Toggle direction
+        setSortMethod({
+          field,
+          direction:
+            sortMethod.direction === SortDirection.ASCENDING
+              ? SortDirection.DESCENDING
+              : SortDirection.ASCENDING,
+        })
+      } else {
+        // Set new field with default direction
+        const direction =
+          field === SortField.NAME ? SortDirection.ASCENDING : SortDirection.DESCENDING
+        setSortMethod({field, direction})
+      }
+    },
+    [sortMethod, setSortMethod],
+  )
+
+  const totalNonIdleWeightSum = useMemo(() => {
+    return profiles.reduce((sum, profile) => sum + profile.getTotalNonIdleWeight(), 0)
+  }, [profiles])
+
   const filteredProfiles = useMemo(() => {
-    return getSortedFilteredProfiles(profiles, filterText)
-  }, [profiles, filterText])
+    return getSortedFilteredProfiles(profiles, filterText, sortMethod)
+  }, [profiles, filterText, sortMethod])
 
   const [hoveredProfileIndex, setHoveredProfileIndex] = useState<number | null>(0)
 
-  const selectedNodeRef = useRef<HTMLDivElement | null>(null)
+  const selectedNodeRef = useRef<HTMLTableRowElement | null>(null)
   useEffect(() => {
     if (visible) {
       // Whenever the profile select becomes visible...
@@ -269,7 +362,7 @@ export function ProfileSelect({
   }, [setHoveredProfileIndex, filteredProfiles])
 
   const hoveredNodeRef = useCallback(
-    (hoveredNode: HTMLDivElement | null) => {
+    (hoveredNode: HTMLTableRowElement | null) => {
       if (pendingForcedScroll && hoveredNode) {
         hoveredNode.scrollIntoView({
           behavior: 'auto',
@@ -283,11 +376,21 @@ export function ProfileSelect({
   )
 
   const selectedHoveredRef = useCallback(
-    (node: HTMLDivElement | null) => {
+    (node: HTMLTableRowElement | null) => {
       selectedNodeRef.current = node
       hoveredNodeRef(node)
     },
     [selectedNodeRef, hoveredNodeRef],
+  )
+
+  const onNameClick = useCallback(
+    (ev: MouseEvent) => onSortClick(SortField.NAME, ev),
+    [onSortClick],
+  )
+
+  const onWeightClick = useCallback(
+    (ev: MouseEvent) => onSortClick(SortField.WEIGHT, ev),
+    [onSortClick],
   )
 
   // We allow ProfileSelect to be aware of its own visibility in order to retain
@@ -314,36 +417,68 @@ export function ProfileSelect({
           />
         </div>
         <div className={css(style.profileSelectScrolling)}>
-          {filteredProfiles.map(({profile, matchedRanges, indexInProfileGroup}, indexInList) => {
-            let ref: Ref<HTMLDivElement> | undefined = undefined
-            const selected = indexInProfileGroup === indexToView
-            const hovered = indexInProfileGroup === hoveredProfileIndex
-            if (selected && hovered) {
-              ref = selectedHoveredRef
-            } else if (selected) {
-              ref = selectedNodeRef
-            } else if (hovered) {
-              ref = hoveredNodeRef
-            }
-            return (
-              <ProfileSelectRow
-                setHoveredProfileIndex={setHoveredProfileIndex}
-                indexInProfileGroup={indexInProfileGroup}
-                indexInFilteredListView={indexInList}
-                hovered={indexInProfileGroup == hoveredProfileIndex}
-                selected={indexInProfileGroup === indexToView}
-                profile={profile}
-                profileCount={profiles.length}
-                nodeRef={ref}
-                matchedRanges={matchedRanges}
-                setProfileIndexToView={setProfileIndexToView}
-                closeProfileSelect={closeProfileSelect}
-              />
-            )
-          })}
-          {filteredProfiles.length === 0 ? (
-            <div className={css(style.profileRow)}>No results match filter "{filterText}"</div>
-          ) : null}
+          <table className={css(style.tableView)}>
+            <thead className={css(style.tableHeader)}>
+              <tr>
+                <th className={css(style.nameHeaderCell)} onClick={onNameClick}>
+                  <SortIcon
+                    activeDirection={
+                      sortMethod.field === SortField.NAME ? sortMethod.direction : null
+                    }
+                  />
+                  Profile Name
+                </th>
+                <th className={css(style.weightHeaderCell)} onClick={onWeightClick}>
+                  <SortIcon
+                    activeDirection={
+                      sortMethod.field === SortField.WEIGHT ? sortMethod.direction : null
+                    }
+                  />
+                  Total Weight
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredProfiles.map(
+                ({profile, matchedRanges, indexInProfileGroup}, indexInList) => {
+                  let ref: Ref<HTMLTableRowElement> | undefined = undefined
+                  const selected = indexInProfileGroup === indexToView
+                  const hovered = indexInProfileGroup === hoveredProfileIndex
+                  if (selected && hovered) {
+                    ref = selectedHoveredRef
+                  } else if (selected) {
+                    ref = selectedNodeRef
+                  } else if (hovered) {
+                    ref = hoveredNodeRef
+                  }
+                  return (
+                    <ProfileSelectRow
+                      key={indexInList}
+                      setHoveredProfileIndex={setHoveredProfileIndex}
+                      indexInProfileGroup={indexInProfileGroup}
+                      indexInFilteredListView={indexInList}
+                      hovered={indexInProfileGroup == hoveredProfileIndex}
+                      selected={indexInProfileGroup === indexToView}
+                      profile={profile}
+                      profileCount={profiles.length}
+                      nodeRef={ref}
+                      matchedRanges={matchedRanges}
+                      setProfileIndexToView={setProfileIndexToView}
+                      closeProfileSelect={closeProfileSelect}
+                      totalNonIdleWeightSum={totalNonIdleWeightSum}
+                    />
+                  )
+                },
+              )}
+              {filteredProfiles.length === 0 ? (
+                <tr>
+                  <td colSpan={2} className={css(style.noResultsRow)}>
+                    No results match filter "{filterText}"
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -388,26 +523,74 @@ const getStyle = withTheme(theme =>
       height: paddingHeight,
       background: theme.altBgPrimaryColor,
     },
+    tableView: {
+      width: '100%',
+      fontSize: FontSize.LABEL,
+      background: theme.altBgPrimaryColor,
+      borderCollapse: 'collapse',
+    },
+    tableHeader: {
+      borderBottom: `2px solid ${theme.altBgSecondaryColor}`,
+      textAlign: 'left',
+      color: theme.altFgPrimaryColor,
+      userSelect: 'none',
+    },
+    nameHeaderCell: {
+      cursor: 'pointer',
+      padding: '8px 10px',
+      textAlign: 'left',
+      fontWeight: 'bold',
+    },
+    weightHeaderCell: {
+      cursor: 'pointer',
+      padding: '8px 10px',
+      textAlign: 'right',
+      fontWeight: 'bold',
+      width: '150px',
+    },
+    sortIcon: {
+      position: 'relative',
+      top: 1,
+      marginRight: 4,
+    },
     profileRow: {
       height: Sizes.FRAME_HEIGHT - 2,
-      border: '1px solid transparent',
-      textAlign: 'left',
-      paddingLeft: 10,
-      paddingRight: 10,
       background: theme.altBgPrimaryColor,
-      overflow: 'hidden',
-      whiteSpace: 'nowrap',
-      textOverflow: 'ellipsis',
       cursor: 'pointer',
+      ':hover': {
+        background: theme.altBgSecondaryColor,
+      },
     },
     profileRowHovered: {
-      border: `1px solid ${theme.selectionPrimaryColor}`,
+      background: theme.altBgSecondaryColor,
     },
     profileRowSelected: {
       background: theme.selectionPrimaryColor,
+      color: theme.altFgPrimaryColor,
     },
     profileRowEven: {
       background: theme.altBgSecondaryColor,
+    },
+    nameCell: {
+      padding: '4px 10px',
+      textAlign: 'left',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+      maxWidth: '300px',
+    },
+    weightCell: {
+      padding: '4px 10px',
+      textAlign: 'right',
+      whiteSpace: 'nowrap',
+      width: '150px',
+      fontFamily: 'monospace',
+    },
+    noResultsRow: {
+      padding: '20px',
+      textAlign: 'center',
+      color: theme.altFgSecondaryColor,
+      fontStyle: 'italic',
     },
     profileSelectScrolling: {
       maxHeight: `min(calc(100vh - ${Sizes.TOOLBAR_HEIGHT - 2 * paddingHeight}px), ${
@@ -434,7 +617,7 @@ const getStyle = withTheme(theme =>
     },
     profileSelectOuter: {
       width: '100%',
-      maxWidth: 480,
+      maxWidth: 600,
       margin: '0 auto',
       position: 'relative',
       zIndex: ZIndex.PROFILE_SELECT,
