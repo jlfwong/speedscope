@@ -510,8 +510,8 @@ const getStyle = withTheme(theme =>
       background: theme.altBgSecondaryColor,
       borderRadius: 5,
       padding: 5,
+      border: 'none',
       ':focus': {
-        border: 'none',
         outline: 'none',
       },
       '::selection': {
