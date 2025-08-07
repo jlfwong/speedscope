@@ -550,7 +550,7 @@ const getStyle = withTheme(theme =>
       padding: '8px 10px',
       textAlign: 'right',
       fontWeight: 'bold',
-      width: '50px',
+      width: '20px',
     },
     nameHeaderCell: {
       cursor: 'pointer',
@@ -592,7 +592,7 @@ const getStyle = withTheme(theme =>
       padding: '4px 10px',
       textAlign: 'right',
       whiteSpace: 'nowrap',
-      width: '10px',
+      width: '20px',
       fontFamily: 'monospace',
       color: theme.altFgSecondaryColor,
     },
