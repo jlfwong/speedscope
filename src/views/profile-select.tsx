@@ -10,6 +10,7 @@ import {useTheme, withTheme} from './themes/theme'
 enum SortField {
   NAME = 'name',
   WEIGHT = 'weight',
+  INDEX = 'index',
 }
 
 enum SortDirection {
@@ -124,6 +125,7 @@ export function ProfileSelectRow({
         hovered && style.profileRowHovered,
       )}
     >
+      <td className={css(style.indexCell)}>{indexInProfileGroup + 1}</td>
       <td className={css(style.nameCell)}>{highlighted}</td>
       <td className={css(style.weightCell)}>{profile.formatValue(weight)}</td>
     </tr>
@@ -183,6 +185,12 @@ function getSortedFilteredProfiles(
         ? p.profile.getTotalNonIdleWeight()
         : -p.profile.getTotalNonIdleWeight(),
     )
+  } else if (sortMethod.field === SortField.INDEX) {
+    sortBy(filtered, p =>
+      sortMethod.direction === SortDirection.ASCENDING
+        ? p.indexInProfileGroup
+        : -p.indexInProfileGroup,
+    )
   } else {
     // Default to fuzzy search score
     sortBy(filtered, p => -p.score)
@@ -202,8 +210,8 @@ export function ProfileSelect({
 
   const [filterText, setFilterText] = useState('')
   const [sortMethod, setSortMethod] = useState<SortMethod>({
-    field: SortField.WEIGHT,
-    direction: SortDirection.DESCENDING,
+    field: SortField.INDEX,
+    direction: SortDirection.ASCENDING,
   })
 
   const onFilterTextChange = useCallback(
@@ -244,7 +252,9 @@ export function ProfileSelect({
       } else {
         // Set new field with default direction
         const direction =
-          field === SortField.NAME ? SortDirection.ASCENDING : SortDirection.DESCENDING
+          field === SortField.NAME || field === SortField.INDEX
+            ? SortDirection.ASCENDING
+            : SortDirection.DESCENDING
         setSortMethod({field, direction})
       }
     },
@@ -382,6 +392,11 @@ export function ProfileSelect({
     [onSortClick],
   )
 
+  const onIndexClick = useCallback(
+    (ev: MouseEvent) => onSortClick(SortField.INDEX, ev),
+    [onSortClick],
+  )
+
   // We allow ProfileSelect to be aware of its own visibility in order to retain
   // its scroll offset state between times when it's hidden & shown, and also to
   // scroll the selected node into view once it becomes shown again after the
@@ -409,13 +424,21 @@ export function ProfileSelect({
           <table className={css(style.tableView)}>
             <thead className={css(style.tableHeader)}>
               <tr>
+                <th className={css(style.indexHeaderCell)} onClick={onIndexClick}>
+                  <SortIcon
+                    activeDirection={
+                      sortMethod.field === SortField.INDEX ? sortMethod.direction : null
+                    }
+                  />
+                  #
+                </th>
                 <th className={css(style.nameHeaderCell)} onClick={onNameClick}>
                   <SortIcon
                     activeDirection={
                       sortMethod.field === SortField.NAME ? sortMethod.direction : null
                     }
                   />
-                  Profile Name
+                  Name
                 </th>
                 <th className={css(style.weightHeaderCell)} onClick={onWeightClick}>
                   <SortIcon
@@ -459,7 +482,7 @@ export function ProfileSelect({
               )}
               {filteredProfiles.length === 0 ? (
                 <tr>
-                  <td colSpan={2} className={css(style.noResultsRow)}>
+                  <td colSpan={3} className={css(style.noResultsRow)}>
                     No results match filter "{filterText}"
                   </td>
                 </tr>
@@ -522,6 +545,13 @@ const getStyle = withTheme(theme =>
       color: theme.altFgPrimaryColor,
       userSelect: 'none',
     },
+    indexHeaderCell: {
+      cursor: 'pointer',
+      padding: '8px 10px',
+      textAlign: 'right',
+      fontWeight: 'bold',
+      width: '50px',
+    },
     nameHeaderCell: {
       cursor: 'pointer',
       padding: '8px 10px',
@@ -557,6 +587,14 @@ const getStyle = withTheme(theme =>
     },
     profileRowEven: {
       background: theme.altBgSecondaryColor,
+    },
+    indexCell: {
+      padding: '4px 10px',
+      textAlign: 'right',
+      whiteSpace: 'nowrap',
+      width: '10px',
+      fontFamily: 'monospace',
+      color: theme.altFgSecondaryColor,
     },
     nameCell: {
       padding: '4px 10px',
