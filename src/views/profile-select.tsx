@@ -4,7 +4,7 @@ import {useCallback, useState, useMemo, useEffect, useRef} from 'preact/hooks'
 import {StyleSheet, css} from 'aphrodite'
 import {ZIndex, Sizes, FontSize} from './style'
 import {fuzzyMatchStrings} from '../lib/fuzzy-find'
-import {sortBy, formatPercent} from '../lib/utils'
+import {sortBy} from '../lib/utils'
 import {useTheme, withTheme} from './themes/theme'
 
 enum SortField {
@@ -31,10 +31,8 @@ interface ProfileSelectRowProps {
   selected: boolean
   indexInProfileGroup: number
   indexInFilteredListView: number
-  profileCount: number
   nodeRef?: Ref<HTMLTableRowElement>
   closeProfileSelect: () => void
-  totalNonIdleWeightSum: number
 }
 
 function highlightRanges(
@@ -84,13 +82,11 @@ export function ProfileSelectRow({
   profile,
   selected,
   hovered,
-  profileCount,
   nodeRef,
   closeProfileSelect,
   indexInProfileGroup,
   matchedRanges,
   indexInFilteredListView,
-  totalNonIdleWeightSum,
 }: ProfileSelectRowProps) {
   const style = getStyle(useTheme())
 
@@ -108,7 +104,6 @@ export function ProfileSelectRow({
 
   const name = profile.getName()
   const weight = profile.getTotalNonIdleWeight()
-  const weightPerc = totalNonIdleWeightSum > 0 ? (100.0 * weight) / totalNonIdleWeightSum : 0
 
   const highlightedClassName = css(style.highlighted)
   const highlighted = useMemo(() => {
@@ -130,9 +125,7 @@ export function ProfileSelectRow({
       )}
     >
       <td className={css(style.nameCell)}>{highlighted}</td>
-      <td className={css(style.weightCell)}>
-        {profile.formatValue(weight)} ({formatPercent(weightPerc)})
-      </td>
+      <td className={css(style.weightCell)}>{profile.formatValue(weight)}</td>
     </tr>
   )
 }
@@ -257,10 +250,6 @@ export function ProfileSelect({
     },
     [sortMethod, setSortMethod],
   )
-
-  const totalNonIdleWeightSum = useMemo(() => {
-    return profiles.reduce((sum, profile) => sum + profile.getTotalNonIdleWeight(), 0)
-  }, [profiles])
 
   const filteredProfiles = useMemo(() => {
     return getSortedFilteredProfiles(profiles, filterText, sortMethod)
@@ -460,12 +449,10 @@ export function ProfileSelect({
                       hovered={indexInProfileGroup == hoveredProfileIndex}
                       selected={indexInProfileGroup === indexToView}
                       profile={profile}
-                      profileCount={profiles.length}
                       nodeRef={ref}
                       matchedRanges={matchedRanges}
                       setProfileIndexToView={setProfileIndexToView}
                       closeProfileSelect={closeProfileSelect}
-                      totalNonIdleWeightSum={totalNonIdleWeightSum}
                     />
                   )
                 },
