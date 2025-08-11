@@ -1,3 +1,3 @@
-speedscope@1.23.0
-Sun Jul  6 20:04:45 PDT 2025
-aa9bef50789a2989746b576fff182b6f01dfce6a
+speedscope@1.23.1
+Mon Aug 11 11:43:23 PDT 2025
+0cec0f82c334aed6cf19d43cabeadcda0d95e0fc
