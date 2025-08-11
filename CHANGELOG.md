@@ -1,3 +1,7 @@
+## [1.23.1] - 2025-08-11
+
+- Profile selector: add sortable columns and total weight display [[#515](https://github.com/jlfwong/speedscope/pull/515)] (by @jlfwong)
+
 ## [1.23.0] - 2025-07-06
 
 - Add support for FreeBSD's pmcstat callgraph format [[#502](https://github.com/jlfwong/speedscope/pull/502)] (by @ryan-moeller)
