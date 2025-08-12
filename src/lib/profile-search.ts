@@ -42,6 +42,7 @@ export class ProfileSearchResults {
   constructor(
     readonly profile: Profile,
     readonly searchQuery: string,
+    readonly onlyMatches: boolean,
   ) {}
 
   private matches: Map<Frame, [number, number][] | null> | null = null

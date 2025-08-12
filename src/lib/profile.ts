@@ -1,6 +1,7 @@
 import {lastOf, KeyedSet} from './utils'
 import {ValueFormatter, RawValueFormatter} from './value-formatters'
 import {FileFormat} from './file-format-spec'
+import {ProfileSearchResults} from './profile-search'
 
 export interface FrameInfo {
   key: string | number
@@ -194,6 +195,48 @@ export class Profile {
       node.children.forEach(visit)
     }
     visit(this.groupedCalltreeRoot)
+  }
+
+  // Filter the calls of a traversal function (e.g. `forEachCall` or `forEachCallGrouped`)
+  // based on the results of a search.
+  filteredTraversal(
+    searchResults: ProfileSearchResults | null,
+    traversalFn: (
+      openFrame: (node: CallTreeNode, value: number) => void,
+      closeFrame: (node: CallTreeNode, value: number) => void,
+    ) => void,
+  ) {
+    if (searchResults == null || !searchResults.onlyMatches) {
+      return traversalFn
+    }
+    const traversal = (
+      openFrame: (node: CallTreeNode, value: number) => void,
+      closeFrame: (node: CallTreeNode, value: number) => void,
+    ) => {
+      const matchingFrames = new Set<Frame>()
+      this.forEachFrame(frame => {
+        if (searchResults.getMatchForFrame(frame)) {
+          matchingFrames.add(frame)
+        }
+      })
+      if (matchingFrames.size === 0) {
+        return
+      }
+      // Use the original traversal function but filter callbacks
+      traversalFn(
+        (node, value) => {
+          if (matchingFrames.has(node.frame)) {
+            openFrame(node, value)
+          }
+        },
+        (node, value) => {
+          if (matchingFrames.has(node.frame)) {
+            closeFrame(node, value)
+          }
+        },
+      )
+    }
+    return traversal
   }
 
   forEachCallGrouped(
