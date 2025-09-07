@@ -34,6 +34,10 @@ export interface TextFileContent {
 // assuming utf-8 encoding)
 let TEXT_FILE_CHUNK_SIZE = 1 << 27
 
+// When a v8 log is postprocessed with a different version of V8 than
+// the one that generated the log, it prepends a informational line.
+const DIFFERENT_V8_VERSION = 'Testing v8 version different from logging version'
+
 export async function withMockedFileChunkSizeForTests(chunkSize: number, cb: () => any) {
   const original = TEXT_FILE_CHUNK_SIZE
   TEXT_FILE_CHUNK_SIZE = chunkSize
@@ -54,6 +58,12 @@ function permissivelyParseJSONString(content: string) {
   //   and if this is obviously the case, we fix it up before throwing the string
   //   at JSON.parse.
   content = content.trim()
+
+  if (content.startsWith(DIFFERENT_V8_VERSION)) {
+    console.debug(`Skipping leading message about different V8 version`)
+    content = content.slice(DIFFERENT_V8_VERSION.length)
+  }
+
   if (content[0] === '[') {
     content = content.replace(/,\s*$/, '')
     if (content[content.length - 1] !== ']') {
@@ -64,6 +74,21 @@ function permissivelyParseJSONString(content: string) {
 }
 
 function permissivelyParseJSONUint8Array(byteArray: Uint8Array) {
+  if (typeof TextEncoder !== 'undefined') {
+    const diffV8Bytes = new TextEncoder().encode(DIFFERENT_V8_VERSION)
+    let matches = true
+    for (let i = 0; i < diffV8Bytes.length; i++) {
+      if (byteArray[i] !== diffV8Bytes[i]) {
+        matches = false
+        break
+      }
+    }
+    if (matches) {
+      console.debug(`Skipping leading message about different V8 version`)
+      byteArray = byteArray.subarray(diffV8Bytes.length)
+    }
+  }
+
   let indexOfFirstNonWhitespaceChar = 0
   for (let i = 0; i < byteArray.length; i++) {
     if (!/\s/.exec(String.fromCharCode(byteArray[i]))) {
