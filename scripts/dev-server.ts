@@ -1,8 +1,12 @@
 import * as esbuild from 'esbuild'
+import {existsSync, mkdirSync} from 'fs'
 import {buildOptions, generateIndexHtml} from './esbuild-shared'
 
 async function main() {
   const outdir = 'dist'
+  if (!existsSync(outdir)) {
+    mkdirSync(outdir)
+  }
   let ctx = await esbuild.context({
     ...buildOptions,
     outdir,
