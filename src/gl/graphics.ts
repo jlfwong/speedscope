@@ -478,8 +478,9 @@ export namespace WebGL {
       if (
         this._width === widthInPixels &&
         this._height === heightInPixels &&
-        bounds.width === widthInAppUnits &&
-        bounds.height === heightInAppUnits
+        // Compare floats with margin error
+        Math.abs(bounds.width - widthInAppUnits) < 0.02 &&
+        Math.abs(bounds.height - heightInAppUnits) < 0.02
       ) {
         // Nothing to do here!
         return
