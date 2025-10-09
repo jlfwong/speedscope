@@ -789,8 +789,11 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     }
 
     if (shouldZoom) {
-      this.zoom(zoomCenter, zoomMultiplier)
-      ev.preventDefault()
+      // Slight delay to ensure we pan before zooming
+      requestAnimationFrame(() => {
+        this.zoom(zoomCenter, zoomMultiplier)
+        ev.preventDefault()
+      })
     }
 
     if (ev.ctrlKey || ev.shiftKey || ev.metaKey) return
