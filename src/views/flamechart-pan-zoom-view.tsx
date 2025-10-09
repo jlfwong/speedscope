@@ -775,7 +775,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     // By default the zoom multiplier is 1 (no transformation), if
     // we are zooming in, scale the transform down by 0.5, else
     // scale up by 2 (this moves us 1 full grid line chunk at a time)
-    var zoomMultiplier = 1
+    let zoomMultiplier = 1
 
     switch (ev.key) {
       case '=':
