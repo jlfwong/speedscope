@@ -772,11 +772,19 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
       zoomCenter = this.currentMousePos || new Vec2(width / 2, height / 2)
     }
 
-    // By default the zoom multiplier is 0.5 (this accounts for zooming in with
-    // Ctrl or +) allowing for Key or Scroll driven zooming.
-    var zoomMultiplier = 0.5
-    if (ev.key === '-' || ev.key === '_') {
-      zoomMultiplier = 2
+    // By default the zoom multiplier is 1 (no transformation), if
+    // we are zooming in, scale the transform down by 0.5, else
+    // scale up by 2 (this moves us 1 full grid line chunk at a time)
+    var zoomMultiplier = 1
+
+    switch (ev.key) {
+      case '=':
+      case '+':
+        zoomMultiplier = 0.5
+        break
+      case '-':
+        zoomMultiplier = 2
+        break
     }
 
     if (shouldZoom) {
