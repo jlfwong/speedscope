@@ -558,6 +558,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
   private lastDragPos: Vec2 | null = null
   private mouseDownPos: Vec2 | null = null
+  private currentMousePos: Vec2 | null = null
   private onMouseDown = (ev: MouseEvent) => {
     this.mouseDownPos = this.lastDragPos = new Vec2(ev.offsetX, ev.offsetY)
     this.updateCursor()
@@ -623,6 +624,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
   }
 
   private onMouseMove = (ev: MouseEvent) => {
+    this.currentMousePos = new Vec2(ev.offsetX, ev.offsetY)
     this.updateCursor()
     if (this.lastDragPos) {
       ev.preventDefault()
@@ -686,6 +688,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
   }
 
   private onMouseLeave = (ev: MouseEvent) => {
+    this.currentMousePos = null
     this.hoveredLabel = null
     this.props.onNodeHover(null)
     this.renderCanvas()
@@ -728,11 +731,14 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     if (!this.container) return
     const {width, height} = this.container.getBoundingClientRect()
 
+    // Use mouse position if available, otherwise fall back to center
+    const zoomCenter = this.currentMousePos || new Vec2(width / 2, height / 2)
+
     if (ev.key === '=' || ev.key === '+') {
-      this.zoom(new Vec2(width / 2, height / 2), 0.5)
+      this.zoom(zoomCenter, 0.5)
       ev.preventDefault()
     } else if (ev.key === '-' || ev.key === '_') {
-      this.zoom(new Vec2(width / 2, height / 2), 2)
+      this.zoom(zoomCenter, 2)
       ev.preventDefault()
     }
 
@@ -744,7 +750,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     //
     // See: https://github.com/jlfwong/speedscope/pull/184
     if (ev.key === '0') {
-      this.zoom(new Vec2(width / 2, height / 2), 1e9)
+      this.zoom(zoomCenter, 1e9)
     } else if (ev.key === 'ArrowRight' || ev.code === 'KeyD') {
       this.pan(new Vec2(100, 0))
     } else if (ev.key === 'ArrowLeft' || ev.code === 'KeyA') {
