@@ -741,30 +741,46 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     // the main view if it's not available.
     const minimapMousePos = minimapMousePositionAtom.get()
     let zoomCenter: Vec2
+    let shouldZoom = true
 
     if (minimapMousePos) {
       const currentViewport = this.props.configSpaceViewportRect
+
+      // Check if the minimap mouse position is within the current viewport bounds
+      const isWithinViewport = (
+        minimapMousePos.x >= currentViewport.left() &&
+        minimapMousePos.x <= currentViewport.right() &&
+        minimapMousePos.y >= currentViewport.top() &&
+        minimapMousePos.y <= currentViewport.bottom()
+      )
+
+      // Pan to the minimap mouse position
       const newOrigin = new Vec2(
         minimapMousePos.x - currentViewport.width() / 2,
         minimapMousePos.y - currentViewport.height() / 2,
       )
       this.props.setConfigSpaceViewportRect(currentViewport.withOrigin(newOrigin))
+
+      // If the position was outside the viewport, just pan without zooming
+      // Next +/- press will do the zoom
+      if (!isWithinViewport) {
+        shouldZoom = false
+      }
+
       zoomCenter = new Vec2(width / 2, height / 2)
     } else {
       zoomCenter = this.currentMousePos || new Vec2(width / 2, height / 2)
     }
 
-    // requestAnimationFrame is used to ensure that the viewport update
-    // completes before the pan before the zoom operation.
-    if (ev.key === '=' || ev.key === '+') {
-      requestAnimationFrame(() => {
-        this.zoom(zoomCenter, 0.5)
-      })
-      ev.preventDefault()
-    } else if (ev.key === '-' || ev.key === '_') {
-      requestAnimationFrame(() => {
-        this.zoom(zoomCenter, 2)
-      })
+    // By default the zoom multiplier is 0.5 (this accounts for zooming in with
+    // Ctrl or +) allowing for Key or Scroll driven zooming.
+    var zoomMultiplier = 0.5
+    if (ev.key === '-' || ev.key === '_') {
+      zoomMultiplier = 2
+    }
+
+    if (shouldZoom) {
+      this.zoom(zoomCenter, zoomMultiplier)
       ev.preventDefault()
     }
 
