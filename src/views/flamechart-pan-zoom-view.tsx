@@ -783,6 +783,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
         zoomMultiplier = 0.5
         break
       case '-':
+      case '_':
         zoomMultiplier = 2
         break
     }
