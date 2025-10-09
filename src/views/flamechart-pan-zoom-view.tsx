@@ -17,6 +17,7 @@ import {ProfileSearchResults} from '../lib/profile-search'
 import {BatchCanvasTextRenderer, BatchCanvasRectRenderer} from '../lib/canvas-2d-batch-renderers'
 import {Color} from '../lib/color'
 import {Theme} from './themes/theme'
+import {minimapMousePositionAtom} from '../app-state'
 
 interface FlamechartFrameLabel {
   configSpaceBounds: Rect
@@ -731,14 +732,39 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     if (!this.container) return
     const {width, height} = this.container.getBoundingClientRect()
 
-    // Use mouse position if available, otherwise fall back to center
-    const zoomCenter = this.currentMousePos || new Vec2(width / 2, height / 2)
+    // Check if we have a minimap mouse position (user is hovering over minimap)
+    // if we do, then pan the mouse to the minimap mouse position and then
+    // perform zoom from the center of the main view
+    //
+    // If we aren't hovering over the minimap, then use the main view and
+    // zoom around the mouse position, falling back to the center of
+    // the main view if it's not available.
+    const minimapMousePos = minimapMousePositionAtom.get()
+    let zoomCenter: Vec2
 
+    if (minimapMousePos) {
+      const currentViewport = this.props.configSpaceViewportRect
+      const newOrigin = new Vec2(
+        minimapMousePos.x - currentViewport.width() / 2,
+        minimapMousePos.y - currentViewport.height() / 2,
+      )
+      this.props.setConfigSpaceViewportRect(currentViewport.withOrigin(newOrigin))
+      zoomCenter = new Vec2(width / 2, height / 2)
+    } else {
+      zoomCenter = this.currentMousePos || new Vec2(width / 2, height / 2)
+    }
+
+    // requestAnimationFrame is used to ensure that the viewport update
+    // completes before the pan before the zoom operation.
     if (ev.key === '=' || ev.key === '+') {
-      this.zoom(zoomCenter, 0.5)
+      requestAnimationFrame(() => {
+        this.zoom(zoomCenter, 0.5)
+      })
       ev.preventDefault()
     } else if (ev.key === '-' || ev.key === '_') {
-      this.zoom(zoomCenter, 2)
+      requestAnimationFrame(() => {
+        this.zoom(zoomCenter, 2)
+      })
       ev.preventDefault()
     }
 

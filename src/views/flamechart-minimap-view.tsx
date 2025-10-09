@@ -9,6 +9,7 @@ import {CanvasContext} from '../gl/canvas-context'
 import {cachedMeasureTextWidth} from '../lib/text-utils'
 import {Color} from '../lib/color'
 import {Theme} from './themes/theme'
+import {minimapMousePositionAtom} from '../app-state'
 
 interface FlamechartMinimapViewProps {
   theme: Theme
@@ -394,12 +395,16 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     if (this.draggingMode == null) {
       document.body.style.cursor = 'default'
     }
+    // Clear the minimap mouse position when leaving the minimap
+    minimapMousePositionAtom.set(null)
   }
 
   private onMouseMove = (ev: MouseEvent) => {
     const configSpaceMouse = this.configSpaceMouse(ev)
     if (!configSpaceMouse) return
     this.updateCursor(configSpaceMouse)
+    // Update the global minimap mouse position for zoom origin
+    minimapMousePositionAtom.set(configSpaceMouse)
   }
 
   private onWindowMouseUp = (ev: MouseEvent) => {
