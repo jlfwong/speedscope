@@ -747,12 +747,11 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
       const currentViewport = this.props.configSpaceViewportRect
 
       // Check if the minimap mouse position is within the current viewport bounds
-      const isWithinViewport = (
+      const isWithinViewport =
         minimapMousePos.x >= currentViewport.left() &&
         minimapMousePos.x <= currentViewport.right() &&
         minimapMousePos.y >= currentViewport.top() &&
         minimapMousePos.y <= currentViewport.bottom()
-      )
 
       // Pan to the minimap mouse position
       const newOrigin = new Vec2(
