@@ -30,7 +30,7 @@ export async function importJavaScriptSourceMapSymbolRemapper(
 
   try {
     contents = JSON.parse(contentsString)
-    consumer = new sourceMap.SourceMapConsumer(contents!)
+    consumer = new sourceMap.default.SourceMapConsumer(contents!)
   } catch (e) {
     return null
   }
@@ -53,7 +53,7 @@ export async function importJavaScriptSourceMapSymbolRemapper(
 
     // We're going to binary search through these later, so make sure they're
     // sorted by their order in the generated file.
-    sourceMap.SourceMapConsumer.GENERATED_ORDER,
+    sourceMap.default.SourceMapConsumer.GENERATED_ORDER,
   )
 
   const sourceMapFileNameWithoutExt = sourceMapFileName.replace(/\.[^/]*$/, '')
