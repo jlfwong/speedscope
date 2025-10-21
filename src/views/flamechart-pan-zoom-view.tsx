@@ -17,6 +17,7 @@ import {ProfileSearchResults} from '../lib/profile-search'
 import {BatchCanvasTextRenderer, BatchCanvasRectRenderer} from '../lib/canvas-2d-batch-renderers'
 import {Color} from '../lib/color'
 import {Theme} from './themes/theme'
+import {minimapMousePositionAtom} from '../app-state'
 
 interface FlamechartFrameLabel {
   configSpaceBounds: Rect
@@ -558,6 +559,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
   private lastDragPos: Vec2 | null = null
   private mouseDownPos: Vec2 | null = null
+  private currentMousePos: Vec2 | null = null
   private onMouseDown = (ev: MouseEvent) => {
     this.mouseDownPos = this.lastDragPos = new Vec2(ev.offsetX, ev.offsetY)
     this.updateCursor()
@@ -623,6 +625,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
   }
 
   private onMouseMove = (ev: MouseEvent) => {
+    this.currentMousePos = new Vec2(ev.offsetX, ev.offsetY)
     this.updateCursor()
     if (this.lastDragPos) {
       ev.preventDefault()
@@ -686,6 +689,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
   }
 
   private onMouseLeave = (ev: MouseEvent) => {
+    this.currentMousePos = null
     this.hoveredLabel = null
     this.props.onNodeHover(null)
     this.renderCanvas()
@@ -728,12 +732,67 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     if (!this.container) return
     const {width, height} = this.container.getBoundingClientRect()
 
-    if (ev.key === '=' || ev.key === '+') {
-      this.zoom(new Vec2(width / 2, height / 2), 0.5)
-      ev.preventDefault()
-    } else if (ev.key === '-' || ev.key === '_') {
-      this.zoom(new Vec2(width / 2, height / 2), 2)
-      ev.preventDefault()
+    // Check if we have a minimap mouse position (user is hovering over minimap)
+    // if we do, then pan the mouse to the minimap mouse position and then
+    // perform zoom from the center of the main view
+    //
+    // If we aren't hovering over the minimap, then use the main view and
+    // zoom around the mouse position, falling back to the center of
+    // the main view if it's not available.
+    const minimapMousePos = minimapMousePositionAtom.get()
+    let zoomCenter: Vec2
+    let shouldZoom = true
+
+    if (minimapMousePos) {
+      const currentViewport = this.props.configSpaceViewportRect
+
+      // Check if the minimap mouse position is within the current viewport bounds
+      const isWithinViewport =
+        minimapMousePos.x >= currentViewport.left() &&
+        minimapMousePos.x <= currentViewport.right() &&
+        minimapMousePos.y >= currentViewport.top() &&
+        minimapMousePos.y <= currentViewport.bottom()
+
+      // Pan to the minimap mouse position
+      const newOrigin = new Vec2(
+        minimapMousePos.x - currentViewport.width() / 2,
+        minimapMousePos.y - currentViewport.height() / 2,
+      )
+      this.props.setConfigSpaceViewportRect(currentViewport.withOrigin(newOrigin))
+
+      // If the position was outside the viewport, just pan without zooming
+      // Next +/- press will do the zoom
+      if (!isWithinViewport) {
+        shouldZoom = false
+      }
+
+      zoomCenter = new Vec2(width / 2, height / 2)
+    } else {
+      zoomCenter = this.currentMousePos || new Vec2(width / 2, height / 2)
+    }
+
+    // By default the zoom multiplier is 1 (no transformation), if
+    // we are zooming in, scale the transform down by 0.5, else
+    // scale up by 2 (this moves us 1 full grid line chunk at a time)
+    let zoomMultiplier = 1
+
+    switch (ev.key) {
+      case '=':
+      case '+':
+        zoomMultiplier = 0.5
+        break
+      case '-':
+      case '_':
+        zoomMultiplier = 2
+        break
+    }
+
+    if (shouldZoom) {
+      // Slight delay to ensure we pan before zooming
+      requestAnimationFrame(() => {
+        this.zoom(zoomCenter, zoomMultiplier)
+        ev.preventDefault()
+      })
     }
 
     if (ev.ctrlKey || ev.shiftKey || ev.metaKey) return
@@ -744,7 +803,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     //
     // See: https://github.com/jlfwong/speedscope/pull/184
     if (ev.key === '0') {
-      this.zoom(new Vec2(width / 2, height / 2), 1e9)
+      this.zoom(zoomCenter, 1e9)
     } else if (ev.key === 'ArrowRight' || ev.code === 'KeyD') {
       this.pan(new Vec2(100, 0))
     } else if (ev.key === 'ArrowLeft' || ev.code === 'KeyA') {

@@ -2,6 +2,7 @@ import {Atom} from '../lib/atom'
 import {ViewMode} from '../lib/view-mode'
 import {getHashParams, HashParams} from '../lib/hash-params'
 import {ProfileGroupAtom} from './profile-group'
+import {Vec2} from '../lib/math'
 
 // True if recursion should be flattened when viewing flamegraphs
 export const flattenRecursionAtom = new Atom<boolean>(false, 'flattenRecursion')
@@ -50,6 +51,9 @@ export const loadingAtom = new Atom<boolean>(isImmediatelyLoading, 'loading')
 // True when the application is an error state, e.g. because the profile
 // imported was invalid.
 export const errorAtom = new Atom<boolean>(false, 'error')
+
+// Minimap mouse position so we can zoom around mouse origin relative to minimap
+export const minimapMousePositionAtom = new Atom<Vec2 | null>(null, 'minimapMousePosition')
 
 export enum SortField {
   SYMBOL_NAME,
