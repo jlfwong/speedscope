@@ -1,3 +1,7 @@
+## [1.24.0] - 2025-10-20
+
+- [Improvement] Use mouse pos as origin when pressing +/- [[#525](https://github.com/jlfwong/speedscope/pull/525)] (by @alexmk92)
+
 ## [1.23.2] - 2025-10-20
 
 - Fix changelog printing for PR titles with issues linked
