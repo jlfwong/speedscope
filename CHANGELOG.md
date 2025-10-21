@@ -1,3 +1,9 @@
+## [1.23.2] - 2025-10-20
+
+- Fix changelog printing for PR titles with issues linked
+- fix source-map import on node v14.13+ [[#526](https://github.com/jlfwong/speedscope/pull/526)] (by @andrewkchan)
+- #520 Create 'dist' dir when not existing [[#521](https://github.com/jlfwong/speedscope/pull/521)] (by @MrMinemeet)
+
 ## [1.23.1] - 2025-08-11
 
 - Profile selector: add sortable columns and total weight display [[#515](https://github.com/jlfwong/speedscope/pull/515)] (by @jlfwong)
