@@ -214,7 +214,7 @@ function shouldIgnoreFunction(callFrame: CPUProfileCallFrame) {
 }
 
 function shouldPlaceOnTopOfPreviousStack(functionName: string) {
-  return functionName === '(garbage collector)' || functionName === '(program)'
+  return functionName === '(garbage collector)'
 }
 
 export function importFromChromeCPUProfile(chromeProfile: CPUProfile): Profile {
