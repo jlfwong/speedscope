@@ -27,7 +27,7 @@ while IFS= read line; do
   message=$(echo "$line" | sed 's/^* //g')
   message_without_pr_num=$(echo "$message" | sed 's/ (#[0-9][0-9]*)//g')
 
-  pr_number=$(echo "$message" | grep -Eo '#[0-9]+' | grep -Eo '[0-9]+'; true)
+  pr_number=$(echo "$message" | grep -Eo '#[0-9]+' | tail -n1 | grep -Eo '[0-9]+'; true)
 
   if [[ -n "$pr_number" ]]; then
     author=$(gh pr view $pr_number --json author -q ".author.login")
