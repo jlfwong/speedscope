@@ -93,7 +93,7 @@ export function importFromChromeTimeline(events: TimelineEvent[], fileName: stri
       const id = event.id || pidTid
 
       if (event.args.data == null) {
-        console.log('Ignoring CpuProfile event with no data', event)
+        // Some Chrome profiles contain events where data is not defined
         continue
       }
 
@@ -127,7 +127,7 @@ export function importFromChromeTimeline(events: TimelineEvent[], fileName: stri
       if (cpuProfile) {
         const chunk = event.args.data
         if (chunk == null) {
-          console.log('Ignoring ProfileChunk event with no data', event)
+          // Some Chrome profiles contain events where data is not defined
           continue
         }
 
