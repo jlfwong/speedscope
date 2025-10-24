@@ -91,6 +91,12 @@ export function importFromChromeTimeline(events: TimelineEvent[], fileName: stri
     if (event.name === 'CpuProfile') {
       const pidTid = `${event.pid}:${event.tid}`
       const id = event.id || pidTid
+
+      if (event.args.data == null) {
+        // Some Chrome profiles contain events where data is not defined
+        continue
+      }
+
       cpuProfileByID.set(id, event.args.data.cpuProfile as CPUProfile)
       pidTidById.set(id, pidTid)
     }
@@ -120,6 +126,11 @@ export function importFromChromeTimeline(events: TimelineEvent[], fileName: stri
       const cpuProfile = cpuProfileByID.get(event.id || pidTid)
       if (cpuProfile) {
         const chunk = event.args.data
+        if (chunk == null) {
+          // Some Chrome profiles contain events where data is not defined
+          continue
+        }
+
         if (chunk.cpuProfile) {
           if (chunk.cpuProfile.nodes) {
             cpuProfile.nodes = cpuProfile.nodes.concat(chunk.cpuProfile.nodes)
