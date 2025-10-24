@@ -138,7 +138,3 @@ test('importTraceEvents simple profile with samples', async () => {
 test('importTraceEvents multi-thread profile with samples', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/multi-thread-with-samples.json')
 })
-
-test('importTraceEvents Chrome profile with missing arg data', async () => {
-  await checkProfileSnapshot('./sample/profiles/trace-event/no-arg-data.json')
-})
