@@ -60,6 +60,14 @@ via npm:
 
 Invoking `speedscope /path/to/profile` will load speedscope in your default browser.
 
+## Development server
+
+You can run Speedscope as a local server:
+
+    npm run serve
+
+This will bind to http://localhost:8000 by default. To use a different port, set the `SPEEDSCOPE_PORT` enviroment variable.
+
 ## Self-contained directory
 
 If you don't have npm or node installed, you can also download a
