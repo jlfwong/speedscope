@@ -34,3 +34,7 @@ test('importFromChromeTimeline Workers Chrome 70', async () => {
 test('importFromChromeTimeline Chrome 116', async () => {
   await checkProfileSnapshot('./sample/profiles/Chrome/116/Trace-20230603T221323.json')
 })
+
+test('importTraceEvents Chrome 141 profile with missing arg data', async () => {
+  await checkProfileSnapshot('./sample/profiles/Chrome/141/no-arg-data.json')
+})
