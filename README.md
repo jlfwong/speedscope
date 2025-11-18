@@ -89,9 +89,7 @@ In the "Left Heavy" view, identical stacks are grouped together, regardless of w
 ### 🥪 Sandwich
 ![Sandwich View](https://user-images.githubusercontent.com/150329/42108467-76a57baa-7b8f-11e8-815f-1df7b6ac3ede.png)
 
-The Sandwich view is a table view in which you can find a list of all functions and their associated times. You can sort by self time or total time.
-It's called "Sandwich" view because if you select one of the rows in the table, you can see flamegraphs for all the callers and callees of the selected
-row.
+The Sandwich view is a table view in which you can find a list of all functions and their associated times. It's called "Sandwich" view because if you select one of the rows in the table, you can see flamegraphs for all the callers and callees of the selected row. You can sort by total time or self time. Total time is the time spent in a function and all its callees. Self time is the time spent in a function, excluding its callees.
 
 
 ## Navigation
