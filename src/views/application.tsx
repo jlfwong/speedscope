@@ -366,6 +366,17 @@ export class Application extends StatelessComponent<ApplicationProps> {
       if (activeProfileState) {
         this.props.setProfileIndexToView(activeProfileState.index - 1)
       }
+    } else if (ev.key === 'c') {
+      const {activeProfileState, profileGroup, setProfileGroup} = this.props
+      if (activeProfileState && profileGroup) {
+        const start = activeProfileState.chronoViewState.configSpaceViewportRect.origin.x
+        const end = start + activeProfileState.chronoViewState.configSpaceViewportRect.size.x
+        setProfileGroup({
+          name: profileGroup.name,
+          indexToView: 0,
+          profiles: [activeProfileState.profile.getProfileSlice(start, end)],
+        })
+      }
     }
   }
 

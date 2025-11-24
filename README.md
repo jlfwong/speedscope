@@ -126,6 +126,7 @@ Once a profile has loaded, the main view is split into two: the top area is the 
 * `n`: Go to next profile/thread if one is available
 * `p`: Go to previous profile/thread if one is available
 * `t`: Open the profile/thread selector if available
+* `c`: Slice the profile by the current selecting in "Time Order" view
 * `Cmd+F`/`Ctrl+F`: to open search. While open, `Enter` and `Shift+Enter` cycle through results
 
 ## Contributing
