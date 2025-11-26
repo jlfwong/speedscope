@@ -1,6 +1,6 @@
 import {h} from 'preact'
 import {getCanvasContext} from '../app-state/getters'
-import {memo, useMemo} from 'preact/compat'
+import {memo, useEffect, useMemo} from 'preact/compat'
 import {useActiveProfileState} from '../app-state/active-profile-state'
 import {useTheme} from './themes/theme'
 import {
@@ -20,10 +20,21 @@ import {Application} from './application'
 export const ApplicationContainer = memo(() => {
   const canvas = useAtom(glCanvasAtom)
   const theme = useTheme()
-  const canvasContext = useMemo(
-    () => (canvas ? getCanvasContext({theme, canvas}) : null),
-    [theme, canvas],
-  )
+  const {canvasContext, error: canvasError} = useMemo(() => {
+    if (!canvas) return {canvasContext: null, error: null}
+    try {
+      return {canvasContext: getCanvasContext({theme, canvas}), error: null}
+    } catch (e) {
+      console.error('Failed to create WebGL context:', e)
+      return {canvasContext: null, error: e}
+    }
+  }, [theme, canvas])
+
+  useEffect(() => {
+    if (canvasError) {
+      errorAtom.set(true)
+    }
+  }, [canvasError])
 
   return (
     <ProfileSearchContextProvider>
