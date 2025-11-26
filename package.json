@@ -64,6 +64,13 @@
     "setupFilesAfterEnv": [
       "./src/jest-setup.js"
     ],
+    "moduleNameMapper": {
+      "^jfrview(/.*)?$": "<rootDir>/src/jest.ignore.js"
+    },
+    "coverageReporters": [
+      "text-summary",
+      "html"
+    ],
     "testRegex": "\\.test\\.tsx?$",
     "collectCoverageFrom": [
       "**/*.{ts,tsx}",
@@ -78,6 +85,7 @@
     ]
   },
   "dependencies": {
+    "jfrview": "^0.2.0",
     "open": "10.1.0"
   }
 }
