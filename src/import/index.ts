@@ -24,6 +24,7 @@ import {isTraceEventFormatted, importTraceEvents} from './trace-event'
 import {importFromCallgrind} from './callgrind'
 import {importFromPapyrus} from './papyrus'
 import {importFromPMCStatCallGraph} from './pmcstat-callgraph'
+import {importFromPerfettoTrace} from './perfetto'
 
 export async function importProfileGroupFromText(
   fileName: string,
@@ -88,6 +89,14 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     }
   }
 
+  {
+    const profile = importFromPerfettoTrace(buffer)
+    if (profile) {
+      console.log('Importing as Perfetto trace file')
+      return toGroup(profile)
+    }
+  }
+
   const contents = await dataSource.readAsText()
 
   // First pass: Check known file format names to infer the file type
@@ -127,6 +136,16 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
   } else if (fileName.endsWith('.pmcstat.graph')) {
     console.log('Importing as pmcstat callgraph format')
     return toGroup(importFromPMCStatCallGraph(contents))
+  } else if (
+    fileName.endsWith('.perfetto-trace') ||
+    fileName.endsWith('.pftrace') ||
+    fileName.includes('perfetto')
+  ) {
+    console.log('Importing as Perfetto trace file')
+    const profile = importFromPerfettoTrace(buffer)
+    if (profile) {
+      return toGroup(profile)
+    }
   }
 
   // Second pass: Try to guess what file format it is based on structure
