@@ -30,8 +30,10 @@ async function main() {
 
   await ctx.rebuild()
 
-  let {host, port} = await ctx.serve({
+  const port = process.env.SPEEDSCOPE_PORT ? parseInt(process.env.SPEEDSCOPE_PORT) : 8000
+  let {host} = await ctx.serve({
     servedir: outdir,
+    port,
   })
 
   console.log(`Server is running at http://${host}:${port}`)
