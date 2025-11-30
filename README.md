@@ -96,7 +96,7 @@ row.
 
 ## Navigation
 
-Once a profile has loaded, the main view is split into two: the top area is the "minimap", and the bottom area is the "stack view".
+Once a profile has loaded, the main view is split into two: the top area is the "minimap", and the bottom area is the "stack view". Colors are based on the file path and the symbol name - so stack frames that are proximate in source code are similarly colored.
 
 ### Minimap Navigation
 
