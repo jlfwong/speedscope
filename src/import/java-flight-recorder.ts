@@ -19,9 +19,9 @@ function create_profile(data: ArrayBuffer, includeNative: boolean): Profile {
 
   const builder = new StackListProfileBuilder(result.length)
   if (includeNative) {
-    builder.setName('with native')
+    builder.setName('With native calls')
   } else {
-    builder.setName('Without native')
+    builder.setName('Without native calls')
   }
 
   function to_fi(input: Frame): FrameInfo {

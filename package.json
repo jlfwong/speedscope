@@ -67,10 +67,6 @@
     "moduleNameMapper": {
       "^jfrview(/.*)?$": "<rootDir>/src/jest.ignore.js"
     },
-    "coverageReporters": [
-      "text-summary",
-      "html"
-    ],
     "testRegex": "\\.test\\.tsx?$",
     "collectCoverageFrom": [
       "**/*.{ts,tsx}",
