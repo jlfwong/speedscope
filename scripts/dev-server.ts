@@ -30,11 +30,11 @@ async function main() {
 
   await ctx.rebuild()
 
-  let {host, port} = await ctx.serve({
+  let {hosts, port} = await ctx.serve({
     servedir: outdir,
   })
 
-  console.log(`Server is running at http://${host}:${port}`)
+  console.log(`Server is running at http://${hosts[0]}:${port}`)
 }
 
 main()
