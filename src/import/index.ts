@@ -24,7 +24,7 @@ import {isTraceEventFormatted, importTraceEvents} from './trace-event'
 import {importFromCallgrind} from './callgrind'
 import {importFromPapyrus} from './papyrus'
 import {importFromPMCStatCallGraph} from './pmcstat-callgraph'
-import {importFromJfr} from './java-flight-recorder'
+import {importFromJfr, isJfrRecording} from './java-flight-recorder'
 
 export async function importProfileGroupFromText(
   fileName: string,
@@ -198,6 +198,10 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     if (/^(Stack_|Script_|Obj_)\S+ log opened \(PC\)\n/.exec(contents.firstChunk())) {
       console.log('Importing as Papyrus profile')
       return toGroup(importFromPapyrus(contents))
+    }
+
+    if (isJfrRecording(buffer)) {
+      return importFromJfr(fileName, buffer)
     }
 
     const fromLinuxPerf = importFromLinuxPerf(contents)

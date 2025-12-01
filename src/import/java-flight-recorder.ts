@@ -1,9 +1,20 @@
 import {FrameInfo, Profile, ProfileGroup, StackListProfileBuilder} from '../lib/profile'
 import init, {Frame, interpret_jfr} from 'jfrview'
+// @ts-ignore
 import wasm_data from 'jfrview/jfrview_bg.wasm'
 
 export async function importFromJfr(fileName: string, data: ArrayBuffer): Promise<ProfileGroup> {
-  await init({module_or_path: wasm_data})
+  let wasm_module = {}
+  // We are running in jest
+  if (typeof process !== 'undefined') {
+    const fs = require('fs')
+    // We need to load the wasm binary as file
+    wasm_module = fs.readFileSync('node_modules/jfrview/jfrview_bg.wasm')
+  } else {
+    wasm_module = wasm_data
+  }
+
+  await init({module_or_path: wasm_module})
   const withoutNative = create_profile(data, false)
   const withNative = create_profile(data, true)
 
@@ -12,6 +23,12 @@ export async function importFromJfr(fileName: string, data: ArrayBuffer): Promis
     name: fileName,
     profiles: [withoutNative, withNative],
   }
+}
+
+export function isJfrRecording(buffer: ArrayBuffer) {
+  const b = buffer.slice(0, 3)
+  const bytes = new Uint8Array(b)
+  return bytes[0] == 0x46 && bytes[1] == 0x4c && bytes[2] == 0x52
 }
 
 function create_profile(data: ArrayBuffer, includeNative: boolean): Profile {

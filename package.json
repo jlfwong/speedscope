@@ -30,6 +30,8 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@babel/core": "^7.28.5",
+    "@babel/preset-env": "^7.28.5",
     "@types/jest": "22.2.3",
     "@types/jszip": "3.1.4",
     "@types/node": "14.0.1",
@@ -38,6 +40,8 @@
     "@typescript-eslint/parser": "6.16.0",
     "acorn": "7.2.0",
     "aphrodite": "2.1.0",
+    "babel-jest": "^30.2.0",
+    "babel-plugin-transform-import-meta": "^2.3.3",
     "esbuild": "0.24.2",
     "eslint": "8.0.0",
     "eslint-plugin-prettier": "5.1.2",
@@ -60,13 +64,17 @@
   },
   "jest": {
     "transform": {
-      "^.+\\.tsx?$": "ts-jest"
+      "^.+\\.tsx?$": "ts-jest",
+      "^.+\\.js$": "babel-jest"
     },
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(jfrview)/)"
+    ],
     "setupFilesAfterEnv": [
       "./src/jest-setup.js"
     ],
     "moduleNameMapper": {
-      "^jfrview(/.*)?$": "<rootDir>/src/jest.ignore.js"
+      "\\jfrview_bg.wasm$": "<rootDir>/src/jest.ignore.js"
     },
     "testRegex": "\\.test\\.tsx?$",
     "collectCoverageFrom": [
