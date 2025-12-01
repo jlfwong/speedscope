@@ -43,6 +43,7 @@
     "eslint-plugin-prettier": "5.1.2",
     "eslint-plugin-react-hooks": "4.6.0",
     "jest": "24.3.0",
+    "jfrview": "0.2.0",
     "jsverify": "0.8.3",
     "jszip": "3.1.5",
     "pako": "1.0.6",
@@ -81,7 +82,6 @@
     ]
   },
   "dependencies": {
-    "jfrview": "^0.2.0",
     "open": "10.1.0"
   }
 }
