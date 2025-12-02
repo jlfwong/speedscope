@@ -129,6 +129,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     console.log('Importing as pmcstat callgraph format')
     return toGroup(importFromPMCStatCallGraph(contents))
   } else if (fileName.endsWith('.jfr')) {
+    console.log('Importing as Java Flight Recorder profile')
     return await importFromJfr(fileName, buffer)
   }
 
@@ -201,6 +202,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     }
 
     if (isJfrRecording(buffer)) {
+      console.log('Importing as Java Flight Recorder profile')
       return importFromJfr(fileName, buffer)
     }
 

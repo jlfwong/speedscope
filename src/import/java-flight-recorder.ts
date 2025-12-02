@@ -18,7 +18,7 @@ export async function importFromJfr(fileName: string, data: ArrayBuffer): Promis
 export function isJfrRecording(buffer: ArrayBuffer) {
   const b = buffer.slice(0, 3)
   const bytes = new Uint8Array(b)
-  return bytes[0] == 0x46 && bytes[1] == 0x4c && bytes[2] == 0x52
+  return bytes[0] === 0x46 && bytes[1] === 0x4c && bytes[2] === 0x52
 }
 
 function create_profile(data: ArrayBuffer, includeNative: boolean): Profile {
@@ -42,5 +42,5 @@ function create_profile(data: ArrayBuffer, includeNative: boolean): Profile {
     builder.appendSampleWithWeight(sample.frames.map(to_fi), 1)
   }
 
-  return builder
+  return builder.build()
 }
