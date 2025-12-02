@@ -4,17 +4,7 @@ import init, {Frame, interpret_jfr} from 'jfrview'
 import wasm_data from 'jfrview/jfrview_bg.wasm'
 
 export async function importFromJfr(fileName: string, data: ArrayBuffer): Promise<ProfileGroup> {
-  let wasm_module = {}
-  // We are running in jest
-  if (typeof process !== 'undefined') {
-    const fs = require('fs')
-    // We need to load the wasm binary as file
-    wasm_module = fs.readFileSync('node_modules/jfrview/jfrview_bg.wasm')
-  } else {
-    wasm_module = wasm_data
-  }
-
-  await init({module_or_path: wasm_module})
+  await init({module_or_path: wasm_data})
   const withoutNative = create_profile(data, false)
   const withNative = create_profile(data, true)
 
