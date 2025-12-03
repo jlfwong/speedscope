@@ -1,8 +1,8 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`importAsPprofProfile 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": "/usr/local/Cellar/go/1.10.1/libexec/src/runtime/proc.go",
@@ -230,7 +230,7 @@ Object {
     },
   ],
   "name": "simple.prof",
-  "stacks": Array [
+  "stacks": [
     "runtime.main;main.main;main.delta;main.beta 140.00ms",
     "runtime.main;main.main;main.alpha 260.00ms",
     "runtime.main;main.main;main.gamma 270.00ms",

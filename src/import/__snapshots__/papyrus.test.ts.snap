@@ -1,8 +1,8 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`importFromPapyrus script profile 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -95,7 +95,7 @@ Object {
     },
   ],
   "name": "script.log",
-  "stacks": Array [
+  "stacks": [
     "STACK 3053;abc_example_quest..exampleFunction1 1.00s",
     "STACK 3053 200.00ms",
     "STACK 3053;abc_example_quest..exampleFunction2 50.00ms",
@@ -114,8 +114,8 @@ exports[`importFromPapyrus script profile: indexToView 1`] = `0`;
 exports[`importFromPapyrus script profile: profileGroup.name 1`] = `"script.log"`;
 
 exports[`importFromPapyrus stack profile 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -181,7 +181,7 @@ Object {
     },
   ],
   "name": "stack.log",
-  "stacks": Array [
+  "stacks": [
     "STACK 3185 16.00ms",
     "STACK 3185;abc_example_mod_quest..exampleFunction1 17.00ms",
     "STACK 3185 33.00ms",

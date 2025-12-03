@@ -1,8 +1,8 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`importFromV8ProfLog 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": 10,
       "file": "bootstrap_node.js",
@@ -239,7 +239,7 @@ Object {
     },
   ],
   "name": "simple.v8log.json",
-  "stacks": Array [
+  "stacks": [
     "(anonymous bootstrap_node.js:10);startup;setupGlobalVariables;NativeModule.require;NativeModule.compile;(anonymous util.js:1);NativeModule.require;NativeModule.compile;(anonymous encoding.js:1);(c++) v8::internal::Runtime_CreateArrayLiteral;(c++) v8::internal::JSFunction::EnsureHasInitialMap 29.38ms",
     "(anonymous bootstrap_node.js:10);startup;setupGlobalConsole;setupInspectorCommandLineAPI;NativeModule.require;NativeModule.compile;(anonymous module.js:1);NativeModule.require;NativeModule.compile;(anonymous fs.js:1);(c++) v8::internal::Runtime_StoreIC_Miss;(c++) v8::internal::Map::RawCopy 22.89ms",
     "(anonymous bootstrap_node.js:10);startup;Module.runMain;Module._load;tryModuleLoad;Module.load;Module._extensions..js;Module._compile;(anonymous simple.js:1);a;b;d 37.52ms",

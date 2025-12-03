@@ -1,8 +1,8 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`importFromPMCStatCallGraph 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": "/boot/kernel/kernel",
@@ -275,7 +275,7 @@ Object {
     },
   ],
   "name": "simple.txt",
-  "stacks": Array [
+  "stacks": [
     "fork_exit;taskqueue_thread_loop;taskqueue_run_locked;zio_execute;zio_write_compress;zio_compress_data;zfs_lz4_compress 7,447",
     "amd64_syscall;sys_pwrite;kern_pwritev;dofilewrite;vn_io_fault;vn_io_fault1;vn_io_fault_doio;vn_write;VOP_WRITE_APV;zfs_freebsd_write;zfs_write;dmu_write_uio_dnode;dmu_buf_will_dirty_impl;arc_buf_thaw;arc_cksum_verify;fletcher_2_native 1,489",
     "fork_exit;txg_sync_thread;spa_sync;spa_flush_metaslabs;metaslab_unflushed_bump;metaslab_set_unflushed_txg;dmu_write;dmu_write_impl;dmu_buf_will_dirty_impl;arc_buf_thaw;arc_cksum_verify;fletcher_2_native 1",
@@ -284,8 +284,8 @@ Object {
 `;
 
 exports[`importFromPMCStatCallGraph with invalid lines 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": "/boot/kernel/kernel",
@@ -558,7 +558,7 @@ Object {
     },
   ],
   "name": "simple-with-invalids.txt",
-  "stacks": Array [
+  "stacks": [
     "fork_exit;taskqueue_thread_loop;taskqueue_run_locked;zio_execute;zio_write_compress;zio_compress_data;zfs_lz4_compress 7,447",
     "amd64_syscall;sys_pwrite;kern_pwritev;dofilewrite;vn_io_fault;vn_io_fault1;vn_io_fault_doio;vn_write;VOP_WRITE_APV;zfs_freebsd_write;zfs_write;dmu_write_uio_dnode;dmu_buf_will_dirty_impl;arc_buf_thaw;arc_cksum_verify;fletcher_2_native 1,489",
     "fork_exit;txg_sync_thread;spa_sync;spa_flush_metaslabs;metaslab_unflushed_bump;metaslab_set_unflushed_txg;dmu_write;dmu_write_impl;dmu_buf_will_dirty_impl;arc_buf_thaw;arc_cksum_verify;fletcher_2_native 1",

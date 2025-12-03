@@ -1,8 +1,8 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`importFromLinuxPerf forks.linux-perf.txt 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": "[unknown]",
@@ -68,7 +68,7 @@ Object {
     },
   ],
   "name": "forks tid: 9",
-  "stacks": Array [
+  "stacks": [
     "??? ([unknown]);__libc_start_main;main;_Z5gammav 489.00µs",
     "??? ([unknown]);__libc_start_main;main;_Z5deltav;_Z4betav 1.00ms",
     "??? ([unknown]);__libc_start_main;main;_Z5deltav;_Z5alphav 1.01ms",
@@ -207,8 +207,8 @@ Object {
 `;
 
 exports[`importFromLinuxPerf forks.linux-perf.txt 2`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": "[kernel.kallsyms]",
@@ -229,7 +229,7 @@ Object {
     },
   ],
   "name": "swapper",
-  "stacks": Array [
+  "stacks": [
     "??? ([kernel.kallsyms]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]) 496.00µs",
     "??? ([kernel.kallsyms]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]) 13.90ms",
     "??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]) 507.00µs",
@@ -400,8 +400,8 @@ Object {
 `;
 
 exports[`importFromLinuxPerf forks.linux-perf.txt 3`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": "[unknown]",
@@ -458,7 +458,7 @@ Object {
     },
   ],
   "name": "forks tid: 11",
-  "stacks": Array [
+  "stacks": [
     "??? ([unknown]);__libc_start_main;main;_Z4betav 1.50ms",
     "??? ([unknown]);__libc_start_main;main;_Z5alphav 1.94ms",
     "??? ([unknown]);__libc_start_main;main;_Z4betav 1.00ms",
@@ -484,8 +484,8 @@ Object {
 `;
 
 exports[`importFromLinuxPerf forks.linux-perf.txt 4`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": "[unknown]",
@@ -542,7 +542,7 @@ Object {
     },
   ],
   "name": "forks tid: 10",
-  "stacks": Array [
+  "stacks": [
     "??? ([unknown]);__libc_start_main;main;_Z5alphav 2.49ms",
     "??? ([unknown]);__libc_start_main;main;_Z4betav 937.00µs",
     "??? ([unknown]);__libc_start_main;main;_Z5alphav 4.06ms",
@@ -572,8 +572,8 @@ exports[`importFromLinuxPerf forks.linux-perf.txt: indexToView 1`] = `0`;
 exports[`importFromLinuxPerf forks.linux-perf.txt: profileGroup.name 1`] = `"forks.linux-perf.txt"`;
 
 exports[`importFromLinuxPerf one-sample.linux-perf.txt 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": "[unknown]",
@@ -621,7 +621,7 @@ Object {
     },
   ],
   "name": "simple-terminat tid: 10",
-  "stacks": Array [
+  "stacks": [
     "??? ([unknown]);__libc_start_main;main;_Z5deltav;_Z4betav 1",
   ],
 }
@@ -632,8 +632,8 @@ exports[`importFromLinuxPerf one-sample.linux-perf.txt: indexToView 1`] = `0`;
 exports[`importFromLinuxPerf one-sample.linux-perf.txt: profileGroup.name 1`] = `"simple-terminat tid: 10"`;
 
 exports[`importFromLinuxPerf simple.linux-perf.txt 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": "[unknown]",
@@ -681,7 +681,7 @@ Object {
     },
   ],
   "name": "simple-terminat tid: 10",
-  "stacks": Array [
+  "stacks": [
     "??? ([unknown]);__libc_start_main;main;_Z5deltav;_Z4betav 1",
   ],
 }
@@ -692,8 +692,8 @@ exports[`importFromLinuxPerf simple.linux-perf.txt: indexToView 1`] = `0`;
 exports[`importFromLinuxPerf simple.linux-perf.txt: profileGroup.name 1`] = `"simple-terminat tid: 10"`;
 
 exports[`importFromLinuxPerf simple-with-header.linux-perf.txt 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": "[unknown]",
@@ -759,7 +759,7 @@ Object {
     },
   ],
   "name": "simple-terminat tid: 9",
-  "stacks": Array [
+  "stacks": [
     "??? ([unknown]);__libc_start_main;main;_Z5deltav;_Z4betav 494.50µs",
     "??? ([unknown]);__libc_start_main;main;_Z4betav 990.50µs",
     "??? ([unknown]);__libc_start_main;main;_Z5alphav 1.01ms",
@@ -901,8 +901,8 @@ exports[`importFromLinuxPerf simple-with-header.linux-perf.txt: indexToView 1`] 
 exports[`importFromLinuxPerf simple-with-header.linux-perf.txt: profileGroup.name 1`] = `"simple-terminat tid: 9"`;
 
 exports[`importFromLinuxPerf simple-with-pids.linux-perf.txt 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": "[unknown]",
@@ -977,7 +977,7 @@ Object {
     },
   ],
   "name": "simple-terminat pid: 9 tid: 9",
-  "stacks": Array [
+  "stacks": [
     "??? ([unknown]);__libc_start_main;main;_Z5deltav;_Z4betav 468.50µs",
     "??? ([unknown]);__libc_start_main;main;_Z5deltav 985.50µs",
     "??? ([unknown]);__libc_start_main;main;_Z4betav 1.01ms",
@@ -1119,8 +1119,8 @@ exports[`importFromLinuxPerf simple-with-pids.linux-perf.txt: indexToView 1`] = 
 exports[`importFromLinuxPerf simple-with-pids.linux-perf.txt: profileGroup.name 1`] = `"simple-terminat pid: 9 tid: 9"`;
 
 exports[`importFromLinuxPerf system-wide.linux-perf.txt 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": "[unknown]",
@@ -1195,7 +1195,7 @@ Object {
     },
   ],
   "name": "simple-terminat tid: 9",
-  "stacks": Array [
+  "stacks": [
     "??? ([unknown]);__libc_start_main;main;_Z5alphav 501.50µs",
     "??? ([unknown]);__libc_start_main;main;_Z5deltav;_Z4betav 1.01ms",
     "??? ([unknown]);__libc_start_main;main;_Z5deltav 1.01ms",
@@ -1336,8 +1336,8 @@ Object {
 `;
 
 exports[`importFromLinuxPerf system-wide.linux-perf.txt 2`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": "[kernel.kallsyms]",
@@ -1358,7 +1358,7 @@ Object {
     },
   ],
   "name": "swapper",
-  "stacks": Array [
+  "stacks": [
     "??? ([kernel.kallsyms]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]) 17.00µs",
     "??? ([kernel.kallsyms]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]) 9.55ms",
     "??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]) 487.50µs",
@@ -1377,8 +1377,8 @@ Object {
 `;
 
 exports[`importFromLinuxPerf system-wide.linux-perf.txt chunked 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": "[unknown]",
@@ -1453,7 +1453,7 @@ Object {
     },
   ],
   "name": "simple-terminat tid: 9",
-  "stacks": Array [
+  "stacks": [
     "??? ([unknown]);__libc_start_main;main;_Z5alphav 501.50µs",
     "??? ([unknown]);__libc_start_main;main;_Z5deltav;_Z4betav 1.01ms",
     "??? ([unknown]);__libc_start_main;main;_Z5deltav 1.01ms",
@@ -1594,8 +1594,8 @@ Object {
 `;
 
 exports[`importFromLinuxPerf system-wide.linux-perf.txt chunked 2`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": "[kernel.kallsyms]",
@@ -1616,7 +1616,7 @@ Object {
     },
   ],
   "name": "swapper",
-  "stacks": Array [
+  "stacks": [
     "??? ([kernel.kallsyms]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]) 17.00µs",
     "??? ([kernel.kallsyms]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]);??? ([kernel.kallsyms]) 9.55ms",
     "??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]);??? ([unknown]) 487.50µs",

@@ -1,8 +1,8 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`importFromHaskell 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -332,7 +332,7 @@ Object {
       "file": "src/Main.hs:35:26-54",
       "key": 18,
       "line": undefined,
-      "name": "Main.main.\\\\",
+      "name": "Main.main.\\",
       "selfWeight": 0,
       "totalWeight": 0,
     },
@@ -401,7 +401,7 @@ Object {
     },
   ],
   "name": "binary-trees time",
-  "stacks": Array [
+  "stacks": [
     "MAIN.MAIN;Main.CAF:eta1_r6nI;Main.main;Main.check 1.00ms",
     "MAIN.MAIN;Main.CAF:lvl2_r6nH;Main.main;Main.main.long;Main.make 3.00ms",
     "MAIN.MAIN;Main.CAF:main11;Main.main;Main.main.c;Main.check 4.00ms",
@@ -421,8 +421,8 @@ Object {
 `;
 
 exports[`importFromHaskell 2`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -752,7 +752,7 @@ Object {
       "file": "src/Main.hs:35:26-54",
       "key": 18,
       "line": undefined,
-      "name": "Main.main.\\\\",
+      "name": "Main.main.\\",
       "selfWeight": 2224,
       "totalWeight": 46672,
     },
@@ -821,7 +821,7 @@ Object {
     },
   ],
   "name": "binary-trees allocation",
-  "stacks": Array [
+  "stacks": [
     "MAIN.MAIN;GHC.Conc.Signal.CAF 640 B",
     "MAIN.MAIN;GHC.IO.Encoding.CAF 2.70 KB",
     "MAIN.MAIN;GHC.IO.Encoding.Iconv.CAF 200 B",
@@ -844,8 +844,8 @@ Object {
     "MAIN.MAIN;Main.CAF:main_stretchN;Main.main;Main.main.stretchN 32 B",
     "MAIN.MAIN;PROFILING.OVERHEAD_of 2.44 KB",
     "MAIN.MAIN;SYSTEM.SYSTEM 33.92 KB",
-    "MAIN.MAIN;Main.main;Main.main.\\\\;Main.io 43.41 KB",
-    "MAIN.MAIN;Main.main;Main.main.\\\\ 2.17 KB",
+    "MAIN.MAIN;Main.main;Main.main.\\;Main.io 43.41 KB",
+    "MAIN.MAIN;Main.main;Main.main.\\ 2.17 KB",
     "MAIN.MAIN;Main.main;Main.io 22.91 KB",
     "MAIN.MAIN;Main.main;Main.main.vs;Main.depth;Main.sumT;Main.sumT.a;Main.check 190.67 MB",
     "MAIN.MAIN;Main.main;Main.main.vs;Main.depth;Main.sumT;Main.sumT.a;Main.make 710.00 MB",

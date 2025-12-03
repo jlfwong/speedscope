@@ -1,8 +1,8 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`importV8HeapAlloc from Chrome 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": -1,
       "file": "",
@@ -3974,7 +3974,7 @@ Object {
     },
   ],
   "name": "Heap-20181005T144546.heapprofile",
-  "stacks": Array [
+  "stacks": [
     "(root);(anonymous extensions::SafeBuiltins:0);(anonymous extensions::SafeBuiltins:0) 32.03 KB",
     "(root);(anonymous extensions::SafeBuiltins:0);(anonymous extensions::SafeBuiltins:0);saveBuiltin 16.02 KB",
     "(root);(anonymous extensions::SafeBuiltins:0);(anonymous extensions::SafeBuiltins:0);saveBuiltin;makeCallable;forEach;(anonymous extensions::SafeBuiltins:7) 32.09 KB",
@@ -4185,8 +4185,8 @@ exports[`importV8HeapAlloc from Chrome: indexToView 1`] = `0`;
 exports[`importV8HeapAlloc from Chrome: profileGroup.name 1`] = `"Heap-20181005T144546.heapprofile"`;
 
 exports[`importV8HeapAlloc from NodeJS 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": -1,
       "file": "",
@@ -4855,7 +4855,7 @@ Object {
     },
   ],
   "name": "Heap-20181003T105432.heapprofile",
-  "stacks": Array [
+  "stacks": [
     "(root);_tickDomainCallback;emit;emitTwo;onInternalMessage;onmessage;onconnection;onconnection;Socket.onconnect;Socket.addSocket 32.23 KB",
     "(root);_tickDomainCallback;emit;emitTwo;listener;actionFeature.action;__awaiter;Promise;(anonymous tslib.js:102);next;(anonymous profilingHeap.js:51);stop;__awaiter;Promise;(anonymous tslib.js:102);(anonymous profilingHeap.js:33) 32.03 KB",
     "(root);_tickDomainCallback;(anonymous index.js:16);(anonymous index.js:145);Query._findOne;Query.findOne;NodeCollection.findOne;NativeCollection.(anonymous function);Collection.findOne;findOne;Cursor.next;nextObject;Cursor.next;nextFunction;WireProtocol.command;setupClassicFind;Query 32.03 KB",
