@@ -26,6 +26,7 @@ export const buildOptions: esbuild.BuildOptions = {
     '.woff2': 'file',
     '.png': 'file',
     '.ico': 'file',
+    '.wasm': 'file',
   },
 }
 

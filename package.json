@@ -39,10 +39,12 @@
     "acorn": "7.2.0",
     "aphrodite": "2.1.0",
     "esbuild": "0.27.0",
+    "esbuild-jest": "0.5.0",
     "eslint": "8.0.0",
     "eslint-plugin-prettier": "5.1.2",
     "eslint-plugin-react-hooks": "4.6.0",
     "jest": "24.3.0",
+    "jfrview": "0.2.0",
     "jsverify": "0.8.3",
     "jszip": "3.1.5",
     "pako": "1.0.6",
@@ -53,17 +55,22 @@
     "ts-jest": "24.3.0",
     "tsx": "4.19.2",
     "typescript": "5.3.3",
-    "typescript-json-schema": "0.42.0",
+    "typescript-json-schema": "0.67.0",
     "uglify-es": "3.2.2",
     "uint8array-json-parser": "0.0.2"
   },
   "jest": {
     "transform": {
-      "^.+\\.tsx?$": "ts-jest"
+      "^.+\\.tsx?$": "ts-jest",
+      "^.+\\.js$": "esbuild-jest"
     },
+    "transformIgnorePatterns": [],
     "setupFilesAfterEnv": [
       "./src/jest-setup.js"
     ],
+    "moduleNameMapper": {
+      "\\jfrview_bg.wasm$": "<rootDir>/src/import/java-flight-record.mock.ts"
+    },
     "testRegex": "\\.test\\.tsx?$",
     "collectCoverageFrom": [
       "**/*.{ts,tsx}",
