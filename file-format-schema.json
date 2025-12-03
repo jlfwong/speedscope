@@ -12,9 +12,7 @@
                     "type": "number"
                 },
                 "type": {
-                    "enum": [
-                        "C"
-                    ],
+                    "const": "C",
                     "title": "type",
                     "type": "string"
                 }
@@ -29,8 +27,8 @@
         },
         "FileFormat.EventType": {
             "enum": [
-                "C",
-                "O"
+                "O",
+                "C"
             ],
             "title": "FileFormat.EventType",
             "type": "string"
@@ -64,9 +62,7 @@
                     "type": "number"
                 },
                 "type": {
-                    "enum": [
-                        "evented"
-                    ],
+                    "const": "evented",
                     "title": "type",
                     "type": "string"
                 },
@@ -89,9 +85,7 @@
         "FileFormat.File": {
             "properties": {
                 "$schema": {
-                    "enum": [
-                        "https://www.speedscope.app/file-format-schema.json"
-                    ],
+                    "const": "https://www.speedscope.app/file-format-schema.json",
                     "title": "$schema",
                     "type": "string"
                 },
@@ -109,14 +103,7 @@
                 },
                 "profiles": {
                     "items": {
-                        "anyOf": [
-                            {
-                                "$ref": "#/definitions/FileFormat.EventedProfile"
-                            },
-                            {
-                                "$ref": "#/definitions/FileFormat.SampledProfile"
-                            }
-                        ]
+                        "$ref": "#/definitions/FileFormat.Profile"
                     },
                     "title": "profiles",
                     "type": "array"
@@ -192,7 +179,8 @@
                 {
                     "$ref": "#/definitions/FileFormat.SampledProfile"
                 }
-            ]
+            ],
+            "title": "FileFormat.Profile"
         },
         "FileFormat.ProfileType": {
             "enum": [
@@ -227,9 +215,7 @@
                     "type": "number"
                 },
                 "type": {
-                    "enum": [
-                        "sampled"
-                    ],
+                    "const": "sampled",
                     "title": "type",
                     "type": "string"
                 },
@@ -298,9 +284,7 @@
                     "type": "number"
                 },
                 "type": {
-                    "enum": [
-                        "O"
-                    ],
+                    "const": "O",
                     "title": "type",
                     "type": "string"
                 }
