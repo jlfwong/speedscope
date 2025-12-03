@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`interpretHeavyJfr 1`] = `
+exports[`importFromJfr 1`] = `
 Object {
   "frames": Array [
     Frame {
@@ -508,7 +508,7 @@ Object {
 }
 `;
 
-exports[`interpretHeavyJfr 2`] = `
+exports[`importFromJfr 2`] = `
 Object {
   "frames": Array [
     Frame {
@@ -1162,6 +1162,6 @@ Object {
 }
 `;
 
-exports[`interpretHeavyJfr: indexToView 1`] = `0`;
+exports[`importFromJfr: indexToView 1`] = `0`;
 
-exports[`interpretHeavyJfr: profileGroup.name 1`] = `"heavy.jfr"`;
+exports[`importFromJfr: profileGroup.name 1`] = `"heavy.jfr"`;
