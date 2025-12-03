@@ -243,7 +243,7 @@ test('decodeBase64', () => {
 test('BufferBackedTextFileContent.firstChunk', async () => {
   await withMockedFileChunkSizeForTests(2, () => {
     const str = 'may\nyour\nrope\nbe\nlong'
-    const buffer = new TextEncoder().encode(str).buffer
+    const buffer = new TextEncoder().encode(str).buffer as ArrayBuffer
     const content = new BufferBackedTextFileContent(buffer)
     expect(content.firstChunk()).toEqual('ma')
   })
@@ -251,7 +251,7 @@ test('BufferBackedTextFileContent.firstChunk', async () => {
 
 test('BufferBackedTextFileContent.splitLines', async () => {
   function testWithString(str: string) {
-    const buffer = new TextEncoder().encode(str).buffer
+    const buffer = new TextEncoder().encode(str).buffer as ArrayBuffer
     const content = new BufferBackedTextFileContent(buffer)
     expect([...content.splitLines()]).toEqual(str.split('\n'))
   }
@@ -270,7 +270,7 @@ test('BufferBackedTextFileContent.parseAsJSON', async () => {
     // parseAsJSON is special cased to permissively allow trailing commas
     // and a mission closing bracket
     const str = '[200,300,400,'
-    const buffer = new TextEncoder().encode(str).buffer
+    const buffer = new TextEncoder().encode(str).buffer as ArrayBuffer
     const content = new BufferBackedTextFileContent(buffer)
 
     expect(content.parseAsJSON()).toEqual([200, 300, 400])
