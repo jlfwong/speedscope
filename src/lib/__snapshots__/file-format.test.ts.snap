@@ -1,8 +1,8 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`importSpeedscopeProfiles 0.0.1 evented profile (no pretty print) 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -41,7 +41,7 @@ Object {
     },
   ],
   "name": "simple.txt",
-  "stacks": Array [
+  "stacks": [
     "a;b;c 2",
     "a;b;d 4",
     "a;b;c 3",
@@ -55,8 +55,8 @@ exports[`importSpeedscopeProfiles 0.0.1 evented profile (no pretty print): index
 exports[`importSpeedscopeProfiles 0.0.1 evented profile (no pretty print): profileGroup.name 1`] = `"simple.txt"`;
 
 exports[`importSpeedscopeProfiles 0.0.1 evented profile 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -95,7 +95,7 @@ Object {
     },
   ],
   "name": "simple.txt",
-  "stacks": Array [
+  "stacks": [
     "a;b;c 2",
     "a;b;d 4",
     "a;b;c 3",
@@ -109,8 +109,8 @@ exports[`importSpeedscopeProfiles 0.0.1 evented profile: indexToView 1`] = `0`;
 exports[`importSpeedscopeProfiles 0.0.1 evented profile: profileGroup.name 1`] = `"simple.txt"`;
 
 exports[`importSpeedscopeProfiles 0.1.2 sampled profile 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -149,7 +149,7 @@ Object {
     },
   ],
   "name": "simple.speedscope.json",
-  "stacks": Array [
+  "stacks": [
     "a;b;c 2.00s",
     "a;b;d 4.00s",
     "a;b;c 3.00s",
@@ -163,8 +163,8 @@ exports[`importSpeedscopeProfiles 0.1.2 sampled profile: indexToView 1`] = `0`;
 exports[`importSpeedscopeProfiles 0.1.2 sampled profile: profileGroup.name 1`] = `"simple.speedscope.json"`;
 
 exports[`importSpeedscopeProfiles 0.6.0 multiple profiles 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -203,7 +203,7 @@ Object {
     },
   ],
   "name": "one",
-  "stacks": Array [
+  "stacks": [
     "a;b;c 2.00s",
     "a;b;d 4.00s",
     "a;b;c 3.00s",
@@ -213,8 +213,8 @@ Object {
 `;
 
 exports[`importSpeedscopeProfiles 0.6.0 multiple profiles 2`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -253,7 +253,7 @@ Object {
     },
   ],
   "name": "two",
-  "stacks": Array [
+  "stacks": [
     "a;b;c 2.00s",
     "a;b;d 4.00s",
     "a;b;c 3.00s",
@@ -268,4 +268,4 @@ exports[`importSpeedscopeProfiles 0.6.0 multiple profiles: profileGroup.name 1`]
 
 exports[`importSpeedscopeProfiles invalid due to incomplete trace 1`] = `"Tried to complete profile construction with a non-empty stack"`;
 
-exports[`importSpeedscopeProfiles invalid due to out of order events 1`] = `"Tried to leave frame \\"B\\" while frame \\"A\\" was at the top at 4"`;
+exports[`importSpeedscopeProfiles invalid due to out of order events 1`] = `"Tried to leave frame "B" while frame "A" was at the top at 4"`;

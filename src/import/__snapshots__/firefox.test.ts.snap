@@ -1,8 +1,8 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`importFromFirefox 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": "file:///Users/jlfwong/code/speedscope/sample/simple.js",
@@ -41,7 +41,7 @@ Object {
     },
   ],
   "name": "simple-firefox.json",
-  "stacks": Array [
+  "stacks": [
     " 2.04ms",
     "a;b;d 989.53µs",
     "a;c;d 1.02ms",
@@ -61,8 +61,8 @@ Object {
 `;
 
 exports[`importFromFirefox ignore self-hosted 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": 15,
       "file": "http://localhost:8000/simple.js",
@@ -101,7 +101,7 @@ Object {
     },
   ],
   "name": "simple-firefox.json",
-  "stacks": Array [
+  "stacks": [
     " 4.61ms",
     "alpha;delta;gamma 999.57µs",
     "alpha;beta;gamma 2.01ms",
@@ -126,8 +126,8 @@ exports[`importFromFirefox ignore self-hosted: indexToView 1`] = `0`;
 exports[`importFromFirefox ignore self-hosted: profileGroup.name 1`] = `"simple-firefox.json"`;
 
 exports[`importFromFirefox recursion 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": "file:///Users/jlfwong/code/speedscope/sample/programs/javascript/recursion.js",
@@ -175,7 +175,7 @@ Object {
     },
   ],
   "name": "recursion.json",
-  "stacks": Array [
+  "stacks": [
     " 1.71ms",
     "main;alpha;beta;alpha;beta;alpha;beta;alpha;delta;gamma 998.89µs",
     "main 1.19ms",

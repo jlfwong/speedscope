@@ -1,8 +1,8 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`importCpuProfileWithProperWeights importFromStackprof cpu mode snapshot 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": "sample/programs/ruby/simple.rb",
@@ -104,7 +104,7 @@ Object {
     },
   ],
   "name": "simple-cpu-stackprof.json",
-  "stacks": Array [
+  "stacks": [
     "<main>;<main>;block in <main>;Object#a;Object#a;Object#b;Object#b;Object#d;Object#d 2.00ms",
     "<main>;<main>;block in <main>;Object#a;Object#a;Object#c;Object#c;Object#d;Object#d 1.00ms",
     "<main>;<main>;block in <main>;Object#a;Object#a;Object#e 1.00ms",
@@ -449,8 +449,8 @@ exports[`importCpuProfileWithProperWeights importFromStackprof cpu mode snapshot
 exports[`importCpuProfileWithProperWeights importFromStackprof cpu mode snapshot: profileGroup.name 1`] = `"simple-cpu-stackprof.json"`;
 
 exports[`importFromStackprof 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": "simple.rb",
@@ -525,7 +525,7 @@ Object {
     },
   ],
   "name": "simple-stackprof.json",
-  "stacks": Array [
+  "stacks": [
     "<main>;<main>;block in <main>;Object#a;Object#a;Object#b;Object#b;Object#d;Object#d 6.11ms",
     "<main>;<main>;block in <main>;Object#a;Object#a;Object#b;Object#b;Object#d;Object#d;(garbage collection) 1.02ms",
     "<main>;<main>;block in <main>;Object#a;Object#a;Object#b;Object#b;Object#d;Object#d 1.96ms",
@@ -1300,8 +1300,8 @@ Object {
 `;
 
 exports[`importFromStackprof object mode 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": "../../alexcoco/speedscope/sample/programs/ruby/object.rb",
@@ -1421,7 +1421,7 @@ Object {
     },
   ],
   "name": "object-stackprof.json",
-  "stacks": Array [
+  "stacks": [
     "<main>;<main>;StackProf.run;block in <main> 1",
     "<main>;<main>;StackProf.run;block in <main>;Object#a;Range#each;Object#a 1",
     "<main>;<main>;StackProf.run;block in <main>;Object#a;Range#each;Object#a;Object#b 1",
@@ -1495,8 +1495,8 @@ exports[`importFromStackprof object mode: indexToView 1`] = `0`;
 exports[`importFromStackprof object mode: profileGroup.name 1`] = `"object-stackprof.json"`;
 
 exports[`importFromStackprof when a profile has a frame with no name 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": "../../alexcoco/speedscope/sample/programs/ruby/object.rb",
@@ -1616,7 +1616,7 @@ Object {
     },
   ],
   "name": "stackprof-last-frame-no-name.json",
-  "stacks": Array [
+  "stacks": [
     "<main>;<main>;StackProf.run;block in <main> 1",
     "<main>;<main>;StackProf.run;block in <main>;Object#a;Range#each;Object#a 1",
     "<main>;<main>;StackProf.run;block in <main>;Object#a;Range#each;Object#a;Object#b 1",

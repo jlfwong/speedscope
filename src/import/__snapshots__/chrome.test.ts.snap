@@ -1,8 +1,8 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`importFromChromeCPUProfile 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": 1,
       "file": "",
@@ -50,7 +50,7 @@ Object {
     },
   ],
   "name": "simple.cpuprofile",
-  "stacks": Array [
+  "stacks": [
     " 11.57ms",
     "(anonymous) 1.06ms",
     "(anonymous);a;b;d 17.00ms",
@@ -64,8 +64,8 @@ exports[`importFromChromeCPUProfile: indexToView 1`] = `0`;
 exports[`importFromChromeCPUProfile: profileGroup.name 1`] = `"simple.cpuprofile"`;
 
 exports[`importFromChromeTimeline 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": 0,
       "file": "",
@@ -104,7 +104,7 @@ Object {
     },
   ],
   "name": "simple-timeline.json",
-  "stacks": Array [
+  "stacks": [
     " 10.06ms",
     "(program) 202.00µs",
     " 1.97ms",
@@ -263,8 +263,8 @@ Object {
 `;
 
 exports[`importFromChromeTimeline Chrome 69 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": 1,
       "file": "extensions::SafeBuiltins",
@@ -357,7 +357,7 @@ Object {
     },
   ],
   "name": "simple.json",
-  "stacks": Array [
+  "stacks": [
     " 6.85ms",
     "(anonymous extensions::SafeBuiltins:1);(anonymous extensions::SafeBuiltins:1);saveBuiltin 302.00µs",
     "(anonymous extensions::SafeBuiltins:1);(anonymous extensions::SafeBuiltins:1);saveBuiltin;(program) 2.89ms",
@@ -516,8 +516,8 @@ exports[`importFromChromeTimeline Chrome 69: indexToView 1`] = `0`;
 exports[`importFromChromeTimeline Chrome 69: profileGroup.name 1`] = `"simple.json"`;
 
 exports[`importFromChromeTimeline Chrome 116 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -574,7 +574,7 @@ Object {
     },
   ],
   "name": "Trace-20230603T221323.json",
-  "stacks": Array [
+  "stacks": [
     " 4.39ms",
     "(program) 7.71ms",
     " 6.51ms",
@@ -702,8 +702,8 @@ exports[`importFromChromeTimeline Chrome 116: indexToView 1`] = `0`;
 exports[`importFromChromeTimeline Chrome 116: profileGroup.name 1`] = `"Trace-20230603T221323.json"`;
 
 exports[`importFromChromeTimeline Workers Chrome 66 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": 0,
       "file": "",
@@ -877,7 +877,7 @@ Object {
     },
   ],
   "name": "worker.json - CrRendererMain",
-  "stacks": Array [
+  "stacks": [
     " 28.66ms",
     "(program) 315.00µs",
     " 108.00µs",
@@ -1009,8 +1009,8 @@ Object {
 `;
 
 exports[`importFromChromeTimeline Workers Chrome 66 2`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": 0,
       "file": "",
@@ -1058,7 +1058,7 @@ Object {
     },
   ],
   "name": "worker.json - DedicatedWorker thread",
-  "stacks": Array [
+  "stacks": [
     " 9.07ms",
     "(program) 5.49ms",
     "onmessage;alpha;gamma 3.69ms",
@@ -1104,8 +1104,8 @@ exports[`importFromChromeTimeline Workers Chrome 66: indexToView 1`] = `0`;
 exports[`importFromChromeTimeline Workers Chrome 66: profileGroup.name 1`] = `"worker.json"`;
 
 exports[`importFromChromeTimeline Workers Chrome 70 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": 1,
       "file": "extensions::SafeBuiltins",
@@ -1666,7 +1666,7 @@ Object {
     },
   ],
   "name": "worker.json - CrRendererMain",
-  "stacks": Array [
+  "stacks": [
     " 15.06ms",
     "(anonymous extensions::SafeBuiltins:1);(anonymous extensions::SafeBuiltins:1);saveBuiltin;makeCallable;(anonymous extensions::SafeBuiltins:8) 102.00µs",
     "(anonymous extensions::SafeBuiltins:1);(anonymous extensions::SafeBuiltins:1);saveBuiltin 92.00µs",
@@ -1850,8 +1850,8 @@ Object {
 `;
 
 exports[`importFromChromeTimeline Workers Chrome 70 2`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": 21,
       "file": "http://127.0.0.1:8081/worker.js",
@@ -1899,7 +1899,7 @@ Object {
     },
   ],
   "name": "worker.json - DedicatedWorker thread",
-  "stacks": Array [
+  "stacks": [
     " 4.33ms",
     "onmessage;alpha;gamma 604.00µs",
     "onmessage;alpha 1.38ms",
@@ -1943,8 +1943,8 @@ exports[`importFromChromeTimeline Workers Chrome 70: indexToView 1`] = `0`;
 exports[`importFromChromeTimeline Workers Chrome 70: profileGroup.name 1`] = `"worker.json"`;
 
 exports[`importFromChromeTimeline chunked 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": 0,
       "file": "",
@@ -1983,7 +1983,7 @@ Object {
     },
   ],
   "name": "simple-timeline.json",
-  "stacks": Array [
+  "stacks": [
     " 10.06ms",
     "(program) 202.00µs",
     " 1.97ms",
@@ -2150,8 +2150,8 @@ exports[`importFromChromeTimeline: indexToView 1`] = `0`;
 exports[`importFromChromeTimeline: profileGroup.name 1`] = `"simple-timeline.json"`;
 
 exports[`importFromV8Profiler Node 10 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": 1,
       "file": "",
@@ -2199,7 +2199,7 @@ Object {
     },
   ],
   "name": "example.cpuprofile",
-  "stacks": Array [
+  "stacks": [
     " 599.29ms",
     "(anonymous) 11.57ms",
     "(anonymous);a;b;d 16.79ms",
@@ -2213,8 +2213,8 @@ exports[`importFromV8Profiler Node 10: indexToView 1`] = `0`;
 exports[`importFromV8Profiler Node 10: profileGroup.name 1`] = `"example.cpuprofile"`;
 
 exports[`importTraceEvents Chrome 141 profile with missing arg data 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -2478,7 +2478,7 @@ Object {
     },
   ],
   "name": "no-arg-data.json - CrRendererMain",
-  "stacks": Array [
+  "stacks": [
     " 315.88ms",
     "(program) 53.21ms",
     "(anonymous example-1.js:93) 668.00µs",
@@ -2498,10 +2498,10 @@ Object {
 `;
 
 exports[`importTraceEvents Chrome 141 profile with missing arg data 2`] = `
-Object {
-  "frames": Array [],
+{
+  "frames": [],
   "name": "no-arg-data.json - CrRendererMain",
-  "stacks": Array [],
+  "stacks": [],
 }
 `;
 

@@ -1,8 +1,8 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`importTraceEvents BEX interaction 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -113,7 +113,7 @@ Object {
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
+  "stacks": [
     "A;B 2.00µs",
     " 8.00µs",
     "D;C 2.00µs",
@@ -138,8 +138,8 @@ exports[`importTraceEvents BEX interaction: indexToView 1`] = `0`;
 exports[`importTraceEvents BEX interaction: profileGroup.name 1`] = `"bex-interaction.json"`;
 
 exports[`importTraceEvents bad E events 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -160,7 +160,7 @@ Object {
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
+  "stacks": [
     "alpha 1.00µs",
     "alpha;beta 12.00µs",
     "alpha 1.00µs",
@@ -173,8 +173,8 @@ exports[`importTraceEvents bad E events: indexToView 1`] = `0`;
 exports[`importTraceEvents bad E events: profileGroup.name 1`] = `"too-many-end-events.json"`;
 
 exports[`importTraceEvents different number of start and end calls to same function at same timestamp 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -187,45 +187,45 @@ Object {
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "anonymous {\\"parent\\":1}",
+      "key": "anonymous {"parent":1}",
       "line": undefined,
-      "name": "anonymous {\\"parent\\":1}",
+      "name": "anonymous {"parent":1}",
       "selfWeight": 0,
       "totalWeight": 4,
     },
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "function1 {\\"parent\\":2}",
+      "key": "function1 {"parent":2}",
       "line": undefined,
-      "name": "function1 {\\"parent\\":2}",
+      "name": "function1 {"parent":2}",
       "selfWeight": 0,
       "totalWeight": 2,
     },
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "anonymous {\\"parent\\":3}",
+      "key": "anonymous {"parent":3}",
       "line": undefined,
-      "name": "anonymous {\\"parent\\":3}",
+      "name": "anonymous {"parent":3}",
       "selfWeight": 2,
       "totalWeight": 2,
     },
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "anonymous {\\"parent\\":8}",
+      "key": "anonymous {"parent":8}",
       "line": undefined,
-      "name": "anonymous {\\"parent\\":8}",
+      "name": "anonymous {"parent":8}",
       "selfWeight": 2,
       "totalWeight": 2,
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
+  "stacks": [
     "anonymous 1.00µs",
-    "anonymous;anonymous {\\"parent\\":1};function1 {\\"parent\\":2};anonymous {\\"parent\\":3} 2.00µs",
-    "anonymous;anonymous {\\"parent\\":1};anonymous {\\"parent\\":8} 2.00µs",
+    "anonymous;anonymous {"parent":1};function1 {"parent":2};anonymous {"parent":3} 2.00µs",
+    "anonymous;anonymous {"parent":1};anonymous {"parent":8} 2.00µs",
   ],
 }
 `;
@@ -235,8 +235,8 @@ exports[`importTraceEvents different number of start and end calls to same funct
 exports[`importTraceEvents different number of start and end calls to same function at same timestamp: profileGroup.name 1`] = `"simultaneous-anonymous-calls.json"`;
 
 exports[`importTraceEvents end event with empty stack 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -248,7 +248,7 @@ Object {
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
+  "stacks": [
     "alpha 1.00µs",
   ],
 }
@@ -259,41 +259,41 @@ exports[`importTraceEvents end event with empty stack: indexToView 1`] = `0`;
 exports[`importTraceEvents end event with empty stack: profileGroup.name 1`] = `"end-event-with-empty-stack.json"`;
 
 exports[`importTraceEvents end-non-top-of-stack 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "A {\\"x\\":1}",
+      "key": "A {"x":1}",
       "line": undefined,
-      "name": "A {\\"x\\":1}",
+      "name": "A {"x":1}",
       "selfWeight": 1,
       "totalWeight": 11,
     },
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "B {\\"x\\":2}",
+      "key": "B {"x":2}",
       "line": undefined,
-      "name": "B {\\"x\\":2}",
+      "name": "B {"x":2}",
       "selfWeight": 9,
       "totalWeight": 10,
     },
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "Z {\\"x\\":1}",
+      "key": "Z {"x":1}",
       "line": undefined,
-      "name": "Z {\\"x\\":1}",
+      "name": "Z {"x":1}",
       "selfWeight": 1,
       "totalWeight": 1,
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
-    "A {\\"x\\":1} 1.00µs",
-    "A {\\"x\\":1};B {\\"x\\":2} 9.00µs",
-    "A {\\"x\\":1};B {\\"x\\":2};Z {\\"x\\":1} 1.00µs",
+  "stacks": [
+    "A {"x":1} 1.00µs",
+    "A {"x":1};B {"x":2} 9.00µs",
+    "A {"x":1};B {"x":2};Z {"x":1} 1.00µs",
   ],
 }
 `;
@@ -303,8 +303,8 @@ exports[`importTraceEvents end-non-top-of-stack: indexToView 1`] = `0`;
 exports[`importTraceEvents end-non-top-of-stack: profileGroup.name 1`] = `"end-non-top-of-stack.json"`;
 
 exports[`importTraceEvents event re-ordering 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -343,7 +343,7 @@ Object {
     },
   ],
   "name": "pid 0, tid 1",
-  "stacks": Array [
+  "stacks": [
     "A;B;C 1.00µs",
     "A;B 1.00µs",
     "A 1.00µs",
@@ -361,41 +361,41 @@ exports[`importTraceEvents event re-ordering: indexToView 1`] = `0`;
 exports[`importTraceEvents event re-ordering: profileGroup.name 1`] = `"must-retain-original-order.json"`;
 
 exports[`importTraceEvents event reordering name match 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "alpha {\\"x\\":0}",
+      "key": "alpha {"x":0}",
       "line": undefined,
-      "name": "alpha {\\"x\\":0}",
+      "name": "alpha {"x":0}",
       "selfWeight": 9,
       "totalWeight": 10,
     },
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "beta {\\"x\\":0}",
+      "key": "beta {"x":0}",
       "line": undefined,
-      "name": "beta {\\"x\\":0}",
+      "name": "beta {"x":0}",
       "selfWeight": 0,
       "totalWeight": 1,
     },
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "gamma {\\"x\\":0}",
+      "key": "gamma {"x":0}",
       "line": undefined,
-      "name": "gamma {\\"x\\":0}",
+      "name": "gamma {"x":0}",
       "selfWeight": 1,
       "totalWeight": 1,
     },
   ],
   "name": "pid 0, tid 1",
-  "stacks": Array [
-    "alpha {\\"x\\":0} 1.00µs",
-    "alpha {\\"x\\":0};beta {\\"x\\":0};gamma {\\"x\\":0} 1.00µs",
-    "alpha {\\"x\\":0} 8.00µs",
+  "stacks": [
+    "alpha {"x":0} 1.00µs",
+    "alpha {"x":0};beta {"x":0};gamma {"x":0} 1.00µs",
+    "alpha {"x":0} 8.00µs",
   ],
 }
 `;
@@ -405,8 +405,8 @@ exports[`importTraceEvents event reordering name match: indexToView 1`] = `0`;
 exports[`importTraceEvents event reordering name match: profileGroup.name 1`] = `"event-reordering-name-match.json"`;
 
 exports[`importTraceEvents hermes profile with multiple frames 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": null,
       "file": null,
@@ -427,7 +427,7 @@ Object {
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
+  "stacks": [
     "[root] 1.00µs",
     "[root];beta 12.00µs",
     "[root] 1.00µs",
@@ -440,8 +440,8 @@ exports[`importTraceEvents hermes profile with multiple frames: indexToView 1`] 
 exports[`importTraceEvents hermes profile with multiple frames: profileGroup.name 1`] = `"simple-hermes.json"`;
 
 exports[`importTraceEvents invalid x nesting 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -462,7 +462,7 @@ Object {
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
+  "stacks": [
     "alpha 5.00µs",
     "alpha;beta 10.00µs",
   ],
@@ -474,8 +474,8 @@ exports[`importTraceEvents invalid x nesting: indexToView 1`] = `0`;
 exports[`importTraceEvents invalid x nesting: profileGroup.name 1`] = `"invalid-x-nesting.json"`;
 
 exports[`importTraceEvents matching x 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -505,7 +505,7 @@ Object {
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
+  "stacks": [
     "alpha 1.00µs",
     "alpha;beta;gamma 1.00µs",
     "alpha 3.00µs",
@@ -520,21 +520,21 @@ exports[`importTraceEvents matching x: indexToView 1`] = `0`;
 exports[`importTraceEvents matching x: profileGroup.name 1`] = `"matching-x.json"`;
 
 exports[`importTraceEvents mismatched args 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "A {\\"x\\":1}",
+      "key": "A {"x":1}",
       "line": undefined,
-      "name": "A {\\"x\\":1}",
+      "name": "A {"x":1}",
       "selfWeight": 10,
       "totalWeight": 10,
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
-    "A {\\"x\\":1} 10.00µs",
+  "stacks": [
+    "A {"x":1} 10.00µs",
   ],
 }
 `;
@@ -544,8 +544,8 @@ exports[`importTraceEvents mismatched args: indexToView 1`] = `0`;
 exports[`importTraceEvents mismatched args: profileGroup.name 1`] = `"mismatched-args.json"`;
 
 exports[`importTraceEvents mismatched name 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -557,7 +557,7 @@ Object {
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [],
+  "stacks": [],
 }
 `;
 
@@ -566,8 +566,8 @@ exports[`importTraceEvents mismatched name: indexToView 1`] = `0`;
 exports[`importTraceEvents mismatched name: profileGroup.name 1`] = `"mismatched-name.json"`;
 
 exports[`importTraceEvents multi-thread profile with samples 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -588,7 +588,7 @@ Object {
     },
   ],
   "name": "hermes (pid 7512), mqt_js (tid 1)",
-  "stacks": Array [
+  "stacks": [
     "[root] 20.77ms",
     "[root];function1 13.33ms",
   ],
@@ -596,8 +596,8 @@ Object {
 `;
 
 exports[`importTraceEvents multi-thread profile with samples 2`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -627,7 +627,7 @@ Object {
     },
   ],
   "name": "hermes (pid 7512, tid 2)",
-  "stacks": Array [
+  "stacks": [
     "[root thread 2] 20.77ms",
     "[root thread 2];function3 13.33ms",
     "[root thread 2];function4 10.00ms",
@@ -641,8 +641,8 @@ exports[`importTraceEvents multi-thread profile with samples: indexToView 1`] = 
 exports[`importTraceEvents multi-thread profile with samples: profileGroup.name 1`] = `"multi-thread-with-samples.json"`;
 
 exports[`importTraceEvents multiprocess 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -654,15 +654,15 @@ Object {
     },
   ],
   "name": "p0 (pid 0), p0t0 (tid 0)",
-  "stacks": Array [
+  "stacks": [
     "alpha 1.00µs",
   ],
 }
 `;
 
 exports[`importTraceEvents multiprocess 2`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -674,15 +674,15 @@ Object {
     },
   ],
   "name": "p0 (pid 0), p0t1 (tid 1)",
-  "stacks": Array [
+  "stacks": [
     "beta 1.00µs",
   ],
 }
 `;
 
 exports[`importTraceEvents multiprocess 3`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -694,15 +694,15 @@ Object {
     },
   ],
   "name": "p1 (pid 1), p1t0 (tid 0)",
-  "stacks": Array [
+  "stacks": [
     "gamma 1.00µs",
   ],
 }
 `;
 
 exports[`importTraceEvents multiprocess 4`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -714,15 +714,15 @@ Object {
     },
   ],
   "name": "p1 (pid 1), p1t1 (tid 1)",
-  "stacks": Array [
+  "stacks": [
     "delta 1.00µs",
   ],
 }
 `;
 
 exports[`importTraceEvents multiprocess 5`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -734,15 +734,15 @@ Object {
     },
   ],
   "name": "p2t0 (pid 2, tid 0)",
-  "stacks": Array [
+  "stacks": [
     "epsilon 1.00µs",
   ],
 }
 `;
 
 exports[`importTraceEvents multiprocess 6`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -754,15 +754,15 @@ Object {
     },
   ],
   "name": "p2t1 (pid 2, tid 1)",
-  "stacks": Array [
+  "stacks": [
     "phi 1.00µs",
   ],
 }
 `;
 
 exports[`importTraceEvents multiprocess 7`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -774,15 +774,15 @@ Object {
     },
   ],
   "name": "p3 (pid 3, tid 0)",
-  "stacks": Array [
+  "stacks": [
     "zeta 1.00µs",
   ],
 }
 `;
 
 exports[`importTraceEvents multiprocess 8`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -794,7 +794,7 @@ Object {
     },
   ],
   "name": "p3 (pid 3, tid 1)",
-  "stacks": Array [
+  "stacks": [
     "eta 1.00µs",
   ],
 }
@@ -805,32 +805,32 @@ exports[`importTraceEvents multiprocess: indexToView 1`] = `0`;
 exports[`importTraceEvents multiprocess: profileGroup.name 1`] = `"multiprocess.json"`;
 
 exports[`importTraceEvents not enough end events 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "A {\\"x\\":1}",
+      "key": "A {"x":1}",
       "line": undefined,
-      "name": "A {\\"x\\":1}",
+      "name": "A {"x":1}",
       "selfWeight": 2,
       "totalWeight": 11,
     },
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "A {\\"x\\":2}",
+      "key": "A {"x":2}",
       "line": undefined,
-      "name": "A {\\"x\\":2}",
+      "name": "A {"x":2}",
       "selfWeight": 9,
       "totalWeight": 10,
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
-    "A {\\"x\\":1} 1.00µs",
-    "A {\\"x\\":1};A {\\"x\\":2} 9.00µs",
-    "A {\\"x\\":1};A {\\"x\\":2};A {\\"x\\":1} 1.00µs",
+  "stacks": [
+    "A {"x":1} 1.00µs",
+    "A {"x":1};A {"x":2} 9.00µs",
+    "A {"x":1};A {"x":2};A {"x":1} 1.00µs",
   ],
 }
 `;
@@ -840,8 +840,8 @@ exports[`importTraceEvents not enough end events: indexToView 1`] = `0`;
 exports[`importTraceEvents not enough end events: profileGroup.name 1`] = `"not-enough-end-events.json"`;
 
 exports[`importTraceEvents not out-of-order 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -871,7 +871,7 @@ Object {
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
+  "stacks": [
     "A 1.00µs",
     "A;B 1.00µs",
     "A;B;C 6.00µs",
@@ -882,8 +882,8 @@ Object {
 `;
 
 exports[`importTraceEvents not out-of-order unbalanced name 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -904,7 +904,7 @@ Object {
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
+  "stacks": [
     "alpha 1.00µs",
     "alpha;beta 9.00µs",
   ],
@@ -920,40 +920,40 @@ exports[`importTraceEvents not out-of-order: indexToView 1`] = `0`;
 exports[`importTraceEvents not out-of-order: profileGroup.name 1`] = `"out-of-order.json"`;
 
 exports[`importTraceEvents only begin events 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "A {\\"x\\":1}",
+      "key": "A {"x":1}",
       "line": undefined,
-      "name": "A {\\"x\\":1}",
+      "name": "A {"x":1}",
       "selfWeight": 1,
       "totalWeight": 2,
     },
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "B {\\"x\\":2}",
+      "key": "B {"x":2}",
       "line": undefined,
-      "name": "B {\\"x\\":2}",
+      "name": "B {"x":2}",
       "selfWeight": 1,
       "totalWeight": 1,
     },
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "C {\\"x\\":2}",
+      "key": "C {"x":2}",
       "line": undefined,
-      "name": "C {\\"x\\":2}",
+      "name": "C {"x":2}",
       "selfWeight": 0,
       "totalWeight": 0,
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
-    "A {\\"x\\":1} 1.00µs",
-    "A {\\"x\\":1};B {\\"x\\":2} 1.00µs",
+  "stacks": [
+    "A {"x":1} 1.00µs",
+    "A {"x":1};B {"x":2} 1.00µs",
   ],
 }
 `;
@@ -963,8 +963,8 @@ exports[`importTraceEvents only begin events: indexToView 1`] = `0`;
 exports[`importTraceEvents only begin events: profileGroup.name 1`] = `"only-begin-events.json"`;
 
 exports[`importTraceEvents partial json import 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -986,9 +986,9 @@ Object {
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "gamma {\\"detail\\":\\"foobar\\"}",
+      "key": "gamma {"detail":"foobar"}",
       "line": undefined,
-      "name": "gamma {\\"detail\\":\\"foobar\\"}",
+      "name": "gamma {"detail":"foobar"}",
       "selfWeight": 5,
       "totalWeight": 5,
     },
@@ -1003,10 +1003,10 @@ Object {
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
+  "stacks": [
     "alpha 1.00µs",
     "alpha;beta 1.00µs",
-    "alpha;beta;gamma {\\"detail\\":\\"foobar\\"} 5.00µs",
+    "alpha;beta;gamma {"detail":"foobar"} 5.00µs",
     "alpha;beta;epsilon 4.00µs",
     "alpha;beta 2.00µs",
     "alpha 1.00µs",
@@ -1015,8 +1015,8 @@ Object {
 `;
 
 exports[`importTraceEvents partial json import chunked 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -1038,9 +1038,9 @@ Object {
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "gamma {\\"detail\\":\\"foobar\\"}",
+      "key": "gamma {"detail":"foobar"}",
       "line": undefined,
-      "name": "gamma {\\"detail\\":\\"foobar\\"}",
+      "name": "gamma {"detail":"foobar"}",
       "selfWeight": 5,
       "totalWeight": 5,
     },
@@ -1055,10 +1055,10 @@ Object {
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
+  "stacks": [
     "alpha 1.00µs",
     "alpha;beta 1.00µs",
-    "alpha;beta;gamma {\\"detail\\":\\"foobar\\"} 5.00µs",
+    "alpha;beta;gamma {"detail":"foobar"} 5.00µs",
     "alpha;beta;epsilon 4.00µs",
     "alpha;beta 2.00µs",
     "alpha 1.00µs",
@@ -1071,8 +1071,8 @@ exports[`importTraceEvents partial json import chunked: indexToView 1`] = `0`;
 exports[`importTraceEvents partial json import chunked: profileGroup.name 1`] = `"simple-partial.json"`;
 
 exports[`importTraceEvents partial json import trailing comma 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -1094,9 +1094,9 @@ Object {
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "gamma {\\"detail\\":\\"foobar\\"}",
+      "key": "gamma {"detail":"foobar"}",
       "line": undefined,
-      "name": "gamma {\\"detail\\":\\"foobar\\"}",
+      "name": "gamma {"detail":"foobar"}",
       "selfWeight": 5,
       "totalWeight": 5,
     },
@@ -1111,10 +1111,10 @@ Object {
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
+  "stacks": [
     "alpha 1.00µs",
     "alpha;beta 1.00µs",
-    "alpha;beta;gamma {\\"detail\\":\\"foobar\\"} 5.00µs",
+    "alpha;beta;gamma {"detail":"foobar"} 5.00µs",
     "alpha;beta;epsilon 4.00µs",
     "alpha;beta 2.00µs",
     "alpha 1.00µs",
@@ -1123,8 +1123,8 @@ Object {
 `;
 
 exports[`importTraceEvents partial json import trailing comma chunked 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -1146,9 +1146,9 @@ Object {
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "gamma {\\"detail\\":\\"foobar\\"}",
+      "key": "gamma {"detail":"foobar"}",
       "line": undefined,
-      "name": "gamma {\\"detail\\":\\"foobar\\"}",
+      "name": "gamma {"detail":"foobar"}",
       "selfWeight": 5,
       "totalWeight": 5,
     },
@@ -1163,10 +1163,10 @@ Object {
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
+  "stacks": [
     "alpha 1.00µs",
     "alpha;beta 1.00µs",
-    "alpha;beta;gamma {\\"detail\\":\\"foobar\\"} 5.00µs",
+    "alpha;beta;gamma {"detail":"foobar"} 5.00µs",
     "alpha;beta;epsilon 4.00µs",
     "alpha;beta 2.00µs",
     "alpha 1.00µs",
@@ -1183,8 +1183,8 @@ exports[`importTraceEvents partial json import trailing comma: indexToView 1`] =
 exports[`importTraceEvents partial json import trailing comma: profileGroup.name 1`] = `"simple-partial-trailing-comma.json"`;
 
 exports[`importTraceEvents partial json import whitespace padding 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -1206,9 +1206,9 @@ Object {
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "gamma {\\"detail\\":\\"foobar\\"}",
+      "key": "gamma {"detail":"foobar"}",
       "line": undefined,
-      "name": "gamma {\\"detail\\":\\"foobar\\"}",
+      "name": "gamma {"detail":"foobar"}",
       "selfWeight": 5,
       "totalWeight": 5,
     },
@@ -1223,10 +1223,10 @@ Object {
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
+  "stacks": [
     "alpha 1.00µs",
     "alpha;beta 1.00µs",
-    "alpha;beta;gamma {\\"detail\\":\\"foobar\\"} 5.00µs",
+    "alpha;beta;gamma {"detail":"foobar"} 5.00µs",
     "alpha;beta;epsilon 4.00µs",
     "alpha;beta 2.00µs",
     "alpha 1.00µs",
@@ -1235,8 +1235,8 @@ Object {
 `;
 
 exports[`importTraceEvents partial json import whitespace padding chunked 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -1258,9 +1258,9 @@ Object {
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "gamma {\\"detail\\":\\"foobar\\"}",
+      "key": "gamma {"detail":"foobar"}",
       "line": undefined,
-      "name": "gamma {\\"detail\\":\\"foobar\\"}",
+      "name": "gamma {"detail":"foobar"}",
       "selfWeight": 5,
       "totalWeight": 5,
     },
@@ -1275,10 +1275,10 @@ Object {
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
+  "stacks": [
     "alpha 1.00µs",
     "alpha;beta 1.00µs",
-    "alpha;beta;gamma {\\"detail\\":\\"foobar\\"} 5.00µs",
+    "alpha;beta;gamma {"detail":"foobar"} 5.00µs",
     "alpha;beta;epsilon 4.00µs",
     "alpha;beta 2.00µs",
     "alpha 1.00µs",
@@ -1299,8 +1299,8 @@ exports[`importTraceEvents partial json import: indexToView 1`] = `0`;
 exports[`importTraceEvents partial json import: profileGroup.name 1`] = `"simple-partial.json"`;
 
 exports[`importTraceEvents simple 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -1322,9 +1322,9 @@ Object {
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "gamma {\\"detail\\":\\"foobar\\"}",
+      "key": "gamma {"detail":"foobar"}",
       "line": undefined,
-      "name": "gamma {\\"detail\\":\\"foobar\\"}",
+      "name": "gamma {"detail":"foobar"}",
       "selfWeight": 5,
       "totalWeight": 5,
     },
@@ -1339,10 +1339,10 @@ Object {
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
+  "stacks": [
     "alpha 1.00µs",
     "alpha;beta 1.00µs",
-    "alpha;beta;gamma {\\"detail\\":\\"foobar\\"} 5.00µs",
+    "alpha;beta;gamma {"detail":"foobar"} 5.00µs",
     "alpha;beta;epsilon 4.00µs",
     "alpha;beta 2.00µs",
     "alpha 1.00µs",
@@ -1351,8 +1351,8 @@ Object {
 `;
 
 exports[`importTraceEvents simple hermes profile 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": null,
       "file": null,
@@ -1373,7 +1373,7 @@ Object {
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
+  "stacks": [
     "[root] 1.00µs",
     "[root];beta 12.00µs",
     "[root] 1.00µs",
@@ -1386,8 +1386,8 @@ exports[`importTraceEvents simple hermes profile: indexToView 1`] = `0`;
 exports[`importTraceEvents simple hermes profile: profileGroup.name 1`] = `"simple-hermes.json"`;
 
 exports[`importTraceEvents simple object 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -1417,7 +1417,7 @@ Object {
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
+  "stacks": [
     "alpha 1.00µs",
     "alpha;beta 6.00µs",
     "alpha;beta;(unnamed) 4.00µs",
@@ -1432,8 +1432,8 @@ exports[`importTraceEvents simple object: indexToView 1`] = `0`;
 exports[`importTraceEvents simple object: profileGroup.name 1`] = `"simple-object.json"`;
 
 exports[`importTraceEvents simple profile with samples 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -1481,7 +1481,7 @@ Object {
     },
   ],
   "name": "hermes (pid 7512), mqt_js (tid 7695)",
-  "stacks": Array [
+  "stacks": [
     "[root] 20.77ms",
     "[root];function1(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:1:1) 13.33ms",
     "[root];function2(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:418874:4);function3(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:17:3) 10.61ms",
@@ -1500,32 +1500,32 @@ exports[`importTraceEvents simple: indexToView 1`] = `0`;
 exports[`importTraceEvents simple: profileGroup.name 1`] = `"simple.json"`;
 
 exports[`importTraceEvents unbalanced args 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "A {\\"x\\":1}",
+      "key": "A {"x":1}",
       "line": undefined,
-      "name": "A {\\"x\\":1}",
+      "name": "A {"x":1}",
       "selfWeight": 2,
       "totalWeight": 10,
     },
     Frame {
       "col": undefined,
       "file": undefined,
-      "key": "A {\\"x\\":2}",
+      "key": "A {"x":2}",
       "line": undefined,
-      "name": "A {\\"x\\":2}",
+      "name": "A {"x":2}",
       "selfWeight": 8,
       "totalWeight": 8,
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
-    "A {\\"x\\":1} 1.00µs",
-    "A {\\"x\\":1};A {\\"x\\":2} 8.00µs",
-    "A {\\"x\\":1} 1.00µs",
+  "stacks": [
+    "A {"x":1} 1.00µs",
+    "A {"x":1};A {"x":2} 8.00µs",
+    "A {"x":1} 1.00µs",
   ],
 }
 `;
@@ -1535,8 +1535,8 @@ exports[`importTraceEvents unbalanced args: indexToView 1`] = `0`;
 exports[`importTraceEvents unbalanced args: profileGroup.name 1`] = `"unbalanced-args.json"`;
 
 exports[`importTraceEvents unbalanced name 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -1557,7 +1557,7 @@ Object {
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
+  "stacks": [
     "alpha 1.00µs",
     "alpha;beta 9.00µs",
   ],
@@ -1569,8 +1569,8 @@ exports[`importTraceEvents unbalanced name: indexToView 1`] = `0`;
 exports[`importTraceEvents unbalanced name: profileGroup.name 1`] = `"unbalanced-name.json"`;
 
 exports[`importTraceEvents x events matching end 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -1600,7 +1600,7 @@ Object {
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
+  "stacks": [
     "alpha 1.00µs",
     "alpha;beta 1.00µs",
     "alpha;beta;gamma 1.00µs",
@@ -1623,8 +1623,8 @@ exports[`importTraceEvents x events matching end: indexToView 1`] = `0`;
 exports[`importTraceEvents x events matching end: profileGroup.name 1`] = `"x-events-matching-end.json"`;
 
 exports[`importTraceEvents x events matching start 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -1654,7 +1654,7 @@ Object {
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
+  "stacks": [
     "alpha 1.00µs",
     "alpha;beta;gamma 1.00µs",
     "alpha;beta 1.00µs",
@@ -1677,8 +1677,8 @@ exports[`importTraceEvents x events matching start: indexToView 1`] = `0`;
 exports[`importTraceEvents x events matching start: profileGroup.name 1`] = `"x-events-matching-start.json"`;
 
 exports[`importTraceEvents zero duration events 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -1717,7 +1717,7 @@ Object {
     },
   ],
   "name": "pid 0, tid 0",
-  "stacks": Array [
+  "stacks": [
     "A 10.00µs",
   ],
 }

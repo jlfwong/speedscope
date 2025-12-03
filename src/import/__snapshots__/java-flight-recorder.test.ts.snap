@@ -1,8 +1,8 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`importFromJfr 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -221,7 +221,7 @@ Object {
     },
   ],
   "name": "Without native calls",
-  "stacks": Array [
+  "stacks": [
     "Heavy:main;java.util.stream.IntPipeline:toArray;java.util.stream.AbstractPipeline:evaluateToArrayNode;java.util.stream.AbstractPipeline:evaluate;java.util.stream.AbstractPipeline:wrapAndCopyInto;java.util.stream.AbstractPipeline:copyInto;java.util.stream.AbstractPipeline:copyIntoWithCancel;java.util.stream.IntPipeline:forEachWithCancel;java.util.stream.SliceOps$2$1:cancellationRequested 1",
     "Heavy:main;java.util.stream.IntPipeline:toArray;java.util.stream.AbstractPipeline:evaluateToArrayNode;java.util.stream.AbstractPipeline:evaluate;java.util.stream.AbstractPipeline:wrapAndCopyInto;java.util.stream.AbstractPipeline:copyInto;java.util.stream.AbstractPipeline:copyIntoWithCancel;java.util.stream.IntPipeline:forEachWithCancel;java.util.stream.StreamSpliterators$InfiniteSupplyingSpliterator$OfInt:tryAdvance;java.util.stream.SliceOps$2$1:accept;java.util.stream.SortedOps$IntSortingSink:accept 1",
     "Heavy:main;java.util.stream.IntPipeline:toArray;java.util.stream.AbstractPipeline:evaluateToArrayNode;java.util.stream.AbstractPipeline:evaluate;java.util.stream.AbstractPipeline:wrapAndCopyInto;java.util.stream.AbstractPipeline:copyInto;java.util.stream.AbstractPipeline:copyIntoWithCancel;java.util.stream.IntPipeline:forEachWithCancel;java.util.stream.StreamSpliterators$InfiniteSupplyingSpliterator$OfInt:tryAdvance;Heavy$$Lambda+0x000001c39a007200.2136288211:getAsInt;java.util.Random:nextInt;java.util.Random:next;java.util.concurrent.atomic.AtomicLong:compareAndSet 3",
@@ -509,8 +509,8 @@ Object {
 `;
 
 exports[`importFromJfr 2`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -810,7 +810,7 @@ Object {
     },
   ],
   "name": "With native calls",
-  "stacks": Array [
+  "stacks": [
     "Heavy:main;java.util.stream.IntPipeline:toArray;java.util.stream.AbstractPipeline:evaluateToArrayNode;java.util.stream.AbstractPipeline:evaluate;java.util.stream.AbstractPipeline:wrapAndCopyInto;java.util.stream.AbstractPipeline:copyInto;java.util.stream.AbstractPipeline:copyIntoWithCancel;java.util.stream.IntPipeline:forEachWithCancel;java.util.stream.SliceOps$2$1:cancellationRequested 1",
     "Heavy:main;java.util.stream.IntPipeline:toArray;java.util.stream.AbstractPipeline:evaluateToArrayNode;java.util.stream.AbstractPipeline:evaluate;java.util.stream.AbstractPipeline:wrapAndCopyInto;java.util.stream.AbstractPipeline:copyInto;java.util.stream.AbstractPipeline:copyIntoWithCancel;java.util.stream.IntPipeline:forEachWithCancel;java.util.stream.StreamSpliterators$InfiniteSupplyingSpliterator$OfInt:tryAdvance;java.util.stream.SliceOps$2$1:accept;java.util.stream.SortedOps$IntSortingSink:accept 1",
     "Heavy:main;java.util.stream.IntPipeline:toArray;java.util.stream.AbstractPipeline:evaluateToArrayNode;java.util.stream.AbstractPipeline:evaluate;java.util.stream.AbstractPipeline:wrapAndCopyInto;java.util.stream.AbstractPipeline:copyInto;java.util.stream.AbstractPipeline:copyIntoWithCancel;java.util.stream.IntPipeline:forEachWithCancel;java.util.stream.StreamSpliterators$InfiniteSupplyingSpliterator$OfInt:tryAdvance;Heavy$$Lambda+0x000001c39a007200.2136288211:getAsInt;java.util.Random:nextInt;java.util.Random:next;java.util.concurrent.atomic.AtomicLong:compareAndSet 3",

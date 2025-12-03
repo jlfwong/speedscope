@@ -1,8 +1,8 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`importFromInstrumentsDeepCopy allocations profile 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -86,7 +86,7 @@ Object {
     },
   ],
   "name": "random-allocations-deep-copy.txt",
-  "stacks": Array [
+  "stacks": [
     "start;main;delta();alpha();leakMemory();malloc;malloc_zone_malloc 73.00 MB",
     "start;main;delta();beta();leakMemory();malloc;malloc_zone_malloc 72.00 MB",
     "start;main;delta();leakMemory();malloc;malloc_zone_malloc 71.00 MB",
@@ -100,8 +100,8 @@ Object {
 `;
 
 exports[`importFromInstrumentsDeepCopy allocations profile 2`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -392,7 +392,7 @@ Object {
     },
   ],
   "name": "cycles-example-deep-copy.txt",
-  "stacks": Array [
+  "stacks": [
     "example_app (40414);start;main;std::rt::lang_start::hdba6f1ebfd1bdcf8;std::rt::lang_start_internal::hc453db0ee48af82e;std::rt::lang_start::_$u7b$$u7b$closure$u7d$$u7d$::hd856f2663871206c;std::sys_common::backtrace::__rust_begin_short_backtrace::h4869fd82068bc1dc;core::ops::function::FnOnce::call_once::h06e0c27ee740c6a8;example_app::main::hddab13ae8d8b6a6e;example_app::example_a::h622d6879b734496d;std::time::Instant::elapsed::h2e3793148fc23529;mach_absolute_time 750000:00",
     "example_app (40414);start;main;std::rt::lang_start::hdba6f1ebfd1bdcf8;std::rt::lang_start_internal::hc453db0ee48af82e;std::rt::lang_start::_$u7b$$u7b$closure$u7d$$u7d$::hd856f2663871206c;std::sys_common::backtrace::__rust_begin_short_backtrace::h4869fd82068bc1dc;core::ops::function::FnOnce::call_once::h06e0c27ee740c6a8;example_app::main::hddab13ae8d8b6a6e;example_app::example_a::h622d6879b734496d;std::time::Instant::elapsed::h2e3793148fc23529;std::time::Instant::elapsed::h2e3793148fc23529 10000:00",
     "example_app (40414);start;main;std::rt::lang_start::hdba6f1ebfd1bdcf8;std::rt::lang_start_internal::hc453db0ee48af82e;std::rt::lang_start::_$u7b$$u7b$closure$u7d$$u7d$::hd856f2663871206c;std::sys_common::backtrace::__rust_begin_short_backtrace::h4869fd82068bc1dc;core::ops::function::FnOnce::call_once::h06e0c27ee740c6a8;example_app::main::hddab13ae8d8b6a6e;example_app::example_a::h622d6879b734496d;std::time::Instant::elapsed::h2e3793148fc23529;DYLD-STUB$$mach_absolute_time 16:40",
@@ -426,8 +426,8 @@ exports[`importFromInstrumentsDeepCopy allocations profile: profileGroup.name 1`
 exports[`importFromInstrumentsDeepCopy allocations profile: profileGroup.name 2`] = `"cycles-example-deep-copy.txt"`;
 
 exports[`importFromInstrumentsDeepCopy time profile 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -610,7 +610,7 @@ Object {
     },
   ],
   "name": "simple-time-profile-deep-copy.txt",
-  "stacks": Array [
+  "stacks": [
     "start;main;delta();alpha();leakMemory();malloc;malloc_zone_malloc;szone_malloc_should_clear;small_malloc_from_free_list 4.00ms",
     "start;main;delta();alpha();leakMemory();malloc;malloc_zone_malloc;szone_malloc_should_clear;allocate_pages_securely;mach_vm_map;_kernelrpc_mach_vm_map_trap 1.00ms",
     "start;main;delta();alpha();leakMemory();malloc;malloc_zone_malloc;szone_malloc_should_clear 2.00ms",
@@ -655,8 +655,8 @@ Object {
 `;
 
 exports[`importFromInstrumentsDeepCopy time profile, version 16 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -1091,7 +1091,7 @@ Object {
     },
   ],
   "name": "simple-time-profile-deep-copy.txt",
-  "stacks": Array [
+  "stacks": [
     "start;main;delta();alpha();leakMemory();szone_malloc_should_clear;small_malloc_should_clear;small_malloc_from_free_list 2.00ms",
     "start;main;delta();alpha();leakMemory();szone_malloc_should_clear;small_malloc_should_clear 4.00ms",
     "start;main;delta();alpha();leakMemory();szone_malloc_should_clear;small_malloc_from_free_list 1.00ms",
@@ -1157,8 +1157,8 @@ exports[`importFromInstrumentsDeepCopy time profile: indexToView 1`] = `0`;
 exports[`importFromInstrumentsDeepCopy time profile: profileGroup.name 1`] = `"simple-time-profile-deep-copy.txt"`;
 
 exports[`importFromInstrumentsTrace Instruments 8.3.3 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -1512,7 +1512,7 @@ Object {
     },
   ],
   "name": "simple-time-profile.trace - thread 4",
-  "stacks": Array [
+  "stacks": [
     " 730.82ms",
     "_dyld_start;dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*);dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*);dyld::link(ImageLoader*, bool, bool, ImageLoader::RPathChain const&, unsigned int);ImageLoader::link(ImageLoader::LinkContext const&, bool, bool, bool, ImageLoader::RPathChain const&, char const*);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoader::recursiveBind(ImageLoader::LinkContext const&, bool, bool);ImageLoaderMachOCompressed::doBind(ImageLoader::LinkContext const&, bool);ImageLoaderMachO::setupLazyPointerHandler(ImageLoader::LinkContext const&) 5.06ms",
     "_dyld_start;dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*);dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*);dyld::initializeMainExecutable();ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&);ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&);ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&);ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&);ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&);ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&);ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&);ImageLoaderMachO::doModInitFunctions(ImageLoader::LinkContext const&);libSystem_initializer;_libtrace_init;_os_log_init;rb_tree_init 3.01ms",
@@ -4657,8 +4657,8 @@ Object {
 `;
 
 exports[`importFromInstrumentsTrace Instruments 9.3.1 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -4922,7 +4922,7 @@ Object {
     },
   ],
   "name": "simple-time-profile.trace - thread 4",
-  "stacks": Array [
+  "stacks": [
     " 7.15ms",
     "_dyld_start;dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*);dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*);dyld::initializeMainExecutable();ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&);ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&);ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&);ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&);ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&);ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&);ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&);0x0000000110c55a79;libSystem_initializer;_libc_initializer;__chk_init;_dyld_register_func_for_add_image;_dyld_func_lookup 9.02ms",
     "start;main;beta() 1.00ms",
@@ -9571,8 +9571,8 @@ Object {
 `;
 
 exports[`importFromInstrumentsTrace Instruments 10.0 1`] = `
-Object {
-  "frames": Array [
+{
+  "frames": [
     Frame {
       "col": undefined,
       "file": undefined,
@@ -16469,7 +16469,7 @@ Object {
     },
   ],
   "name": "simple-time-profile.trace - thread 4",
-  "stacks": Array [
+  "stacks": [
     " 44.62ms",
     "_dyld_start;dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*);dyld::link(ImageLoader*, bool, bool, ImageLoader::RPathChain const&, unsigned int);ImageLoader::link(ImageLoader::LinkContext const&, bool, bool, bool, ImageLoader::RPathChain const&, char const*);ImageLoader::recursiveLoadLibraries(ImageLoader::LinkContext const&, bool, ImageLoader::RPathChain const&, char const*);ImageLoaderMachO::getRPaths(ImageLoader::LinkContext const&, std::__1::vector<char const*, std::__1::allocator<char const*> >&) const;realpath$DARWIN_EXTSN;stat64 1.00ms",
     "_dyld_start;dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*);dyld::link(ImageLoader*, bool, bool, ImageLoader::RPathChain const&, unsigned int);ImageLoader::link(ImageLoader::LinkContext const&, bool, bool, bool, ImageLoader::RPathChain const&, char const*);ImageLoader::recursiveRebase(ImageLoader::LinkContext const&);ImageLoaderMachOCompressed::rebase(ImageLoader::LinkContext const&, unsigned long);ImageLoaderMachOCompressed::rebase(ImageLoader::LinkContext const&, unsigned long) 95.26ms",
