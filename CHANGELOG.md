@@ -1,3 +1,13 @@
+## [1.25.0] - 2025-12-03
+
+- Upgrade Jest to 30.2.0 [[#536](https://github.com/jlfwong/speedscope/pull/536)] (by @jlfwong)
+- Update TypeScript to 5.9.3 [[#535](https://github.com/jlfwong/speedscope/pull/535)] (by @jlfwong)
+- Basic Java Flight Recorder support [[#533](https://github.com/jlfwong/speedscope/pull/533)] (by @beatbrot)
+- Update ESBuild to 0.27.0 [[#534](https://github.com/jlfwong/speedscope/pull/534)] (by @beatbrot)
+- Add error message when WebGL setup fails [[#531](https://github.com/jlfwong/speedscope/pull/531)] (by @cmdcolin)
+- Compare floats with margin of error to avoid infinite recurrence [[#530](https://github.com/jlfwong/speedscope/pull/530)] (by @eszpotanski)
+- chrome: tolerate missing args data [[#527](https://github.com/jlfwong/speedscope/pull/527)] (by @jefflee-figma)
+
 ## [1.24.0] - 2025-10-20
 
 - [Improvement] Use mouse pos as origin when pressing +/- [[#525](https://github.com/jlfwong/speedscope/pull/525)] (by @alexmk92)
