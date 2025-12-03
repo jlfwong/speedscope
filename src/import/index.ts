@@ -38,7 +38,10 @@ export async function importProfileGroupFromBase64(
   b64contents: string,
 ): Promise<ProfileGroup | null> {
   return await importProfileGroup(
-    MaybeCompressedDataReader.fromArrayBuffer(fileName, decodeBase64(b64contents).buffer as ArrayBuffer),
+    MaybeCompressedDataReader.fromArrayBuffer(
+      fileName,
+      decodeBase64(b64contents).buffer as ArrayBuffer,
+    ),
   )
 }
 
