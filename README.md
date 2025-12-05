@@ -37,6 +37,7 @@ speedscope is designed to ingest profiles from a variety of different profilers 
 - Java
   - [Importing from async‐profiler (Java)
 ](https://github.com/jlfwong/speedscope/wiki/Importing-from-async%E2%80%90profiler-(Java))
+  - [Importing from Java Flight Recorder](https://github.com/jlfwong/speedscope/wiki/Importing-from-Java-Flight-Recorder)
 - Erlang/Elixir
   - [eflambe](https://github.com/Stratus3D/eflambe)
 - Native code
