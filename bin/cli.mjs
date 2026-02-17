@@ -162,7 +162,7 @@ async function mainFile(filePath) {
 }
 
 async function mainServe(filePath) {
-  const serveDir = path.resolve(__dirname, '../dist/release-http')
+  const serveDir = path.resolve(__dirname, '../dist/release')
   let profileJs = null
   let hash = ''
 
