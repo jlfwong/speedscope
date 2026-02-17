@@ -455,7 +455,8 @@ export class Application extends StatelessComponent<ApplicationProps> {
       }
 
       const script = document.createElement('script')
-      script.src = `file:///${this.props.hashParams.localProfilePath}`
+      const profilePath = this.props.hashParams.localProfilePath
+      script.src = profilePath.startsWith('/') ? profilePath : `file:///${profilePath}`
       document.head.appendChild(script)
     }
   }
@@ -568,6 +569,9 @@ export class Application extends StatelessComponent<ApplicationProps> {
     }
 
     if (!activeProfileState || !glCanvas) {
+      if (this.props.hashParams.localProfilePath || this.props.hashParams.profileURL) {
+        return this.renderLoadingBar()
+      }
       return this.renderLanding()
     }
 
