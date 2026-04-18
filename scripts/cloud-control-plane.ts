@@ -75,6 +75,7 @@ interface ControlPlaneConfig {
   apiKey: string
   artifactRoot: string
   baseBranch: string
+  comparisonReportPath: string
   benchmarkReportPath: string
   cloudEnvName?: string
   cloudEnvType: 'cloud' | 'pool' | 'machine'
@@ -139,10 +140,29 @@ interface ComparisonOutcome {
   summary: string
 }
 
+interface ComparisonReport {
+  generatedAt: string
+  fixtures: string[]
+  comparison: ComparisonOutcome[]
+}
+
+interface FixtureSkip {
+  fixture: string
+  reason: string
+}
+
+interface FixtureInventory {
+  defaultFixtures: string[]
+  localLargeFixtures: string[]
+  activeFixtures: string[]
+  skippedFixtures: FixtureSkip[]
+}
+
 const REPO_ROOT = process.cwd()
 const SCRIPT_PATH = path.resolve(REPO_ROOT, 'scripts', 'cloud-control-plane.ts')
 const CACHE_DIR = path.join(REPO_ROOT, '.cache', 'cloud-agent-control-plane')
 const DEFAULT_REGISTRY_PATH = path.join(CACHE_DIR, 'registry.json')
+const DEFAULT_COMPARISON_REPORT_PATH = path.join(CACHE_DIR, 'comparison-report.json')
 const DEFAULT_BENCHMARK_REPORT_PATH = path.join(CACHE_DIR, 'benchmark-report.json')
 const DEFAULT_GATE_REPORT_PATH = path.join(CACHE_DIR, 'gate-report.json')
 const DEFAULT_ARTIFACT_ROOT = path.join(CACHE_DIR, 'artifacts')
@@ -733,11 +753,11 @@ async function resolveRepositoryUrl(): Promise<string> {
   throw new Error('Could not resolve repository URL. Set CURSOR_REPOSITORY_URL explicitly.')
 }
 
-async function resolveConfig(options?: {requireApiKey?: boolean}): Promise<ControlPlaneConfig> {
+async function resolveConfig(options: {requireApiKey?: boolean} = {}): Promise<ControlPlaneConfig> {
   await loadLocalEnvIfNeeded()
 
-  const apiKey = process.env.CURSOR_API_KEY
-  if (options?.requireApiKey !== false && !apiKey) {
+  const apiKey = process.env.CURSOR_API_KEY || ''
+  if (options.requireApiKey !== false && !apiKey) {
     throw new Error('CURSOR_API_KEY is required for the cloud control plane.')
   }
 
@@ -746,6 +766,8 @@ async function resolveConfig(options?: {requireApiKey?: boolean}): Promise<Contr
     apiKey: apiKey || '',
     artifactRoot: process.env.CURSOR_ARTIFACT_ROOT || DEFAULT_ARTIFACT_ROOT,
     baseBranch: process.env.CURSOR_BASE_BRANCH || 'main',
+    comparisonReportPath:
+      process.env.CURSOR_COMPARISON_REPORT_PATH || DEFAULT_COMPARISON_REPORT_PATH,
     benchmarkReportPath: process.env.CURSOR_BENCHMARK_REPORT_PATH || DEFAULT_BENCHMARK_REPORT_PATH,
     cloudEnvName: process.env.CURSOR_CLOUD_ENV_NAME,
     cloudEnvType: (process.env.CURSOR_CLOUD_ENV_TYPE as ControlPlaneConfig['cloudEnvType']) || 'cloud',
@@ -1384,6 +1406,31 @@ async function runBenchmarkSuite(config: ControlPlaneConfig, fixtures: string[])
   return results
 }
 
+async function writeComparisonReport(
+  config: ControlPlaneConfig,
+  fixtures: string[],
+  comparison: ComparisonOutcome[],
+): Promise<void> {
+  const report: ComparisonReport = {
+    generatedAt: new Date().toISOString(),
+    fixtures,
+    comparison,
+  }
+  await ensureDir(path.dirname(config.comparisonReportPath))
+  await fs.writeFile(config.comparisonReportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8')
+}
+
+async function readJsonFileIfExists<T>(filePath: string): Promise<T | null> {
+  try {
+    return JSON.parse(await fs.readFile(filePath, 'utf8')) as T
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return null
+    }
+    throw error
+  }
+}
+
 async function listLargeLocalFixtures(): Promise<string[]> {
   const fixtureRoot = process.env.SPEEDSCOPE_BENCH_FIXTURE_DIR
   if (!fixtureRoot) {
@@ -1424,21 +1471,35 @@ function shouldSkipFixtureForNodeRuntime(fixture: string): string | null {
   return null
 }
 
-async function getFixtureSet(): Promise<string[]> {
+async function getFixtureInventory(): Promise<FixtureInventory> {
   const localLargeFixtures = await listLargeLocalFixtures()
   const combined = [...new Set([...DEFAULT_FIXTURES, ...localLargeFixtures])]
-  const filtered: string[] = []
+  const activeFixtures: string[] = []
+  const skippedFixtures: FixtureSkip[] = []
 
   for (const fixture of combined) {
     const skipReason = shouldSkipFixtureForNodeRuntime(fixture)
     if (skipReason) {
-      console.warn(`Skipping ${fixture}: ${skipReason}`)
+      skippedFixtures.push({fixture, reason: skipReason})
       continue
     }
-    filtered.push(fixture)
+    activeFixtures.push(fixture)
   }
 
-  return filtered
+  return {
+    defaultFixtures: [...DEFAULT_FIXTURES],
+    localLargeFixtures,
+    activeFixtures,
+    skippedFixtures,
+  }
+}
+
+async function getFixtureSet(): Promise<string[]> {
+  const inventory = await getFixtureInventory()
+  for (const {fixture, reason} of inventory.skippedFixtures) {
+    console.warn(`Skipping ${fixture}: ${reason}`)
+  }
+  return inventory.activeFixtures
 }
 
 async function runGate(config: ControlPlaneConfig): Promise<void> {
@@ -1497,6 +1558,175 @@ function formatSampleSummary(samples: BenchmarkSample[]): string {
   return `median=${median}ms min=${min}ms max=${max}ms`
 }
 
+function getMedianElapsedMs(samples: BenchmarkSample[]): number {
+  const sorted = [...samples].sort((a, b) => a.elapsedMs - b.elapsedMs)
+  return sorted[Math.floor(sorted.length / 2)]?.elapsedMs || 0
+}
+
+function summarizeFixtureList(fixtures: string[]): string {
+  if (fixtures.length === 0) {
+    return 'none'
+  }
+  if (fixtures.length <= 2) {
+    return fixtures.join(', ')
+  }
+  return `${fixtures.slice(0, 2).join(', ')}, +${fixtures.length - 2} more`
+}
+
+function getFixtureCoverage(reportFixtures: string[], activeFixtures: string[]) {
+  const reported = new Set(reportFixtures)
+  const active = new Set(activeFixtures)
+  return {
+    missing: activeFixtures.filter(fixture => !reported.has(fixture)),
+    stale: reportFixtures.filter(fixture => !active.has(fixture)),
+  }
+}
+
+function formatFixtureCoverage(reportFixtures: string[], activeFixtures: string[]): string {
+  const coverage = getFixtureCoverage(reportFixtures, activeFixtures)
+  if (coverage.missing.length === 0 && coverage.stale.length === 0) {
+    return 'coverage=complete'
+  }
+
+  const details: string[] = []
+  if (coverage.missing.length > 0) {
+    details.push(`missing=${coverage.missing.length} (${summarizeFixtureList(coverage.missing)})`)
+  }
+  if (coverage.stale.length > 0) {
+    details.push(`stale=${coverage.stale.length} (${summarizeFixtureList(coverage.stale)})`)
+  }
+  return `coverage=partial ${details.join(', ')}`
+}
+
+function formatPercentDelta(deltaPercent: number): string {
+  const rounded = Math.round(deltaPercent * 10) / 10
+  return `${rounded > 0 ? '+' : ''}${rounded}%`
+}
+
+function summarizeBenchmarkResults(results: BenchmarkResult[]) {
+  let faster = 0
+  let slower = 0
+  let tied = 0
+  let bestImprovement:
+    | {fixture: string; legacyMedianMs: number; experimentalMedianMs: number; deltaPercent: number}
+    | null = null
+  let worstRegression:
+    | {fixture: string; legacyMedianMs: number; experimentalMedianMs: number; deltaPercent: number}
+    | null = null
+
+  for (const result of results) {
+    const legacyMedianMs = getMedianElapsedMs(result.legacy)
+    const experimentalMedianMs = getMedianElapsedMs(result.experimental)
+    if (experimentalMedianMs < legacyMedianMs) {
+      faster += 1
+    } else if (experimentalMedianMs > legacyMedianMs) {
+      slower += 1
+    } else {
+      tied += 1
+    }
+
+    if (legacyMedianMs <= 0) {
+      continue
+    }
+    const deltaPercent = ((experimentalMedianMs - legacyMedianMs) / legacyMedianMs) * 100
+    const delta = {
+      fixture: result.fixture,
+      legacyMedianMs,
+      experimentalMedianMs,
+      deltaPercent,
+    }
+    if (!bestImprovement || deltaPercent < bestImprovement.deltaPercent) {
+      bestImprovement = delta
+    }
+    if (!worstRegression || deltaPercent > worstRegression.deltaPercent) {
+      worstRegression = delta
+    }
+  }
+
+  return {faster, slower, tied, bestImprovement, worstRegression}
+}
+
+async function printHarnessLaneSynthesis(
+  config: ControlPlaneConfig,
+  registry: RegistryFile,
+): Promise<void> {
+  const leadDefinition = getPackageDefinition('harness-lead')
+  const leadRecord = registry.packages[leadDefinition.id]
+  const dependencySummary = leadDefinition.dependsOn.map(depId => {
+    const depRecord = registry.packages[depId]
+    return `${depId}=${depRecord?.status || 'missing'}`
+  })
+  const [fixtureInventory, comparisonReport, benchmarkResults] = await Promise.all([
+    getFixtureInventory(),
+    readJsonFileIfExists<ComparisonReport>(config.comparisonReportPath),
+    readJsonFileIfExists<BenchmarkResult[]>(config.benchmarkReportPath),
+  ])
+
+  console.log('')
+  console.log('Harness lane synthesis')
+  console.log(
+    `  lead: ${leadDefinition.id} status=${leadRecord?.status || 'missing'} readiness=${
+      areDependenciesGreen(registry, leadDefinition.id) ? 'dependencies-green' : 'blocked'
+    }`,
+  )
+  console.log(`  workers: ${dependencySummary.join(', ')}`)
+  console.log(
+    `  fixtures: builtin=${fixtureInventory.defaultFixtures.length} local_large=${fixtureInventory.localLargeFixtures.length} active_node=${fixtureInventory.activeFixtures.length} skipped=${fixtureInventory.skippedFixtures.length}`,
+  )
+  if (fixtureInventory.skippedFixtures.length > 0) {
+    console.log(
+      `  skipped fixtures: ${summarizeFixtureList(
+        fixtureInventory.skippedFixtures.map(item => item.fixture),
+      )}`,
+    )
+  }
+
+  if (comparisonReport) {
+    const mismatches = comparisonReport.comparison.filter(result => !result.equal)
+    const matches = comparisonReport.comparison.length - mismatches.length
+    console.log(
+      `  oracle parity: ${matches}/${comparisonReport.comparison.length} matched (${formatFixtureCoverage(
+        comparisonReport.fixtures,
+        fixtureInventory.activeFixtures,
+      )})`,
+    )
+  } else {
+    console.log(
+      `  oracle parity: pending (${registry.packages['golden-oracle']?.status || 'missing'}; missing ${path.relative(
+        REPO_ROOT,
+        config.comparisonReportPath,
+      )})`,
+    )
+  }
+
+  if (benchmarkResults) {
+    const summary = summarizeBenchmarkResults(benchmarkResults)
+    console.log(
+      `  benchmark: ${benchmarkResults.length} fixtures, experimental faster=${summary.faster} slower=${summary.slower} tied=${summary.tied} (${formatFixtureCoverage(
+        benchmarkResults.map(result => result.fixture),
+        fixtureInventory.activeFixtures,
+      )})`,
+    )
+    if (summary.bestImprovement) {
+      console.log(
+        `  best improvement: ${summary.bestImprovement.fixture} ${formatPercentDelta(summary.bestImprovement.deltaPercent)} (${summary.bestImprovement.legacyMedianMs}ms -> ${summary.bestImprovement.experimentalMedianMs}ms median)`,
+      )
+    }
+    if (summary.worstRegression) {
+      console.log(
+        `  worst regression: ${summary.worstRegression.fixture} ${formatPercentDelta(summary.worstRegression.deltaPercent)} (${summary.worstRegression.legacyMedianMs}ms -> ${summary.worstRegression.experimentalMedianMs}ms median)`,
+      )
+    }
+  } else {
+    console.log(
+      `  benchmark: pending (${registry.packages['bench-runner']?.status || 'missing'}; missing ${path.relative(
+        REPO_ROOT,
+        config.benchmarkReportPath,
+      )})`,
+    )
+  }
+}
+
 async function printReport(config: ControlPlaneConfig): Promise<void> {
   const registry = await ensureRegistrySeeded(config)
   for (const definition of PACKAGE_DEFINITIONS) {
@@ -1505,6 +1735,7 @@ async function printReport(config: ControlPlaneConfig): Promise<void> {
       `${definition.id.padEnd(24)} ${String(record?.status || 'missing').padEnd(18)} ${record?.selectedModelId || '-'}`,
     )
   }
+  await printHarnessLaneSynthesis(config, registry)
 }
 
 async function printGraph(): Promise<void> {
@@ -1554,6 +1785,7 @@ async function runDoctor(config: ControlPlaneConfig): Promise<void> {
 async function runCompareCommand(config: ControlPlaneConfig): Promise<void> {
   const fixtures = await getFixtureSet()
   const comparison = await compareFixtures(fixtures)
+  await writeComparisonReport(config, fixtures, comparison)
   for (const result of comparison) {
     console.log(result.equal ? `PASS ${result.fixture}` : `FAIL ${result.fixture}`)
   }
@@ -1577,23 +1809,23 @@ async function runBenchmarkCommand(config: ControlPlaneConfig): Promise<void> {
 
 async function main(): Promise<void> {
   const [command, ...args] = process.argv.slice(2)
+  if (command === 'graph') {
+    await printGraph()
+    return
+  }
+
   const config = await resolveConfig({
-    requireApiKey:
-      command !== 'graph' &&
-      command !== 'report' &&
-      command !== 'compare' &&
-      command !== 'benchmark' &&
-      command !== 'gate',
+    requireApiKey: !['report', 'compare', 'benchmark', 'gate'].includes(command || ''),
   })
-  await ensureRegistrySeeded(config)
+  if (command !== 'compare' && command !== 'benchmark') {
+    await ensureRegistrySeeded(config)
+  }
 
   switch (command) {
     case 'doctor':
       await runDoctor(config)
       return
     case 'graph':
-      await printGraph()
-      return
     case 'report':
       await printReport(config)
       return
