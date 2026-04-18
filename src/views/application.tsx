@@ -21,6 +21,7 @@ import {HashParams} from '../lib/hash-params'
 import {StatelessComponent} from '../lib/preact-helpers'
 import {SandwichViewContainer} from './sandwich-view'
 import {getComparisonTarget, ImportProfileOptions} from '../experimental/contracts'
+import {DetailedImportComparisonResult} from '../experimental/engine'
 
 const importModule = import('../import')
 
@@ -177,12 +178,49 @@ export type ApplicationProps = {
 }
 
 export class Application extends StatelessComponent<ApplicationProps> {
+  private logImportComparisonDetails(result: DetailedImportComparisonResult) {
+    if (result.primarySummary != null || result.secondarySummary != null) {
+      console.warn(`${result.primaryEngine}: ${result.primarySummary || 'null'}`)
+      console.warn(`${result.secondaryEngine}: ${result.secondarySummary || 'null'}`)
+    }
+
+    if (result.canonicalDiff) {
+      for (const entry of result.canonicalDiff) {
+        console.warn(`diff ${entry.path}: ${entry.primary} !== ${entry.secondary}`)
+      }
+    }
+
+    if (result.canonicalDiffTruncated) {
+      console.warn('diff output truncated after the first few canonical mismatches')
+    }
+  }
+
+  private onImportComparison = (result: DetailedImportComparisonResult) => {
+    if (result.equal) {
+      return
+    }
+
+    const label = `[import-compare] ${result.fileName}: ${result.primaryEngine} vs ${result.secondaryEngine}`
+    if (typeof console.groupCollapsed === 'function') {
+      console.groupCollapsed(label)
+      console.warn(result.summary)
+      this.logImportComparisonDetails(result)
+      console.groupEnd()
+      return
+    }
+
+    console.warn(label)
+    console.warn(result.summary)
+    this.logImportComparisonDetails(result)
+  }
+
   private getImportOptions(): ImportProfileOptions {
     const engine = this.props.hashParams.importEngine
     return {
       engine,
       compareAgainst: getComparisonTarget(engine || 'legacy', !!this.props.hashParams.compareImport),
       comparisonMode: this.props.hashParams.compareImport ? 'warn' : 'off',
+      onComparison: this.props.hashParams.compareImport ? this.onImportComparison : undefined,
     }
   }
 

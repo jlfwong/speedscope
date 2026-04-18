@@ -46,6 +46,22 @@ interface ResolvedImportOptions {
   onComparison?: (result: ImportComparisonResult) => void
 }
 
+type CanonicalScalar = boolean | number | string | null
+type CanonicalValue = CanonicalScalar | CanonicalValue[] | {[key: string]: CanonicalValue}
+
+export interface CanonicalDiffEntry {
+  path: string
+  primary: string
+  secondary: string
+}
+
+export interface DetailedImportComparisonResult extends ImportComparisonResult {
+  primarySummary?: string
+  secondarySummary?: string
+  canonicalDiff?: CanonicalDiffEntry[]
+  canonicalDiffTruncated?: boolean
+}
+
 function toGroup(profile: Profile | null): ProfileGroup | null {
   if (!profile) return null
   return {name: profile.getName(), indexToView: 0, profiles: [profile]}
@@ -309,7 +325,9 @@ function importLegacyComplexFamilyByStructure({
 }
 
 export function canonicalizeProfileGroup(profileGroup: ProfileGroup): FileFormat.File {
-  return exportProfileGroup(profileGroup)
+  // Sort object keys recursively so legacy and future experimental exporters
+  // compare by structure rather than construction order.
+  return normalizeCanonicalValue(exportProfileGroup(profileGroup)) as unknown as FileFormat.File
 }
 
 function summarizeCanonicalFile(file: FileFormat.File): string {
@@ -321,13 +339,191 @@ function summarizeCanonicalFile(file: FileFormat.File): string {
   ].join(', ')
 }
 
+function normalizeCanonicalValue(value: unknown): CanonicalValue {
+  if (value == null) {
+    return null
+  }
+
+  if (typeof value === 'boolean' || typeof value === 'number' || typeof value === 'string') {
+    return value
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(item => normalizeCanonicalValue(item))
+  }
+
+  if (typeof value === 'object') {
+    const normalized: {[key: string]: CanonicalValue} = {}
+    for (const key of Object.keys(value as Record<string, unknown>).sort()) {
+      const nestedValue = (value as Record<string, unknown>)[key]
+      if (nestedValue === undefined) {
+        continue
+      }
+      normalized[key] = normalizeCanonicalValue(nestedValue)
+    }
+    return normalized
+  }
+
+  return String(value)
+}
+
+function formatCanonicalPreview(value: unknown): string {
+  const json = JSON.stringify(value)
+  if (json != null && json.length <= 120) {
+    return json
+  }
+
+  if (Array.isArray(value)) {
+    return `Array(len=${value.length})`
+  }
+
+  if (value != null && typeof value === 'object') {
+    const keys = Object.keys(value as Record<string, unknown>)
+    const preview = keys.slice(0, 4).join(', ')
+    return `Object(keys=${preview}${keys.length > 4 ? ', ...' : ''})`
+  }
+
+  return String(value)
+}
+
+function appendObjectPath(path: string, key: string): string {
+  return `${path}.${key}`
+}
+
+function appendArrayPath(path: string, index: number): string {
+  return `${path}[${index}]`
+}
+
+function collectCanonicalDiff(
+  primary: unknown,
+  secondary: unknown,
+  limit = 4,
+): {entries: CanonicalDiffEntry[]; truncated: boolean} {
+  const entries: CanonicalDiffEntry[] = []
+  let truncated = false
+
+  const pushPreview = (path: string, primaryValue: unknown, secondaryValue: unknown) => {
+    if (entries.length >= limit) {
+      truncated = true
+      return
+    }
+
+    entries.push({
+      path,
+      primary: formatCanonicalPreview(primaryValue),
+      secondary: formatCanonicalPreview(secondaryValue),
+    })
+  }
+
+  const pushLabel = (path: string, primaryValue: string, secondaryValue: string) => {
+    if (entries.length >= limit) {
+      truncated = true
+      return
+    }
+
+    entries.push({
+      path,
+      primary: primaryValue,
+      secondary: secondaryValue,
+    })
+  }
+
+  const walk = (primaryValue: unknown, secondaryValue: unknown, path: string) => {
+    if (entries.length >= limit) {
+      truncated = true
+      return
+    }
+
+    if (primaryValue === secondaryValue) {
+      return
+    }
+
+    const primaryIsArray = Array.isArray(primaryValue)
+    const secondaryIsArray = Array.isArray(secondaryValue)
+    if (primaryIsArray || secondaryIsArray) {
+      if (!primaryIsArray || !secondaryIsArray) {
+        pushPreview(path, primaryValue, secondaryValue)
+        return
+      }
+
+      if (primaryValue.length !== secondaryValue.length) {
+        pushPreview(`${path}.length`, primaryValue.length, secondaryValue.length)
+      }
+
+      const maxLength = Math.max(primaryValue.length, secondaryValue.length)
+      for (let index = 0; index < maxLength; index++) {
+        const hasPrimary = index < primaryValue.length
+        const hasSecondary = index < secondaryValue.length
+        const nextPath = appendArrayPath(path, index)
+
+        if (!hasPrimary || !hasSecondary) {
+          pushLabel(
+            nextPath,
+            hasPrimary ? formatCanonicalPreview(primaryValue[index]) : '(missing)',
+            hasSecondary ? formatCanonicalPreview(secondaryValue[index]) : '(missing)',
+          )
+          continue
+        }
+
+        walk(primaryValue[index], secondaryValue[index], nextPath)
+      }
+      return
+    }
+
+    const primaryIsObject = primaryValue != null && typeof primaryValue === 'object'
+    const secondaryIsObject = secondaryValue != null && typeof secondaryValue === 'object'
+    if (primaryIsObject || secondaryIsObject) {
+      if (!primaryIsObject || !secondaryIsObject) {
+        pushPreview(path, primaryValue, secondaryValue)
+        return
+      }
+
+      const primaryObject = primaryValue as {[key: string]: CanonicalValue}
+      const secondaryObject = secondaryValue as {[key: string]: CanonicalValue}
+      const keys = [...new Set([...Object.keys(primaryObject), ...Object.keys(secondaryObject)])].sort()
+
+      for (const key of keys) {
+        const hasPrimary = Object.prototype.hasOwnProperty.call(primaryObject, key)
+        const hasSecondary = Object.prototype.hasOwnProperty.call(secondaryObject, key)
+        const nextPath = appendObjectPath(path, key)
+
+        if (!hasPrimary || !hasSecondary) {
+          pushLabel(
+            nextPath,
+            hasPrimary ? formatCanonicalPreview(primaryObject[key]) : '(missing)',
+            hasSecondary ? formatCanonicalPreview(secondaryObject[key]) : '(missing)',
+          )
+          continue
+        }
+
+        walk(primaryObject[key], secondaryObject[key], nextPath)
+      }
+      return
+    }
+
+    pushPreview(path, primaryValue, secondaryValue)
+  }
+
+  walk(primary, secondary, '$')
+  return {entries, truncated}
+}
+
+function summarizeCanonicalDiff(result: {entries: CanonicalDiffEntry[]; truncated: boolean}): string {
+  if (result.entries.length === 0) {
+    return ''
+  }
+
+  const entries = result.entries.map(entry => `${entry.path}: ${entry.primary} !== ${entry.secondary}`)
+  return ` First differences: ${entries.join('; ')}${result.truncated ? '; ...' : ''}.`
+}
+
 function createComparisonResult(
   fileName: string,
   primaryEngine: ImportEngine,
   secondaryEngine: ImportEngine,
   primaryResult: ProfileGroup | null,
   secondaryResult: ProfileGroup | null,
-): ImportComparisonResult {
+): DetailedImportComparisonResult {
   if (primaryResult == null && secondaryResult == null) {
     return {
       fileName,
@@ -352,6 +548,8 @@ function createComparisonResult(
 
   const primaryCanonical = canonicalizeProfileGroup(primaryResult)
   const secondaryCanonical = canonicalizeProfileGroup(secondaryResult)
+  const primarySummary = summarizeCanonicalFile(primaryCanonical)
+  const secondarySummary = summarizeCanonicalFile(secondaryCanonical)
   const primaryJSON = JSON.stringify(primaryCanonical)
   const secondaryJSON = JSON.stringify(secondaryCanonical)
 
@@ -361,20 +559,25 @@ function createComparisonResult(
       primaryEngine,
       secondaryEngine,
       equal: true,
-      summary: `${primaryEngine} matched ${secondaryEngine} for ${fileName} (${summarizeCanonicalFile(
-        primaryCanonical,
-      )}).`,
+      primarySummary,
+      secondarySummary,
+      summary: `${primaryEngine} matched ${secondaryEngine} for ${fileName} (${primarySummary}).`,
     }
   }
 
+  const canonicalDiff = collectCanonicalDiff(primaryCanonical, secondaryCanonical)
   return {
     fileName,
     primaryEngine,
     secondaryEngine,
     equal: false,
-    summary: `${primaryEngine} diverged from ${secondaryEngine} for ${fileName}. ${primaryEngine}: ${summarizeCanonicalFile(
-      primaryCanonical,
-    )}. ${secondaryEngine}: ${summarizeCanonicalFile(secondaryCanonical)}.`,
+    primarySummary,
+    secondarySummary,
+    canonicalDiff: canonicalDiff.entries,
+    canonicalDiffTruncated: canonicalDiff.truncated,
+    summary: `${primaryEngine} diverged from ${secondaryEngine} for ${fileName}. ${primaryEngine}: ${primarySummary}. ${secondaryEngine}: ${secondarySummary}.${summarizeCanonicalDiff(
+      canonicalDiff,
+    )}`,
   }
 }
 
@@ -388,7 +591,7 @@ function resolveImportOptions(options?: ImportProfileOptions): ResolvedImportOpt
 }
 
 function handleComparisonResult(
-  result: ImportComparisonResult,
+  result: DetailedImportComparisonResult,
   options: ResolvedImportOptions,
 ): void {
   if (options.compareAgainst == null) {
@@ -399,7 +602,9 @@ function handleComparisonResult(
     return
   }
   if (options.comparisonMode === 'warn') {
-    console.warn(result.summary)
+    if (options.onComparison == null) {
+      console.warn(result.summary)
+    }
     return
   }
   throw new Error(result.summary)
