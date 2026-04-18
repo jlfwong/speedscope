@@ -67,6 +67,7 @@ export async function importProfilesFromArrayBuffer(
   return importProfileGroup(MaybeCompressedDataReader.fromArrayBuffer(fileName, buffer), options)
 }
 
+/** Public import entry: delegates to `runImportEngine` with legacy as the oracle importer. */
 async function importProfileGroup(
   dataSource: ProfileDataSource,
   options?: ImportProfileOptions,
