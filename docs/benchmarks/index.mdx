@@ -1,6 +1,6 @@
 # Benchmarks
 
-The benchmark story in this repo is intentionally conservative. The evidence is strongest on the sampled Speedscope JSON path, because that is the path that has actually been ported into Rust/WASM so far.
+The benchmark story in this repo is strongest on the sampled Speedscope JSON path, because that is the path that has actually been ported into Rust/WASM so far. After changing the JS/WASM boundary to use typed-array tables instead of millions of JS node objects, the large synthetic sampled cases now show the Rust path winning on both wall-clock time and memory.
 
 ## Benchmark dashboard
 
@@ -18,10 +18,20 @@ The benchmark story in this repo is intentionally conservative. The evidence is 
   command="npm run experiment:benchmark-rust-sampled -- --samples=500000 --runs=3 --skip-parity=1"
 />
 
+<CommandBlock
+  title="112 MB head-to-head sampled run"
+  command="npm run experiment:benchmark-rust-sampled -- --samples=1000000 --runs=1 --skip-parity=1"
+/>
+
+<CommandBlock
+  title="Generate the 112 MB uploadable demo file"
+  command="npm run experiment:benchmark-rust-sampled -- --samples=1000000 --runs=1 --skip-parity=1 --write-file=demo/fixtures/generated/synthetic-sampled-1m.speedscope.json"
+/>
+
 ## Current limits
 
 <ExperimentalLimits />
 
 <Callout title="How to read the numbers" tone="warning">
-Use the synthetic sampled benchmarks to evaluate the Rust seam itself. Use the full fixture corpus to confirm that the repo still behaves like Speedscope across many formats. Do not over-generalize the Rust numbers to formats that still run through the legacy importer path.
+Use the synthetic sampled benchmarks to evaluate the Rust seam itself. Use the full fixture corpus to confirm that the repo still behaves like Speedscope across many formats. Do not over-generalize the Rust numbers to formats that still run through the legacy importer path, and do not use the tiny built-in sampled fixture as the headline benchmark story.
 </Callout>

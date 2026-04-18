@@ -9,6 +9,16 @@ Use the curated files below from `sample/profiles/` when you want to validate th
 - `sample/profiles/stackcollapse/simple.txt`
 - `sample/profiles/callgrind/callgrind.example.log`
 
+For a large-file sampled demo, generate a synthetic profile locally:
+
+```bash
+npm run experiment:benchmark-rust-sampled -- --samples=1000000 --runs=1 --skip-parity=1 --write-file=demo/fixtures/generated/synthetic-sampled-1m.speedscope.json
+```
+
+Then load:
+
+- `demo/fixtures/generated/synthetic-sampled-1m.speedscope.json`
+
 ## Recommended workflow
 
 ```bash

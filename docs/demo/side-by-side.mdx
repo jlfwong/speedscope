@@ -23,12 +23,23 @@ The default ports are:
 3. Use a sampled Speedscope file first, because that is the current Rust/WASM fast path.
 4. Use at least one non-sampled file as a control to verify that the broader import surface is still preserved.
 
+## Large-file demo
+
+Generate the 112 MB sampled demo file locally:
+
+<CommandBlock
+  title="Generate the large sampled demo file"
+  command="npm run experiment:benchmark-rust-sampled -- --samples=1000000 --runs=1 --skip-parity=1 --write-file=demo/fixtures/generated/synthetic-sampled-1m.speedscope.json"
+/>
+
+Then load `demo/fixtures/generated/synthetic-sampled-1m.speedscope.json` into both tabs. This is the easiest way to see the current large-file Rust/WASM advantage with the unchanged UI.
+
 ## Curated demo fixtures
 
 <FixtureGallery />
 
 <Callout title="Best show-and-tell sequence" tone="info">
-Start with the sampled Speedscope JSON fixture to prove that the UI is unchanged while the importer underneath changes. Then load the Chrome trace fixture to show that the repo still preserves the original Speedscope breadth.
+Start with the small sampled Speedscope JSON fixture to prove that the UI is unchanged while the importer underneath changes. Then generate and load the 112 MB sampled demo file to show the large-file win. Finish with the Chrome trace fixture to show that the repo still preserves the original Speedscope breadth.
 </Callout>
 
 ## Rebuild and benchmark commands

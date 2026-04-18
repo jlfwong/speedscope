@@ -7,6 +7,13 @@
       "why": "This is the clearest same-file validation path for the new Rust/WASM sampled importer while keeping the UI comparison dead simple."
     },
     {
+      "label": "Generated 112 MB sampled profile",
+      "kind": "Large-file Rust demo",
+      "path": "demo/fixtures/generated/synthetic-sampled-1m.speedscope.json",
+      "why": "Generate this locally to show the large-file Rust/WASM win on the current sampled fast path without changing the UI."
+    },
+    
+    {
       "label": "Chrome trace",
       "kind": "Original coverage proof",
       "path": "sample/profiles/Chrome/116/Trace-20230603T221323.json",
@@ -41,6 +48,10 @@
     {
       "label": "Run the sampled benchmark harness",
       "command": "npm run experiment:benchmark-rust-sampled -- --samples=250000 --runs=5"
+    },
+    {
+      "label": "Generate the 112 MB sampled demo file",
+      "command": "npm run experiment:benchmark-rust-sampled -- --samples=1000000 --runs=1 --skip-parity=1 --write-file=demo/fixtures/generated/synthetic-sampled-1m.speedscope.json"
     }
   ]
 }

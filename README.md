@@ -143,10 +143,10 @@ The UI remains the same. The targeted change is that sampled Speedscope JSON can
 
 ## Benchmark highlights
 
-- `11.3 MB` sampled synthetic input: experimental `-3.2%` faster, with lower heap usage
-- `28.1 MB` sampled synthetic input: experimental `-27.4%` faster
-- `56.1 MB` sampled synthetic input: experimental `-29.6%` faster, with much lower heap usage
-- `112.1 MB` sampled synthetic input: completed experimental-only run in `9828.11 ms` using about `2.51 GB` heap
+- `11.3 MB` sampled synthetic input: experimental `-84.2%` faster (`161.84 ms` vs `1023.31 ms`)
+- `28.1 MB` sampled synthetic input: experimental `-85.5%` faster (`392.48 ms` vs `2699.83 ms`)
+- `56.1 MB` sampled synthetic input: experimental `-85.2%` faster (`796.81 ms` vs `5396.14 ms`) while using about `0.06 GB` vs `5.82 GB`
+- `112.1 MB` sampled synthetic input: experimental `-7.9%` faster head to head (`8784.47 ms` vs `9539.29 ms`) while using about `0.12 GB` vs `5.98 GB`
 
 The strongest proof in this repo is the sampled-import path. Other formats still rely on the legacy importer surface and are preserved as part of the original Speedscope breadth.
 
@@ -155,17 +155,25 @@ The strongest proof in this repo is the sampled-import path. Other formats still
 ### Recommended validation files
 
 - **Use this first to exercise the new Rust path directly:** [`sample/profiles/speedscope/0.6.0/two-sampled.speedscope.json`](./sample/profiles/speedscope/0.6.0/two-sampled.speedscope.json)
+- **Generate this locally for the heavy-load Rust demo:** `demo/fixtures/generated/synthetic-sampled-1m.speedscope.json`
 - **Use this next to show the repo still preserves original Speedscope breadth:** [`sample/profiles/Chrome/116/Trace-20230603T221323.json`](./sample/profiles/Chrome/116/Trace-20230603T221323.json)
 - **Use this for a fast smoke test:** [`sample/profiles/stackcollapse/simple.txt`](./sample/profiles/stackcollapse/simple.txt)
 - **Use this to show another preserved legacy format:** [`sample/profiles/callgrind/callgrind.example.log`](./sample/profiles/callgrind/callgrind.example.log)
+
+### Generate the 112 MB sampled demo file
+
+```bash
+npm run experiment:benchmark-rust-sampled -- --samples=1000000 --runs=1 --skip-parity=1 --write-file=demo/fixtures/generated/synthetic-sampled-1m.speedscope.json
+```
 
 ### Best test sequence
 
 1. Start with `npm run serve:side-by-side`.
 2. Load `two-sampled.speedscope.json` in both ports.
 3. Confirm the UI looks the same in both tabs.
-4. Load the Chrome trace fixture to show that the broader format surface still works.
-5. If you want a very quick sanity check, use the stackcollapse fixture.
+4. Generate and load `demo/fixtures/generated/synthetic-sampled-1m.speedscope.json` in both ports for the large-file benchmark demo.
+5. Load the Chrome trace fixture to show that the broader format surface still works.
+6. If you want a very quick sanity check, use the stackcollapse fixture.
 
 ### What each run mode is good for
 

@@ -12,10 +12,10 @@ interface WasmImportedFrame {
 }
 
 interface WasmImportedNode {
-  frameIndex: number
-  parentIndex: number
-  selfWeight: number
-  totalWeight: number
+  frameIndices: ArrayLike<number>
+  parentIndices: ArrayLike<number>
+  selfWeights: ArrayLike<number>
+  totalWeights: ArrayLike<number>
 }
 
 interface WasmImportedProfile {
@@ -23,10 +23,10 @@ interface WasmImportedProfile {
   unit: FileFormat.ValueUnit
   totalWeight: number
   frames: WasmImportedFrame[]
-  appendNodes: WasmImportedNode[]
-  groupedNodes: WasmImportedNode[]
-  samples: number[]
-  weights: number[]
+  appendNodes: WasmImportedNode
+  groupedNodes: WasmImportedNode
+  samples: ArrayLike<number>
+  weights: ArrayLike<number>
 }
 
 interface WasmImportedProfileGroup {
@@ -104,10 +104,10 @@ function createValueFormatter(unit: FileFormat.ValueUnit): ValueFormatter {
 
 class RustImportedProfileAdapter extends Profile {
   private readonly frameData: WasmImportedFrame[]
-  private readonly appendNodeData: WasmImportedNode[]
-  private readonly groupedNodeData: WasmImportedNode[]
-  private readonly rawSamples: number[]
-  private readonly rawWeights: number[]
+  private readonly appendNodeData: WasmImportedNode
+  private readonly groupedNodeData: WasmImportedNode
+  private readonly rawSamples: ArrayLike<number>
+  private readonly rawWeights: ArrayLike<number>
   private materializedFrames: Frame[] | null = null
   private appendMaterialized = false
   private groupedMaterialized = false
@@ -125,27 +125,32 @@ class RustImportedProfileAdapter extends Profile {
 
   private materializeTree(
     root: CallTreeNode,
-    nodes: WasmImportedNode[],
+    nodes: WasmImportedNode,
     frames: Frame[],
   ): CallTreeNode[] {
-    const materialized: CallTreeNode[] = []
-    for (const nodeData of nodes) {
-      const frame = frames[nodeData.frameIndex]
+    const frameIndices = nodes.frameIndices
+    const parentIndices = nodes.parentIndices
+    const selfWeights = nodes.selfWeights
+    const totalWeights = nodes.totalWeights
+    const materialized = new Array<CallTreeNode>(frameIndices.length)
+
+    for (let nodeIndex = 0; nodeIndex < frameIndices.length; nodeIndex++) {
+      const frame = frames[frameIndices[nodeIndex]]
       if (frame == null) {
-        throw new Error(`Rust importer referenced missing frame ${nodeData.frameIndex}`)
+        throw new Error(`Rust importer referenced missing frame ${frameIndices[nodeIndex]}`)
       }
 
       const parent =
-        nodeData.parentIndex < 0 ? root : materialized[nodeData.parentIndex] || null
+        parentIndices[nodeIndex] < 0 ? root : materialized[parentIndices[nodeIndex]] || null
       if (parent == null) {
-        throw new Error(`Rust importer referenced missing parent node ${nodeData.parentIndex}`)
+        throw new Error(`Rust importer referenced missing parent node ${parentIndices[nodeIndex]}`)
       }
 
       const node = new CallTreeNode(frame, parent)
-      node.addToSelfWeight(nodeData.selfWeight)
-      node.addToTotalWeight(nodeData.totalWeight)
+      node.addToSelfWeight(selfWeights[nodeIndex])
+      node.addToTotalWeight(totalWeights[nodeIndex])
       parent.children.push(node)
-      materialized.push(node)
+      materialized[nodeIndex] = node
     }
     return materialized
   }
@@ -181,18 +186,22 @@ class RustImportedProfileAdapter extends Profile {
       this.appendNodeData,
       this.ensureFramesMaterialized(),
     )
-    this.samples = this.rawSamples.map(sampleIndex => {
+    const materializedSamples = new Array<CallTreeNode>(this.rawSamples.length)
+    for (let sampleOffset = 0; sampleOffset < this.rawSamples.length; sampleOffset++) {
+      const sampleIndex = this.rawSamples[sampleOffset]
       if (sampleIndex < 0) {
-        return this.appendOrderCalltreeRoot
+        materializedSamples[sampleOffset] = this.appendOrderCalltreeRoot
+        continue
       }
 
       const node = appendNodes[sampleIndex]
       if (node == null) {
         throw new Error(`Rust importer referenced missing append node ${sampleIndex}`)
       }
-      return node
-    })
-    this.weights = this.rawWeights
+      materializedSamples[sampleOffset] = node
+    }
+    this.samples = materializedSamples
+    this.weights = this.rawWeights as unknown as number[]
     this.appendMaterialized = true
   }
 

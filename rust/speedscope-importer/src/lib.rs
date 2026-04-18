@@ -1,4 +1,5 @@
-use serde::{Deserialize, Serialize};
+use js_sys::{Array, Float64Array, Int32Array, Object, Reflect, Uint32Array};
+use serde::Deserialize;
 use wasm_bindgen::prelude::*;
 
 const SPEEDSCOPE_SCHEMA: &str = "https://www.speedscope.app/file-format-schema.json";
@@ -52,44 +53,37 @@ struct InputFile {
     active_profile_index: Option<usize>,
 }
 
-#[derive(Clone, Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Debug)]
 struct OutputFrame {
     name: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
     file: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     line: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     col: Option<u32>,
     self_weight: f64,
     total_weight: f64,
 }
 
-#[derive(Clone, Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct OutputNode {
-    frame_index: usize,
-    parent_index: i32,
-    self_weight: f64,
-    total_weight: f64,
+#[derive(Clone, Debug)]
+struct OutputNodeTable {
+    frame_indices: Vec<u32>,
+    parent_indices: Vec<i32>,
+    self_weights: Vec<f64>,
+    total_weights: Vec<f64>,
 }
 
-#[derive(Clone, Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Debug)]
 struct OutputProfile {
     name: String,
     unit: String,
     total_weight: f64,
     frames: Vec<OutputFrame>,
-    append_nodes: Vec<OutputNode>,
-    grouped_nodes: Vec<OutputNode>,
+    append_nodes: OutputNodeTable,
+    grouped_nodes: OutputNodeTable,
     samples: Vec<i32>,
     weights: Vec<f64>,
 }
 
-#[derive(Clone, Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Debug)]
 struct OutputProfileGroup {
     name: String,
     index_to_view: usize,
@@ -218,26 +212,8 @@ impl SampledProfileBuilder {
                     total_weight: frame.total_weight,
                 })
                 .collect(),
-            append_nodes: self
-                .append_nodes
-                .into_iter()
-                .map(|node| OutputNode {
-                    frame_index: node.frame_index,
-                    parent_index: node.parent_index,
-                    self_weight: node.self_weight,
-                    total_weight: node.total_weight,
-                })
-                .collect(),
-            grouped_nodes: self
-                .grouped_nodes
-                .into_iter()
-                .map(|node| OutputNode {
-                    frame_index: node.frame_index,
-                    parent_index: node.parent_index,
-                    self_weight: node.self_weight,
-                    total_weight: node.total_weight,
-                })
-                .collect(),
+            append_nodes: flatten_nodes(self.append_nodes),
+            grouped_nodes: flatten_nodes(self.grouped_nodes),
             samples: self.samples,
             weights: self.weights,
         }
@@ -363,6 +339,104 @@ impl SampledProfileBuilder {
     }
 }
 
+fn flatten_nodes(nodes: Vec<TreeNodeState>) -> OutputNodeTable {
+    let mut frame_indices = Vec::with_capacity(nodes.len());
+    let mut parent_indices = Vec::with_capacity(nodes.len());
+    let mut self_weights = Vec::with_capacity(nodes.len());
+    let mut total_weights = Vec::with_capacity(nodes.len());
+
+    for node in nodes {
+        frame_indices.push(node.frame_index as u32);
+        parent_indices.push(node.parent_index);
+        self_weights.push(node.self_weight);
+        total_weights.push(node.total_weight);
+    }
+
+    OutputNodeTable {
+        frame_indices,
+        parent_indices,
+        self_weights,
+        total_weights,
+    }
+}
+
+fn set_property(target: &Object, key: &str, value: &JsValue) -> Result<(), JsValue> {
+    Reflect::set(target, &JsValue::from_str(key), value)?;
+    Ok(())
+}
+
+fn frame_to_js(frame: OutputFrame) -> Result<JsValue, JsValue> {
+    let object = Object::new();
+    set_property(&object, "name", &JsValue::from_str(&frame.name))?;
+    if let Some(file) = frame.file {
+        set_property(&object, "file", &JsValue::from_str(&file))?;
+    }
+    if let Some(line) = frame.line {
+        set_property(&object, "line", &JsValue::from_f64(line as f64))?;
+    }
+    if let Some(col) = frame.col {
+        set_property(&object, "col", &JsValue::from_f64(col as f64))?;
+    }
+    set_property(&object, "selfWeight", &JsValue::from_f64(frame.self_weight))?;
+    set_property(&object, "totalWeight", &JsValue::from_f64(frame.total_weight))?;
+    Ok(object.into())
+}
+
+fn node_table_to_js(nodes: OutputNodeTable) -> Result<JsValue, JsValue> {
+    let object = Object::new();
+    let frame_indices: JsValue = Uint32Array::from(nodes.frame_indices.as_slice()).into();
+    let parent_indices: JsValue = Int32Array::from(nodes.parent_indices.as_slice()).into();
+    let self_weights: JsValue = Float64Array::from(nodes.self_weights.as_slice()).into();
+    let total_weights: JsValue = Float64Array::from(nodes.total_weights.as_slice()).into();
+    set_property(&object, "frameIndices", &frame_indices)?;
+    set_property(&object, "parentIndices", &parent_indices)?;
+    set_property(&object, "selfWeights", &self_weights)?;
+    set_property(&object, "totalWeights", &total_weights)?;
+    Ok(object.into())
+}
+
+fn profile_to_js(profile: OutputProfile) -> Result<JsValue, JsValue> {
+    let object = Object::new();
+    set_property(&object, "name", &JsValue::from_str(&profile.name))?;
+    set_property(&object, "unit", &JsValue::from_str(&profile.unit))?;
+    set_property(&object, "totalWeight", &JsValue::from_f64(profile.total_weight))?;
+
+    let frames = Array::new_with_length(profile.frames.len() as u32);
+    for (index, frame) in profile.frames.into_iter().enumerate() {
+        frames.set(index as u32, frame_to_js(frame)?);
+    }
+    set_property(&object, "frames", &frames.into())?;
+
+    let append_nodes = node_table_to_js(profile.append_nodes)?;
+    let grouped_nodes = node_table_to_js(profile.grouped_nodes)?;
+    let samples: JsValue = Int32Array::from(profile.samples.as_slice()).into();
+    let weights: JsValue = Float64Array::from(profile.weights.as_slice()).into();
+    set_property(&object, "appendNodes", &append_nodes)?;
+    set_property(&object, "groupedNodes", &grouped_nodes)?;
+    set_property(&object, "samples", &samples)?;
+    set_property(&object, "weights", &weights)?;
+
+    Ok(object.into())
+}
+
+fn profile_group_to_js(profile_group: OutputProfileGroup) -> Result<JsValue, JsValue> {
+    let object = Object::new();
+    set_property(&object, "name", &JsValue::from_str(&profile_group.name))?;
+    set_property(
+        &object,
+        "indexToView",
+        &JsValue::from_f64(profile_group.index_to_view as f64),
+    )?;
+
+    let profiles = Array::new_with_length(profile_group.profiles.len() as u32);
+    for (index, profile) in profile_group.profiles.into_iter().enumerate() {
+        profiles.set(index as u32, profile_to_js(profile)?);
+    }
+    set_property(&object, "profiles", &profiles.into())?;
+
+    Ok(object.into())
+}
+
 fn is_supported_schema(schema: Option<&str>) -> bool {
     match schema {
         Some(value) => value == SPEEDSCOPE_SCHEMA,
@@ -415,8 +489,7 @@ pub fn import_speedscope_sampled_profile_group(buffer: &[u8]) -> Result<JsValue,
         .map_err(|error| JsValue::from_str(&format!("Failed to parse sampled speedscope JSON: {error}")))?;
 
     match build_profile_group(parsed).map_err(|error| JsValue::from_str(&error))? {
-        Some(profile_group) => serde_wasm_bindgen::to_value(&profile_group)
-            .map_err(|error| JsValue::from_str(&format!("Failed to serialize wasm import result: {error}"))),
+        Some(profile_group) => profile_group_to_js(profile_group),
         None => Ok(JsValue::NULL),
     }
 }
@@ -452,8 +525,8 @@ mod tests {
         let profile = result.profiles.first().expect("expected one profile");
         assert_eq!(result.name, "sample");
         assert_eq!(profile.frames.len(), 5);
-        assert_eq!(profile.append_nodes.len(), 8);
-        assert_eq!(profile.grouped_nodes.len(), 6);
+        assert_eq!(profile.append_nodes.frame_indices.len(), 8);
+        assert_eq!(profile.grouped_nodes.frame_indices.len(), 6);
         assert_eq!(profile.samples.len(), profile.weights.len());
         assert!(profile.samples.contains(&ROOT_NODE_INDEX));
         assert_eq!(profile.weights.iter().sum::<f64>(), 11.0);

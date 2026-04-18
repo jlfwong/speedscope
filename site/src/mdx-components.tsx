@@ -269,7 +269,12 @@ function BenchmarkDashboard() {
     item => item.experimentalMedianMs < item.legacyMedianMs,
   ).length
   const corpusSlower = benchmarkData.fixtureCorpus.length - corpusFaster
-  const headline = benchmarkData.syntheticComparisons.find(item => item.label === '56.1 MB')
+  const headline =
+    benchmarkData.syntheticComparisons.reduce((best, item) =>
+      best == null || item.deltaPct < best.deltaPct ? item : best,
+    ) || null
+  const largestHeadToHead = benchmarkData.largestHeadToHead
+  const warmExperimentalLargest = benchmarkData.warmExperimentalLargest
 
   return (
     <div className="benchmark-dashboard">
@@ -280,9 +285,16 @@ function BenchmarkDashboard() {
           detail={headline ? `${headline.label} synthetic sampled import` : undefined}
         />
         <Stat
-          label="Largest completed experimental-only import"
-          value={benchmarkData.experimentalOnlyLargest.label}
-          detail={formatMs(benchmarkData.experimentalOnlyLargest.experimentalMedianMs)}
+          label="Largest head-to-head sampled import"
+          value={largestHeadToHead.label}
+          detail={`${formatPct(largestHeadToHead.deltaPct)} (${formatMs(
+            largestHeadToHead.experimentalMedianMs,
+          )} vs ${formatMs(largestHeadToHead.legacyMedianMs)})`}
+        />
+        <Stat
+          label="Warm 112.1 MB experimental median"
+          value={formatMs(warmExperimentalLargest.experimentalMedianMs)}
+          detail={`Repeated ${warmExperimentalLargest.runs}-run experimental benchmark`}
         />
         <Stat
           label="Corpus fixtures faster"

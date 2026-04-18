@@ -5,3 +5,5 @@ dist
 coverage
 .vscode
 .env
+.DS_Store
+demo/fixtures/generated/

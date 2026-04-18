@@ -1,3 +1,5 @@
+import * as fs from 'fs/promises'
+import * as path from 'path'
 import {performance} from 'perf_hooks'
 import {importProfilesFromArrayBuffer} from '../src/import'
 import {canonicalizeProfileGroup} from '../src/experimental/engine'
@@ -10,6 +12,7 @@ interface BenchmarkConfig {
   distinctStacks: number
   skipParity: boolean
   engineMode: 'both' | 'legacy' | 'experimental'
+  writeFilePath: string | null
 }
 
 interface BenchmarkSample {
@@ -63,6 +66,7 @@ function getConfig(): BenchmarkConfig {
     distinctStacks: getNumericArg('distinct-stacks', 2048),
     skipParity: getBooleanArg('skip-parity'),
     engineMode,
+    writeFilePath: getStringArg('write-file'),
   }
 }
 
@@ -173,6 +177,15 @@ async function main() {
     encoded.byteOffset,
     encoded.byteOffset + encoded.byteLength,
   ) as ArrayBuffer
+
+  if (config.writeFilePath) {
+    const outputPath = path.isAbsolute(config.writeFilePath)
+      ? config.writeFilePath
+      : path.join(process.cwd(), config.writeFilePath)
+    await fs.mkdir(path.dirname(outputPath), {recursive: true})
+    await fs.writeFile(outputPath, encoded)
+  }
+
   let parityMatched: boolean | null = null
 
   if (!config.skipParity) {
@@ -206,6 +219,7 @@ async function main() {
     parityMatched,
     sizeBytes: encoded.byteLength,
     sizeHuman: formatBytes(encoded.byteLength),
+    ...(config.writeFilePath ? {writeFilePath: config.writeFilePath} : {}),
   }
 
   if (legacy != null) {
