@@ -733,17 +733,17 @@ async function resolveRepositoryUrl(): Promise<string> {
   throw new Error('Could not resolve repository URL. Set CURSOR_REPOSITORY_URL explicitly.')
 }
 
-async function resolveConfig(): Promise<ControlPlaneConfig> {
+async function resolveConfig(options?: {requireApiKey?: boolean}): Promise<ControlPlaneConfig> {
   await loadLocalEnvIfNeeded()
 
   const apiKey = process.env.CURSOR_API_KEY
-  if (!apiKey) {
+  if (options?.requireApiKey !== false && !apiKey) {
     throw new Error('CURSOR_API_KEY is required for the cloud control plane.')
   }
 
   return {
     apiBaseUrl: process.env.CURSOR_CLOUD_AGENT_API_BASE_URL || 'https://api.cursor.com/v1',
-    apiKey,
+    apiKey: apiKey || '',
     artifactRoot: process.env.CURSOR_ARTIFACT_ROOT || DEFAULT_ARTIFACT_ROOT,
     baseBranch: process.env.CURSOR_BASE_BRANCH || 'main',
     benchmarkReportPath: process.env.CURSOR_BENCHMARK_REPORT_PATH || DEFAULT_BENCHMARK_REPORT_PATH,
@@ -1442,24 +1442,33 @@ async function getFixtureSet(): Promise<string[]> {
 }
 
 async function runGate(config: ControlPlaneConfig): Promise<void> {
-  const registry = await syncPackageStatuses(config)
+  const hasCloudApiKey = config.apiKey.length > 0
+  const registry = hasCloudApiKey ? await syncPackageStatuses(config) : await ensureRegistrySeeded(config)
+  if (!hasCloudApiKey) {
+    console.warn(
+      'Running gate without CURSOR_API_KEY; package status checks are informational only and the report uses compare-only local mode.',
+    )
+  }
   const fixtures = await getFixtureSet()
   const comparison = await compareFixtures(fixtures)
   const benchmarks = await runBenchmarkSuite(config, fixtures)
 
-  const notGreen = PACKAGE_DEFINITIONS.filter(def => {
-    const record = registry.packages[def.id]
-    if (!record) {
-      return false
-    }
-    if (!record.agentId && record.attemptCount === 0) {
-      return false
-    }
-    const status = record.status
-    return status !== 'green' && status !== 'archived'
-  }).map(def => `${def.id}:${registry.packages[def.id]?.status || 'missing'}`)
+  const notGreen = hasCloudApiKey
+    ? PACKAGE_DEFINITIONS.filter(def => {
+        const record = registry.packages[def.id]
+        if (!record) {
+          return false
+        }
+        if (!record.agentId && record.attemptCount === 0) {
+          return false
+        }
+        const status = record.status
+        return status !== 'green' && status !== 'archived'
+      }).map(def => `${def.id}:${registry.packages[def.id]?.status || 'missing'}`)
+    : []
 
   const gateResult = {
+    mode: hasCloudApiKey ? 'cloud-status' : 'compare-only',
     ok: comparison.every(result => result.equal) && notGreen.length === 0,
     comparison,
     benchmarks,
@@ -1568,7 +1577,14 @@ async function runBenchmarkCommand(config: ControlPlaneConfig): Promise<void> {
 
 async function main(): Promise<void> {
   const [command, ...args] = process.argv.slice(2)
-  const config = await resolveConfig()
+  const config = await resolveConfig({
+    requireApiKey:
+      command !== 'graph' &&
+      command !== 'report' &&
+      command !== 'compare' &&
+      command !== 'benchmark' &&
+      command !== 'gate',
+  })
   await ensureRegistrySeeded(config)
 
   switch (command) {
