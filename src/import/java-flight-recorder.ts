@@ -23,6 +23,7 @@ async function resolveWasmModuleOrPath(): Promise<unknown> {
     return fs.readFile(path.join(process.cwd(), 'node_modules', 'jfrview', 'jfrview_bg.wasm'))
   }
 
+  // @ts-ignore webpack/esbuild/jest map the wasm asset at runtime.
   const wasmModule = (await import('jfrview/jfrview_bg.wasm')) as {default?: unknown}
   return wasmModule.default ?? wasmModule
 }
