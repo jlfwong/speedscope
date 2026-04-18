@@ -20,7 +20,11 @@ import {ProfileGroupState} from '../app-state/profile-group'
 import {HashParams} from '../lib/hash-params'
 import {StatelessComponent} from '../lib/preact-helpers'
 import {SandwichViewContainer} from './sandwich-view'
-import {getComparisonTarget, ImportProfileOptions} from '../experimental/contracts'
+import {
+  getComparisonTarget,
+  ImportComparisonResult,
+  ImportProfileOptions,
+} from '../experimental/contracts'
 import {DetailedImportComparisonResult} from '../experimental/engine'
 
 const importModule = import('../import')
@@ -63,8 +67,11 @@ async function importProfilesFromFile(
 ): Promise<ProfileGroup | null> {
   return (await importModule).importProfilesFromFile(file, options)
 }
-async function importFromFileSystemDirectoryEntry(entry: FileSystemDirectoryEntry) {
-  return (await importModule).importFromFileSystemDirectoryEntry(entry)
+async function importFromFileSystemDirectoryEntry(
+  entry: FileSystemDirectoryEntry,
+  options?: ImportProfileOptions,
+) {
+  return (await importModule).importFromFileSystemDirectoryEntry(entry, options)
 }
 
 declare function require(x: string): any
@@ -178,27 +185,14 @@ export type ApplicationProps = {
 }
 
 export class Application extends StatelessComponent<ApplicationProps> {
-  private logImportComparisonDetails(result: DetailedImportComparisonResult) {
-    if (result.primarySummary != null || result.secondarySummary != null) {
-      console.warn(`${result.primaryEngine}: ${result.primarySummary || 'null'}`)
-      console.warn(`${result.secondaryEngine}: ${result.secondarySummary || 'null'}`)
-    }
+  private pendingComparisonWarning: string | null = null
 
-    if (result.canonicalDiff) {
-      for (const entry of result.canonicalDiff) {
-        console.warn(`diff ${entry.path}: ${entry.primary} !== ${entry.secondary}`)
-      }
-    }
-
-    if (result.canonicalDiffTruncated) {
-      console.warn('diff output truncated after the first few canonical mismatches')
-    }
-  }
-
-  private onImportComparison = (result: DetailedImportComparisonResult) => {
+  private onImportComparison = (result: ImportComparisonResult) => {
     if (result.equal) {
       return
     }
+
+    this.pendingComparisonWarning = `Legacy import kept as the visible result. ${result.summary}`
 
     const label = `[import-compare] ${result.fileName}: ${result.primaryEngine} vs ${result.secondaryEngine}`
     if (typeof console.groupCollapsed === 'function') {
@@ -214,17 +208,46 @@ export class Application extends StatelessComponent<ApplicationProps> {
     this.logImportComparisonDetails(result)
   }
 
+  private logImportComparisonDetails(result: ImportComparisonResult) {
+    const detailedResult = result as DetailedImportComparisonResult
+    if (detailedResult.primarySummary != null || detailedResult.secondarySummary != null) {
+      console.warn(`${result.primaryEngine}: ${detailedResult.primarySummary || 'null'}`)
+      console.warn(`${result.secondaryEngine}: ${detailedResult.secondarySummary || 'null'}`)
+    }
+
+    if (detailedResult.canonicalDiff) {
+      for (const entry of detailedResult.canonicalDiff) {
+        console.warn(`diff ${entry.path}: ${entry.primary} !== ${entry.secondary}`)
+      }
+    }
+
+    if (detailedResult.canonicalDiffTruncated) {
+      console.warn('diff output truncated after the first few canonical mismatches')
+    }
+  }
+
+  private maybeShowComparisonWarning() {
+    if (this.pendingComparisonWarning == null) {
+      return
+    }
+    const warning = this.pendingComparisonWarning
+    this.pendingComparisonWarning = null
+    alert(`Import comparison warning:\n\n${warning}`)
+  }
+
   private getImportOptions(): ImportProfileOptions {
-    const engine = this.props.hashParams.importEngine
+    const compareImport = !!this.props.hashParams.compareImport
+    const engine = compareImport ? 'legacy' : this.props.hashParams.importEngine
     return {
       engine,
-      compareAgainst: getComparisonTarget(engine || 'legacy', !!this.props.hashParams.compareImport),
-      comparisonMode: this.props.hashParams.compareImport ? 'warn' : 'off',
-      onComparison: this.props.hashParams.compareImport ? this.onImportComparison : undefined,
+      compareAgainst: getComparisonTarget(engine || 'legacy', compareImport),
+      comparisonMode: compareImport ? 'warn' : 'off',
+      onComparison: compareImport ? this.onImportComparison : undefined,
     }
   }
 
   private async loadProfile(loader: () => Promise<ProfileGroup | null>) {
+    this.pendingComparisonWarning = null
     this.props.setError(false)
     this.props.setLoading(true)
     await new Promise(resolve => setTimeout(resolve, 0))
@@ -278,6 +301,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
 
     this.props.setProfileGroup(profileGroup)
     this.props.setLoading(false)
+    this.maybeShowComparisonWarning()
   }
 
   getStyle(): ReturnType<typeof getStyle> {
@@ -379,8 +403,9 @@ export class Application extends StatelessComponent<ApplicationProps> {
       ) {
         console.log('Importing as Instruments.app .trace file')
         const webkitDirectoryEntry: FileSystemDirectoryEntry = webkitEntry
+        const importOptions = this.getImportOptions()
         this.loadProfile(async () => {
-          return await importFromFileSystemDirectoryEntry(webkitDirectoryEntry)
+          return await importFromFileSystemDirectoryEntry(webkitDirectoryEntry, importOptions)
         })
         return
       }
