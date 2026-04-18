@@ -5,6 +5,7 @@ import {canonicalizeProfileGroup} from './engine'
 
 const FIXTURES = [
   './sample/profiles/Chrome/116/Trace-20230603T221323.json',
+  './sample/profiles/speedscope/0.6.0/two-sampled.speedscope.json',
   './sample/profiles/stackcollapse/simple.txt',
   './sample/profiles/pprof/simple.prof',
   './sample/profiles/callgrind/callgrind.example.log',

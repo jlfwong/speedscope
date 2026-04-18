@@ -1,0 +1,147 @@
+{
+  "syntheticComparisons": [
+    {
+      "label": "11.3 MB",
+      "samples": 100000,
+      "runs": 5,
+      "parityMatched": true,
+      "legacyMedianMs": 668.98,
+      "experimentalMedianMs": 647.27,
+      "deltaPct": -3.2,
+      "legacyHeapGb": 2.49,
+      "experimentalHeapGb": 1.67,
+      "note": "The first repeated sampled case where the Rust/WASM path is faster after lazy materialization."
+    },
+    {
+      "label": "28.1 MB",
+      "samples": 250000,
+      "runs": 5,
+      "parityMatched": true,
+      "legacyMedianMs": 2262.34,
+      "experimentalMedianMs": 1643.29,
+      "deltaPct": -27.4,
+      "legacyHeapGb": 6.13,
+      "experimentalHeapGb": 4.09,
+      "note": "The gap widens once sampled import costs dominate wasm startup."
+    },
+    {
+      "label": "56.1 MB",
+      "samples": 500000,
+      "runs": 3,
+      "parityMatched": null,
+      "legacyMedianMs": 4584.38,
+      "experimentalMedianMs": 3228.88,
+      "deltaPct": -29.6,
+      "legacyHeapGb": 5.82,
+      "experimentalHeapGb": 1.85,
+      "note": "This is the cleanest repeated apples-to-apples proof point in the repo."
+    }
+  ],
+  "experimentalOnlyLargest": {
+    "label": "112.1 MB",
+    "samples": 1000000,
+    "runs": 2,
+    "experimentalMedianMs": 9828.11,
+    "experimentalHeapGb": 2.51,
+    "note": "Largest completed experimental-only sampled import."
+  },
+  "limitCases": [
+    {
+      "label": "84.1 MB legacy repeated run",
+      "status": "oom",
+      "detail": "A two-run legacy-only sequence on a 750k-sample synthetic file exhausted an 8 GB Node heap."
+    },
+    {
+      "label": "112.1 MB combined comparison loop",
+      "status": "oom",
+      "detail": "Running both engines back-to-back in the same process hit the heap ceiling before the largest synthetic case completed."
+    },
+    {
+      "label": "Tiny sampled fixture cold start",
+      "status": "tradeoff",
+      "detail": "On the smallest built-in sampled fixture, wasm startup can outweigh the importer win. The showcase should emphasize medium and large sampled files."
+    }
+  ],
+  "fixtureCorpus": [
+    {
+      "fixture": "Chrome 69 simple",
+      "legacyMedianMs": 2.05,
+      "experimentalMedianMs": 1.77
+    },
+    {
+      "fixture": "Chrome 116 trace",
+      "legacyMedianMs": 2.13,
+      "experimentalMedianMs": 2.78
+    },
+    {
+      "fixture": "Trace Event simple",
+      "legacyMedianMs": 0.22,
+      "experimentalMedianMs": 0.11
+    },
+    {
+      "fixture": "Trace Event Hermes",
+      "legacyMedianMs": 0.14,
+      "experimentalMedianMs": 0.09
+    },
+    {
+      "fixture": "Collapsed stack simple",
+      "legacyMedianMs": 0.23,
+      "experimentalMedianMs": 0.16
+    },
+    {
+      "fixture": "Ruby stackprof",
+      "legacyMedianMs": 21.85,
+      "experimentalMedianMs": 20.29
+    },
+    {
+      "fixture": "Linux perf system-wide",
+      "legacyMedianMs": 2.55,
+      "experimentalMedianMs": 1.95
+    },
+    {
+      "fixture": "PMCStat simple",
+      "legacyMedianMs": 0.12,
+      "experimentalMedianMs": 0.08
+    },
+    {
+      "fixture": "Papyrus stack log",
+      "legacyMedianMs": 0.16,
+      "experimentalMedianMs": 0.1
+    },
+    {
+      "fixture": "Callgrind example",
+      "legacyMedianMs": 0.16,
+      "experimentalMedianMs": 0.06
+    },
+    {
+      "fixture": "Instruments deep copy",
+      "legacyMedianMs": 0.32,
+      "experimentalMedianMs": 0.35
+    },
+    {
+      "fixture": "Firefox simple",
+      "legacyMedianMs": 0.74,
+      "experimentalMedianMs": 0.67
+    },
+    {
+      "fixture": "Safari recording",
+      "legacyMedianMs": 0.18,
+      "experimentalMedianMs": 0.22
+    },
+    {
+      "fixture": "pprof simple",
+      "legacyMedianMs": 0.29,
+      "experimentalMedianMs": 0.26
+    },
+    {
+      "fixture": "Speedscope sampled",
+      "legacyMedianMs": 0.06,
+      "experimentalMedianMs": 0.07
+    },
+    {
+      "fixture": "Haskell simple",
+      "legacyMedianMs": 0.34,
+      "experimentalMedianMs": 0.28
+    }
+  ]
+}

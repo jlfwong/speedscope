@@ -1,0 +1,32 @@
+# Rust/WASM Architecture
+
+The new architecture is intentionally conservative. The UI is still Speedscope. The broad multi-format importer surface is still present. The new work is a targeted seam for sampled Speedscope JSON, implemented in Rust and surfaced through a lazy TypeScript adapter so the browser UI can stay unchanged.
+
+## New flow
+
+<ArchitectureRustFlow />
+
+## What changed
+
+- `rust/speedscope-importer/` now owns the sampled Speedscope JSON import path.
+- `src/experimental/engine.ts` tries the Rust path before falling back to the legacy TypeScript importer flow.
+- `src/experimental/rust-importer.ts` adapts the Rust result into the existing `Profile` interface and delays tree materialization until the UI actually needs it.
+- `scripts/dev-server.ts` can now pick a default import engine at build time, which makes side-by-side UI validation straightforward.
+
+## What did not change
+
+- The Speedscope UI views remain the same.
+- Existing non-sampled formats still use the legacy importer surface.
+- Validation is still framed around parity against the legacy oracle importer.
+
+<Callout title="Why the lazy adapter matters" tone="success">
+The first Rust pass was not enough by itself. The meaningful wins appeared when the TypeScript side stopped eagerly rebuilding everything the Rust importer had already made cheaper to produce.
+</Callout>
+
+## Code anchors
+
+- `rust/speedscope-importer/src/lib.rs`
+- `src/experimental/engine.ts`
+- `src/experimental/rust-importer.ts`
+- `src/import/index.ts`
+- `src/lib/profile.ts`

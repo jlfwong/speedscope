@@ -1,0 +1,36 @@
+# Run Side by Side
+
+The simplest way to validate this repo is to run the unchanged Speedscope UI twice: once with the classic importer and once with the Rust/WASM importer as the default path.
+
+## Recommended local flow
+
+<CommandBlock title="Install the docs site dependencies" command="npm run showcase:install" />
+
+<CommandBlock title="Launch the showcase site" command="npm run showcase:dev" />
+
+<CommandBlock title="Launch both Speedscope UI ports" command="npm run serve:side-by-side" />
+
+The default ports are:
+
+- Classic UI: `http://127.0.0.1:8000`
+- Rust/WASM UI: `http://127.0.0.1:8001`
+- Showcase/docs site: `http://127.0.0.1:4321`
+
+## What to validate
+
+1. Open the same profile file in both UI tabs.
+2. Confirm that the flamecharts, minimap, and interactions look the same.
+3. Use a sampled Speedscope file first, because that is the current Rust/WASM fast path.
+4. Use at least one non-sampled file as a control to verify that the broader import surface is still preserved.
+
+## Curated demo fixtures
+
+<FixtureGallery />
+
+<Callout title="Best show-and-tell sequence" tone="info">
+Start with the sampled Speedscope JSON fixture to prove that the UI is unchanged while the importer underneath changes. Then load the Chrome trace fixture to show that the repo still preserves the original Speedscope breadth.
+</Callout>
+
+## Rebuild and benchmark commands
+
+<ShowcaseLinks />

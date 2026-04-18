@@ -1,0 +1,27 @@
+# Benchmarks
+
+The benchmark story in this repo is intentionally conservative. The evidence is strongest on the sampled Speedscope JSON path, because that is the path that has actually been ported into Rust/WASM so far.
+
+## Benchmark dashboard
+
+<BenchmarkDashboard />
+
+## How to reproduce the synthetic runs
+
+<CommandBlock
+  title="Medium synthetic sampled run"
+  command="npm run experiment:benchmark-rust-sampled -- --samples=250000 --runs=5"
+/>
+
+<CommandBlock
+  title="Larger sampled run"
+  command="npm run experiment:benchmark-rust-sampled -- --samples=500000 --runs=3 --skip-parity=1"
+/>
+
+## Current limits
+
+<ExperimentalLimits />
+
+<Callout title="How to read the numbers" tone="warning">
+Use the synthetic sampled benchmarks to evaluate the Rust seam itself. Use the full fixture corpus to confirm that the repo still behaves like Speedscope across many formats. Do not over-generalize the Rust numbers to formats that still run through the legacy importer path.
+</Callout>

@@ -25,6 +25,7 @@ import {
   ImportComparisonResult,
   ImportProfileOptions,
 } from '../experimental/contracts'
+import {getConfiguredDefaultImportEngine} from '../experimental/default-import-engine'
 import {DetailedImportComparisonResult} from '../experimental/engine'
 
 const importModule = import('../import')
@@ -237,7 +238,9 @@ export class Application extends StatelessComponent<ApplicationProps> {
 
   private getImportOptions(): ImportProfileOptions {
     const compareImport = !!this.props.hashParams.compareImport
-    const engine = compareImport ? 'legacy' : this.props.hashParams.importEngine
+    const engine = compareImport
+      ? 'legacy'
+      : this.props.hashParams.importEngine ?? getConfiguredDefaultImportEngine()
     return {
       engine,
       compareAgainst: getComparisonTarget(engine || 'legacy', compareImport),

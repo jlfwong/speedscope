@@ -30,6 +30,7 @@ import {
   ImportEngine,
   ImportProfileOptions,
 } from './contracts'
+import {importSampledSpeedscopeProfileGroupFromRust} from './rust-importer'
 
 interface ExperimentalImportContext {
   buffer: ArrayBuffer
@@ -615,6 +616,10 @@ export async function importExperimentalProfileGroup(
 ): Promise<ProfileGroup | null> {
   const fileName = await dataSource.name()
   const buffer = await dataSource.readAsArrayBuffer()
+  const rustFastPath = await importSampledSpeedscopeProfileGroupFromRust(fileName, buffer)
+  if (rustFastPath) {
+    return rustFastPath
+  }
   const contents = await dataSource.readAsText()
   const parsed = tryParseJSON(contents)
   const context: ExperimentalImportContext = {buffer, contents, dataSource, fileName, parsed}

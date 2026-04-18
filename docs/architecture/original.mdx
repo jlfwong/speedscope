@@ -1,0 +1,26 @@
+# Original Architecture
+
+Before the Rust seam existed, the import story was entirely TypeScript/JavaScript. That preserved Speedscope's flexibility across many profile formats, but it also meant that large sampled imports paid for full text decode, `JSON.parse`, eager object construction, and two call-tree representations before the UI ever rendered.
+
+## Original flow
+
+<ArchitectureOldFlow />
+
+## Bottlenecks that mattered
+
+- **Full-file JavaScript ownership:** large sampled profiles were decoded into JS-owned memory before format-specific work even began.
+- **Eager parse cost:** large sampled files paid `JSON.parse` upfront in the import path.
+- **Allocation pressure:** frames, nodes, stacks, and weight structures were constructed eagerly in JavaScript.
+- **Dual tree construction:** append-order and grouped call trees were both built before rendering, which compounded object churn and GC pressure.
+
+<Callout title="Important constraint" tone="warning">
+The public claim here is not that the original Speedscope architecture was bad. It was general and flexible. The public claim is that the hottest sampled-import path had a specific shape that made it a good candidate for a Rust/WASM seam.
+</Callout>
+
+## Code anchors
+
+- `src/import/index.ts`
+- `src/import/chrome.ts`
+- `src/lib/file-format.ts`
+- `src/lib/profile.ts`
+- `src/views/application.tsx`
