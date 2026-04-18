@@ -4,3 +4,4 @@ dist
 .idea
 coverage
 .vscode
+.env

@@ -10,6 +10,7 @@ import {Rect, Vec2} from '../lib/math'
 import {h, createContext, ComponentChildren} from 'preact'
 import {Flamechart} from '../lib/flamechart'
 import {CallTreeNode} from '../lib/profile'
+import {createFlamechartSearchResults} from '../experimental/core'
 
 export const FlamechartSearchContext = createContext<FlamechartSearchData | null>(null)
 
@@ -41,10 +42,7 @@ export const FlamechartSearchContextProvider = ({
 }: FlamechartSearchProps) => {
   const profileSearchResults: ProfileSearchResults | null = useContext(ProfileSearchContext)
   const flamechartSearchResults: FlamechartSearchResults | null = useMemo(() => {
-    if (profileSearchResults == null) {
-      return null
-    }
-    return new FlamechartSearchResults(flamechart, profileSearchResults)
+    return createFlamechartSearchResults(flamechart, profileSearchResults)
   }, [flamechart, profileSearchResults])
 
   return (

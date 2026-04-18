@@ -22,6 +22,14 @@ test('getHashParams', () => {
   expect(getHashParams('#title=hello%20world')).toEqual({
     title: 'hello world',
   })
+  expect(getHashParams('#importEngine=experimental&compareImport=1')).toEqual({
+    importEngine: 'experimental',
+    compareImport: true,
+  })
+  expect(getHashParams('#importEngine=legacy&compareImport=false')).toEqual({
+    importEngine: 'legacy',
+    compareImport: false,
+  })
   expect(getHashParams('#abc=bcd')).toEqual({})
   expect(getHashParams('garbage')).toEqual({})
 })

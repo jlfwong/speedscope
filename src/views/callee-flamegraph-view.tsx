@@ -19,6 +19,10 @@ import {useTheme} from './themes/theme'
 import {FlamechartID} from '../app-state/profile-group'
 import {flattenRecursionAtom, glCanvasAtom} from '../app-state'
 import {useAtom} from '../lib/atom'
+import {
+  createLeftHeavyFlamechart as createExperimentalLeftHeavyFlamechart,
+  getProfileForCalleesOf,
+} from '../experimental/core'
 
 const getCalleeProfile = memoizeByShallowEquality<
   {
@@ -28,8 +32,7 @@ const getCalleeProfile = memoizeByShallowEquality<
   },
   Profile
 >(({profile, frame, flattenRecursion}) => {
-  let p = profile.getProfileForCalleesOf(frame)
-  return flattenRecursion ? p.getProfileWithRecursionFlattened() : p
+  return getProfileForCalleesOf(profile, frame, flattenRecursion)
 })
 
 const getCalleeFlamegraph = memoizeByShallowEquality<
@@ -39,12 +42,7 @@ const getCalleeFlamegraph = memoizeByShallowEquality<
   },
   Flamechart
 >(({calleeProfile, getColorBucketForFrame}) => {
-  return new Flamechart({
-    getTotalWeight: calleeProfile.getTotalNonIdleWeight.bind(calleeProfile),
-    forEachCall: calleeProfile.forEachCallGrouped.bind(calleeProfile),
-    formatValue: calleeProfile.formatValue.bind(calleeProfile),
-    getColorBucketForFrame,
-  })
+  return createExperimentalLeftHeavyFlamechart(calleeProfile, getColorBucketForFrame)
 })
 
 const getCalleeFlamegraphRenderer = createMemoizedFlamechartRenderer()

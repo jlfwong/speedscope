@@ -4,6 +4,7 @@ import {RowAtlas} from '../gl/row-atlas'
 import {CanvasContext} from '../gl/canvas-context'
 import {FlamechartRowAtlasKey} from '../gl/flamechart-renderer'
 import {Theme} from '../views/themes/theme'
+import {getProfileToView as getExperimentalProfileToView} from '../experimental/core'
 
 export const createGetColorBucketForFrame = memoizeByReference(
   (frameToColorBucket: Map<number | string, number>) => {
@@ -45,7 +46,7 @@ export const getRowAtlas = memoizeByReference((canvasContext: CanvasContext) => 
 
 export const getProfileToView = memoizeByShallowEquality(
   ({profile, flattenRecursion}: {profile: Profile; flattenRecursion: boolean}): Profile => {
-    return flattenRecursion ? profile.getProfileWithRecursionFlattened() : profile
+    return getExperimentalProfileToView(profile, flattenRecursion)
   },
 )
 export const getFrameToColorBucket = memoizeByReference(

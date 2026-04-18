@@ -19,6 +19,10 @@ import {useTheme} from './themes/theme'
 import {FlamechartID} from '../app-state/profile-group'
 import {flattenRecursionAtom, glCanvasAtom} from '../app-state'
 import {useAtom} from '../lib/atom'
+import {
+  createLeftHeavyFlamechart as createExperimentalLeftHeavyFlamechart,
+  getProfileForCallersOf,
+} from '../experimental/core'
 
 const getInvertedCallerProfile = memoizeByShallowEquality(
   ({
@@ -30,8 +34,7 @@ const getInvertedCallerProfile = memoizeByShallowEquality(
     frame: Frame
     flattenRecursion: boolean
   }): Profile => {
-    let p = profile.getInvertedProfileForCallersOf(frame)
-    return flattenRecursion ? p.getProfileWithRecursionFlattened() : p
+    return getProfileForCallersOf(profile, frame, flattenRecursion)
   },
 )
 
@@ -43,12 +46,7 @@ const getInvertedCallerFlamegraph = memoizeByShallowEquality(
     invertedCallerProfile: Profile
     getColorBucketForFrame: (frame: Frame) => number
   }): Flamechart => {
-    return new Flamechart({
-      getTotalWeight: invertedCallerProfile.getTotalNonIdleWeight.bind(invertedCallerProfile),
-      forEachCall: invertedCallerProfile.forEachCallGrouped.bind(invertedCallerProfile),
-      formatValue: invertedCallerProfile.formatValue.bind(invertedCallerProfile),
-      getColorBucketForFrame,
-    })
+    return createExperimentalLeftHeavyFlamechart(invertedCallerProfile, getColorBucketForFrame)
   },
 )
 

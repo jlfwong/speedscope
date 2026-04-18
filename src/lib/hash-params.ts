@@ -1,10 +1,17 @@
 import {ViewMode} from '../lib/view-mode'
+import {
+  ImportEngine,
+  normalizeImportEngine,
+  shouldCompareImport,
+} from '../experimental/contracts'
 
 export interface HashParams {
   profileURL?: string
   title?: string
   localProfilePath?: string
   viewMode?: ViewMode
+  importEngine?: ImportEngine
+  compareImport?: boolean
 }
 
 function getViewMode(value: string): ViewMode | null {
@@ -43,6 +50,15 @@ export function getHashParams(hashContents = window.location.hash): HashParams {
         } else {
           console.error(`Ignoring invalid view specifier: ${value}`)
         }
+      } else if (key === 'importEngine') {
+        const engine = normalizeImportEngine(value)
+        if (engine != null) {
+          result.importEngine = engine
+        } else {
+          console.error(`Ignoring invalid import engine: ${value}`)
+        }
+      } else if (key === 'compareImport') {
+        result.compareImport = shouldCompareImport(value)
       }
     }
     return result

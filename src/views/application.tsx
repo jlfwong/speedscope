@@ -20,6 +20,7 @@ import {ProfileGroupState} from '../app-state/profile-group'
 import {HashParams} from '../lib/hash-params'
 import {StatelessComponent} from '../lib/preact-helpers'
 import {SandwichViewContainer} from './sandwich-view'
+import {getComparisonTarget, ImportProfileOptions} from '../experimental/contracts'
 
 const importModule = import('../import')
 
@@ -34,26 +35,32 @@ import('source-map').then(() => {})
 async function importProfilesFromText(
   fileName: string,
   contents: string,
+  options?: ImportProfileOptions,
 ): Promise<ProfileGroup | null> {
-  return (await importModule).importProfileGroupFromText(fileName, contents)
+  return (await importModule).importProfileGroupFromText(fileName, contents, options)
 }
 
 async function importProfilesFromBase64(
   fileName: string,
   contents: string,
+  options?: ImportProfileOptions,
 ): Promise<ProfileGroup | null> {
-  return (await importModule).importProfileGroupFromBase64(fileName, contents)
+  return (await importModule).importProfileGroupFromBase64(fileName, contents, options)
 }
 
 async function importProfilesFromArrayBuffer(
   fileName: string,
   contents: ArrayBuffer,
+  options?: ImportProfileOptions,
 ): Promise<ProfileGroup | null> {
-  return (await importModule).importProfilesFromArrayBuffer(fileName, contents)
+  return (await importModule).importProfilesFromArrayBuffer(fileName, contents, options)
 }
 
-async function importProfilesFromFile(file: File): Promise<ProfileGroup | null> {
-  return (await importModule).importProfilesFromFile(file)
+async function importProfilesFromFile(
+  file: File,
+  options?: ImportProfileOptions,
+): Promise<ProfileGroup | null> {
+  return (await importModule).importProfilesFromFile(file, options)
 }
 async function importFromFileSystemDirectoryEntry(entry: FileSystemDirectoryEntry) {
   return (await importModule).importFromFileSystemDirectoryEntry(entry)
@@ -170,6 +177,15 @@ export type ApplicationProps = {
 }
 
 export class Application extends StatelessComponent<ApplicationProps> {
+  private getImportOptions(): ImportProfileOptions {
+    const engine = this.props.hashParams.importEngine
+    return {
+      engine,
+      compareAgainst: getComparisonTarget(engine || 'legacy', !!this.props.hashParams.compareImport),
+      comparisonMode: this.props.hashParams.compareImport ? 'warn' : 'off',
+    }
+  }
+
   private async loadProfile(loader: () => Promise<ProfileGroup | null>) {
     this.props.setError(false)
     this.props.setLoading(true)
@@ -231,8 +247,9 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   loadFromFile(file: File) {
+    const importOptions = this.getImportOptions()
     this.loadProfile(async () => {
-      const profiles = await importProfilesFromFile(file)
+      const profiles = await importProfilesFromFile(file, importOptions)
       if (profiles) {
         for (let profile of profiles.profiles) {
           if (!profile.getName()) {
@@ -298,10 +315,11 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   loadExample = () => {
+    const importOptions = this.getImportOptions()
     this.loadProfile(async () => {
       const filename = 'perf-vertx-stacks-01-collapsed-all.txt'
       const data = await fetch(exampleProfileURL).then(resp => resp.text())
-      return await importProfilesFromText(filename, data)
+      return await importProfilesFromText(filename, data, importOptions)
     })
   }
 
@@ -409,8 +427,9 @@ export class Application extends StatelessComponent<ApplicationProps> {
     const clipboardData = (ev as ClipboardEvent).clipboardData
     if (!clipboardData) return
     const pasted = clipboardData.getData('text')
+    const importOptions = this.getImportOptions()
     this.loadProfile(async () => {
-      return await importProfilesFromText('From Clipboard', pasted)
+      return await importProfilesFromText('From Clipboard', pasted, importOptions)
     })
   }
 
@@ -429,6 +448,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
 
   async maybeLoadHashParamProfile() {
     const {profileURL} = this.props.hashParams
+    const importOptions = this.getImportOptions()
     if (profileURL) {
       if (!canUseXHR) {
         alert(
@@ -442,7 +462,11 @@ export class Application extends StatelessComponent<ApplicationProps> {
         if (filename.includes('/')) {
           filename = filename.slice(filename.lastIndexOf('/') + 1)
         }
-        return await importProfilesFromArrayBuffer(filename, await response.arrayBuffer())
+        return await importProfilesFromArrayBuffer(
+          filename,
+          await response.arrayBuffer(),
+          importOptions,
+        )
       })
     } else if (this.props.hashParams.localProfilePath) {
       // There isn't good cross-browser support for XHR of local files, even from
@@ -450,7 +474,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
       // as a JavaScript file which will invoke a global function.
       ;(window as any)['speedscope'] = {
         loadFileFromBase64: (filename: string, base64source: string) => {
-          this.loadProfile(() => importProfilesFromBase64(filename, base64source))
+          this.loadProfile(() => importProfilesFromBase64(filename, base64source, importOptions))
         },
       }
 

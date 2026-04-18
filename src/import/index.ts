@@ -8,7 +8,7 @@ import {
   isChromeTimelineObject,
 } from './chrome'
 import {importFromStackprof} from './stackprof'
-import {importFromInstrumentsDeepCopy, importFromInstrumentsTrace} from './instruments'
+import {importFromInstrumentsDeepCopy} from './instruments'
 import {importFromBGFlameGraph} from './bg-flamegraph'
 import {importFromFirefox} from './firefox'
 import {importSpeedscopeProfiles} from '../lib/file-format'
@@ -24,54 +24,54 @@ import {isTraceEventFormatted, importTraceEvents} from './trace-event'
 import {importFromCallgrind} from './callgrind'
 import {importFromPapyrus} from './papyrus'
 import {importFromPMCStatCallGraph} from './pmcstat-callgraph'
-import {importFromJfr, isJfrRecording} from './java-flight-recorder'
+import {ImportProfileOptions} from '../experimental/contracts'
+import {
+  importExperimentalFromDirectoryEntry,
+  runImportEngine,
+} from '../experimental/engine'
 
 export async function importProfileGroupFromText(
   fileName: string,
   contents: string,
+  options?: ImportProfileOptions,
 ): Promise<ProfileGroup | null> {
-  return await importProfileGroup(new TextProfileDataSource(fileName, contents))
+  return await importProfileGroup(new TextProfileDataSource(fileName, contents), options)
 }
 
 export async function importProfileGroupFromBase64(
   fileName: string,
   b64contents: string,
+  options?: ImportProfileOptions,
 ): Promise<ProfileGroup | null> {
   return await importProfileGroup(
     MaybeCompressedDataReader.fromArrayBuffer(
       fileName,
       decodeBase64(b64contents).buffer as ArrayBuffer,
     ),
+    options,
   )
 }
 
-export async function importProfilesFromFile(file: File): Promise<ProfileGroup | null> {
-  return importProfileGroup(MaybeCompressedDataReader.fromFile(file))
+export async function importProfilesFromFile(
+  file: File,
+  options?: ImportProfileOptions,
+): Promise<ProfileGroup | null> {
+  return importProfileGroup(MaybeCompressedDataReader.fromFile(file), options)
 }
 
 export async function importProfilesFromArrayBuffer(
   fileName: string,
   buffer: ArrayBuffer,
+  options?: ImportProfileOptions,
 ): Promise<ProfileGroup | null> {
-  return importProfileGroup(MaybeCompressedDataReader.fromArrayBuffer(fileName, buffer))
+  return importProfileGroup(MaybeCompressedDataReader.fromArrayBuffer(fileName, buffer), options)
 }
 
-async function importProfileGroup(dataSource: ProfileDataSource): Promise<ProfileGroup | null> {
-  const fileName = await dataSource.name()
-
-  const profileGroup = await _importProfileGroup(dataSource)
-  if (profileGroup) {
-    if (!profileGroup.name) {
-      profileGroup.name = fileName
-    }
-    for (let profile of profileGroup.profiles) {
-      if (profile && !profile.getName()) {
-        profile.setName(fileName)
-      }
-    }
-    return profileGroup
-  }
-  return null
+async function importProfileGroup(
+  dataSource: ProfileDataSource,
+  options?: ImportProfileOptions,
+): Promise<ProfileGroup | null> {
+  return runImportEngine(dataSource, importLegacyProfileGroup, options)
 }
 
 function toGroup(profile: Profile | null): ProfileGroup | null {
@@ -79,7 +79,17 @@ function toGroup(profile: Profile | null): ProfileGroup | null {
   return {name: profile.getName(), indexToView: 0, profiles: [profile]}
 }
 
-async function _importProfileGroup(dataSource: ProfileDataSource): Promise<ProfileGroup | null> {
+function looksLikeJfrRecording(buffer: ArrayBuffer) {
+  const header = new Uint8Array(buffer.slice(0, 3))
+  return header[0] === 0x46 && header[1] === 0x4c && header[2] === 0x52
+}
+
+async function importJfrProfileGroup(fileName: string, buffer: ArrayBuffer) {
+  const {importFromJfr} = await import('./java-flight-recorder')
+  return importFromJfr(fileName, buffer)
+}
+
+async function importLegacyProfileGroup(dataSource: ProfileDataSource): Promise<ProfileGroup | null> {
   const fileName = await dataSource.name()
 
   const buffer = await dataSource.readAsArrayBuffer()
@@ -133,7 +143,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     return toGroup(importFromPMCStatCallGraph(contents))
   } else if (fileName.endsWith('.jfr')) {
     console.log('Importing as Java Flight Recorder profile')
-    return await importFromJfr(fileName, buffer)
+    return await importJfrProfileGroup(fileName, buffer)
   }
 
   // Second pass: Try to guess what file format it is based on structure
@@ -204,9 +214,9 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
       return toGroup(importFromPapyrus(contents))
     }
 
-    if (isJfrRecording(buffer)) {
+    if (looksLikeJfrRecording(buffer)) {
       console.log('Importing as Java Flight Recorder profile')
-      return importFromJfr(fileName, buffer)
+      return importJfrProfileGroup(fileName, buffer)
     }
 
     const fromLinuxPerf = importFromLinuxPerf(contents)
@@ -233,5 +243,5 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
 }
 
 export async function importFromFileSystemDirectoryEntry(entry: FileSystemDirectoryEntry) {
-  return importFromInstrumentsTrace(entry)
+  return importExperimentalFromDirectoryEntry(entry)
 }
