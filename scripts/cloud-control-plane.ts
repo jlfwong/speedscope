@@ -112,6 +112,17 @@ interface BenchmarkResult {
   experimental: BenchmarkSample[]
 }
 
+interface GateReport {
+  ok: boolean
+  comparison: ComparisonOutcome[]
+  benchmarks: BenchmarkResult[]
+  packageStatuses: Array<{
+    id: string
+    status: string
+  }>
+  blockingPackages: string[]
+}
+
 interface RestAgentListItem {
   id: string
   name?: string
@@ -1558,6 +1569,43 @@ function formatSampleSummary(samples: BenchmarkSample[]): string {
   return `median=${median}ms min=${min}ms max=${max}ms`
 }
 
+function getPackageStatusDisplay(registry: RegistryFile, packageId: string): string {
+  return registry.packages[packageId]?.status || 'missing'
+}
+
+function summarizeLaneReadiness(
+  registry: RegistryFile,
+  definition: PackageDefinition,
+): {
+  blockingDependencies: string[]
+  readyDependencies: number
+  totalDependencies: number
+} {
+  const statuses = definition.dependsOn.map(depId => ({
+    id: depId,
+    status: getPackageStatusDisplay(registry, depId),
+  }))
+
+  return {
+    blockingDependencies: statuses
+      .filter(dep => dep.status !== 'green' && dep.status !== 'archived')
+      .map(dep => `${dep.id}=${dep.status}`),
+    readyDependencies: statuses.filter(dep => dep.status === 'green' || dep.status === 'archived').length,
+    totalDependencies: statuses.length,
+  }
+}
+
+async function readJsonReport<T>(filePath: string): Promise<T | null> {
+  try {
+    const raw = await fs.readFile(filePath, 'utf8')
+    return JSON.parse(raw) as T
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException)?.code === 'ENOENT') {
+      return null
+    }
+    throw error
+  }
+}
 function getMedianElapsedMs(samples: BenchmarkSample[]): number {
   const sorted = [...samples].sort((a, b) => a.elapsedMs - b.elapsedMs)
   return sorted[Math.floor(sorted.length / 2)]?.elapsedMs || 0
@@ -1727,12 +1775,75 @@ async function printHarnessLaneSynthesis(
   }
 }
 
+function summarizeBenchmarkReport(results: BenchmarkResult[]): string {
+  let experimentalFaster = 0
+  let experimentalSlower = 0
+  let tied = 0
+
+  for (const result of results) {
+    const legacyMedian = getMedianElapsedMs(result.legacy)
+    const experimentalMedian = getMedianElapsedMs(result.experimental)
+    if (legacyMedian === experimentalMedian) {
+      tied += 1
+    } else if (experimentalMedian < legacyMedian) {
+      experimentalFaster += 1
+    } else {
+      experimentalSlower += 1
+    }
+  }
+
+  return `${results.length} fixtures; experimental faster on ${experimentalFaster}, slower on ${experimentalSlower}, tied on ${tied}`
+}
+
+function summarizeGateReport(report: GateReport): string {
+  const parityMismatches = report.comparison.filter(result => !result.equal).length
+  return `${report.ok ? 'PASS' : 'FAIL'} parity mismatches=${parityMismatches}, blocking packages=${report.blockingPackages.length}, benchmark fixtures=${report.benchmarks.length}`
+}
+
 async function printReport(config: ControlPlaneConfig): Promise<void> {
-  const registry = await ensureRegistrySeeded(config)
-  for (const definition of PACKAGE_DEFINITIONS) {
-    const record = registry.packages[definition.id]
+  const registry = config.apiKey ? await syncPackageStatuses(config) : await ensureRegistrySeeded(config)
+  const benchmarkReport = await readJsonReport<BenchmarkResult[]>(config.benchmarkReportPath)
+  const gateReport = await readJsonReport<GateReport>(config.gateReportPath)
+
+  console.log(
+    config.apiKey
+      ? 'Cloud sync: enabled'
+      : 'Cloud sync: skipped (CURSOR_API_KEY not set; reporting from the local registry only)',
+  )
+  console.log('')
+  console.log('Lane readiness:')
+  for (const definition of PACKAGE_DEFINITIONS.filter(def => def.kind === 'lead')) {
+    const leadStatus = getPackageStatusDisplay(registry, definition.id)
+    const laneSummary = summarizeLaneReadiness(registry, definition)
     console.log(
-      `${definition.id.padEnd(24)} ${String(record?.status || 'missing').padEnd(18)} ${record?.selectedModelId || '-'}`,
+      `${definition.lane.padEnd(12)} ${definition.id.padEnd(24)} ${leadStatus.padEnd(18)} deps ${String(
+        laneSummary.readyDependencies,
+      ).padStart(1)}/${laneSummary.totalDependencies}`,
+    )
+    if (laneSummary.blockingDependencies.length > 0) {
+      console.log(`  blockers: ${laneSummary.blockingDependencies.join(', ')}`)
+    }
+  }
+
+  console.log('')
+  console.log('Local reports:')
+  console.log(
+    benchmarkReport
+      ? `benchmark: ${summarizeBenchmarkReport(benchmarkReport)}`
+      : `benchmark: missing (${path.relative(REPO_ROOT, config.benchmarkReportPath)})`,
+  )
+  console.log(
+    gateReport
+      ? `gate: ${summarizeGateReport(gateReport)}`
+      : `gate: missing (${path.relative(REPO_ROOT, config.gateReportPath)})`,
+  )
+  console.log('')
+  console.log('Package status:')
+  for (const definition of PACKAGE_DEFINITIONS) {
+    console.log(
+      `${definition.id.padEnd(24)} ${getPackageStatusDisplay(registry, definition.id).padEnd(18)} ${
+        registry.packages[definition.id]?.selectedModelId || '-'
+      }`,
     )
   }
   await printHarnessLaneSynthesis(config, registry)
