@@ -160,11 +160,9 @@ export function importFromChromeTimeline(events: TimelineEvent[], fileName: stri
 
     itForEach(cpuProfileByID.keys(), profileId => {
       let threadName: string | null = null
-      let pidTid = pidTidById.get(profileId)
+      const pidTid = pidTidById.get(profileId)
       if (pidTid) {
         threadName = threadNameByPidTid.get(pidTid) || null
-        if (threadName) {
-        }
       }
       const profile = importFromChromeCPUProfile(cpuProfileByID.get(profileId)!)
       if (threadName && cpuProfileByID.size > 1) {
