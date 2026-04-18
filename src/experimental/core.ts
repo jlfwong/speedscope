@@ -1,5 +1,5 @@
 import {Flamechart} from '../lib/flamechart'
-import {Frame, Profile} from '../lib/profile'
+import {Frame, Profile, ProfileFlamechartOrder, ProfileFlamechartWeight} from '../lib/profile'
 import {FlamechartSearchResults, ProfileSearchResults} from '../lib/profile-search'
 
 // This module is the compatibility seam for the first experimental slice.
@@ -8,7 +8,7 @@ import {FlamechartSearchResults, ProfileSearchResults} from '../lib/profile-sear
 // hot paths are replaced with Rust/WASM-backed code.
 
 export function getProfileToView(profile: Profile, flattenRecursion: boolean): Profile {
-  return flattenRecursion ? profile.getProfileWithRecursionFlattened() : profile
+  return profile.getProfileForView(flattenRecursion)
 }
 
 export function getProfileForCallersOf(
@@ -16,8 +16,7 @@ export function getProfileForCallersOf(
   frame: Frame,
   flattenRecursion: boolean,
 ): Profile {
-  const callers = profile.getInvertedProfileForCallersOf(frame)
-  return getProfileToView(callers, flattenRecursion)
+  return profile.getProfileForCallersView(frame, flattenRecursion)
 }
 
 export function getProfileForCalleesOf(
@@ -25,32 +24,36 @@ export function getProfileForCalleesOf(
   frame: Frame,
   flattenRecursion: boolean,
 ): Profile {
-  const callees = profile.getProfileForCalleesOf(frame)
-  return getProfileToView(callees, flattenRecursion)
+  return profile.getProfileForCalleesView(frame, flattenRecursion)
+}
+
+function createProfileFlamechart(
+  profile: Profile,
+  getColorBucketForFrame: (frame: Frame) => number,
+  order: ProfileFlamechartOrder,
+  weight: ProfileFlamechartWeight,
+): Flamechart {
+  return new Flamechart(
+    profile.createFlamechartDataSource({
+      getColorBucketForFrame,
+      order,
+      weight,
+    }),
+  )
 }
 
 export function createChronoFlamechart(
   profile: Profile,
   getColorBucketForFrame: (frame: Frame) => number,
 ): Flamechart {
-  return new Flamechart({
-    getTotalWeight: profile.getTotalWeight.bind(profile),
-    forEachCall: profile.forEachCall.bind(profile),
-    formatValue: profile.formatValue.bind(profile),
-    getColorBucketForFrame,
-  })
+  return createProfileFlamechart(profile, getColorBucketForFrame, 'append-order', 'total')
 }
 
 export function createLeftHeavyFlamechart(
   profile: Profile,
   getColorBucketForFrame: (frame: Frame) => number,
 ): Flamechart {
-  return new Flamechart({
-    getTotalWeight: profile.getTotalNonIdleWeight.bind(profile),
-    forEachCall: profile.forEachCallGrouped.bind(profile),
-    formatValue: profile.formatValue.bind(profile),
-    getColorBucketForFrame,
-  })
+  return createProfileFlamechart(profile, getColorBucketForFrame, 'grouped', 'non-idle')
 }
 
 export function createProfileSearchResults(

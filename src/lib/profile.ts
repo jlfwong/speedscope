@@ -112,7 +112,37 @@ export interface ProfileGroup {
   profiles: Profile[]
 }
 
-export class Profile {
+export type ProfileFlamechartOrder = 'append-order' | 'grouped'
+export type ProfileFlamechartWeight = 'total' | 'non-idle'
+
+export interface ProfileFlamechartDataSource {
+  getTotalWeight(): number
+  formatValue(v: number): string
+  forEachCall(
+    openFrame: (node: CallTreeNode, value: number) => void,
+    closeFrame: (node: CallTreeNode, value: number) => void,
+  ): void
+  getColorBucketForFrame(frame: Frame): number
+}
+
+export interface ProfileFlamechartDataSourceOptions {
+  getColorBucketForFrame: (frame: Frame) => number
+  order: ProfileFlamechartOrder
+  weight: ProfileFlamechartWeight
+}
+
+// This is the stable surface exposed through src/experimental/core.ts while the
+// legacy Profile class remains the oracle implementation underneath it.
+export interface ProfileCoreSurface {
+  getProfileForView(flattenRecursion: boolean): Profile
+  getProfileForCallersView(focalFrameInfo: FrameInfo, flattenRecursion: boolean): Profile
+  getProfileForCalleesView(focalFrameInfo: FrameInfo, flattenRecursion: boolean): Profile
+  createFlamechartDataSource(
+    options: ProfileFlamechartDataSourceOptions,
+  ): ProfileFlamechartDataSource
+}
+
+export class Profile implements ProfileCoreSurface {
   protected name: string = ''
 
   protected totalWeight: number
@@ -272,6 +302,44 @@ export class Profile {
 
   forEachFrame(fn: (frame: Frame) => void) {
     this.frames.forEach(fn)
+  }
+
+  getProfileForView(flattenRecursion: boolean): Profile {
+    return flattenRecursion ? this.getProfileWithRecursionFlattened() : this
+  }
+
+  getProfileForCallersView(focalFrameInfo: FrameInfo, flattenRecursion: boolean): Profile {
+    return this.getInvertedProfileForCallersOf(focalFrameInfo).getProfileForView(flattenRecursion)
+  }
+
+  getProfileForCalleesView(focalFrameInfo: FrameInfo, flattenRecursion: boolean): Profile {
+    return this.getProfileForCalleesOf(focalFrameInfo).getProfileForView(flattenRecursion)
+  }
+
+  createFlamechartDataSource({
+    getColorBucketForFrame,
+    order,
+    weight,
+  }: ProfileFlamechartDataSourceOptions): ProfileFlamechartDataSource {
+    const getTotalWeight =
+      weight === 'non-idle' ? () => this.getTotalNonIdleWeight() : () => this.getTotalWeight()
+    const forEachCall =
+      order === 'grouped'
+        ? (
+            openFrame: (node: CallTreeNode, value: number) => void,
+            closeFrame: (node: CallTreeNode, value: number) => void,
+          ) => this.forEachCallGrouped(openFrame, closeFrame)
+        : (
+            openFrame: (node: CallTreeNode, value: number) => void,
+            closeFrame: (node: CallTreeNode, value: number) => void,
+          ) => this.forEachCall(openFrame, closeFrame)
+
+    return {
+      getTotalWeight,
+      formatValue: (v: number) => this.formatValue(v),
+      forEachCall,
+      getColorBucketForFrame,
+    }
   }
 
   getProfileWithRecursionFlattened(): Profile {
