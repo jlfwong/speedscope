@@ -1,7 +1,7 @@
 import type {SDKAgent, SDKArtifact} from '@cursor/february'
 import {importProfilesFromArrayBuffer} from '../src/import'
 import {canonicalizeProfileGroup} from '../src/experimental/engine'
-import {ImportEngine} from '../src/experimental/contracts'
+import {ImportComparisonResult, ImportEngine} from '../src/experimental/contracts'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import {performance} from 'perf_hooks'
@@ -113,6 +113,7 @@ interface BenchmarkResult {
 }
 
 interface GateReport {
+  mode?: 'cloud-status' | 'compare-only'
   ok: boolean
   comparison: ComparisonOutcome[]
   benchmarks: BenchmarkResult[]
@@ -121,6 +122,93 @@ interface GateReport {
     status: string
   }>
   blockingPackages: string[]
+  cutover?: IntegrationCutoverSummary
+}
+
+interface EngineSeamProbeOutcome {
+  fixture: string
+  equal: boolean
+  legacyImported: boolean
+  experimentalImported: boolean
+  summary: string
+  error?: string
+}
+
+interface EngineLaneSynthesis {
+  leadStatus: string
+  workers: Array<{id: string; status: string}>
+  blockingDependencies: string[]
+  seamReady: boolean
+  fanOutReady: boolean
+  blockers: string[]
+  probes: EngineSeamProbeOutcome[]
+  benchmarkSnapshot: {
+    fixtureCount: number
+    faster: number
+    slower: number
+    tied: number
+  } | null
+}
+
+interface ImporterFamilyProbeOutcome {
+  fixture: string
+  equal: boolean
+  legacyImported: boolean
+  experimentalImported: boolean
+  summary: string
+  error?: string
+}
+
+interface ImporterFamilySynthesis {
+  packageId: string
+  status: string
+  workerStatus: string
+  probes: ImporterFamilyProbeOutcome[]
+  parityReady: boolean
+  hasRunnableFixtures: boolean
+}
+
+interface ImporterLaneSynthesis {
+  leadStatus: string
+  families: ImporterFamilySynthesis[]
+  blockingFamilies: string[]
+  fanOutReady: boolean
+}
+
+export interface IntegrationCutoverProbeOutcome {
+  fixture: string
+  primaryEngine: ImportEngine
+  comparisonEngine: ImportEngine
+  equal: boolean
+  comparisonMode: 'warn' | 'error' | 'off'
+  summary: string
+  error?: string
+}
+
+export interface IntegrationBenchmarkSnapshot {
+  fixtureCount: number
+  faster: number
+  slower: number
+  tied: number
+  worstSlowdownRatio: number | null
+  worstSlowdownFixture: string | null
+}
+
+export interface IntegrationCutoverSummary {
+  cutoverReady: boolean
+  recommendation: 'cutover' | 'hold'
+  reasonCode:
+    | 'workers-blocked'
+    | 'upstream-leads-blocked'
+    | 'no-runnable-fixtures'
+    | 'parity-divergence'
+    | 'cleared'
+  blockers: string[]
+  workers: Array<{id: string; status: string}>
+  upstreamLeads: Array<{id: string; status: string}>
+  probes: IntegrationCutoverProbeOutcome[]
+  benchmarkSnapshot: IntegrationBenchmarkSnapshot | null
+  rollbackPlan: string
 }
 
 interface RestAgentListItem {
@@ -198,6 +286,57 @@ const DEFAULT_FIXTURES = [
   'sample/profiles/haskell/simple.prof',
 ]
 
+const IMPORTER_FAMILY_PROBES: Array<{packageId: string; fixtures: string[]}> = [
+  {
+    packageId: 'chrome-trace-family',
+    fixtures: [
+      'sample/profiles/Chrome/69/simple.json',
+      'sample/profiles/Chrome/116/Trace-20230603T221323.json',
+      'sample/profiles/trace-event/simple.json',
+      'sample/profiles/trace-event/simple-hermes.json',
+    ],
+  },
+  {
+    packageId: 'text-formats-family',
+    fixtures: [
+      'sample/profiles/stackcollapse/simple.txt',
+      'sample/profiles/stackprof/ruby-stackprof.json',
+      'sample/profiles/linux-perf/system-wide.linux-perf.txt',
+      'sample/profiles/pmcstat/simple.txt',
+      'sample/profiles/papyrus/stack.log',
+    ],
+  },
+  {
+    packageId: 'binary-formats-family',
+    fixtures: [
+      'sample/profiles/pprof/simple.prof',
+      'sample/profiles/java-flight-recorder/heavy.jfr',
+    ],
+  },
+  {
+    packageId: 'legacy-complex-family',
+    fixtures: [
+      'sample/profiles/callgrind/callgrind.example.log',
+      'sample/profiles/Instruments/16.0/simple-time-profile-deep-copy.txt',
+      'sample/profiles/Firefox/63/simple-firefox.json',
+      'sample/profiles/Safari/13.1/simple.html-recording.json',
+      'sample/profiles/haskell/simple.prof',
+    ],
+  },
+]
+
+const INTEGRATION_LEAD_PACKAGE_ID = 'integration-lead'
+const INTEGRATION_WORKER_PACKAGE_IDS = ['dual-run-compare-mode', 'view-bridge'] as const
+const INTEGRATION_UPSTREAM_LEAD_PACKAGE_IDS = ['engine-lead', 'import-lead'] as const
+const INTEGRATION_CUTOVER_PROBE_FIXTURES = [
+  'sample/profiles/Chrome/69/simple.json',
+  'sample/profiles/trace-event/simple.json',
+  'sample/profiles/stackcollapse/simple.txt',
+  'sample/profiles/stackprof/ruby-stackprof.json',
+  'sample/profiles/speedscope/0.6.0/two-sampled.speedscope.json',
+  'sample/profiles/Instruments/16.0/simple-time-profile-deep-copy.txt',
+] as const
+
 const HELPER_AGENTS = {
   reviewer: {
     description: 'Parity reviewer',
@@ -241,7 +380,8 @@ const PACKAGE_DEFINITIONS: PackageDefinition[] = [
     fixtureList: DEFAULT_FIXTURES,
     benchmarkTarget: 'npm run experiment:compare',
     acceptanceCommands: ['npm run experiment:compare'],
-    rollbackPlan: 'Fall back to legacy snapshot expectations and disable experimental compare mode.',
+    rollbackPlan:
+      'Fall back to legacy snapshot expectations and disable experimental compare mode.',
     specCompleteness: 'high',
     crossPackageScope: 'single-lane',
     ambiguity: 'low',
@@ -385,7 +525,8 @@ const PACKAGE_DEFINITIONS: PackageDefinition[] = [
     fixtureList: DEFAULT_FIXTURES,
     benchmarkTarget: 'npm run experiment:compare',
     acceptanceCommands: ['npm run typecheck', 'npm run experiment:compare'],
-    rollbackPlan: 'Route all core profile operations back through the existing profile methods only.',
+    rollbackPlan:
+      'Route all core profile operations back through the existing profile methods only.',
     specCompleteness: 'medium',
     crossPackageScope: 'single-package',
     ambiguity: 'medium',
@@ -512,7 +653,11 @@ const PACKAGE_DEFINITIONS: PackageDefinition[] = [
     title: 'Binary formats family',
     description: 'Owns pprof and JFR experimental routing.',
     branchName: 'exp/importers/binary-formats-family',
-    ownedPaths: ['src/experimental/engine.ts', 'src/import/pprof.ts', 'src/import/java-flight-recorder.ts'],
+    ownedPaths: [
+      'src/experimental/engine.ts',
+      'src/import/pprof.ts',
+      'src/import/java-flight-recorder.ts',
+    ],
     dependsOn: ['engine-interface', 'profile-core'],
     fixtureList: DEFAULT_FIXTURES,
     benchmarkTarget: 'npm run experiment:benchmark',
@@ -692,14 +837,16 @@ function routeModel(request: RouteRequest, models: ModelConfig): RouteResult {
     return {
       policy: 'executorModel',
       modelId: models.executorModel,
-      reason: 'Routed to the bounded executor slot because the task is local, specific, and execution-heavy.',
+      reason:
+        'Routed to the bounded executor slot because the task is local, specific, and execution-heavy.',
     }
   }
 
   return {
     policy: 'orchestratorDefaultModel',
     modelId: models.orchestratorDefaultModel,
-    reason: 'Routed to the orchestration slot because the package still needs synthesis or cross-package coordination.',
+    reason:
+      'Routed to the orchestration slot because the package still needs synthesis or cross-package coordination.',
   }
 }
 
@@ -715,7 +862,10 @@ function parseSimpleDotEnv(contents: string): Record<string, string> {
       continue
     }
     const key = line.slice(0, separatorIndex).trim()
-    const value = line.slice(separatorIndex + 1).trim().replace(/^['"]|['"]$/g, '')
+    const value = line
+      .slice(separatorIndex + 1)
+      .trim()
+      .replace(/^['"]|['"]$/g, '')
     if (key.length > 0 && result[key] == null) {
       result[key] = value
     }
@@ -748,7 +898,9 @@ async function resolveRepositoryUrl(): Promise<string> {
     return explicit
   }
 
-  const packageJson = JSON.parse(await fs.readFile(path.join(REPO_ROOT, 'package.json'), 'utf8')) as {
+  const packageJson = JSON.parse(
+    await fs.readFile(path.join(REPO_ROOT, 'package.json'), 'utf8'),
+  ) as {
     repository?: string | {url?: string}
   }
   const repository = packageJson.repository as string | {url?: string}
@@ -781,12 +933,12 @@ async function resolveConfig(options: {requireApiKey?: boolean} = {}): Promise<C
       process.env.CURSOR_COMPARISON_REPORT_PATH || DEFAULT_COMPARISON_REPORT_PATH,
     benchmarkReportPath: process.env.CURSOR_BENCHMARK_REPORT_PATH || DEFAULT_BENCHMARK_REPORT_PATH,
     cloudEnvName: process.env.CURSOR_CLOUD_ENV_NAME,
-    cloudEnvType: (process.env.CURSOR_CLOUD_ENV_TYPE as ControlPlaneConfig['cloudEnvType']) || 'cloud',
+    cloudEnvType:
+      (process.env.CURSOR_CLOUD_ENV_TYPE as ControlPlaneConfig['cloudEnvType']) || 'cloud',
     gateReportPath: process.env.CURSOR_GATE_REPORT_PATH || DEFAULT_GATE_REPORT_PATH,
     maxParallelPackages: Number(process.env.CURSOR_MAX_PARALLEL_PACKAGES || '4'),
     models: {
-      orchestratorDefaultModel:
-        process.env.CURSOR_ORCHESTRATOR_MODEL || 'gpt-5.4-xhigh-fast',
+      orchestratorDefaultModel: process.env.CURSOR_ORCHESTRATOR_MODEL || 'gpt-5.4-xhigh-fast',
       deepReasoningModel:
         process.env.CURSOR_DEEP_REASONING_MODEL ||
         process.env.CURSOR_OPUS_MODEL ||
@@ -807,7 +959,10 @@ async function sleep(ms: number): Promise<void> {
 }
 
 function normalizeRepoUrl(url: string): string {
-  return url.replace(/^https?:\/\//, '').replace(/\.git$/, '').toLowerCase()
+  return url
+    .replace(/^https?:\/\//, '')
+    .replace(/\.git$/, '')
+    .toLowerCase()
 }
 
 async function listAgentsForRepository(
@@ -822,9 +977,7 @@ async function listAgentsForRepository(
     const response = await rest.listAgents(cursor)
     for (const item of response.items) {
       const repos = item.repos || []
-      if (
-        repos.some(repo => repo.url && normalizeRepoUrl(repo.url) === normalizedRepositoryUrl)
-      ) {
+      if (repos.some(repo => repo.url && normalizeRepoUrl(repo.url) === normalizedRepositoryUrl)) {
         items.push(item)
       }
     }
@@ -905,8 +1058,7 @@ function getReadyPackages(registry: RegistryFile): PackageDefinition[] {
 }
 
 function buildPackagePrompt(definition: PackageDefinition): string {
-  const dependencyLine =
-    definition.dependsOn.length > 0 ? definition.dependsOn.join(', ') : 'none'
+  const dependencyLine = definition.dependsOn.length > 0 ? definition.dependsOn.join(', ') : 'none'
 
   return [
     `You own the Speedscope migration package "${definition.title}" (${definition.id}).`,
@@ -1008,7 +1160,9 @@ async function runPackage(
   const record = registry.packages[packageId]
 
   if (!areDependenciesGreen(registry, packageId)) {
-    throw new Error(`Package ${packageId} is blocked on dependencies: ${definition.dependsOn.join(', ')}`)
+    throw new Error(
+      `Package ${packageId} is blocked on dependencies: ${definition.dependsOn.join(', ')}`,
+    )
   }
 
   const route = routeModel(
@@ -1138,7 +1292,9 @@ async function syncPackageStatuses(config: ControlPlaneConfig): Promise<Registry
     }
 
     if (definition.kind === 'lead' && record.status !== 'green') {
-      record.status = areDependenciesGreen(registry, definition.id) ? 'queued' : 'waiting_on_children'
+      record.status = areDependenciesGreen(registry, definition.id)
+        ? 'queued'
+        : 'waiting_on_children'
     }
 
     record.updatedAt = new Date().toISOString()
@@ -1375,9 +1531,9 @@ async function compareFixtures(fixtures: string[]): Promise<ComparisonOutcome[]>
       fixture,
       summary: equal
         ? `Parity matched for ${fixture}`
-        : `Parity diverged for ${fixture}: legacy=${legacy == null ? 'null' : 'profile group'}, experimental=${
-            experimental == null ? 'null' : 'profile group'
-          }`,
+        : `Parity diverged for ${fixture}: legacy=${
+            legacy == null ? 'null' : 'profile group'
+          }, experimental=${experimental == null ? 'null' : 'profile group'}`,
     })
   }
   return outcomes
@@ -1403,7 +1559,10 @@ async function benchmarkFixture(fixture: string, engine: ImportEngine): Promise<
   return samples
 }
 
-async function runBenchmarkSuite(config: ControlPlaneConfig, fixtures: string[]): Promise<BenchmarkResult[]> {
+async function runBenchmarkSuite(
+  config: ControlPlaneConfig,
+  fixtures: string[],
+): Promise<BenchmarkResult[]> {
   const results: BenchmarkResult[] = []
   for (const fixture of fixtures) {
     results.push({
@@ -1469,7 +1628,9 @@ async function listLargeLocalFixtures(): Promise<string[]> {
   try {
     await walk(absoluteRoot)
   } catch (error) {
-    console.warn(`Skipping local large fixtures: ${error instanceof Error ? error.message : String(error)}`)
+    console.warn(
+      `Skipping local large fixtures: ${error instanceof Error ? error.message : String(error)}`,
+    )
   }
 
   return results
@@ -1515,7 +1676,9 @@ async function getFixtureSet(): Promise<string[]> {
 
 async function runGate(config: ControlPlaneConfig): Promise<void> {
   const hasCloudApiKey = config.apiKey.length > 0
-  const registry = hasCloudApiKey ? await syncPackageStatuses(config) : await ensureRegistrySeeded(config)
+  const registry = hasCloudApiKey
+    ? await syncPackageStatuses(config)
+    : await ensureRegistrySeeded(config)
   if (!hasCloudApiKey) {
     console.warn(
       'Running gate without CURSOR_API_KEY; package status checks are informational only and the report uses compare-only local mode.',
@@ -1539,9 +1702,11 @@ async function runGate(config: ControlPlaneConfig): Promise<void> {
       }).map(def => `${def.id}:${registry.packages[def.id]?.status || 'missing'}`)
     : []
 
-  const gateResult = {
+  const cutover = await synthesizeIntegrationLane(config, registry, {benchmarkResults: benchmarks})
+
+  const gateResult: GateReport = {
     mode: hasCloudApiKey ? 'cloud-status' : 'compare-only',
-    ok: comparison.every(result => result.equal) && notGreen.length === 0,
+    ok: comparison.every(result => result.equal) && notGreen.length === 0 && cutover.cutoverReady,
     comparison,
     benchmarks,
     packageStatuses: PACKAGE_DEFINITIONS.map(def => ({
@@ -1549,14 +1714,20 @@ async function runGate(config: ControlPlaneConfig): Promise<void> {
       status: registry.packages[def.id]?.status || 'missing',
     })),
     blockingPackages: notGreen,
+    cutover,
   }
 
   await ensureDir(path.dirname(config.gateReportPath))
   await fs.writeFile(config.gateReportPath, `${JSON.stringify(gateResult, null, 2)}\n`, 'utf8')
 
   if (!gateResult.ok) {
+    const cutoverFragment = cutover.cutoverReady
+      ? ''
+      : `, cutover=hold(${cutover.reasonCode}; ${cutover.blockers.join('; ')})`
     throw new Error(
-      `Cutover gate failed. Parity mismatches=${comparison.filter(result => !result.equal).length}, non-green packages=${notGreen.join(', ')}`,
+      `Cutover gate failed. Parity mismatches=${
+        comparison.filter(result => !result.equal).length
+      }, non-green packages=${notGreen.join(', ')}${cutoverFragment}`,
     )
   }
 }
@@ -1590,7 +1761,8 @@ function summarizeLaneReadiness(
     blockingDependencies: statuses
       .filter(dep => dep.status !== 'green' && dep.status !== 'archived')
       .map(dep => `${dep.id}=${dep.status}`),
-    readyDependencies: statuses.filter(dep => dep.status === 'green' || dep.status === 'archived').length,
+    readyDependencies: statuses.filter(dep => dep.status === 'green' || dep.status === 'archived')
+      .length,
     totalDependencies: statuses.length,
   }
 }
@@ -1609,6 +1781,564 @@ async function readJsonReport<T>(filePath: string): Promise<T | null> {
 function getMedianElapsedMs(samples: BenchmarkSample[]): number {
   const sorted = [...samples].sort((a, b) => a.elapsedMs - b.elapsedMs)
   return sorted[Math.floor(sorted.length / 2)]?.elapsedMs || 0
+}
+
+function getEngineSeamProbeFixtures(activeFixtures: string[]): string[] {
+  const preferred = [
+    'sample/profiles/Chrome/69/simple.json',
+    'sample/profiles/stackcollapse/simple.txt',
+    'sample/profiles/stackprof/ruby-stackprof.json',
+    'sample/profiles/speedscope/0.6.0/two-sampled.speedscope.json',
+  ]
+  const active = new Set(activeFixtures)
+  return preferred.filter(fixture => active.has(fixture))
+}
+
+async function probeEngineSeam(fixture: string): Promise<EngineSeamProbeOutcome> {
+  try {
+    const legacy = await importFixtureWithEngine(fixture, 'legacy')
+    const experimental = await importFixtureWithEngine(fixture, 'experimental')
+    const legacyImported = legacy != null
+    const experimentalImported = experimental != null
+    const legacyJSON = legacy == null ? null : JSON.stringify(legacy)
+    const experimentalJSON = experimental == null ? null : JSON.stringify(experimental)
+    const equal = legacyJSON === experimentalJSON
+    const summary = equal
+      ? `Engine seam parity matched for ${fixture}.`
+      : `Engine seam parity diverged for ${fixture}: legacy=${
+          legacyImported ? 'profile group' : 'null'
+        }, experimental=${experimentalImported ? 'profile group' : 'null'}.`
+    return {fixture, equal, legacyImported, experimentalImported, summary}
+  } catch (error) {
+    return {
+      fixture,
+      equal: false,
+      legacyImported: false,
+      experimentalImported: false,
+      summary: `Engine seam probe threw for ${fixture}.`,
+      error: error instanceof Error ? error.message : String(error),
+    }
+  }
+}
+
+function getEngineLaneBenchmarkSnapshot(
+  benchmarkResults: BenchmarkResult[] | null,
+  activeFixtures: string[],
+): EngineLaneSynthesis['benchmarkSnapshot'] {
+  if (!benchmarkResults || benchmarkResults.length === 0) {
+    return null
+  }
+  const active = new Set(activeFixtures)
+  const relevant = benchmarkResults.filter(result => active.has(result.fixture))
+  if (relevant.length === 0) {
+    return null
+  }
+  let faster = 0
+  let slower = 0
+  let tied = 0
+  for (const result of relevant) {
+    const legacyMedian = getMedianElapsedMs(result.legacy)
+    const experimentalMedian = getMedianElapsedMs(result.experimental)
+    if (legacyMedian === experimentalMedian) {
+      tied += 1
+    } else if (experimentalMedian < legacyMedian) {
+      faster += 1
+    } else {
+      slower += 1
+    }
+  }
+  return {fixtureCount: relevant.length, faster, slower, tied}
+}
+
+async function synthesizeEngineLane(
+  config: ControlPlaneConfig,
+  registry: RegistryFile,
+): Promise<EngineLaneSynthesis> {
+  const leadDefinition = getPackageDefinition('engine-lead')
+  const leadRecord = registry.packages[leadDefinition.id]
+  const workers = leadDefinition.dependsOn.map(depId => ({
+    id: depId,
+    status: getPackageStatusDisplay(registry, depId),
+  }))
+  const blockingDependencies = workers
+    .filter(worker => worker.status !== 'green' && worker.status !== 'archived')
+    .map(worker => `${worker.id}=${worker.status}`)
+
+  const activeFixtures = await getFixtureSet()
+  const probeFixtures = getEngineSeamProbeFixtures(activeFixtures)
+  const probes: EngineSeamProbeOutcome[] = []
+  for (const fixture of probeFixtures) {
+    probes.push(await probeEngineSeam(fixture))
+  }
+
+  const seamReady = probes.length > 0 && probes.every(probe => probe.equal)
+  const blockers: string[] = []
+  if (blockingDependencies.length > 0) {
+    blockers.push(`workers:${blockingDependencies.join(',')}`)
+  }
+  if (probes.length === 0) {
+    blockers.push('seam-probes:no-runnable-fixtures')
+  } else if (!seamReady) {
+    const failing = probes.filter(probe => !probe.equal).map(probe => probe.fixture)
+    blockers.push(`seam-probes:${failing.join(',')}`)
+  }
+
+  const benchmarkResults = await readJsonReport<BenchmarkResult[]>(config.benchmarkReportPath)
+  return {
+    leadStatus: leadRecord?.status || 'missing',
+    workers,
+    blockingDependencies,
+    seamReady,
+    fanOutReady: blockers.length === 0,
+    blockers,
+    probes,
+    benchmarkSnapshot: getEngineLaneBenchmarkSnapshot(benchmarkResults, activeFixtures),
+  }
+}
+
+function formatEngineLaneSeamProbe(probe: EngineSeamProbeOutcome): string {
+  if (probe.equal) {
+    return `  PASS ${probe.fixture}`
+  }
+  if (probe.error) {
+    return `  FAIL ${probe.fixture} (${probe.error})`
+  }
+  return `  FAIL ${probe.fixture}`
+}
+
+async function printEngineLaneSynthesis(
+  config: ControlPlaneConfig,
+  registry: RegistryFile,
+): Promise<void> {
+  const synthesis = await synthesizeEngineLane(config, registry)
+  console.log('')
+  console.log('Engine lane synthesis')
+  console.log(
+    `  lead: engine-lead status=${synthesis.leadStatus} fan_out_ready=${
+      synthesis.fanOutReady ? 'yes' : 'no'
+    }`,
+  )
+  console.log(
+    `  workers: ${synthesis.workers.map(worker => `${worker.id}=${worker.status}`).join(', ')}`,
+  )
+  console.log(
+    `  seam probes: ${synthesis.probes.filter(probe => probe.equal).length}/${
+      synthesis.probes.length
+    } matched (legacy oracle preserved)`,
+  )
+  for (const probe of synthesis.probes) {
+    console.log(formatEngineLaneSeamProbe(probe))
+  }
+  if (synthesis.benchmarkSnapshot) {
+    const snapshot = synthesis.benchmarkSnapshot
+    console.log(
+      `  benchmark snapshot: ${snapshot.fixtureCount} fixtures (experimental faster=${snapshot.faster} slower=${snapshot.slower} tied=${snapshot.tied})`,
+    )
+  } else {
+    console.log(
+      `  benchmark snapshot: pending (run ${path.relative(
+        REPO_ROOT,
+        config.benchmarkReportPath,
+      )} via npm run experiment:benchmark)`,
+    )
+  }
+  if (synthesis.blockers.length === 0) {
+    console.log('  importer fan-out: cleared by core engine lane')
+  } else {
+    console.log(`  importer fan-out: blocked (${synthesis.blockers.join('; ')})`)
+    console.log(`  rollback plan: ${getPackageDefinition('engine-lead').rollbackPlan}`)
+  }
+}
+
+function getImporterFamilyProbeFixtures(packageId: string): string[] {
+  const entry = IMPORTER_FAMILY_PROBES.find(item => item.packageId === packageId)
+  if (!entry) {
+    return []
+  }
+  return entry.fixtures.filter(fixture => shouldSkipFixtureForNodeRuntime(fixture) == null)
+}
+
+async function probeImporterFamilyFixture(fixture: string): Promise<ImporterFamilyProbeOutcome> {
+  try {
+    const legacy = await importFixtureWithEngine(fixture, 'legacy')
+    const experimental = await importFixtureWithEngine(fixture, 'experimental')
+    const legacyImported = legacy != null
+    const experimentalImported = experimental != null
+    const legacyJSON = legacy == null ? null : JSON.stringify(legacy)
+    const experimentalJSON = experimental == null ? null : JSON.stringify(experimental)
+    const equal = legacyJSON === experimentalJSON
+    const summary = equal
+      ? `Importer parity matched for ${fixture}.`
+      : `Importer parity diverged for ${fixture}: legacy=${
+          legacyImported ? 'profile group' : 'null'
+        }, experimental=${experimentalImported ? 'profile group' : 'null'}.`
+    return {fixture, equal, legacyImported, experimentalImported, summary}
+  } catch (error) {
+    return {
+      fixture,
+      equal: false,
+      legacyImported: false,
+      experimentalImported: false,
+      summary: `Importer probe threw for ${fixture}.`,
+      error: error instanceof Error ? error.message : String(error),
+    }
+  }
+}
+
+async function synthesizeImporterLane(registry: RegistryFile): Promise<ImporterLaneSynthesis> {
+  const leadDefinition = getPackageDefinition('import-lead')
+  const leadRecord = registry.packages[leadDefinition.id]
+  const families: ImporterFamilySynthesis[] = []
+
+  for (const entry of IMPORTER_FAMILY_PROBES) {
+    const workerStatus = getPackageStatusDisplay(registry, entry.packageId)
+    const probeFixtures = getImporterFamilyProbeFixtures(entry.packageId)
+    const probes: ImporterFamilyProbeOutcome[] = []
+    for (const fixture of probeFixtures) {
+      probes.push(await probeImporterFamilyFixture(fixture))
+    }
+    const hasRunnableFixtures = probes.length > 0
+    const parityReady = hasRunnableFixtures && probes.every(probe => probe.equal)
+    families.push({
+      packageId: entry.packageId,
+      status: workerStatus,
+      workerStatus,
+      probes,
+      parityReady,
+      hasRunnableFixtures,
+    })
+  }
+
+  const blockingFamilies: string[] = []
+  for (const family of families) {
+    const workerBlocked = family.workerStatus !== 'green' && family.workerStatus !== 'archived'
+    if (workerBlocked) {
+      blockingFamilies.push(`${family.packageId}=worker:${family.workerStatus}`)
+    } else if (!family.hasRunnableFixtures) {
+      blockingFamilies.push(`${family.packageId}=parity:no-runnable-fixtures`)
+    } else if (!family.parityReady) {
+      const failures = family.probes.filter(probe => !probe.equal).map(probe => probe.fixture)
+      blockingFamilies.push(`${family.packageId}=parity:${failures.join(',')}`)
+    }
+  }
+
+  return {
+    leadStatus: leadRecord?.status || 'missing',
+    families,
+    blockingFamilies,
+    fanOutReady: blockingFamilies.length === 0,
+  }
+}
+
+function formatImporterFamilyProbe(probe: ImporterFamilyProbeOutcome): string {
+  if (probe.equal) {
+    return `    PASS ${probe.fixture}`
+  }
+  if (probe.error) {
+    return `    FAIL ${probe.fixture} (${probe.error})`
+  }
+  return `    FAIL ${probe.fixture}`
+}
+
+async function printImporterLaneSynthesis(registry: RegistryFile): Promise<void> {
+  const synthesis = await synthesizeImporterLane(registry)
+  const leadDefinition = getPackageDefinition('import-lead')
+
+  console.log('')
+  console.log('Importer lane synthesis')
+  console.log(
+    `  lead: ${leadDefinition.id} status=${synthesis.leadStatus} fan_out_ready=${
+      synthesis.fanOutReady ? 'yes' : 'no'
+    }`,
+  )
+  for (const family of synthesis.families) {
+    const matched = family.probes.filter(probe => probe.equal).length
+    const total = family.probes.length
+    const parityLabel = family.hasRunnableFixtures
+      ? `${matched}/${total} parity matched`
+      : 'parity skipped (no runnable fixtures in this runtime)'
+    console.log(`  ${family.packageId}: worker=${family.workerStatus}, ${parityLabel}`)
+    for (const probe of family.probes) {
+      console.log(formatImporterFamilyProbe(probe))
+    }
+  }
+
+  if (synthesis.fanOutReady) {
+    console.log('  importer fan-out: cleared (legacy oracle preserved across families)')
+  } else {
+    console.log(`  importer fan-out: blocked (${synthesis.blockingFamilies.join('; ')})`)
+    console.log(`  rollback plan: ${leadDefinition.rollbackPlan}`)
+  }
+}
+
+function getIntegrationCutoverProbeFixtures(activeFixtures: string[]): string[] {
+  const active = new Set(activeFixtures)
+  return INTEGRATION_CUTOVER_PROBE_FIXTURES.filter(fixture => active.has(fixture))
+}
+
+async function probeIntegrationCutoverFixture(
+  fixture: string,
+): Promise<IntegrationCutoverProbeOutcome> {
+  let comparisonResult: ImportComparisonResult | null = null
+  try {
+    const {buffer, fileName} = await readFixture(fixture)
+    await importProfilesFromArrayBuffer(fileName, buffer, {
+      engine: 'experimental',
+      compareAgainst: 'legacy',
+      comparisonMode: 'warn',
+      onComparison: result => {
+        comparisonResult = result
+      },
+    })
+  } catch (error) {
+    return {
+      fixture,
+      primaryEngine: 'experimental',
+      comparisonEngine: 'legacy',
+      equal: false,
+      comparisonMode: 'warn',
+      summary: `Dual-run seam threw for ${fixture}.`,
+      error: error instanceof Error ? error.message : String(error),
+    }
+  }
+
+  const result = comparisonResult as ImportComparisonResult | null
+
+  if (!result) {
+    return {
+      fixture,
+      primaryEngine: 'experimental',
+      comparisonEngine: 'legacy',
+      equal: false,
+      comparisonMode: 'warn',
+      summary: `Dual-run seam did not emit a comparison result for ${fixture}.`,
+    }
+  }
+
+  return {
+    fixture,
+    primaryEngine: result.primaryEngine,
+    comparisonEngine: result.secondaryEngine,
+    equal: result.equal,
+    comparisonMode: 'warn',
+    summary: result.summary,
+  }
+}
+
+function getIntegrationCutoverBenchmarkSnapshot(
+  benchmarkResults: BenchmarkResult[] | null,
+  activeFixtures: string[],
+): IntegrationBenchmarkSnapshot | null {
+  if (!benchmarkResults || benchmarkResults.length === 0) {
+    return null
+  }
+  const active = new Set(activeFixtures)
+  const relevant = benchmarkResults.filter(result => active.has(result.fixture))
+  if (relevant.length === 0) {
+    return null
+  }
+
+  let faster = 0
+  let slower = 0
+  let tied = 0
+  let worstSlowdownRatio: number | null = null
+  let worstSlowdownFixture: string | null = null
+
+  for (const result of relevant) {
+    const legacyMedian = getMedianElapsedMs(result.legacy)
+    const experimentalMedian = getMedianElapsedMs(result.experimental)
+    if (legacyMedian === experimentalMedian) {
+      tied += 1
+      continue
+    }
+    if (experimentalMedian < legacyMedian) {
+      faster += 1
+      continue
+    }
+    slower += 1
+    if (legacyMedian > 0) {
+      const ratio = experimentalMedian / legacyMedian
+      if (worstSlowdownRatio == null || ratio > worstSlowdownRatio) {
+        worstSlowdownRatio = ratio
+        worstSlowdownFixture = result.fixture
+      }
+    }
+  }
+
+  return {
+    fixtureCount: relevant.length,
+    faster,
+    slower,
+    tied,
+    worstSlowdownRatio,
+    worstSlowdownFixture,
+  }
+}
+
+function evaluateIntegrationCutoverSummary(input: {
+  workers: Array<{id: string; status: string}>
+  upstreamLeads: Array<{id: string; status: string}>
+  probes: IntegrationCutoverProbeOutcome[]
+  benchmarkSnapshot: IntegrationBenchmarkSnapshot | null
+  rollbackPlan: string
+}): IntegrationCutoverSummary {
+  const workerBlockers = input.workers
+    .filter(worker => worker.status !== 'green' && worker.status !== 'archived')
+    .map(worker => `${worker.id}=${worker.status}`)
+  const upstreamLeadBlockers = input.upstreamLeads
+    .filter(lead => lead.status !== 'green' && lead.status !== 'archived')
+    .map(lead => `${lead.id}=${lead.status}`)
+  const failingProbes = input.probes.filter(probe => !probe.equal).map(probe => probe.fixture)
+
+  let reasonCode: IntegrationCutoverSummary['reasonCode']
+  let blockers: string[]
+
+  if (workerBlockers.length > 0) {
+    reasonCode = 'workers-blocked'
+    blockers = workerBlockers
+  } else if (upstreamLeadBlockers.length > 0) {
+    reasonCode = 'upstream-leads-blocked'
+    blockers = upstreamLeadBlockers
+  } else if (input.probes.length === 0) {
+    reasonCode = 'no-runnable-fixtures'
+    blockers = ['cutover-probes:no-runnable-fixtures']
+  } else if (failingProbes.length > 0) {
+    reasonCode = 'parity-divergence'
+    blockers = failingProbes.map(fixture => `cutover-probes:${fixture}`)
+  } else {
+    reasonCode = 'cleared'
+    blockers = []
+  }
+
+  return {
+    cutoverReady: reasonCode === 'cleared',
+    recommendation: reasonCode === 'cleared' ? 'cutover' : 'hold',
+    reasonCode,
+    blockers,
+    workers: input.workers,
+    upstreamLeads: input.upstreamLeads,
+    probes: input.probes,
+    benchmarkSnapshot: input.benchmarkSnapshot,
+    rollbackPlan: input.rollbackPlan,
+  }
+}
+
+async function synthesizeIntegrationLane(
+  config: ControlPlaneConfig,
+  registry: RegistryFile,
+  options?: {benchmarkResults?: BenchmarkResult[] | null},
+): Promise<IntegrationCutoverSummary> {
+  const leadDefinition = getPackageDefinition(INTEGRATION_LEAD_PACKAGE_ID)
+  const workers = INTEGRATION_WORKER_PACKAGE_IDS.map(id => ({
+    id,
+    status: getPackageStatusDisplay(registry, id),
+  }))
+  const upstreamLeads = INTEGRATION_UPSTREAM_LEAD_PACKAGE_IDS.map(id => ({
+    id,
+    status: getPackageStatusDisplay(registry, id),
+  }))
+
+  const activeFixtures = await getFixtureSet()
+  const probeFixtures = getIntegrationCutoverProbeFixtures(activeFixtures)
+  const probes: IntegrationCutoverProbeOutcome[] = []
+  for (const fixture of probeFixtures) {
+    probes.push(await probeIntegrationCutoverFixture(fixture))
+  }
+
+  const benchmarkResults =
+    options?.benchmarkResults !== undefined
+      ? options.benchmarkResults
+      : await readJsonReport<BenchmarkResult[]>(config.benchmarkReportPath)
+
+  return evaluateIntegrationCutoverSummary({
+    workers,
+    upstreamLeads,
+    probes,
+    benchmarkSnapshot: getIntegrationCutoverBenchmarkSnapshot(
+      benchmarkResults || null,
+      activeFixtures,
+    ),
+    rollbackPlan: leadDefinition.rollbackPlan,
+  })
+}
+
+function formatIntegrationCutoverProbe(probe: IntegrationCutoverProbeOutcome): string {
+  if (probe.equal) {
+    return `    PASS ${probe.fixture} (${probe.primaryEngine} matched ${probe.comparisonEngine})`
+  }
+  if (probe.error) {
+    return `    FAIL ${probe.fixture} (${probe.error})`
+  }
+  return `    FAIL ${probe.fixture} (${probe.summary})`
+}
+
+async function printIntegrationLaneSynthesis(
+  config: ControlPlaneConfig,
+  registry: RegistryFile,
+  options?: {benchmarkResults?: BenchmarkResult[] | null},
+): Promise<IntegrationCutoverSummary> {
+  const summary = await synthesizeIntegrationLane(config, registry, options)
+
+  console.log('')
+  console.log('Integration lane synthesis')
+  console.log(
+    `  lead: ${INTEGRATION_LEAD_PACKAGE_ID} status=${getPackageStatusDisplay(
+      registry,
+      INTEGRATION_LEAD_PACKAGE_ID,
+    )} cutover_ready=${summary.cutoverReady ? 'yes' : 'no'} recommendation=${
+      summary.recommendation
+    }`,
+  )
+  console.log(
+    `  workers: ${summary.workers.map(worker => `${worker.id}=${worker.status}`).join(', ')}`,
+  )
+  console.log(
+    `  upstream leads: ${summary.upstreamLeads
+      .map(lead => `${lead.id}=${lead.status}`)
+      .join(', ')}`,
+  )
+
+  const matched = summary.probes.filter(probe => probe.equal).length
+  const total = summary.probes.length
+  const probeLabel =
+    total === 0
+      ? 'cutover probes: skipped (no runnable fixtures in this runtime)'
+      : `cutover probes: ${matched}/${total} matched (legacy oracle preserved through dual-run seam)`
+  console.log(`  ${probeLabel}`)
+  for (const probe of summary.probes) {
+    console.log(formatIntegrationCutoverProbe(probe))
+  }
+
+  if (summary.benchmarkSnapshot) {
+    const snapshot = summary.benchmarkSnapshot
+    const worst =
+      snapshot.worstSlowdownRatio != null && snapshot.worstSlowdownFixture
+        ? ` worst-slowdown=${snapshot.worstSlowdownRatio.toFixed(2)}x@${
+            snapshot.worstSlowdownFixture
+          }`
+        : ''
+    console.log(
+      `  benchmark snapshot: ${snapshot.fixtureCount} fixtures (experimental faster=${snapshot.faster} slower=${snapshot.slower} tied=${snapshot.tied})${worst}`,
+    )
+  } else {
+    console.log(
+      `  benchmark snapshot: pending (run npm run experiment:benchmark to populate ${path.relative(
+        REPO_ROOT,
+        config.benchmarkReportPath,
+      )})`,
+    )
+  }
+
+  if (summary.cutoverReady) {
+    console.log('  cutover: cleared (legacy oracle preserved across the integration boundary)')
+  } else {
+    console.log(
+      `  cutover: hold (reason=${summary.reasonCode}; blockers=${summary.blockers.join('; ')})`,
+    )
+    console.log(`  rollback plan: ${summary.rollbackPlan}`)
+  }
+
+  return summary
 }
 
 function summarizeFixtureList(fixtures: string[]): string {
@@ -1655,12 +2385,18 @@ function summarizeBenchmarkResults(results: BenchmarkResult[]) {
   let faster = 0
   let slower = 0
   let tied = 0
-  let bestImprovement:
-    | {fixture: string; legacyMedianMs: number; experimentalMedianMs: number; deltaPercent: number}
-    | null = null
-  let worstRegression:
-    | {fixture: string; legacyMedianMs: number; experimentalMedianMs: number; deltaPercent: number}
-    | null = null
+  let bestImprovement: {
+    fixture: string
+    legacyMedianMs: number
+    experimentalMedianMs: number
+    deltaPercent: number
+  } | null = null
+  let worstRegression: {
+    fixture: string
+    legacyMedianMs: number
+    experimentalMedianMs: number
+    deltaPercent: number
+  } | null = null
 
   for (const result of results) {
     const legacyMedianMs = getMedianElapsedMs(result.legacy)
@@ -1733,44 +2469,54 @@ async function printHarnessLaneSynthesis(
     const mismatches = comparisonReport.comparison.filter(result => !result.equal)
     const matches = comparisonReport.comparison.length - mismatches.length
     console.log(
-      `  oracle parity: ${matches}/${comparisonReport.comparison.length} matched (${formatFixtureCoverage(
+      `  oracle parity: ${matches}/${
+        comparisonReport.comparison.length
+      } matched (${formatFixtureCoverage(
         comparisonReport.fixtures,
         fixtureInventory.activeFixtures,
       )})`,
     )
   } else {
     console.log(
-      `  oracle parity: pending (${registry.packages['golden-oracle']?.status || 'missing'}; missing ${path.relative(
-        REPO_ROOT,
-        config.comparisonReportPath,
-      )})`,
+      `  oracle parity: pending (${
+        registry.packages['golden-oracle']?.status || 'missing'
+      }; missing ${path.relative(REPO_ROOT, config.comparisonReportPath)})`,
     )
   }
 
   if (benchmarkResults) {
     const summary = summarizeBenchmarkResults(benchmarkResults)
     console.log(
-      `  benchmark: ${benchmarkResults.length} fixtures, experimental faster=${summary.faster} slower=${summary.slower} tied=${summary.tied} (${formatFixtureCoverage(
+      `  benchmark: ${benchmarkResults.length} fixtures, experimental faster=${
+        summary.faster
+      } slower=${summary.slower} tied=${summary.tied} (${formatFixtureCoverage(
         benchmarkResults.map(result => result.fixture),
         fixtureInventory.activeFixtures,
       )})`,
     )
     if (summary.bestImprovement) {
       console.log(
-        `  best improvement: ${summary.bestImprovement.fixture} ${formatPercentDelta(summary.bestImprovement.deltaPercent)} (${summary.bestImprovement.legacyMedianMs}ms -> ${summary.bestImprovement.experimentalMedianMs}ms median)`,
+        `  best improvement: ${summary.bestImprovement.fixture} ${formatPercentDelta(
+          summary.bestImprovement.deltaPercent,
+        )} (${summary.bestImprovement.legacyMedianMs}ms -> ${
+          summary.bestImprovement.experimentalMedianMs
+        }ms median)`,
       )
     }
     if (summary.worstRegression) {
       console.log(
-        `  worst regression: ${summary.worstRegression.fixture} ${formatPercentDelta(summary.worstRegression.deltaPercent)} (${summary.worstRegression.legacyMedianMs}ms -> ${summary.worstRegression.experimentalMedianMs}ms median)`,
+        `  worst regression: ${summary.worstRegression.fixture} ${formatPercentDelta(
+          summary.worstRegression.deltaPercent,
+        )} (${summary.worstRegression.legacyMedianMs}ms -> ${
+          summary.worstRegression.experimentalMedianMs
+        }ms median)`,
       )
     }
   } else {
     console.log(
-      `  benchmark: pending (${registry.packages['bench-runner']?.status || 'missing'}; missing ${path.relative(
-        REPO_ROOT,
-        config.benchmarkReportPath,
-      )})`,
+      `  benchmark: pending (${
+        registry.packages['bench-runner']?.status || 'missing'
+      }; missing ${path.relative(REPO_ROOT, config.benchmarkReportPath)})`,
     )
   }
 }
@@ -1797,11 +2543,18 @@ function summarizeBenchmarkReport(results: BenchmarkResult[]): string {
 
 function summarizeGateReport(report: GateReport): string {
   const parityMismatches = report.comparison.filter(result => !result.equal).length
-  return `${report.ok ? 'PASS' : 'FAIL'} parity mismatches=${parityMismatches}, blocking packages=${report.blockingPackages.length}, benchmark fixtures=${report.benchmarks.length}`
+  const cutover = report.cutover
+    ? `, cutover=${report.cutover.cutoverReady ? 'cleared' : `hold(${report.cutover.reasonCode})`}`
+    : ''
+  return `${report.ok ? 'PASS' : 'FAIL'} parity mismatches=${parityMismatches}, blocking packages=${
+    report.blockingPackages.length
+  }, benchmark fixtures=${report.benchmarks.length}${cutover}`
 }
 
 async function printReport(config: ControlPlaneConfig): Promise<void> {
-  const registry = config.apiKey ? await syncPackageStatuses(config) : await ensureRegistrySeeded(config)
+  const registry = config.apiKey
+    ? await syncPackageStatuses(config)
+    : await ensureRegistrySeeded(config)
   const benchmarkReport = await readJsonReport<BenchmarkResult[]>(config.benchmarkReportPath)
   const gateReport = await readJsonReport<GateReport>(config.gateReportPath)
 
@@ -1816,9 +2569,11 @@ async function printReport(config: ControlPlaneConfig): Promise<void> {
     const leadStatus = getPackageStatusDisplay(registry, definition.id)
     const laneSummary = summarizeLaneReadiness(registry, definition)
     console.log(
-      `${definition.lane.padEnd(12)} ${definition.id.padEnd(24)} ${leadStatus.padEnd(18)} deps ${String(
-        laneSummary.readyDependencies,
-      ).padStart(1)}/${laneSummary.totalDependencies}`,
+      `${definition.lane.padEnd(12)} ${definition.id.padEnd(24)} ${leadStatus.padEnd(
+        18,
+      )} deps ${String(laneSummary.readyDependencies).padStart(1)}/${
+        laneSummary.totalDependencies
+      }`,
     )
     if (laneSummary.blockingDependencies.length > 0) {
       console.log(`  blockers: ${laneSummary.blockingDependencies.join(', ')}`)
@@ -1847,11 +2602,18 @@ async function printReport(config: ControlPlaneConfig): Promise<void> {
     )
   }
   await printHarnessLaneSynthesis(config, registry)
+  await printEngineLaneSynthesis(config, registry)
+  await printImporterLaneSynthesis(registry)
+  await printIntegrationLaneSynthesis(config, registry, {benchmarkResults: benchmarkReport})
 }
 
 async function printGraph(): Promise<void> {
   for (const definition of PACKAGE_DEFINITIONS) {
-    console.log(`${definition.id} -> ${definition.dependsOn.length ? definition.dependsOn.join(', ') : '(root)'}`)
+    console.log(
+      `${definition.id} -> ${
+        definition.dependsOn.length ? definition.dependsOn.join(', ') : '(root)'
+      }`,
+    )
   }
 }
 
@@ -1882,7 +2644,9 @@ async function runDoctor(config: ControlPlaneConfig): Promise<void> {
 
   console.log(`Repository: ${config.repositoryUrl}`)
   console.log(`Base branch: ${config.baseBranch}`)
-  console.log(`Cloud env: ${config.cloudEnvType}${config.cloudEnvName ? `/${config.cloudEnvName}` : ''}`)
+  console.log(
+    `Cloud env: ${config.cloudEnvType}${config.cloudEnvName ? `/${config.cloudEnvName}` : ''}`,
+  )
   console.log(`Registry: ${path.relative(REPO_ROOT, config.registryPath)}`)
   console.log(`Authenticated as: ${JSON.stringify(me)}`)
   console.log(
@@ -1902,7 +2666,9 @@ async function runCompareCommand(config: ControlPlaneConfig): Promise<void> {
   }
   const failures = comparison.filter(result => !result.equal)
   if (failures.length > 0) {
-    throw new Error(`${failures.length} fixtures diverged between legacy and experimental import paths.`)
+    throw new Error(
+      `${failures.length} fixtures diverged between legacy and experimental import paths.`,
+    )
   }
 }
 
@@ -1911,9 +2677,9 @@ async function runBenchmarkCommand(config: ControlPlaneConfig): Promise<void> {
   const results = await runBenchmarkSuite(config, fixtures)
   for (const result of results) {
     console.log(
-      `${result.fixture}\n  legacy: ${formatSampleSummary(result.legacy)}\n  experimental: ${formatSampleSummary(
-        result.experimental,
-      )}`,
+      `${result.fixture}\n  legacy: ${formatSampleSummary(
+        result.legacy,
+      )}\n  experimental: ${formatSampleSummary(result.experimental)}`,
     )
   }
 }
@@ -1973,7 +2739,9 @@ async function main(): Promise<void> {
       return
     default:
       throw new Error(
-        `Unknown command "${command || ''}". Expected one of: doctor, graph, report, run-package, run-ready, sync, collect-artifacts, compare, benchmark, gate`,
+        `Unknown command "${
+          command || ''
+        }". Expected one of: doctor, graph, report, run-package, run-ready, sync, collect-artifacts, compare, benchmark, gate`,
       )
   }
 }
@@ -1987,13 +2755,23 @@ if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {
 
 export {
   DEFAULT_FIXTURES,
+  INTEGRATION_CUTOVER_PROBE_FIXTURES,
+  INTEGRATION_LEAD_PACKAGE_ID,
+  INTEGRATION_UPSTREAM_LEAD_PACKAGE_IDS,
+  INTEGRATION_WORKER_PACKAGE_IDS,
   PACKAGE_DEFINITIONS,
   buildPackagePrompt,
   compareFixtures,
+  evaluateIntegrationCutoverSummary,
   ensureRegistrySeeded,
   getFixtureSet,
+  getIntegrationCutoverBenchmarkSnapshot,
+  getIntegrationCutoverProbeFixtures,
   getReadyPackages,
+  probeEngineSeam,
+  probeIntegrationCutoverFixture,
   resolveConfig,
   routeModel,
   runBenchmarkSuite,
+  synthesizeEngineLane,
 }

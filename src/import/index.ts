@@ -105,7 +105,9 @@ function createComparisonResult(
       primaryEngine,
       secondaryEngine,
       equal: false,
-      summary: `${primaryEngine} returned ${primaryResult == null ? 'null' : 'a profile group'} while ${secondaryEngine} returned ${
+      summary: `${primaryEngine} returned ${
+        primaryResult == null ? 'null' : 'a profile group'
+      } while ${secondaryEngine} returned ${
         secondaryResult == null ? 'null' : 'a profile group'
       } for ${fileName}.`,
     }
@@ -300,7 +302,9 @@ async function importJfrProfileGroup(fileName: string, buffer: ArrayBuffer) {
   return importFromJfr(fileName, buffer)
 }
 
-async function importLegacyProfileGroup(dataSource: ProfileDataSource): Promise<ProfileGroup | null> {
+async function importLegacyProfileGroup(
+  dataSource: ProfileDataSource,
+): Promise<ProfileGroup | null> {
   const fileName = await dataSource.name()
 
   const buffer = await dataSource.readAsArrayBuffer()
