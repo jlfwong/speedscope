@@ -19,6 +19,10 @@ import {FlamechartSearchContextProvider} from './flamechart-search-view'
 import {Theme, useTheme} from './themes/theme'
 import {FlamechartID, FlamechartViewState} from '../app-state/profile-group'
 import {profileGroupAtom} from '../app-state'
+import {
+  createChronoFlamechart as createExperimentalChronoFlamechart,
+  createLeftHeavyFlamechart as createExperimentalLeftHeavyFlamechart,
+} from '../experimental/core'
 
 interface FlamechartSetters {
   setLogicalSpaceViewportSize: (logicalSpaceViewportSize: Vec2) => void
@@ -74,12 +78,7 @@ export const getChronoViewFlamechart = memoizeByShallowEquality(
     profile: Profile
     getColorBucketForFrame: (frame: Frame) => number
   }): Flamechart => {
-    return new Flamechart({
-      getTotalWeight: profile.getTotalWeight.bind(profile),
-      forEachCall: profile.forEachCall.bind(profile),
-      formatValue: profile.formatValue.bind(profile),
-      getColorBucketForFrame,
-    })
+    return createExperimentalChronoFlamechart(profile, getColorBucketForFrame)
   },
 )
 
@@ -159,12 +158,7 @@ export const getLeftHeavyFlamechart = memoizeByShallowEquality(
     profile: Profile
     getColorBucketForFrame: (frame: Frame) => number
   }): Flamechart => {
-    return new Flamechart({
-      getTotalWeight: profile.getTotalNonIdleWeight.bind(profile),
-      forEachCall: profile.forEachCallGrouped.bind(profile),
-      formatValue: profile.formatValue.bind(profile),
-      getColorBucketForFrame,
-    })
+    return createExperimentalLeftHeavyFlamechart(profile, getColorBucketForFrame)
   },
 )
 

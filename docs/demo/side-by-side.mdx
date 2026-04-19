@@ -1,0 +1,59 @@
+# Run Side by Side
+
+The simplest way to validate this repo is to run the unchanged Speedscope UI twice: once with the classic importer and once with the Rust/WASM importer as the default path.
+
+## Recommended local flow
+
+<CommandBlock title="Install the docs site dependencies" command="npm run showcase:install" />
+
+<CommandBlock title="Launch the showcase site" command="npm run showcase:dev" />
+
+<CommandBlock title="Launch both Speedscope UI ports" command="npm run serve:side-by-side" />
+
+The default ports are:
+
+- Classic UI: `http://127.0.0.1:8000`
+- Rust/WASM UI: `http://127.0.0.1:8001`
+- Showcase/docs site: `http://127.0.0.1:4321`
+
+## What to validate
+
+1. Open the same profile file in both UI tabs.
+2. Confirm that the flamecharts, minimap, and interactions look the same.
+3. Use a sampled Speedscope file first, because that is the current Rust/WASM fast path.
+4. Use at least one non-sampled file as a control to verify that the broader import surface is still preserved.
+
+## Large-file demo
+
+Generate the 112 MB sampled demo file locally:
+
+<CommandBlock
+  title="Generate the large sampled demo file"
+  command="npm run experiment:benchmark-rust-sampled -- --samples=1000000 --runs=1 --skip-parity=1 --write-file=demo/fixtures/generated/synthetic-sampled-1m.speedscope.json"
+/>
+
+Then load `demo/fixtures/generated/synthetic-sampled-1m.speedscope.json` into both tabs. This is the easiest way to see the current large-file Rust/WASM advantage with the unchanged UI.
+
+If you want a measured end-to-end number instead of a visual side-by-side impression, generate the larger balanced browser benchmark file and run the browser-visible harness:
+
+<CommandBlock
+  title="Generate the 224 MB balanced browser benchmark file"
+  command="npm run experiment:benchmark-rust-sampled -- --samples=2000000 --stack-run-length=100 --runs=1 --write-only=1 --write-file=demo/fixtures/generated/synthetic-sampled-2m-balanced-crossover.speedscope.json"
+/>
+
+<CommandBlock
+  title="Measure upload-to-first-flamegraph browser time"
+  command="npm run experiment:benchmark-browser-visible -- --file=demo/fixtures/generated/synthetic-sampled-2m-balanced-crossover.speedscope.json --runs=3"
+/>
+
+## Curated demo fixtures
+
+<FixtureGallery />
+
+<Callout title="Best show-and-tell sequence" tone="info">
+Start with the small sampled Speedscope JSON fixture to prove that the UI is unchanged while the importer underneath changes. Then generate and load the 112 MB sampled demo file for the manual side-by-side demo. When you want a repeatable headline number, generate the 224 MB balanced file and run the browser-visible benchmark harness. Finish with the Chrome trace fixture to show that the repo still preserves the original Speedscope breadth.
+</Callout>
+
+## Rebuild and benchmark commands
+
+<ShowcaseLinks />

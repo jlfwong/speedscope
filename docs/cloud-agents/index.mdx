@@ -1,0 +1,43 @@
+# Cloud Agents
+
+The cloud-agent system is the real differentiator in this repo. The Rust code matters, but the public lesson is that a migration like this only becomes manageable when the orchestration layer is explicit: package graph, model routing, retries, parity gates, benchmark gates, artifact collection, and cutover logic.
+
+<Callout title="Where the control plane lives" tone="info">
+The canonical source is `scripts/cloud-control-plane.ts`. This repo also promotes that work through the top-level `cloud-agents/` documentation so people can understand the system before diving into the script itself.
+</Callout>
+
+## Why a control plane was necessary
+
+- The migration crossed importer code, profile-core code, benchmark infrastructure, and UI seams.
+- Different tasks needed different model behavior. Some were bounded implementation tasks, while others needed cross-package orchestration and synthesis.
+- The repo needed repeatable parity and benchmark gates before any public cutover story would be credible.
+
+## Control-plane shape
+
+<CloudAgentHighlights />
+
+## How we split work across GPT-5.4, Opus, and Composer
+
+<ModelRoutingCards />
+
+The public story here is not "we used many models because it sounds impressive." The useful part is that the control plane deliberately delegated different kinds of work to different slots:
+
+- **Composer** handled bounded execution-heavy worker packages once the task was local, specific, and already well-defined.
+- **GPT-5.4** handled orchestration and synthesis across the package graph, where the work was less about raw implementation and more about coordination, planning, and integration judgment.
+- **Opus** was kept as the deep-reasoning escalation path for ambiguous, high-blast-radius, or repeatedly failing work.
+
+That split is encoded in the routing policy in `scripts/cloud-control-plane.ts`: high-spec, low-ambiguity single-package worker tasks route to the executor slot, while harder or more cross-cutting tasks stay with the orchestration slot or escalate into the deep-reasoning slot.
+
+## What the script actually does
+
+- Defines a package graph with lane leads and worker packages.
+- Classifies work by ambiguity, blast radius, scope, and failure history.
+- Chooses models through a routing policy instead of hard-coding one model for everything.
+- Tracks package state in a registry so runs can be resumed and synchronized.
+- Runs doctor, compare, benchmark, report, graph, and gate commands from one orchestration surface.
+
+<CommandBlock title="Primary orchestration entry points" command={`npm run experiment:doctor\nnpm run experiment:graph\nnpm run experiment:report\nnpm run experiment:gate`} />
+
+## Why this is the highlight
+
+If this repo only contained a Rust crate and a benchmark chart, it would be an optimization story. The reason it is worth showing off is that the repo also demonstrates a repeatable way to use Cursor cloud agents to break a large migration into testable packages, recover from failures, and keep the final synthesis branch honest.

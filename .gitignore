@@ -4,3 +4,6 @@ dist
 .idea
 coverage
 .vscode
+.env
+.DS_Store
+demo/fixtures/generated/

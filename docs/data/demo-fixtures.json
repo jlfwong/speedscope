@@ -1,0 +1,70 @@
+{
+  "fixtures": [
+    {
+      "label": "Sampled Speedscope JSON",
+      "kind": "Best Rust path demo",
+      "path": "sample/profiles/speedscope/0.6.0/two-sampled.speedscope.json",
+      "why": "This is the clearest same-file validation path for the new Rust/WASM sampled importer while keeping the UI comparison dead simple."
+    },
+    {
+      "label": "Generated 112 MB sampled profile",
+      "kind": "Large-file Rust demo",
+      "path": "demo/fixtures/generated/synthetic-sampled-1m.speedscope.json",
+      "why": "Generate this locally to show the large-file Rust/WASM win on the current sampled fast path without changing the UI."
+    },
+    {
+      "label": "Generated 224 MB balanced sampled profile",
+      "kind": "Browser-visible benchmark file",
+      "path": "demo/fixtures/generated/synthetic-sampled-2m-balanced-crossover.speedscope.json",
+      "why": "Use this with the browser-visible benchmark harness when you want a measured upload-to-first-flamegraph result instead of a purely visual side-by-side comparison."
+    },
+    {
+      "label": "Chrome trace",
+      "kind": "Original coverage proof",
+      "path": "sample/profiles/Chrome/116/Trace-20230603T221323.json",
+      "why": "This keeps the showcase honest: the original TypeScript importers still matter and still power non-sampled formats."
+    },
+    {
+      "label": "Collapsed stack profile",
+      "kind": "Fast sanity check",
+      "path": "sample/profiles/stackcollapse/simple.txt",
+      "why": "A quick validation file for the classic UI and the existing multi-format importer surface."
+    },
+    {
+      "label": "Callgrind log",
+      "kind": "Legacy breadth",
+      "path": "sample/profiles/callgrind/callgrind.example.log",
+      "why": "Useful for showing that the repo still preserves the broader Speedscope format ecosystem."
+    }
+  ],
+  "commands": [
+    {
+      "label": "Launch the docs site",
+      "command": "npm run showcase:dev"
+    },
+    {
+      "label": "Launch both UI ports",
+      "command": "npm run serve:side-by-side"
+    },
+    {
+      "label": "Rebuild the wasm packages",
+      "command": "npm run experiment:build-rust-wasm"
+    },
+    {
+      "label": "Run the sampled benchmark harness",
+      "command": "npm run experiment:benchmark-rust-sampled -- --samples=250000 --runs=5"
+    },
+    {
+      "label": "Generate the 112 MB sampled demo file",
+      "command": "npm run experiment:benchmark-rust-sampled -- --samples=1000000 --runs=1 --skip-parity=1 --write-file=demo/fixtures/generated/synthetic-sampled-1m.speedscope.json"
+    },
+    {
+      "label": "Generate the 224 MB balanced browser benchmark file",
+      "command": "npm run experiment:benchmark-rust-sampled -- --samples=2000000 --stack-run-length=100 --runs=1 --write-only=1 --write-file=demo/fixtures/generated/synthetic-sampled-2m-balanced-crossover.speedscope.json"
+    },
+    {
+      "label": "Measure repeated upload-to-flamegraph browser time",
+      "command": "npm run experiment:benchmark-browser-visible -- --file=demo/fixtures/generated/synthetic-sampled-2m-balanced-crossover.speedscope.json --runs=3"
+    }
+  ]
+}

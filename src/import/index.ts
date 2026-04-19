@@ -24,54 +24,267 @@ import {isTraceEventFormatted, importTraceEvents} from './trace-event'
 import {importFromCallgrind} from './callgrind'
 import {importFromPapyrus} from './papyrus'
 import {importFromPMCStatCallGraph} from './pmcstat-callgraph'
-import {importFromJfr, isJfrRecording} from './java-flight-recorder'
+import {
+  DEFAULT_IMPORT_ENGINE,
+  ImportComparisonMode,
+  ImportComparisonResult,
+  ImportEngine,
+  ImportProfileOptions,
+} from '../experimental/contracts'
+import {
+  canonicalizeProfileGroup,
+  importExperimentalFromDirectoryEntry,
+  importExperimentalProfileGroup,
+  runImportEngine,
+} from '../experimental/engine'
+
+interface ResolvedImportOptions {
+  compareAgainst: ImportEngine | null
+  comparisonMode: ImportComparisonMode
+  engine: ImportEngine
+  onComparison?: (result: ImportComparisonResult) => void
+}
+
+function resolveImportOptions(options?: ImportProfileOptions): ResolvedImportOptions {
+  return {
+    engine: options?.engine ?? DEFAULT_IMPORT_ENGINE,
+    compareAgainst: options?.compareAgainst ?? null,
+    comparisonMode: options?.comparisonMode ?? 'off',
+    onComparison: options?.onComparison,
+  }
+}
+
+function finalizeImportedProfileGroup(
+  fileName: string,
+  profileGroup: ProfileGroup | null,
+): ProfileGroup | null {
+  if (!profileGroup) {
+    return null
+  }
+  if (!profileGroup.name) {
+    profileGroup.name = fileName
+  }
+  for (const profile of profileGroup.profiles) {
+    if (!profile.getName()) {
+      profile.setName(fileName)
+    }
+  }
+  return profileGroup
+}
+
+function summarizeCanonicalProfileGroup(profileGroup: ProfileGroup): string {
+  const canonical = canonicalizeProfileGroup(profileGroup)
+  return [
+    `profiles=${canonical.profiles.length}`,
+    `frames=${canonical.shared.frames.length}`,
+    `active=${canonical.activeProfileIndex}`,
+    `names=${canonical.profiles.map(profile => profile.name).join('|')}`,
+  ].join(', ')
+}
+
+function createComparisonResult(
+  fileName: string,
+  primaryEngine: ImportEngine,
+  secondaryEngine: ImportEngine,
+  primaryResult: ProfileGroup | null,
+  secondaryResult: ProfileGroup | null,
+): ImportComparisonResult {
+  if (primaryResult == null && secondaryResult == null) {
+    return {
+      fileName,
+      primaryEngine,
+      secondaryEngine,
+      equal: true,
+      summary: `Both ${primaryEngine} and ${secondaryEngine} rejected ${fileName} as unsupported.`,
+    }
+  }
+
+  if (primaryResult == null || secondaryResult == null) {
+    return {
+      fileName,
+      primaryEngine,
+      secondaryEngine,
+      equal: false,
+      summary: `${primaryEngine} returned ${
+        primaryResult == null ? 'null' : 'a profile group'
+      } while ${secondaryEngine} returned ${
+        secondaryResult == null ? 'null' : 'a profile group'
+      } for ${fileName}.`,
+    }
+  }
+
+  const primaryJSON = JSON.stringify(canonicalizeProfileGroup(primaryResult))
+  const secondaryJSON = JSON.stringify(canonicalizeProfileGroup(secondaryResult))
+  if (primaryJSON === secondaryJSON) {
+    return {
+      fileName,
+      primaryEngine,
+      secondaryEngine,
+      equal: true,
+      summary: `${primaryEngine} matched ${secondaryEngine} for ${fileName} (${summarizeCanonicalProfileGroup(
+        primaryResult,
+      )}).`,
+    }
+  }
+
+  return {
+    fileName,
+    primaryEngine,
+    secondaryEngine,
+    equal: false,
+    summary: `${primaryEngine} diverged from ${secondaryEngine} for ${fileName}. ${primaryEngine}: ${summarizeCanonicalProfileGroup(
+      primaryResult,
+    )}. ${secondaryEngine}: ${summarizeCanonicalProfileGroup(secondaryResult)}.`,
+  }
+}
+
+function createComparisonFailureResult(
+  fileName: string,
+  primaryEngine: ImportEngine,
+  secondaryEngine: ImportEngine,
+  primaryResult: ProfileGroup | null,
+  error: unknown,
+): ImportComparisonResult {
+  const errorMessage = error instanceof Error ? error.message : String(error)
+  return {
+    fileName,
+    primaryEngine,
+    secondaryEngine,
+    equal: false,
+    summary: `${secondaryEngine} threw while comparing ${fileName}: ${errorMessage}. ${primaryEngine} returned ${
+      primaryResult == null ? 'null' : 'a profile group'
+    }.`,
+  }
+}
+
+function handleComparisonResult(
+  result: ImportComparisonResult,
+  options: ResolvedImportOptions,
+  comparisonError?: unknown,
+): void {
+  if (options.compareAgainst == null) {
+    return
+  }
+  options.onComparison?.(result)
+  if (result.equal || options.comparisonMode === 'off') {
+    return
+  }
+  if (options.comparisonMode === 'warn') {
+    console.warn(result.summary)
+    return
+  }
+  if (comparisonError instanceof Error) {
+    throw comparisonError
+  }
+  throw new Error(result.summary)
+}
+
+async function importWithEngine(
+  engine: ImportEngine,
+  dataSource: ProfileDataSource,
+): Promise<ProfileGroup | null> {
+  return engine === 'experimental'
+    ? importExperimentalProfileGroup(dataSource)
+    : importLegacyProfileGroup(dataSource)
+}
+
+async function compareImportedProfileGroup(
+  fileName: string,
+  options: ResolvedImportOptions,
+  primaryResult: ProfileGroup | null,
+  loadComparison: () => Promise<ProfileGroup | null>,
+): Promise<void> {
+  if (options.compareAgainst == null) {
+    return
+  }
+  try {
+    const comparisonResult = finalizeImportedProfileGroup(fileName, await loadComparison())
+    handleComparisonResult(
+      createComparisonResult(
+        fileName,
+        options.engine,
+        options.compareAgainst,
+        primaryResult,
+        comparisonResult,
+      ),
+      options,
+    )
+  } catch (error) {
+    handleComparisonResult(
+      createComparisonFailureResult(
+        fileName,
+        options.engine,
+        options.compareAgainst,
+        primaryResult,
+        error,
+      ),
+      options,
+      error,
+    )
+  }
+}
+
+async function importLegacyFromDirectoryEntry(
+  entry: FileSystemDirectoryEntry,
+): Promise<ProfileGroup | null> {
+  return importFromInstrumentsTrace(entry)
+}
 
 export async function importProfileGroupFromText(
   fileName: string,
   contents: string,
+  options?: ImportProfileOptions,
 ): Promise<ProfileGroup | null> {
-  return await importProfileGroup(new TextProfileDataSource(fileName, contents))
+  return await importProfileGroup(new TextProfileDataSource(fileName, contents), options)
 }
 
 export async function importProfileGroupFromBase64(
   fileName: string,
   b64contents: string,
+  options?: ImportProfileOptions,
 ): Promise<ProfileGroup | null> {
   return await importProfileGroup(
     MaybeCompressedDataReader.fromArrayBuffer(
       fileName,
       decodeBase64(b64contents).buffer as ArrayBuffer,
     ),
+    options,
   )
 }
 
-export async function importProfilesFromFile(file: File): Promise<ProfileGroup | null> {
-  return importProfileGroup(MaybeCompressedDataReader.fromFile(file))
+export async function importProfilesFromFile(
+  file: File,
+  options?: ImportProfileOptions,
+): Promise<ProfileGroup | null> {
+  return importProfileGroup(MaybeCompressedDataReader.fromFile(file), options)
 }
 
 export async function importProfilesFromArrayBuffer(
   fileName: string,
   buffer: ArrayBuffer,
+  options?: ImportProfileOptions,
 ): Promise<ProfileGroup | null> {
-  return importProfileGroup(MaybeCompressedDataReader.fromArrayBuffer(fileName, buffer))
+  return importProfileGroup(MaybeCompressedDataReader.fromArrayBuffer(fileName, buffer), options)
 }
 
-async function importProfileGroup(dataSource: ProfileDataSource): Promise<ProfileGroup | null> {
-  const fileName = await dataSource.name()
-
-  const profileGroup = await _importProfileGroup(dataSource)
-  if (profileGroup) {
-    if (!profileGroup.name) {
-      profileGroup.name = fileName
-    }
-    for (let profile of profileGroup.profiles) {
-      if (profile && !profile.getName()) {
-        profile.setName(fileName)
-      }
-    }
-    return profileGroup
+/** Public import entry: delegates to `runImportEngine` with legacy as the oracle importer. */
+async function importProfileGroup(
+  dataSource: ProfileDataSource,
+  options?: ImportProfileOptions,
+): Promise<ProfileGroup | null> {
+  const resolvedOptions = resolveImportOptions(options)
+  if (resolvedOptions.compareAgainst != null) {
+    const fileName = await dataSource.name()
+    const primaryResult = finalizeImportedProfileGroup(
+      fileName,
+      await importWithEngine(resolvedOptions.engine, dataSource),
+    )
+    await compareImportedProfileGroup(fileName, resolvedOptions, primaryResult, () =>
+      importWithEngine(resolvedOptions.compareAgainst!, dataSource),
+    )
+    return primaryResult
   }
-  return null
+  return runImportEngine(dataSource, importLegacyProfileGroup, options)
 }
 
 function toGroup(profile: Profile | null): ProfileGroup | null {
@@ -79,7 +292,19 @@ function toGroup(profile: Profile | null): ProfileGroup | null {
   return {name: profile.getName(), indexToView: 0, profiles: [profile]}
 }
 
-async function _importProfileGroup(dataSource: ProfileDataSource): Promise<ProfileGroup | null> {
+function looksLikeJfrRecording(buffer: ArrayBuffer) {
+  const header = new Uint8Array(buffer.slice(0, 3))
+  return header[0] === 0x46 && header[1] === 0x4c && header[2] === 0x52
+}
+
+async function importJfrProfileGroup(fileName: string, buffer: ArrayBuffer) {
+  const {importFromJfr} = await import('./java-flight-recorder')
+  return importFromJfr(fileName, buffer)
+}
+
+async function importLegacyProfileGroup(
+  dataSource: ProfileDataSource,
+): Promise<ProfileGroup | null> {
   const fileName = await dataSource.name()
 
   const buffer = await dataSource.readAsArrayBuffer()
@@ -133,7 +358,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
     return toGroup(importFromPMCStatCallGraph(contents))
   } else if (fileName.endsWith('.jfr')) {
     console.log('Importing as Java Flight Recorder profile')
-    return await importFromJfr(fileName, buffer)
+    return await importJfrProfileGroup(fileName, buffer)
   }
 
   // Second pass: Try to guess what file format it is based on structure
@@ -204,9 +429,9 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
       return toGroup(importFromPapyrus(contents))
     }
 
-    if (isJfrRecording(buffer)) {
+    if (looksLikeJfrRecording(buffer)) {
       console.log('Importing as Java Flight Recorder profile')
-      return importFromJfr(fileName, buffer)
+      return importJfrProfileGroup(fileName, buffer)
     }
 
     const fromLinuxPerf = importFromLinuxPerf(contents)
@@ -232,6 +457,21 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
   return null
 }
 
-export async function importFromFileSystemDirectoryEntry(entry: FileSystemDirectoryEntry) {
-  return importFromInstrumentsTrace(entry)
+export async function importFromFileSystemDirectoryEntry(
+  entry: FileSystemDirectoryEntry,
+  options?: ImportProfileOptions,
+) {
+  const resolvedOptions = resolveImportOptions(options)
+  const primaryResult = finalizeImportedProfileGroup(
+    entry.name,
+    await (resolvedOptions.engine === 'experimental'
+      ? importExperimentalFromDirectoryEntry(entry)
+      : importLegacyFromDirectoryEntry(entry)),
+  )
+  await compareImportedProfileGroup(entry.name, resolvedOptions, primaryResult, () =>
+    resolvedOptions.compareAgainst === 'experimental'
+      ? importExperimentalFromDirectoryEntry(entry)
+      : importLegacyFromDirectoryEntry(entry),
+  )
+  return primaryResult
 }

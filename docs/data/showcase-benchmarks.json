@@ -1,0 +1,188 @@
+{
+  "browserVisibleComparison": {
+    "label": "224 MB balanced sampled file",
+    "samples": 2000000,
+    "runs": 3,
+    "measurement": "file selection to first flamegraph paint",
+    "legacyImportMedianMs": 4614.8,
+    "experimentalImportMedianMs": 2132.2,
+    "legacyFirstPaintMedianMs": 5122.6,
+    "experimentalFirstPaintMedianMs": 2688.6,
+    "legacyUiOverheadMedianMs": 507.8,
+    "experimentalUiOverheadMedianMs": 545.4,
+    "legacyWallClockMedianMs": 5325.34,
+    "experimentalWallClockMedianMs": 2897.11,
+    "firstPaintDeltaPct": -47.5,
+    "importDeltaPct": -53.8,
+    "wallClockDeltaPct": -45.6,
+    "note": "The repeated browser-visible benchmark now leads the public story: the Rust/WASM path reaches first flamegraph almost twice as fast while UI/render overhead stays roughly flat."
+  },
+  "syntheticComparisons": [
+    {
+      "label": "11.3 MB",
+      "samples": 100000,
+      "runs": 5,
+      "parityMatched": true,
+      "legacyMedianMs": 1023.31,
+      "experimentalMedianMs": 161.84,
+      "deltaPct": -84.2,
+      "legacyHeapGb": 2.55,
+      "experimentalHeapGb": 1.22,
+      "note": "Once append-order nodes cross the boundary as typed arrays, the Rust path stops paying the old JS object-serialization penalty."
+    },
+    {
+      "label": "28.1 MB",
+      "samples": 250000,
+      "runs": 5,
+      "parityMatched": true,
+      "legacyMedianMs": 2699.83,
+      "experimentalMedianMs": 392.48,
+      "deltaPct": -85.5,
+      "legacyHeapGb": 6.28,
+      "experimentalHeapGb": 3.03,
+      "note": "The optimized boundary keeps scaling cleanly once the sampled importer has real work to do."
+    },
+    {
+      "label": "56.1 MB",
+      "samples": 500000,
+      "runs": 3,
+      "parityMatched": null,
+      "legacyMedianMs": 5396.14,
+      "experimentalMedianMs": 796.81,
+      "deltaPct": -85.2,
+      "legacyHeapGb": 5.82,
+      "experimentalHeapGb": 0.06,
+      "note": "This is now the clearest repeated apples-to-apples proof point: the Rust path wins decisively on both time and memory."
+    },
+    {
+      "label": "112.1 MB",
+      "samples": 1000000,
+      "runs": 1,
+      "parityMatched": null,
+      "legacyMedianMs": 9539.29,
+      "experimentalMedianMs": 8784.47,
+      "deltaPct": -7.9,
+      "legacyHeapGb": 5.98,
+      "experimentalHeapGb": 0.12,
+      "note": "Largest direct head-to-head sampled import currently captured in one process for both engines."
+    }
+  ],
+  "largestHeadToHead": {
+    "label": "112.1 MB",
+    "samples": 1000000,
+    "runs": 1,
+    "legacyMedianMs": 9539.29,
+    "experimentalMedianMs": 8784.47,
+    "legacyHeapGb": 5.98,
+    "experimentalHeapGb": 0.12,
+    "deltaPct": -7.9,
+    "note": "The largest sampled import where both engines completed head to head in the same benchmark run."
+  },
+  "warmExperimentalLargest": {
+    "label": "112.1 MB",
+    "samples": 1000000,
+    "runs": 3,
+    "experimentalMedianMs": 1517.62,
+    "experimentalHeapGb": 0.12,
+    "note": "After module initialization, repeated experimental imports stay fast and memory-light even at the 1M-sample size."
+  },
+  "limitCases": [
+    {
+      "label": "112.1 MB legacy repeated run",
+      "status": "oom",
+      "detail": "A three-run legacy-only sequence on the 1M-sample synthetic file exhausted an 8 GB Node heap after two imports."
+    },
+    {
+      "label": "56.1 MB parity canonicalization",
+      "status": "tooling",
+      "detail": "The parity path in the benchmark harness hit RangeError: Invalid string length while canonicalizing a 500k-sample synthetic import, so the larger synthetic rows are recorded with `--skip-parity=1`."
+    },
+    {
+      "label": "Tiny sampled fixture cold start",
+      "status": "tradeoff",
+      "detail": "On the smallest built-in sampled fixture, wasm startup can still outweigh the importer win. The strongest public demos are medium and large sampled files."
+    }
+  ],
+  "fixtureCorpus": [
+    {
+      "fixture": "Chrome 69 simple",
+      "legacyMedianMs": 1.92,
+      "experimentalMedianMs": 2.09
+    },
+    {
+      "fixture": "Chrome 116 trace",
+      "legacyMedianMs": 2.01,
+      "experimentalMedianMs": 2.79
+    },
+    {
+      "fixture": "Trace Event simple",
+      "legacyMedianMs": 0.21,
+      "experimentalMedianMs": 0.14
+    },
+    {
+      "fixture": "Trace Event Hermes",
+      "legacyMedianMs": 0.11,
+      "experimentalMedianMs": 0.11
+    },
+    {
+      "fixture": "Collapsed stack simple",
+      "legacyMedianMs": 0.21,
+      "experimentalMedianMs": 0.11
+    },
+    {
+      "fixture": "Ruby stackprof",
+      "legacyMedianMs": 22.26,
+      "experimentalMedianMs": 27.57
+    },
+    {
+      "fixture": "Linux perf system-wide",
+      "legacyMedianMs": 2.47,
+      "experimentalMedianMs": 1.95
+    },
+    {
+      "fixture": "PMCStat simple",
+      "legacyMedianMs": 0.09,
+      "experimentalMedianMs": 0.13
+    },
+    {
+      "fixture": "Papyrus stack log",
+      "legacyMedianMs": 0.18,
+      "experimentalMedianMs": 0.12
+    },
+    {
+      "fixture": "Callgrind example",
+      "legacyMedianMs": 0.15,
+      "experimentalMedianMs": 0.06
+    },
+    {
+      "fixture": "Instruments deep copy",
+      "legacyMedianMs": 0.25,
+      "experimentalMedianMs": 0.31
+    },
+    {
+      "fixture": "Firefox simple",
+      "legacyMedianMs": 0.75,
+      "experimentalMedianMs": 0.73
+    },
+    {
+      "fixture": "Safari recording",
+      "legacyMedianMs": 0.19,
+      "experimentalMedianMs": 0.22
+    },
+    {
+      "fixture": "pprof simple",
+      "legacyMedianMs": 0.28,
+      "experimentalMedianMs": 0.27
+    },
+    {
+      "fixture": "Speedscope sampled (tiny)",
+      "legacyMedianMs": 0.06,
+      "experimentalMedianMs": 0.11
+    },
+    {
+      "fixture": "Haskell simple",
+      "legacyMedianMs": 0.36,
+      "experimentalMedianMs": 0.28
+    }
+  ]
+}

@@ -18,6 +18,7 @@ import {BatchCanvasTextRenderer, BatchCanvasRectRenderer} from '../lib/canvas-2d
 import {Color} from '../lib/color'
 import {Theme} from './themes/theme'
 import {minimapMousePositionAtom} from '../app-state'
+import {markBrowserBenchmarkFlamechartPaint} from '../lib/browser-benchmark'
 
 interface FlamechartFrameLabel {
   configSpaceBounds: Rect
@@ -520,6 +521,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     this.resizeOverlayCanvasIfNeeded()
     this.renderRects()
     this.renderOverlays()
+    markBrowserBenchmarkFlamechartPaint()
     this.maybeClearInteractionLock()
   }
 

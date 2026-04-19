@@ -1,10 +1,48 @@
 import {FrameInfo, Profile, ProfileGroup, StackListProfileBuilder} from '../lib/profile'
 import init, {Frame, interpret_jfr} from 'jfrview'
-// @ts-ignore
-import wasm_data from 'jfrview/jfrview_bg.wasm'
+
+let initPromise: Promise<void> | null = null
+
+function isNodeCliRuntime() {
+  return typeof process !== 'undefined' && process.versions?.node != null && typeof window === 'undefined'
+}
+
+async function runtimeImport<T>(specifier: string): Promise<T> {
+  const importer = Function('specifier', 'return import(specifier)') as (
+    specifier: string,
+  ) => Promise<T>
+  return importer(specifier)
+}
+
+async function resolveWasmModuleOrPath(): Promise<unknown> {
+  if (isNodeCliRuntime()) {
+    // Node's fetch implementation does not support the file:// URL that jfrview
+    // falls back to by default, so load the bytes directly for local CLI runs.
+    const fs = await runtimeImport<{readFile(path: string): Promise<Uint8Array>}>('node:fs/promises')
+    const path = await runtimeImport<{join(...parts: string[]): string}>('node:path')
+    return fs.readFile(path.join(process.cwd(), 'node_modules', 'jfrview', 'jfrview_bg.wasm'))
+  }
+
+  // @ts-ignore webpack/esbuild/jest map the wasm asset at runtime.
+  const wasmModule = (await import('jfrview/jfrview_bg.wasm')) as {default?: unknown}
+  return wasmModule.default ?? wasmModule
+}
+
+async function ensureJfrRuntimeInitialized(): Promise<void> {
+  if (initPromise == null) {
+    initPromise = (async () => {
+      const module_or_path = await resolveWasmModuleOrPath()
+      await init({module_or_path})
+    })().catch(error => {
+      initPromise = null
+      throw error
+    })
+  }
+  await initPromise
+}
 
 export async function importFromJfr(fileName: string, data: ArrayBuffer): Promise<ProfileGroup> {
-  await init({module_or_path: wasm_data})
+  await ensureJfrRuntimeInitialized()
   const withoutNative = create_profile(data, false)
   const withNative = create_profile(data, true)
 

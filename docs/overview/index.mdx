@@ -1,0 +1,49 @@
+# Start Here
+
+This repository is a showcase-first fork of Speedscope. It preserves the original application while documenting a real migration of the hottest sampled-profile import path to Rust/WASM with Cursor cloud agents coordinating the work.
+
+![Speedscope UI](https://user-images.githubusercontent.com/150329/40900669-86eced80-6781-11e8-92c1-dc667b651e72.gif)
+
+<Callout title="What you should notice first" tone="success">
+The point of this repo is not "we rewrote everything." The point is that we kept the original Speedscope UI and much of the original codebase intact, inserted a measured Rust seam where it mattered, and used a cloud-agent control plane to make the migration tractable.
+</Callout>
+
+## The four public stories
+
+<StatGrid>
+  <Stat
+    label="Original Speedscope"
+    value="Still intact"
+    detail="The app source remains in src/, assets/, and sample/profiles/."
+  />
+  <Stat
+    label="Rust/WASM path"
+    value="Real code"
+    detail="The Rust crate lives in rust/speedscope-importer/ and plugs into the same UI."
+  />
+  <Stat
+    label="Cloud agents"
+    value="Visible"
+    detail="The control plane is a first-class artifact instead of a hidden experiment log."
+  />
+  <Stat
+    label="Run it yourself"
+    value="Side by side"
+    detail="Two local UI ports make it easy to compare the same file against both import engines."
+  />
+</StatGrid>
+
+## Repo map
+
+<RepoMap />
+
+## What to run first
+
+<ShowcaseLinks />
+
+## What to read next
+
+- Go to the **Cloud Agents** page to understand how the migration was orchestrated.
+- Go to **Original Architecture** and **Rust/WASM Architecture** to see what changed technically.
+- Go to **Run Side by Side** if you want to validate the unchanged UI claim yourself.
+- Go to **Benchmarks** if you want the evidence before the story.

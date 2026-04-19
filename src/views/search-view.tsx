@@ -9,6 +9,7 @@ import {useActiveProfileState} from '../app-state/active-profile-state'
 import {useTheme, withTheme} from './themes/theme'
 import {searchIsActiveAtom, searchQueryAtom} from '../app-state'
 import {useAtom} from '../lib/atom'
+import {createProfileSearchResults} from '../experimental/core'
 
 function stopPropagation(ev: Event) {
   ev.stopPropagation()
@@ -23,10 +24,7 @@ export const ProfileSearchContextProvider = ({children}: {children: ComponentChi
   const searchQuery = useAtom(searchQueryAtom)
 
   const searchResults = useMemo(() => {
-    if (!profile || !searchIsActive || searchQuery.length === 0) {
-      return null
-    }
-    return new ProfileSearchResults(profile, searchQuery)
+    return createProfileSearchResults(profile, searchQuery, searchIsActive)
   }, [searchIsActive, searchQuery, profile])
 
   return (

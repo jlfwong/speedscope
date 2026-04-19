@@ -106,6 +106,10 @@ describe('importFromInstrumentsTrace', () => {
       'simple-time-profile.trace',
     ) as any
     const profileGroup = await importFromFileSystemDirectoryEntry(root)
+    if (!profileGroup) {
+      fail('Expected Instruments trace import to return a profile group')
+      return
+    }
     const profile = profileGroup.profiles[profileGroup.indexToView]
     expect(dumpProfile(profile)).toMatchSnapshot()
   }

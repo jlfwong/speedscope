@@ -1,134 +1,217 @@
-English | [简体中文](./README-zh_CN.md)
-# 🔬speedscope 
-A fast, interactive web-based viewer for performance profiles. Supports import from a variety of profiles in a variety of languages (JS, Ruby, Python, Go & more). Try it here: https://www.speedscope.app
+# Speedscope Rust/WASM Migration Showcase
 
-Given raw profiling data, speedscope allows you to interactively explore the data to get insight into what's slow in your application, or allocating all the memory, or whatever data is represented in the profiling data.
+This repository preserves the original [Speedscope](https://github.com/jlfwong/speedscope) codebase while documenting a real migration of its hottest sampled-profile import path to Rust/WASM, orchestrated with Cursor cloud agents.
 
-![Example Profile](https://user-images.githubusercontent.com/150329/40900669-86eced80-6781-11e8-92c1-dc667b651e72.gif)
+![Speedscope UI](https://user-images.githubusercontent.com/150329/40900669-86eced80-6781-11e8-92c1-dc667b651e72.gif)
 
-[0]: https://en.wikipedia.org/wiki/Profiling_(computer_programming)#Statistical_profilers
-[1]: https://github.com/brendangregg/FlameGraph
+If you are opening this repo to understand what happened, there are six things to look at:
 
-# Supported file formats
+1. The original Speedscope code is still here in [`src/`](./src/), [`assets/`](./assets/), and [`sample/profiles/`](./sample/profiles/).
+2. The new Rust/WASM code lives in [`rust/`](./rust/) and the adapter seam lives in [`src/experimental/`](./src/experimental/).
+3. The cloud-agent control plane lives in [`scripts/cloud-control-plane.ts`](./scripts/cloud-control-plane.ts) and is surfaced in [`cloud-agents/`](./cloud-agents/).
+4. The old and new architectures are documented in the showcase docs under [`docs/`](./docs/).
+5. You can run the classic and Rust-backed UIs side by side on two local ports.
+6. A React/MDX showcase site under [`site/`](./site/) turns the migration into a readable, reproducible case study.
 
-speedscope is designed to ingest profiles from a variety of different profilers for different programming languages & environments. Click the links below for documentation on how to import from a specific source.
+## What this repo demonstrates
 
-- JavaScript
-  - [Importing from Chrome](https://github.com/jlfwong/speedscope/wiki/Importing-from-Chrome)
-  - [Importing from Firefox](https://github.com/jlfwong/speedscope/wiki/Importing-from-Firefox)
-  - [Importing from Safari](https://github.com/jlfwong/speedscope/wiki/Importing-from-Safari)
-  - [Importing from Node.js](https://github.com/jlfwong/speedscope/wiki/Importing-from-Node.js)
-  - [Importing from Hermes (for React Native)](https://github.com/jlfwong/speedscope/wiki/Importing-from-Hermes)
-- Ruby
-  - [Importing from stackprof](https://github.com/jlfwong/speedscope/wiki/Importing-from-stackprof-(ruby))
-  - [Importing from rbspy](https://github.com/jlfwong/speedscope/wiki/Importing-from-rbspy-(ruby))
-  - [Importing from ruby-prof](https://github.com/jlfwong/speedscope/wiki/Importing-from-ruby-prof)
-- Python
-  - [Importing from py-spy](https://github.com/jlfwong/speedscope/wiki/Importing-from-py-spy-(python))
-  - [pyspeedscope](https://github.com/windelbouwman/pyspeedscope)
-  - [Importing from Austin](https://github.com/P403n1x87/austin-python#format-conversion)
-  - [Importing from pyinstrument](https://github.com/jlfwong/speedscope/wiki/Importing-from-pyinstrument-(python))
-- PHP
-  - [Importing from phpspy or sj-i/php-profiler](https://github.com/sj-i/php-profiler/pull/101)
-- Go
-  - [Importing from pprof](https://github.com/jlfwong/speedscope/wiki/Importing-from-pprof-(go))  
-- Rust
-  - [flamescope](https://github.com/coolreader18/flamescope)
-- Java
-  - [Importing from async‐profiler (Java)
-](https://github.com/jlfwong/speedscope/wiki/Importing-from-async%E2%80%90profiler-(Java))
-  - [Importing from Java Flight Recorder](https://github.com/jlfwong/speedscope/wiki/Importing-from-Java-Flight-Recorder)
-- Erlang/Elixir
-  - [eflambe](https://github.com/Stratus3D/eflambe)
-- Native code
-  - [Importing from Instruments.app](https://github.com/jlfwong/speedscope/wiki/Importing-from-Instruments.app) (macOS)
-  - [Importing from `perf`](https://github.com/jlfwong/speedscope/wiki/Importing-from-perf-(linux)) (linux)
-- [Importing from .NET Core](https://github.com/jlfwong/speedscope/wiki/Importing-from-.NET-Core)
-- [Importing from GHC (Haskell)](https://github.com/jlfwong/speedscope/wiki/Importing-from-Haskell)
-- [Importing from custom sources](https://github.com/jlfwong/speedscope/wiki/Importing-from-custom-sources)
+- A measured Rust/WASM seam inserted into an existing browser app without rewriting the UI.
+- A cloud-agent orchestration system that broke the migration into packages, routed work by task shape, and kept parity/benchmark gates visible.
+- A side-by-side validation flow where the same profile file can be opened in both the classic and experimental UIs.
+- Benchmark evidence that large sampled uploads reach first flamegraph much faster end to end, with importer-only and heap data explaining where the win comes from.
 
-Contributions to add support for additional formats are welcome! See issues with the ["import source" tag](https://github.com/jlfwong/speedscope/issues?q=is%3Aissue+is%3Aopen+label%3A%22import+source%22).
-# Usage
+## Project summary
 
-Visit https://www.speedscope.app, then either browse to find a profile file or drag-and-drop one onto the page. The profiles are not uploaded anywhere -- the application is totally in-browser.
+- **Goal:** prove that Speedscope's hottest sampled-profile import path could be migrated to Rust/WASM for real, benchmarkable wins without rewriting the UI.
+- **Constraint:** keep the original Speedscope codebase visible and runnable so the migration could always be compared against the legacy implementation.
+- **Approach:** add a narrow Rust seam for sampled Speedscope JSON, keep other formats on the legacy TypeScript importers, and adapt the Rust result back into the existing `Profile` surface, with the browser path using native `JSON.parse` plus typed-array flattening before Rust builds the heavy structures.
+- **Cursor SDK / cloud-agent role:** use a control plane around Cursor cloud agents to split the migration into packages, route work by task shape, keep registry-backed state, and gate progress with parity and benchmark checks.
+- **Model split:** Composer handled bounded execution-heavy worker tasks, GPT-5.4 handled orchestration and synthesis, and the Opus deep-reasoning slot handled ambiguous or high-blast-radius escalations.
+- **Proof:** this repo includes side-by-side UI runs, benchmark artifacts, curated fixtures, and the orchestration code that made the migration repeatable instead of ad hoc.
 
-## Command line usage
+## Quickstart
 
-For offline use, or convenience in the terminal, you can also install speedscope
-via npm:
+```bash
+npm install
+npm run showcase:install
+```
 
-    npm install -g speedscope
+Launch the showcase/docs site:
 
-Invoking `speedscope /path/to/profile` will load speedscope in your default browser.
+```bash
+npm run showcase:dev
+```
 
-## Self-contained directory
+Launch the two UI ports:
 
-If you don't have npm or node installed, you can also download a
-self-contained version from https://github.com/jlfwong/speedscope/releases.
-After you download the zip file from a release, simply unzip it and open the
-contained `index.html` in Chrome or Firefox.
+```bash
+npm run serve:side-by-side
+```
 
-## Importing via URL
+Ports:
 
-To load a specific profile by URL, you can append a hash fragment like `#profileURL=[URL-encoded profile URL]&title=[URL-encoded custom title]`. Note that the server hosting the profile must have CORS configured to allow AJAX requests from speedscope.
+- Showcase/docs site: `http://127.0.0.1:4321`
+- Classic Speedscope UI: `http://127.0.0.1:8000`
+- Rust/WASM-backed UI: `http://127.0.0.1:8001`
 
-## Views
+## Exactly how to run it
 
-### 🕰Time Order
-![Detail View](https://user-images.githubusercontent.com/150329/42108613-e6ef6d3a-7b8f-11e8-93d4-541b2cb93fe5.png)
+### 1. Optional: rebuild the Rust/WASM packages
 
-In the "Time Order" view (the default), call stacks are ordered left-to-right in the same order as they occurred in the input file, which is usually going to be the chronological order they were recorded in. This view is most helpful for understanding the behavior of an application over time, e.g. "first the data is fetched from the database, then the data is prepared for serialization, then the data is serialized to JSON". 
+Run this if you want to regenerate the wasm bundles from the Rust crate instead of relying on the checked-in generated packages.
 
-The horizontal axis represents the "weight" of each stack (most commonly CPU time), and the vertical axis shows you the stack active at the time of the sample. If you click on one of the frames, you'll be able to see summary statistics about it.
+```bash
+npm run experiment:build-rust-wasm
+```
 
+### 2. Run the original Speedscope UI only
 
-### ⬅️Left Heavy
-![Left Heavy View](https://user-images.githubusercontent.com/150329/44534434-a05f8380-a6ac-11e8-86ac-e3e05e577c52.png)
+This keeps the classic importer as the default path.
 
-In the "Left Heavy" view, identical stacks are grouped together, regardless of whether they were recorded sequentially. Then, the stacks are sorted so that the heaviest stack for each parent is on the left -- hence "left heavy". This view is useful for understanding where all the time is going in situations where there are hundreds or thousands of function calls interleaved between other call stacks.
+```bash
+npm run serve:classic-ui
+```
 
-### 🥪 Sandwich
-![Sandwich View](https://user-images.githubusercontent.com/150329/42108467-76a57baa-7b8f-11e8-815f-1df7b6ac3ede.png)
+Open: `http://127.0.0.1:8000`
 
-The Sandwich view is a table view in which you can find a list of all functions and their associated times. You can sort by self time or total time.
-It's called "Sandwich" view because if you select one of the rows in the table, you can see flamegraphs for all the callers and callees of the selected
-row.
+### 3. Run the Rust/WASM-backed UI only
 
+This keeps the same UI, but makes the experimental importer the default path.
 
-## Navigation
+```bash
+npm run serve:wasm-ui
+```
 
-Once a profile has loaded, the main view is split into two: the top area is the "minimap", and the bottom area is the "stack view".
+Open: `http://127.0.0.1:8001`
 
-### Minimap Navigation
+### 4. Run both at the same time
 
-* Scroll on either axis to pan around
-* Click and drag to narrow your view to a specific range
+This is the best way to validate the project publicly.
 
-### Stack View Navigation
+```bash
+npm run serve:side-by-side
+```
 
-* Scroll on either axis to pan around
-* Pinch to zoom
-* Hold Cmd+Scroll to zoom
-* Double click on a frame to fit the viewport to it
-* Click on a frame to view summary statistics about it
+Open:
 
-### Keyboard Navigation
+- Classic UI: `http://127.0.0.1:8000`
+- Rust/WASM UI: `http://127.0.0.1:8001`
 
-* `+`: zoom in
-* `-`: zoom out
-* `0`: zoom out to see the entire profile
-* `w`/`a`/`s`/`d` or arrow keys: pan around the profile
-* `1`: Switch to the "Time Order" view
-* `2`: Switch to the "Left Heavy" view
-* `3`: Switch to the "Sandwich" view
-* `r`: Collapse recursion in the flamegraphs
-* `Cmd+S`/`Ctrl+S` to save the current profile
-* `Cmd+O`/`Ctrl+O` to open a new profile
-* `n`: Go to next profile/thread if one is available
-* `p`: Go to previous profile/thread if one is available
-* `t`: Open the profile/thread selector if available
-* `Cmd+F`/`Ctrl+F`: to open search. While open, `Enter` and `Shift+Enter` cycle through results
+### 5. Run the docs/showcase site
 
-## Contributing
+```bash
+npm run showcase:dev
+```
 
-Do you want to contribute to speedscope? Sweeeeet. Check out [CONTRIBUTING.md](./CONTRIBUTING.md) for instructions on setting up your dev environment.
+Open: `http://127.0.0.1:4321`
+
+## Repo map
+
+- Original Speedscope source: [`src/README.md`](./src/README.md)
+- Rust/WASM importer path: [`rust/README.md`](./rust/README.md)
+- Experimental seam and adapters: [`src/experimental/README.md`](./src/experimental/README.md)
+- Cloud-agent orchestration: [`cloud-agents/README.md`](./cloud-agents/README.md)
+- Demo fixtures: [`demo/fixtures/README.md`](./demo/fixtures/README.md)
+- Public showcase/docs site: [`site/`](./site/)
+
+## Architecture at a glance
+
+### Before
+
+```mermaid
+flowchart LR
+  profileFile[ProfileFile] --> tsImporters[TypeScriptImporters]
+  tsImporters --> jsBuilders[JSProfileBuilders]
+  jsBuilders --> profileCore[ProfileAndFlamechartCore]
+  profileCore --> speedscopeUi[SpeedscopeUI]
+```
+
+The original architecture is broad and flexible, but large sampled imports pay for full JavaScript text decode, eager parsing, eager object construction, and duplicated tree-building work before the UI renders.
+
+### After
+
+```mermaid
+flowchart LR
+  sampledJson[SampledSpeedscopeJson] --> rustWasm[RustWasmImporter]
+  rustWasm --> lazyAdapter[LazyTsProfileAdapter]
+  lazyAdapter --> sameUi[ExistingSpeedscopeUI]
+  otherFormats[OtherFormats] --> legacyImporters[LegacyTypeScriptImporters]
+  legacyImporters --> sameUi
+```
+
+The UI remains the same. The targeted change is that sampled Speedscope JSON now goes through browser-native `JSON.parse`, a typed-array flattening step, and a Rust/WASM builder before adapting lazily back into the existing `Profile` surface.
+
+## Benchmark highlights
+
+The public benchmark claim should now start with the browser-visible number, not the importer-only microbenchmark:
+
+- `224 MB` balanced sampled file, repeated `3` browser runs: experimental reaches first flamegraph `-47.5%` faster (`2688.6 ms` vs `5122.6 ms`)
+- On that same benchmark, the import portion is `-53.8%` faster (`2132.2 ms` vs `4614.8 ms`) while UI/render overhead stays roughly flat (`545.4 ms` vs `507.8 ms`)
+- Importer-only synthetic seam benchmark: `56.1 MB` sampled input is `-85.2%` faster (`796.81 ms` vs `5396.14 ms`) while using about `0.06 GB` vs `5.82 GB`
+- Largest importer-only direct head-to-head sampled import currently captured: `112.1 MB`, experimental `-7.9%` faster (`8784.47 ms` vs `9539.29 ms`) while using about `0.12 GB` vs `5.98 GB`
+
+The strongest proof in this repo is the sampled-import path. Other formats still rely on the legacy importer surface and are preserved as part of the original Speedscope breadth.
+
+## Run it yourself
+
+### Recommended validation files
+
+- **Use this first to exercise the new Rust path directly:** [`sample/profiles/speedscope/0.6.0/two-sampled.speedscope.json`](./sample/profiles/speedscope/0.6.0/two-sampled.speedscope.json)
+- **Generate this locally for the heavy-load Rust demo:** `demo/fixtures/generated/synthetic-sampled-1m.speedscope.json`
+- **Use this next to show the repo still preserves original Speedscope breadth:** [`sample/profiles/Chrome/116/Trace-20230603T221323.json`](./sample/profiles/Chrome/116/Trace-20230603T221323.json)
+- **Use this for a fast smoke test:** [`sample/profiles/stackcollapse/simple.txt`](./sample/profiles/stackcollapse/simple.txt)
+- **Use this to show another preserved legacy format:** [`sample/profiles/callgrind/callgrind.example.log`](./sample/profiles/callgrind/callgrind.example.log)
+
+### Generate the 112 MB sampled demo file
+
+```bash
+npm run experiment:benchmark-rust-sampled -- --samples=1000000 --runs=1 --skip-parity=1 --write-file=demo/fixtures/generated/synthetic-sampled-1m.speedscope.json
+```
+
+### Generate the 224 MB balanced browser benchmark file
+
+```bash
+npm run experiment:benchmark-rust-sampled -- --samples=2000000 --stack-run-length=100 --runs=1 --write-only=1 --write-file=demo/fixtures/generated/synthetic-sampled-2m-balanced-crossover.speedscope.json
+```
+
+### Measure upload-to-flamegraph browser time
+
+```bash
+npm run experiment:benchmark-browser-visible -- --file=demo/fixtures/generated/synthetic-sampled-2m-balanced-crossover.speedscope.json --runs=3
+```
+
+If Playwright has not downloaded Chromium on this machine yet, run `npx playwright install chromium` once first.
+
+### Best test sequence
+
+1. Start with `npm run serve:side-by-side`.
+2. Load `two-sampled.speedscope.json` in both ports.
+3. Confirm the UI looks the same in both tabs.
+4. Generate and load `demo/fixtures/generated/synthetic-sampled-1m.speedscope.json` in both ports for the large-file benchmark demo.
+5. Generate `demo/fixtures/generated/synthetic-sampled-2m-balanced-crossover.speedscope.json` and run `experiment:benchmark-browser-visible --runs=3` when you want a real browser-visible upload-to-render comparison.
+6. Load the Chrome trace fixture to show that the broader format surface still works.
+7. If you want a very quick sanity check, use the stackcollapse fixture.
+
+### What each run mode is good for
+
+- **Classic only (`serve:classic-ui`):** useful when you want the original behavior in isolation.
+- **Rust/WASM only (`serve:wasm-ui`):** useful when you want to exercise the new default path without mentally comparing two tabs at once.
+- **Both (`serve:side-by-side`):** best for demos, screenshots, and proving the unchanged UI claim.
+
+## Cloud agents are the headline
+
+If this repository only contained a Rust crate and a benchmark table, it would be an optimization fork. What makes it worth showing off is the orchestration layer:
+
+- package graph
+- model routing policy
+- parity and benchmark gates
+- retryable registry-backed execution
+- integration synthesis and cutover checks
+
+The model-routing story is part of the point: Composer handled bounded execution-heavy worker tasks, GPT-5.4 handled orchestration and synthesis, and the Opus deep-reasoning slot was reserved for ambiguous or high-blast-radius escalations. In the original planning we described that deep slot as the Opus 4.6-style path; in the current control-plane defaults it resolves to `claude-opus-4-7-thinking-max`.
+
+Start with [`cloud-agents/README.md`](./cloud-agents/README.md), then read the actual control plane in [`scripts/cloud-control-plane.ts`](./scripts/cloud-control-plane.ts).
+
+## Credit
+
+The original application and architecture come from upstream Speedscope by John Wong. This repo is a public migration case study built on top of that preserved codebase, not a claim that the original Speedscope design was incorrect.

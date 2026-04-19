@@ -21,6 +21,9 @@ export const buildOptions: esbuild.BuildOptions = {
   bundle: true,
   format: 'esm',
   splitting: true,
+  define: {
+    __SPEEDSCOPE_BROWSER_BUILD__: 'true',
+  },
   loader: {
     '.txt': 'file',
     '.woff2': 'file',

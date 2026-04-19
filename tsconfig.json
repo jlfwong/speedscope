@@ -9,5 +9,6 @@
     "jsxFactory": "h",
     "target": "es2015",
     "skipLibCheck": true
-  }
+  },
+  "exclude": ["site", "docs"]
 }
