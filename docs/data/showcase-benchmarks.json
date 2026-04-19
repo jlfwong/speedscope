@@ -1,4 +1,22 @@
 {
+  "browserVisibleComparison": {
+    "label": "224 MB balanced sampled file",
+    "samples": 2000000,
+    "runs": 3,
+    "measurement": "file selection to first flamegraph paint",
+    "legacyImportMedianMs": 4614.8,
+    "experimentalImportMedianMs": 2132.2,
+    "legacyFirstPaintMedianMs": 5122.6,
+    "experimentalFirstPaintMedianMs": 2688.6,
+    "legacyUiOverheadMedianMs": 507.8,
+    "experimentalUiOverheadMedianMs": 545.4,
+    "legacyWallClockMedianMs": 5325.34,
+    "experimentalWallClockMedianMs": 2897.11,
+    "firstPaintDeltaPct": -47.5,
+    "importDeltaPct": -53.8,
+    "wallClockDeltaPct": -45.6,
+    "note": "The repeated browser-visible benchmark now leads the public story: the Rust/WASM path reaches first flamegraph almost twice as fast while UI/render overhead stays roughly flat."
+  },
   "syntheticComparisons": [
     {
       "label": "11.3 MB",

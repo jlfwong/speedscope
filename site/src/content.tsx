@@ -62,7 +62,7 @@ export const showcasePages: ShowcasePage[] = [
   {
     key: 'benchmarks',
     title: 'Benchmarks',
-    description: 'The synthetic and corpus results that justify the migration.',
+    description: 'The end-to-end browser-visible and importer-only results that justify the migration.',
     section: 'Validate It',
     component: BenchmarksPage,
   },

@@ -34,12 +34,24 @@ Generate the 112 MB sampled demo file locally:
 
 Then load `demo/fixtures/generated/synthetic-sampled-1m.speedscope.json` into both tabs. This is the easiest way to see the current large-file Rust/WASM advantage with the unchanged UI.
 
+If you want a measured end-to-end number instead of a visual side-by-side impression, generate the larger balanced browser benchmark file and run the browser-visible harness:
+
+<CommandBlock
+  title="Generate the 224 MB balanced browser benchmark file"
+  command="npm run experiment:benchmark-rust-sampled -- --samples=2000000 --stack-run-length=100 --runs=1 --write-only=1 --write-file=demo/fixtures/generated/synthetic-sampled-2m-balanced-crossover.speedscope.json"
+/>
+
+<CommandBlock
+  title="Measure upload-to-first-flamegraph browser time"
+  command="npm run experiment:benchmark-browser-visible -- --file=demo/fixtures/generated/synthetic-sampled-2m-balanced-crossover.speedscope.json --runs=3"
+/>
+
 ## Curated demo fixtures
 
 <FixtureGallery />
 
 <Callout title="Best show-and-tell sequence" tone="info">
-Start with the small sampled Speedscope JSON fixture to prove that the UI is unchanged while the importer underneath changes. Then generate and load the 112 MB sampled demo file to show the large-file win. Finish with the Chrome trace fixture to show that the repo still preserves the original Speedscope breadth.
+Start with the small sampled Speedscope JSON fixture to prove that the UI is unchanged while the importer underneath changes. Then generate and load the 112 MB sampled demo file for the manual side-by-side demo. When you want a repeatable headline number, generate the 224 MB balanced file and run the browser-visible benchmark harness. Finish with the Chrome trace fixture to show that the repo still preserves the original Speedscope breadth.
 </Callout>
 
 ## Rebuild and benchmark commands

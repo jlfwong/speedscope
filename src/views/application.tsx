@@ -27,6 +27,12 @@ import {
 } from '../experimental/contracts'
 import {getConfiguredDefaultImportEngine} from '../experimental/default-import-engine'
 import {DetailedImportComparisonResult} from '../experimental/engine'
+import {
+  beginBrowserBenchmarkLoad,
+  markBrowserBenchmarkError,
+  markBrowserBenchmarkImportFinished,
+  markBrowserBenchmarkProfileApplied,
+} from '../lib/browser-benchmark'
 
 const importModule = import('../import')
 
@@ -187,6 +193,33 @@ export type ApplicationProps = {
 
 export class Application extends StatelessComponent<ApplicationProps> {
   private pendingComparisonWarning: string | null = null
+  private rustImporterWarmupHandle: number | null = null
+  private pendingBenchmarkFileName: string | null = null
+
+  private maybeScheduleRustImporterWarmup() {
+    const importOptions = this.getImportOptions()
+    if (
+      importOptions.engine !== 'experimental' &&
+      importOptions.compareAgainst !== 'experimental'
+    ) {
+      return
+    }
+
+    if (this.rustImporterWarmupHandle != null) {
+      return
+    }
+
+    // Hide wasm module initialization behind page startup so the first import
+    // doesn't also pay the warmup cost.
+    this.rustImporterWarmupHandle = window.setTimeout(() => {
+      this.rustImporterWarmupHandle = null
+      import('../experimental/rust-importer')
+        .then(module => module.prewarmRustImporter())
+        .catch(error => {
+          console.warn('Failed to prewarm Rust importer', error)
+        })
+    }, 0)
+  }
 
   private onImportComparison = (result: ImportComparisonResult) => {
     if (result.equal) {
@@ -257,6 +290,13 @@ export class Application extends StatelessComponent<ApplicationProps> {
 
     if (!this.props.glCanvas) return
 
+    const importOptions = this.getImportOptions()
+    beginBrowserBenchmarkLoad({
+      fileName: this.pendingBenchmarkFileName || 'unknown',
+      engine: importOptions.engine || null,
+    })
+    this.pendingBenchmarkFileName = null
+
     console.time('import')
 
     let profileGroup: ProfileGroup | null = null
@@ -264,16 +304,19 @@ export class Application extends StatelessComponent<ApplicationProps> {
       profileGroup = await loader()
     } catch (e) {
       console.log('Failed to load format', e)
+      markBrowserBenchmarkError(e instanceof Error ? e.message : String(e))
       this.props.setError(true)
       return
     }
 
     // TODO(jlfwong): Make these into nicer overlays
     if (profileGroup == null) {
+      markBrowserBenchmarkError('Unrecognized format')
       alert('Unrecognized format! See documentation about supported formats.')
       this.props.setLoading(false)
       return
     } else if (profileGroup.profiles.length === 0) {
+      markBrowserBenchmarkError('Imported profile was empty')
       alert("Successfully imported profile, but it's empty!")
       this.props.setLoading(false)
       return
@@ -301,9 +344,11 @@ export class Application extends StatelessComponent<ApplicationProps> {
     }
 
     console.timeEnd('import')
+    markBrowserBenchmarkImportFinished()
 
     this.props.setProfileGroup(profileGroup)
     this.props.setLoading(false)
+    markBrowserBenchmarkProfileApplied()
     this.maybeShowComparisonWarning()
   }
 
@@ -312,6 +357,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   loadFromFile(file: File) {
+    this.pendingBenchmarkFileName = file.name
     const importOptions = this.getImportOptions()
     this.loadProfile(async () => {
       const profiles = await importProfilesFromFile(file, importOptions)
@@ -380,6 +426,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   loadExample = () => {
+    this.pendingBenchmarkFileName = 'perf-vertx-stacks-01-collapsed-all.txt'
     const importOptions = this.getImportOptions()
     this.loadProfile(async () => {
       const filename = 'perf-vertx-stacks-01-collapsed-all.txt'
@@ -493,6 +540,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
     const clipboardData = (ev as ClipboardEvent).clipboardData
     if (!clipboardData) return
     const pasted = clipboardData.getData('text')
+    this.pendingBenchmarkFileName = 'From Clipboard'
     const importOptions = this.getImportOptions()
     this.loadProfile(async () => {
       return await importProfilesFromText('From Clipboard', pasted, importOptions)
@@ -503,10 +551,15 @@ export class Application extends StatelessComponent<ApplicationProps> {
     window.addEventListener('keydown', this.onWindowKeyDown)
     window.addEventListener('keypress', this.onWindowKeyPress)
     document.addEventListener('paste', this.onDocumentPaste)
+    this.maybeScheduleRustImporterWarmup()
     this.maybeLoadHashParamProfile()
   }
 
   componentWillUnmount() {
+    if (this.rustImporterWarmupHandle != null) {
+      window.clearTimeout(this.rustImporterWarmupHandle)
+      this.rustImporterWarmupHandle = null
+    }
     window.removeEventListener('keydown', this.onWindowKeyDown)
     window.removeEventListener('keypress', this.onWindowKeyPress)
     document.removeEventListener('paste', this.onDocumentPaste)
@@ -522,12 +575,13 @@ export class Application extends StatelessComponent<ApplicationProps> {
         )
         return
       }
+      let filename = new URL(profileURL, window.location.href).pathname
+      if (filename.includes('/')) {
+        filename = filename.slice(filename.lastIndexOf('/') + 1)
+      }
+      this.pendingBenchmarkFileName = filename
       this.loadProfile(async () => {
         const response: Response = await fetch(profileURL)
-        let filename = new URL(profileURL, window.location.href).pathname
-        if (filename.includes('/')) {
-          filename = filename.slice(filename.lastIndexOf('/') + 1)
-        }
         return await importProfilesFromArrayBuffer(
           filename,
           await response.arrayBuffer(),
@@ -540,6 +594,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
       // as a JavaScript file which will invoke a global function.
       ;(window as any)['speedscope'] = {
         loadFileFromBase64: (filename: string, base64source: string) => {
+          this.pendingBenchmarkFileName = filename
           this.loadProfile(() => importProfilesFromBase64(filename, base64source, importOptions))
         },
       }

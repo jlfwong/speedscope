@@ -240,7 +240,8 @@ function ArchitectureRustFlow() {
       <FlowCard
         title="Rust importer seam"
         bullets={[
-          'Sampled Speedscope JSON is parsed in Rust/WASM first.',
+          'In the browser, sampled Speedscope JSON is parsed with native JSON.parse first.',
+          'The parsed samples are flattened into typed arrays before Rust/WASM builds the profile structures.',
           'Unsupported formats still fall back to the legacy TypeScript importers.',
           'The seam is implemented in `src/experimental/engine.ts`.',
         ]}
@@ -265,51 +266,122 @@ function ArchitectureRustFlow() {
 }
 
 function BenchmarkDashboard() {
+  const browserVisible = benchmarkData.browserVisibleComparison
   const corpusFaster = benchmarkData.fixtureCorpus.filter(
     item => item.experimentalMedianMs < item.legacyMedianMs,
   ).length
-  const corpusSlower = benchmarkData.fixtureCorpus.length - corpusFaster
-  const headline =
+  const importerHeadline =
     benchmarkData.syntheticComparisons.reduce((best, item) =>
       best == null || item.deltaPct < best.deltaPct ? item : best,
     ) || null
-  const largestHeadToHead = benchmarkData.largestHeadToHead
-  const warmExperimentalLargest = benchmarkData.warmExperimentalLargest
+  const browserVisibleRows = [
+    {
+      label: 'First flamegraph paint',
+      legacyMs: browserVisible.legacyFirstPaintMedianMs,
+      experimentalMs: browserVisible.experimentalFirstPaintMedianMs,
+      meta: formatPct(browserVisible.firstPaintDeltaPct),
+      detail: 'This is the end-to-end browser-visible number that best matches user perception.',
+    },
+    {
+      label: 'Import portion only',
+      legacyMs: browserVisible.legacyImportMedianMs,
+      experimentalMs: browserVisible.experimentalImportMedianMs,
+      meta: formatPct(browserVisible.importDeltaPct),
+      detail: 'Most of the first-paint win comes from the importer/build step getting much faster.',
+    },
+    {
+      label: 'UI/render overhead after import',
+      legacyMs: browserVisible.legacyUiOverheadMedianMs,
+      experimentalMs: browserVisible.experimentalUiOverheadMedianMs,
+      meta: 'roughly flat',
+      detail: 'The renderer cost is close on both paths, so the importer win mostly survives end to end.',
+    },
+    {
+      label: 'Whole automation wall clock',
+      legacyMs: browserVisible.legacyWallClockMedianMs,
+      experimentalMs: browserVisible.experimentalWallClockMedianMs,
+      meta: formatPct(browserVisible.wallClockDeltaPct),
+      detail: 'Includes the benchmark harness overhead around the actual file load.',
+    },
+  ]
 
   return (
     <div className="benchmark-dashboard">
       <StatGrid>
         <Stat
-          label="Best repeated apples-to-apples win"
-          value={headline ? formatPct(headline.deltaPct) : 'n/a'}
-          detail={headline ? `${headline.label} synthetic sampled import` : undefined}
+          label="End-to-end first-flamegraph win"
+          value={formatPct(browserVisible.firstPaintDeltaPct)}
+          detail={`${browserVisible.label}, repeated ${browserVisible.runs}-run browser benchmark`}
         />
         <Stat
-          label="Largest head-to-head sampled import"
-          value={largestHeadToHead.label}
-          detail={`${formatPct(largestHeadToHead.deltaPct)} (${formatMs(
-            largestHeadToHead.experimentalMedianMs,
-          )} vs ${formatMs(largestHeadToHead.legacyMedianMs)})`}
+          label="Experimental first flamegraph median"
+          value={formatMs(browserVisible.experimentalFirstPaintMedianMs)}
+          detail={`vs ${formatMs(browserVisible.legacyFirstPaintMedianMs)} on the same file`}
         />
         <Stat
-          label="Warm 112.1 MB experimental median"
-          value={formatMs(warmExperimentalLargest.experimentalMedianMs)}
-          detail={`Repeated ${warmExperimentalLargest.runs}-run experimental benchmark`}
+          label="UI/render overhead"
+          value="roughly flat"
+          detail={`${formatMs(browserVisible.legacyUiOverheadMedianMs)} legacy vs ${formatMs(
+            browserVisible.experimentalUiOverheadMedianMs,
+          )} Rust/WASM`}
+        />
+        <Stat
+          label="Importer-only seam win"
+          value={importerHeadline ? formatPct(importerHeadline.deltaPct) : 'n/a'}
+          detail={
+            importerHeadline ? `${importerHeadline.label} synthetic sampled import benchmark` : undefined
+          }
         />
         <Stat
           label="Corpus fixtures faster"
           value={`${corpusFaster}/${benchmarkData.fixtureCorpus.length}`}
           detail="Using the current `npm run experiment:benchmark` sweep"
         />
-        <Stat
-          label="Cloud-agent claim"
-          value="Parity + speed"
-          detail="The migration story is only credible because the control plane kept both visible."
-        />
       </StatGrid>
 
       <div className="chart-block">
-        <h3>Synthetic sampled imports</h3>
+        <h3>Browser-visible large-file benchmark</h3>
+        <p>{browserVisible.note}</p>
+        <div className="comparison-list">
+          {browserVisibleRows.map(item => {
+            const max = Math.max(item.legacyMs, item.experimentalMs)
+            return (
+              <div className="comparison-row" key={item.label}>
+                <div className="comparison-meta">
+                  <strong>{item.label}</strong>
+                  <span>{item.meta}</span>
+                  <span>{item.detail}</span>
+                </div>
+                <div className="comparison-bars">
+                  <div className="bar-pair">
+                    <div className="bar-label">Legacy</div>
+                    <div className="bar-track">
+                      <div
+                        className="bar bar-legacy"
+                        style={{width: `${(item.legacyMs / max) * 100}%`}}
+                      />
+                    </div>
+                    <div className="bar-value">{formatMs(item.legacyMs)}</div>
+                  </div>
+                  <div className="bar-pair">
+                    <div className="bar-label">Rust/WASM</div>
+                    <div className="bar-track">
+                      <div
+                        className="bar bar-experimental"
+                        style={{width: `${(item.experimentalMs / max) * 100}%`}}
+                      />
+                    </div>
+                    <div className="bar-value">{formatMs(item.experimentalMs)}</div>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      <div className="chart-block">
+        <h3>Importer-only synthetic seam benchmarks</h3>
         <div className="comparison-list">
           {benchmarkData.syntheticComparisons.map(item => {
             const max = Math.max(item.legacyMedianMs, item.experimentalMedianMs)

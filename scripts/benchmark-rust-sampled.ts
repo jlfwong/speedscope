@@ -10,7 +10,9 @@ interface BenchmarkConfig {
   depth: number
   frameCount: number
   distinctStacks: number
+  stackRunLength: number
   skipParity: boolean
+  writeOnly: boolean
   engineMode: 'both' | 'legacy' | 'experimental'
   writeFilePath: string | null
 }
@@ -19,6 +21,114 @@ interface BenchmarkSample {
   elapsedMs: number
   heapUsedBytes: number
 }
+
+const FEATURED_FUNCTIONS = [
+  'main',
+  'bootstrapApp',
+  'handleProfileUpload',
+  'parseSpeedscopeJson',
+  'internFrameStrings',
+  'buildAppendOrderTree',
+  'computeLeftHeavyView',
+  'renderFlamegraph',
+  'paintCanvasLayer',
+  'requestAnimationFrame',
+  'syncVerySeriousCache',
+  'definitelyNotAHotLoop',
+  'optimizeForHackerNews',
+  'justOneMoreAbstraction',
+  'vibesBasedCaching',
+  'pleaseWorkDemo',
+] as const
+
+const SYNTHETIC_MODULES = [
+  'app',
+  'router',
+  'upload',
+  'parser',
+  'importer',
+  'profile',
+  'calltree',
+  'flamegraph',
+  'timeline',
+  'search',
+  'canvas',
+  'scheduler',
+  'cache',
+  'render',
+  'wasm',
+  'trace',
+  'demo',
+  'bench',
+  'store',
+  'ui',
+] as const
+
+const SYNTHETIC_VERBS = [
+  'bootstrap',
+  'hydrate',
+  'load',
+  'handle',
+  'parse',
+  'decode',
+  'intern',
+  'normalize',
+  'collapse',
+  'group',
+  'aggregate',
+  'sort',
+  'rank',
+  'memoize',
+  'render',
+  'paint',
+  'layout',
+  'flush',
+  'schedule',
+  'stitch',
+  'fanOut',
+  'fanIn',
+  'optimize',
+  'serialize',
+  'reconcile',
+] as const
+
+const SYNTHETIC_OBJECTS = [
+  'Profile',
+  'SampleBuffer',
+  'FrameTable',
+  'CallTree',
+  'Timeline',
+  'Flamegraph',
+  'OverviewPane',
+  'ColorBuckets',
+  'SearchIndex',
+  'HotPath',
+  'NodeTable',
+  'WasmBridge',
+  'Chunk',
+  'TraceEvent',
+  'WorkerPool',
+  'CanvasLayer',
+  'UploadQueue',
+  'Legend',
+  'Viewport',
+  'StackArena',
+] as const
+
+const SYNTHETIC_QUALIFIERS = [
+  '',
+  '',
+  '',
+  'FastPath',
+  'Turbo',
+  'NoRegrets',
+  'XL',
+  'MaybeCached',
+  'ForHackerNews',
+  'WithoutBreakingProd',
+  'OnAFriday',
+  'Deluxe',
+] as const
 
 function getNumericArg(name: string, fallback: number): number {
   const prefix = `--${name}=`
@@ -64,7 +174,9 @@ function getConfig(): BenchmarkConfig {
     depth: getNumericArg('depth', 24),
     frameCount: getNumericArg('frames', 4096),
     distinctStacks: getNumericArg('distinct-stacks', 2048),
+    stackRunLength: getNumericArg('stack-run-length', 1),
     skipParity: getBooleanArg('skip-parity'),
+    writeOnly: getBooleanArg('write-only'),
     engineMode,
     writeFilePath: getStringArg('write-file'),
   }
@@ -99,11 +211,33 @@ function buildStack(pattern: number, depth: number, frameCount: number): number[
   return stack
 }
 
+function buildSyntheticFrameName(index: number): string {
+  if (index < FEATURED_FUNCTIONS.length) {
+    return FEATURED_FUNCTIONS[index]
+  }
+
+  const moduleIndex = index % SYNTHETIC_MODULES.length
+  const verbIndex = Math.floor(index / SYNTHETIC_MODULES.length) % SYNTHETIC_VERBS.length
+  const objectIndex =
+    Math.floor(index / (SYNTHETIC_MODULES.length * SYNTHETIC_VERBS.length)) %
+    SYNTHETIC_OBJECTS.length
+  const qualifierIndex =
+    Math.floor(
+      index /
+        (SYNTHETIC_MODULES.length * SYNTHETIC_VERBS.length * SYNTHETIC_OBJECTS.length),
+    ) % SYNTHETIC_QUALIFIERS.length
+
+  const qualifier = SYNTHETIC_QUALIFIERS[qualifierIndex]
+  const functionName = `${SYNTHETIC_MODULES[moduleIndex]}.${SYNTHETIC_VERBS[verbIndex]}${SYNTHETIC_OBJECTS[objectIndex]}`
+  return qualifier.length > 0 ? `${functionName}${qualifier}` : functionName
+}
+
 function buildRepeatedSection(
   sampleCount: number,
   depth: number,
   frameCount: number,
   distinctStacks: number,
+  stackRunLength: number,
 ): {samples: string; weights: string} {
   const sampleChunks: string[] = []
   const weightChunks: string[] = []
@@ -112,7 +246,8 @@ function buildRepeatedSection(
   const flushEvery = 4096
 
   for (let i = 0; i < sampleCount; i++) {
-    const stack = buildStack(i % distinctStacks, depth, frameCount)
+    const patternIndex = Math.floor(i / stackRunLength) % distinctStacks
+    const stack = buildStack(patternIndex, depth, frameCount)
     pendingSamples.push(`[${stack.join(',')}]`)
     pendingWeights.push('1')
 
@@ -136,12 +271,15 @@ function buildRepeatedSection(
 }
 
 function buildSyntheticProfileJSON(config: BenchmarkConfig): string {
-  const frames = Array.from({length: config.frameCount}, (_, index) => `{"name":"frame_${index}"}`).join(',')
+  const frames = Array.from({length: config.frameCount}, (_, index) =>
+    JSON.stringify({name: buildSyntheticFrameName(index)}),
+  ).join(',')
   const repeated = buildRepeatedSection(
     config.sampleCount,
     config.depth,
     config.frameCount,
     config.distinctStacks,
+    config.stackRunLength,
   )
 
   return `{"$schema":"https://www.speedscope.app/file-format-schema.json","shared":{"frames":[${frames}]},"profiles":[{"type":"sampled","name":"synthetic-sampled","unit":"none","startValue":0,"endValue":${config.sampleCount},"samples":[${repeated.samples}],"weights":[${repeated.weights}]}],"activeProfileIndex":0,"name":"synthetic-sampled"}` // prettier-ignore
@@ -186,6 +324,19 @@ async function main() {
     await fs.writeFile(outputPath, encoded)
   }
 
+  const result: Record<string, unknown> = {
+    config,
+    parityMatched: null,
+    sizeBytes: encoded.byteLength,
+    sizeHuman: formatBytes(encoded.byteLength),
+    ...(config.writeFilePath ? {writeFilePath: config.writeFilePath} : {}),
+  }
+
+  if (config.writeOnly) {
+    console.log(JSON.stringify(result, null, 2))
+    return
+  }
+
   let parityMatched: boolean | null = null
 
   if (!config.skipParity) {
@@ -204,6 +355,7 @@ async function main() {
       JSON.stringify(canonicalizeProfileGroup(legacyParity)) ===
       JSON.stringify(canonicalizeProfileGroup(experimentalParity))
   }
+  result.parityMatched = parityMatched
 
   const legacy =
     config.engineMode === 'experimental'
@@ -213,14 +365,6 @@ async function main() {
     config.engineMode === 'legacy'
       ? null
       : await benchmarkEngine('experimental', arrayBuffer, config.runs)
-
-  const result: Record<string, unknown> = {
-    config,
-    parityMatched,
-    sizeBytes: encoded.byteLength,
-    sizeHuman: formatBytes(encoded.byteLength),
-    ...(config.writeFilePath ? {writeFilePath: config.writeFilePath} : {}),
-  }
 
   if (legacy != null) {
     result.legacyMedianMs = Number(median(legacy.map(sample => sample.elapsedMs)).toFixed(2))

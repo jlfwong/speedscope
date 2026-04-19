@@ -19,6 +19,15 @@ Then load:
 
 - `demo/fixtures/generated/synthetic-sampled-1m.speedscope.json`
 
+For the more accurate end-to-end benchmark story, also generate the larger balanced browser benchmark file and run the browser-visible harness:
+
+```bash
+npm run experiment:benchmark-rust-sampled -- --samples=2000000 --stack-run-length=100 --runs=1 --write-only=1 --write-file=demo/fixtures/generated/synthetic-sampled-2m-balanced-crossover.speedscope.json
+npm run experiment:benchmark-browser-visible -- --file=demo/fixtures/generated/synthetic-sampled-2m-balanced-crossover.speedscope.json --runs=3
+```
+
+This measures the full path from file selection to first flamegraph paint instead of relying on a visual side-by-side impression.
+
 ## Recommended workflow
 
 ```bash

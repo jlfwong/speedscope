@@ -1,12 +1,26 @@
 # Benchmarks
 
-The benchmark story in this repo is strongest on the sampled Speedscope JSON path, because that is the path that has actually been ported into Rust/WASM so far. After changing the JS/WASM boundary to use typed-array tables instead of millions of JS node objects, the large synthetic sampled cases now show the Rust path winning on both wall-clock time and memory.
+The public benchmark story in this repo should now start with the browser-visible number, not the importer-only microbenchmark. On the repeated 3-run headless benchmark for the `224 MB` balanced sampled file, the experimental Rust/WASM path reaches first flamegraph in `2688.6 ms` versus `5122.6 ms` for legacy, a `-47.5%` end-to-end win. The importer-only synthetic runs are still useful, but mainly as supporting evidence for where that win comes from and why heap pressure dropped so much.
 
 ## Benchmark dashboard
 
 <BenchmarkDashboard />
 
-## How to reproduce the synthetic runs
+## How to reproduce the browser-visible run
+
+<CommandBlock
+  title="Generate the 224 MB balanced browser benchmark file"
+  command="npm run experiment:benchmark-rust-sampled -- --samples=2000000 --stack-run-length=100 --runs=1 --write-only=1 --write-file=demo/fixtures/generated/synthetic-sampled-2m-balanced-crossover.speedscope.json"
+/>
+
+<CommandBlock
+  title="Measure upload-to-first-flamegraph browser time"
+  command="npm run experiment:benchmark-browser-visible -- --file=demo/fixtures/generated/synthetic-sampled-2m-balanced-crossover.speedscope.json --runs=3"
+/>
+
+If Playwright has not downloaded Chromium on this machine yet, run `npx playwright install chromium` once first.
+
+## How to reproduce the importer-only seam runs
 
 <CommandBlock
   title="Medium synthetic sampled run"
@@ -33,5 +47,5 @@ The benchmark story in this repo is strongest on the sampled Speedscope JSON pat
 <ExperimentalLimits />
 
 <Callout title="How to read the numbers" tone="warning">
-Use the synthetic sampled benchmarks to evaluate the Rust seam itself. Use the full fixture corpus to confirm that the repo still behaves like Speedscope across many formats. Do not over-generalize the Rust numbers to formats that still run through the legacy importer path, and do not use the tiny built-in sampled fixture as the headline benchmark story.
+Lead with the browser-visible benchmark when you are making the public case for the migration. Use the synthetic sampled benchmarks to evaluate the Rust seam itself and to explain where the end-to-end win comes from. Use the full fixture corpus to confirm that the repo still behaves like Speedscope across many formats. Do not over-generalize the Rust numbers to formats that still run through the legacy importer path, and do not use the tiny built-in sampled fixture as the headline benchmark story.
 </Callout>

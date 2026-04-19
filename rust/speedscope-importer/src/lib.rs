@@ -360,6 +360,102 @@ fn flatten_nodes(nodes: Vec<TreeNodeState>) -> OutputNodeTable {
     }
 }
 
+fn get_property(target: &JsValue, key: &str) -> Result<JsValue, JsValue> {
+    Reflect::get(target, &JsValue::from_str(key))
+}
+
+fn get_optional_property(target: &JsValue, key: &str) -> Result<Option<JsValue>, JsValue> {
+    let value = get_property(target, key)?;
+    if value.is_null() || value.is_undefined() {
+        Ok(None)
+    } else {
+        Ok(Some(value))
+    }
+}
+
+fn get_required_string_property(target: &JsValue, key: &str) -> Result<String, JsValue> {
+    get_property(target, key)?
+        .as_string()
+        .ok_or_else(|| JsValue::from_str(&format!("Expected `{key}` to be a string")))
+}
+
+fn get_optional_string_property(target: &JsValue, key: &str) -> Result<Option<String>, JsValue> {
+    match get_optional_property(target, key)? {
+        Some(value) => value
+            .as_string()
+            .map(Some)
+            .ok_or_else(|| JsValue::from_str(&format!("Expected `{key}` to be a string"))),
+        None => Ok(None),
+    }
+}
+
+fn js_value_to_f64(value: &JsValue, context: &str) -> Result<f64, JsValue> {
+    value
+        .as_f64()
+        .filter(|number| number.is_finite())
+        .ok_or_else(|| JsValue::from_str(&format!("Expected `{context}` to be a finite number")))
+}
+
+fn js_value_to_usize(value: &JsValue, context: &str) -> Result<usize, JsValue> {
+    let number = js_value_to_f64(value, context)?;
+    if number < 0.0 || number.fract() != 0.0 || number > usize::MAX as f64 {
+        return Err(JsValue::from_str(&format!(
+            "Expected `{context}` to be a non-negative integer"
+        )));
+    }
+    Ok(number as usize)
+}
+
+fn get_optional_u32_property(target: &JsValue, key: &str) -> Result<Option<u32>, JsValue> {
+    match get_optional_property(target, key)? {
+        Some(value) => {
+            let number = js_value_to_f64(&value, key)?;
+            if number < 0.0 || number.fract() != 0.0 || number > u32::MAX as f64 {
+                return Err(JsValue::from_str(&format!(
+                    "Expected `{key}` to be a non-negative 32-bit integer"
+                )));
+            }
+            Ok(Some(number as u32))
+        }
+        None => Ok(None),
+    }
+}
+
+fn get_optional_usize_property(target: &JsValue, key: &str) -> Result<Option<usize>, JsValue> {
+    match get_optional_property(target, key)? {
+        Some(value) => Ok(Some(js_value_to_usize(&value, key)?)),
+        None => Ok(None),
+    }
+}
+
+fn parse_frames_from_js(shared_frames: &JsValue) -> Result<Vec<InputFrame>, JsValue> {
+    if !Array::is_array(shared_frames) {
+        return Err(JsValue::from_str("Expected `shared.frames` to be an array"));
+    }
+
+    let frames = Array::from(shared_frames);
+    let mut parsed_frames = Vec::with_capacity(frames.length() as usize);
+    for index in 0..frames.length() {
+        let frame = frames.get(index);
+        parsed_frames.push(InputFrame {
+            name: get_required_string_property(&frame, "name").map_err(|_| {
+                JsValue::from_str(&format!("Expected `shared.frames[{index}].name` to be a string"))
+            })?,
+            file: get_optional_string_property(&frame, "file").map_err(|_| {
+                JsValue::from_str(&format!("Expected `shared.frames[{index}].file` to be a string"))
+            })?,
+            line: get_optional_u32_property(&frame, "line").map_err(|_| {
+                JsValue::from_str(&format!("Expected `shared.frames[{index}].line` to be a number"))
+            })?,
+            col: get_optional_u32_property(&frame, "col").map_err(|_| {
+                JsValue::from_str(&format!("Expected `shared.frames[{index}].col` to be a number"))
+            })?,
+        });
+    }
+
+    Ok(parsed_frames)
+}
+
 fn set_property(target: &Object, key: &str, value: &JsValue) -> Result<(), JsValue> {
     Reflect::set(target, &JsValue::from_str(key), value)?;
     Ok(())
@@ -483,12 +579,229 @@ fn build_profile_group(input: InputFile) -> Result<Option<OutputProfileGroup>, S
     }))
 }
 
+fn build_profile_group_from_parsed_js(input: JsValue) -> Result<Option<OutputProfileGroup>, JsValue> {
+    let schema = get_optional_string_property(&input, "$schema")?;
+    if !is_supported_schema(schema.as_deref()) {
+        return Ok(None);
+    }
+
+    let shared = get_property(&input, "shared")?;
+    let shared_frames = get_property(&shared, "frames")?;
+    let frames = parse_frames_from_js(&shared_frames)?;
+
+    let profiles_value = get_property(&input, "profiles")?;
+    if !Array::is_array(&profiles_value) {
+        return Err(JsValue::from_str("Expected `profiles` to be an array"));
+    }
+    let profiles = Array::from(&profiles_value);
+
+    let mut output_profiles = Vec::with_capacity(profiles.length() as usize);
+    let mut stack_buffer = Vec::new();
+
+    for profile_index in 0..profiles.length() {
+        let profile = profiles.get(profile_index);
+        let profile_type = get_required_string_property(&profile, "type").map_err(|_| {
+            JsValue::from_str(&format!("Expected `profiles[{profile_index}].type` to be a string"))
+        })?;
+        if profile_type != "sampled" {
+            return Ok(None);
+        }
+
+        let name = get_required_string_property(&profile, "name").map_err(|_| {
+            JsValue::from_str(&format!("Expected `profiles[{profile_index}].name` to be a string"))
+        })?;
+        let unit = get_required_string_property(&profile, "unit").map_err(|_| {
+            JsValue::from_str(&format!("Expected `profiles[{profile_index}].unit` to be a string"))
+        })?;
+        let start_value = js_value_to_f64(
+            &get_property(&profile, "startValue")?,
+            &format!("profiles[{profile_index}].startValue"),
+        )?;
+        let end_value = js_value_to_f64(
+            &get_property(&profile, "endValue")?,
+            &format!("profiles[{profile_index}].endValue"),
+        )?;
+
+        let samples_value = get_property(&profile, "samples")?;
+        let weights_value = get_property(&profile, "weights")?;
+        if !Array::is_array(&samples_value) {
+            return Err(JsValue::from_str(&format!(
+                "Expected `profiles[{profile_index}].samples` to be an array"
+            )));
+        }
+        if !Array::is_array(&weights_value) {
+            return Err(JsValue::from_str(&format!(
+                "Expected `profiles[{profile_index}].weights` to be an array"
+            )));
+        }
+
+        let samples = Array::from(&samples_value);
+        let weights = Array::from(&weights_value);
+        if samples.length() != weights.length() {
+            return Err(JsValue::from_str(&format!(
+                "Expected profiles[{profile_index}].samples.length ({}) to equal weights.length ({})",
+                samples.length(),
+                weights.length()
+            )));
+        }
+
+        let mut builder = SampledProfileBuilder::new(&frames, end_value - start_value);
+        for sample_index in 0..samples.length() {
+            let stack_value = samples.get(sample_index);
+            if !Array::is_array(&stack_value) {
+                return Err(JsValue::from_str(&format!(
+                    "Expected `profiles[{profile_index}].samples[{sample_index}]` to be an array"
+                )));
+            }
+
+            let stack = Array::from(&stack_value);
+            stack_buffer.clear();
+            if stack_buffer.capacity() < stack.length() as usize {
+                stack_buffer.reserve(stack.length() as usize - stack_buffer.capacity());
+            }
+
+            for frame_index in 0..stack.length() {
+                let context =
+                    format!("profiles[{profile_index}].samples[{sample_index}][{frame_index}]");
+                stack_buffer.push(js_value_to_usize(&stack.get(frame_index), &context)?);
+            }
+
+            let weight_context = format!("profiles[{profile_index}].weights[{sample_index}]");
+            let weight = js_value_to_f64(&weights.get(sample_index), &weight_context)?;
+            builder
+                .append_sample(&stack_buffer, weight)
+                .map_err(|error| JsValue::from_str(&error))?;
+        }
+
+        output_profiles.push(builder.finish(name, unit));
+    }
+
+    let group_name = get_optional_string_property(&input, "name")?
+        .or_else(|| output_profiles.first().map(|profile| profile.name.clone()))
+        .unwrap_or_else(|| "profile".to_owned());
+
+    Ok(Some(OutputProfileGroup {
+        name: group_name,
+        index_to_view: get_optional_usize_property(&input, "activeProfileIndex")?.unwrap_or(0),
+        profiles: output_profiles,
+    }))
+}
+
+fn build_profile_group_from_flattened_js(input: JsValue) -> Result<Option<OutputProfileGroup>, JsValue> {
+    let schema = get_optional_string_property(&input, "$schema")?;
+    if !is_supported_schema(schema.as_deref()) {
+        return Ok(None);
+    }
+
+    let shared = get_property(&input, "shared")?;
+    let shared_frames = get_property(&shared, "frames")?;
+    let frames = parse_frames_from_js(&shared_frames)?;
+
+    let profiles_value = get_property(&input, "profiles")?;
+    if !Array::is_array(&profiles_value) {
+        return Err(JsValue::from_str("Expected `profiles` to be an array"));
+    }
+    let profiles = Array::from(&profiles_value);
+
+    let mut output_profiles = Vec::with_capacity(profiles.length() as usize);
+    let mut stack_buffer = Vec::new();
+
+    for profile_index in 0..profiles.length() {
+        let profile = profiles.get(profile_index);
+        let profile_type = get_required_string_property(&profile, "type").map_err(|_| {
+            JsValue::from_str(&format!("Expected `profiles[{profile_index}].type` to be a string"))
+        })?;
+        if profile_type != "sampled" {
+            return Ok(None);
+        }
+
+        let name = get_required_string_property(&profile, "name").map_err(|_| {
+            JsValue::from_str(&format!("Expected `profiles[{profile_index}].name` to be a string"))
+        })?;
+        let unit = get_required_string_property(&profile, "unit").map_err(|_| {
+            JsValue::from_str(&format!("Expected `profiles[{profile_index}].unit` to be a string"))
+        })?;
+        let start_value = js_value_to_f64(
+            &get_property(&profile, "startValue")?,
+            &format!("profiles[{profile_index}].startValue"),
+        )?;
+        let end_value = js_value_to_f64(
+            &get_property(&profile, "endValue")?,
+            &format!("profiles[{profile_index}].endValue"),
+        )?;
+
+        let sample_offsets = Uint32Array::new(&get_property(&profile, "sampleOffsets")?);
+        let sample_frames = Uint32Array::new(&get_property(&profile, "sampleFrames")?);
+        let weights = Float64Array::new(&get_property(&profile, "weights")?);
+
+        if sample_offsets.length() != weights.length() + 1 {
+            return Err(JsValue::from_str(&format!(
+                "Expected profiles[{profile_index}].sampleOffsets.length ({}) to equal weights.length + 1 ({})",
+                sample_offsets.length(),
+                weights.length() + 1
+            )));
+        }
+
+        let mut builder = SampledProfileBuilder::new(&frames, end_value - start_value);
+        for sample_index in 0..weights.length() {
+            let start = sample_offsets.get_index(sample_index) as usize;
+            let end = sample_offsets.get_index(sample_index + 1) as usize;
+            if end < start || end > sample_frames.length() as usize {
+                return Err(JsValue::from_str(&format!(
+                    "Invalid sample frame range [{start}, {end}) for profiles[{profile_index}].samples[{sample_index}]"
+                )));
+            }
+
+            stack_buffer.clear();
+            if stack_buffer.capacity() < end - start {
+                stack_buffer.reserve(end - start - stack_buffer.capacity());
+            }
+
+            for frame_index in start..end {
+                stack_buffer.push(sample_frames.get_index(frame_index as u32) as usize);
+            }
+
+            builder
+                .append_sample(&stack_buffer, weights.get_index(sample_index))
+                .map_err(|error| JsValue::from_str(&error))?;
+        }
+
+        output_profiles.push(builder.finish(name, unit));
+    }
+
+    let group_name = get_optional_string_property(&input, "name")?
+        .or_else(|| output_profiles.first().map(|profile| profile.name.clone()))
+        .unwrap_or_else(|| "profile".to_owned());
+
+    Ok(Some(OutputProfileGroup {
+        name: group_name,
+        index_to_view: get_optional_usize_property(&input, "activeProfileIndex")?.unwrap_or(0),
+        profiles: output_profiles,
+    }))
+}
+
 #[wasm_bindgen]
 pub fn import_speedscope_sampled_profile_group(buffer: &[u8]) -> Result<JsValue, JsValue> {
     let parsed: InputFile = serde_json::from_slice(buffer)
         .map_err(|error| JsValue::from_str(&format!("Failed to parse sampled speedscope JSON: {error}")))?;
 
     match build_profile_group(parsed).map_err(|error| JsValue::from_str(&error))? {
+        Some(profile_group) => profile_group_to_js(profile_group),
+        None => Ok(JsValue::NULL),
+    }
+}
+
+#[wasm_bindgen]
+pub fn import_speedscope_sampled_profile_group_from_parsed(input: JsValue) -> Result<JsValue, JsValue> {
+    match build_profile_group_from_parsed_js(input)? {
+        Some(profile_group) => profile_group_to_js(profile_group),
+        None => Ok(JsValue::NULL),
+    }
+}
+
+#[wasm_bindgen]
+pub fn import_speedscope_sampled_profile_group_from_flattened(input: JsValue) -> Result<JsValue, JsValue> {
+    match build_profile_group_from_flattened_js(input)? {
         Some(profile_group) => profile_group_to_js(profile_group),
         None => Ok(JsValue::NULL),
     }

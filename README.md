@@ -18,13 +18,13 @@ If you are opening this repo to understand what happened, there are six things t
 - A measured Rust/WASM seam inserted into an existing browser app without rewriting the UI.
 - A cloud-agent orchestration system that broke the migration into packages, routed work by task shape, and kept parity/benchmark gates visible.
 - A side-by-side validation flow where the same profile file can be opened in both the classic and experimental UIs.
-- Benchmark evidence that the Rust/WASM sampled-import path reduces both time and heap pressure on larger inputs.
+- Benchmark evidence that large sampled uploads reach first flamegraph much faster end to end, with importer-only and heap data explaining where the win comes from.
 
 ## Project summary
 
 - **Goal:** prove that Speedscope's hottest sampled-profile import path could be migrated to Rust/WASM for real, benchmarkable wins without rewriting the UI.
 - **Constraint:** keep the original Speedscope codebase visible and runnable so the migration could always be compared against the legacy implementation.
-- **Approach:** add a narrow Rust seam for sampled Speedscope JSON, keep other formats on the legacy TypeScript importers, and adapt the Rust result back into the existing `Profile` surface.
+- **Approach:** add a narrow Rust seam for sampled Speedscope JSON, keep other formats on the legacy TypeScript importers, and adapt the Rust result back into the existing `Profile` surface, with the browser path using native `JSON.parse` plus typed-array flattening before Rust builds the heavy structures.
 - **Cursor SDK / cloud-agent role:** use a control plane around Cursor cloud agents to split the migration into packages, route work by task shape, keep registry-backed state, and gate progress with parity and benchmark checks.
 - **Model split:** Composer handled bounded execution-heavy worker tasks, GPT-5.4 handled orchestration and synthesis, and the Opus deep-reasoning slot handled ambiguous or high-blast-radius escalations.
 - **Proof:** this repo includes side-by-side UI runs, benchmark artifacts, curated fixtures, and the orchestration code that made the migration repeatable instead of ad hoc.
@@ -139,14 +139,16 @@ flowchart LR
   legacyImporters --> sameUi
 ```
 
-The UI remains the same. The targeted change is that sampled Speedscope JSON can now enter through Rust/WASM first, then adapt into the existing `Profile` surface lazily.
+The UI remains the same. The targeted change is that sampled Speedscope JSON now goes through browser-native `JSON.parse`, a typed-array flattening step, and a Rust/WASM builder before adapting lazily back into the existing `Profile` surface.
 
 ## Benchmark highlights
 
-- `11.3 MB` sampled synthetic input: experimental `-84.2%` faster (`161.84 ms` vs `1023.31 ms`)
-- `28.1 MB` sampled synthetic input: experimental `-85.5%` faster (`392.48 ms` vs `2699.83 ms`)
-- `56.1 MB` sampled synthetic input: experimental `-85.2%` faster (`796.81 ms` vs `5396.14 ms`) while using about `0.06 GB` vs `5.82 GB`
-- `112.1 MB` sampled synthetic input: experimental `-7.9%` faster head to head (`8784.47 ms` vs `9539.29 ms`) while using about `0.12 GB` vs `5.98 GB`
+The public benchmark claim should now start with the browser-visible number, not the importer-only microbenchmark:
+
+- `224 MB` balanced sampled file, repeated `3` browser runs: experimental reaches first flamegraph `-47.5%` faster (`2688.6 ms` vs `5122.6 ms`)
+- On that same benchmark, the import portion is `-53.8%` faster (`2132.2 ms` vs `4614.8 ms`) while UI/render overhead stays roughly flat (`545.4 ms` vs `507.8 ms`)
+- Importer-only synthetic seam benchmark: `56.1 MB` sampled input is `-85.2%` faster (`796.81 ms` vs `5396.14 ms`) while using about `0.06 GB` vs `5.82 GB`
+- Largest importer-only direct head-to-head sampled import currently captured: `112.1 MB`, experimental `-7.9%` faster (`8784.47 ms` vs `9539.29 ms`) while using about `0.12 GB` vs `5.98 GB`
 
 The strongest proof in this repo is the sampled-import path. Other formats still rely on the legacy importer surface and are preserved as part of the original Speedscope breadth.
 
@@ -166,14 +168,29 @@ The strongest proof in this repo is the sampled-import path. Other formats still
 npm run experiment:benchmark-rust-sampled -- --samples=1000000 --runs=1 --skip-parity=1 --write-file=demo/fixtures/generated/synthetic-sampled-1m.speedscope.json
 ```
 
+### Generate the 224 MB balanced browser benchmark file
+
+```bash
+npm run experiment:benchmark-rust-sampled -- --samples=2000000 --stack-run-length=100 --runs=1 --write-only=1 --write-file=demo/fixtures/generated/synthetic-sampled-2m-balanced-crossover.speedscope.json
+```
+
+### Measure upload-to-flamegraph browser time
+
+```bash
+npm run experiment:benchmark-browser-visible -- --file=demo/fixtures/generated/synthetic-sampled-2m-balanced-crossover.speedscope.json --runs=3
+```
+
+If Playwright has not downloaded Chromium on this machine yet, run `npx playwright install chromium` once first.
+
 ### Best test sequence
 
 1. Start with `npm run serve:side-by-side`.
 2. Load `two-sampled.speedscope.json` in both ports.
 3. Confirm the UI looks the same in both tabs.
 4. Generate and load `demo/fixtures/generated/synthetic-sampled-1m.speedscope.json` in both ports for the large-file benchmark demo.
-5. Load the Chrome trace fixture to show that the broader format surface still works.
-6. If you want a very quick sanity check, use the stackcollapse fixture.
+5. Generate `demo/fixtures/generated/synthetic-sampled-2m-balanced-crossover.speedscope.json` and run `experiment:benchmark-browser-visible --runs=3` when you want a real browser-visible upload-to-render comparison.
+6. Load the Chrome trace fixture to show that the broader format surface still works.
+7. If you want a very quick sanity check, use the stackcollapse fixture.
 
 ### What each run mode is good for
 
