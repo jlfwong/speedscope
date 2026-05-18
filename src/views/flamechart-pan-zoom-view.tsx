@@ -11,13 +11,15 @@ import {
   remapRangesToTrimmedText,
 } from '../lib/text-utils'
 import {getFlamechartStyle} from './flamechart-style'
-import {h, Component} from 'preact'
+import {h, Component, Fragment} from 'preact'
 import {css} from 'aphrodite'
 import {ProfileSearchResults} from '../lib/profile-search'
 import {BatchCanvasTextRenderer, BatchCanvasRectRenderer} from '../lib/canvas-2d-batch-renderers'
 import {Color} from '../lib/color'
 import {Theme} from './themes/theme'
 import {minimapMousePositionAtom} from '../app-state'
+import {ContextMenu, ContextMenuItem} from './context-menu'
+import {generateTreeSummary, copyToClipboard} from '../lib/tree-summary'
 
 interface FlamechartFrameLabel {
   configSpaceBounds: Rect
@@ -63,7 +65,22 @@ export interface FlamechartPanZoomViewProps {
   searchResults: ProfileSearchResults | null
 }
 
-export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps, {}> {
+interface FlamechartPanZoomViewState {
+  contextMenu: {
+    x: number
+    y: number
+    node: CallTreeNode
+  } | null
+}
+
+export class FlamechartPanZoomView extends Component<
+  FlamechartPanZoomViewProps,
+  FlamechartPanZoomViewState
+> {
+  state: FlamechartPanZoomViewState = {
+    contextMenu: null,
+  }
+
   private container: Element | null = null
   private containerRef = (element: Element | null) => {
     this.container = element || null
@@ -695,6 +712,40 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     this.renderCanvas()
   }
 
+  private onContextMenu = (ev: MouseEvent) => {
+    ev.preventDefault()
+
+    if (this.hoveredLabel) {
+      this.setState({
+        contextMenu: {
+          x: ev.clientX,
+          y: ev.clientY,
+          node: this.hoveredLabel.node,
+        },
+      })
+    }
+  }
+
+  private closeContextMenu = () => {
+    this.setState({contextMenu: null})
+  }
+
+  private handleCopySummary = async () => {
+    const {contextMenu} = this.state
+    if (!contextMenu) return
+
+    const summary = generateTreeSummary({
+      node: contextMenu.node,
+      totalWeight: this.props.flamechart.getTotalWeight(),
+      formatValue: this.props.flamechart.formatValue.bind(this.props.flamechart),
+    })
+
+    const success = await copyToClipboard(summary)
+    if (!success) {
+      console.error('Failed to copy summary to clipboard')
+    }
+  }
+
   private onWheel = (ev: WheelEvent) => {
     ev.preventDefault()
     this.frameHadWheelEvent = true
@@ -818,8 +869,12 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     }
   }
 
-  shouldComponentUpdate() {
-    return false
+  shouldComponentUpdate(
+    nextProps: FlamechartPanZoomViewProps,
+    nextState: FlamechartPanZoomViewState,
+  ) {
+    // Re-render when context menu state changes
+    return this.state.contextMenu !== nextState.contextMenu
   }
   componentWillReceiveProps(nextProps: FlamechartPanZoomViewProps) {
     if (this.props.flamechart !== nextProps.flamechart) {
@@ -854,20 +909,40 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
   render() {
     const style = this.getStyle()
+    const {contextMenu} = this.state
+
+    const contextMenuItems: ContextMenuItem[] = [
+      {
+        label: 'Copy summary as text',
+        onClick: this.handleCopySummary,
+      },
+    ]
 
     return (
-      <div
-        className={css(style.panZoomView, commonStyle.vbox)}
-        onMouseDown={this.onMouseDown}
-        onMouseMove={this.onMouseMove}
-        onMouseLeave={this.onMouseLeave}
-        onClick={this.onClick}
-        onDblClick={this.onDblClick}
-        onWheel={this.onWheel}
-        ref={this.containerRef}
-      >
-        <canvas width={1} height={1} ref={this.overlayCanvasRef} className={css(style.fill)} />
-      </div>
+      <Fragment>
+        <div
+          className={css(style.panZoomView, commonStyle.vbox)}
+          onMouseDown={this.onMouseDown}
+          onMouseMove={this.onMouseMove}
+          onMouseLeave={this.onMouseLeave}
+          onClick={this.onClick}
+          onDblClick={this.onDblClick}
+          onWheel={this.onWheel}
+          onContextMenu={this.onContextMenu}
+          ref={this.containerRef}
+        >
+          <canvas width={1} height={1} ref={this.overlayCanvasRef} className={css(style.fill)} />
+        </div>
+        {contextMenu && (
+          <ContextMenu
+            items={contextMenuItems}
+            x={contextMenu.x}
+            y={contextMenu.y}
+            theme={this.props.theme}
+            onClose={this.closeContextMenu}
+          />
+        )}
+      </Fragment>
     )
   }
 }

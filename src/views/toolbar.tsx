@@ -12,6 +12,7 @@ import {viewModeAtom} from '../app-state'
 import {ProfileGroupState} from '../app-state/profile-group'
 import {colorSchemeAtom} from '../app-state/color-scheme'
 import {useAtom} from '../lib/atom'
+import {generateAllProfilesSummary, copyToClipboard} from '../lib/tree-summary'
 
 interface ToolbarProps extends ApplicationProps {
   browseForFile(): void
@@ -160,6 +161,27 @@ function ToolbarRightContent(props: ToolbarProps) {
   const style = getStyle(useTheme())
   const colorScheme = useAtom(colorSchemeAtom)
 
+  const handleCopySummary = useCallback(async () => {
+    if (!props.profileGroup) return
+
+    const profiles = props.profileGroup.profiles.map(p => ({
+      name: p.profile.getName(),
+      profile: p.profile,
+    }))
+
+    const summary = generateAllProfilesSummary(profiles)
+    const success = await copyToClipboard(summary)
+    if (!success) {
+      console.error('Failed to copy summary to clipboard')
+    }
+  }, [props.profileGroup])
+
+  const copySummary = (
+    <div className={css(style.toolbarTab)} onClick={handleCopySummary}>
+      <span className={css(style.emoji)}>📋</span>Copy Summary
+    </div>
+  )
+
   const exportFile = (
     <div className={css(style.toolbarTab)} onClick={props.saveFile}>
       <span className={css(style.emoji)}>⤴️</span>Export
@@ -194,6 +216,7 @@ function ToolbarRightContent(props: ToolbarProps) {
 
   return (
     <div className={css(style.toolbarRight)}>
+      {props.activeProfileState && copySummary}
       {props.activeProfileState && exportFile}
       {importFile}
       {colorSchemeToggle}
