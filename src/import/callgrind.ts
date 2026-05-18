@@ -342,6 +342,8 @@ class CallgrindParser {
 
   private filename: string | null = null
   private functionName: string | null = null
+  private functionFile: string | null = null
+  private currentFunctionFile: string | null = null
   private calleeFilename: string | null = null
   private calleeFunctionName: string | null = null
 
@@ -396,7 +398,7 @@ class CallgrindParser {
   }
 
   private frameInfo(): FrameInfo {
-    const file = this.filename || '(unknown)'
+    const file = this.functionFile || '(unknown)'
     const name = this.functionName || '(unknown)'
     const key = `${file}:${name}`
     return {key, name, file}
@@ -445,23 +447,29 @@ class CallgrindParser {
       case 'fe':
       case 'fi': {
         // fe/fi are used to indicate the source-file of a function definition
-        // changed mid-definition. This is for inlined code, but doesn't
-        // indicate that we've actually switched to referring to a different
-        // function, so we mostly ignore it.
-        //
-        // We still need to do the parseNameWithCompression call in case a name
-        // is defined and then referenced later on for name compression.
-        this.parseNameWithCompression(value, this.savedFileNames)
+        // changed mid-definition. This is for inlined code, but when a function
+        // is called from within the inlined code, it is indicated that it
+        // comes from file marked by fe/fi.
+        this.filename = this.parseNameWithCompression(value, this.savedFileNames)
         break
       }
 
       case 'fl': {
         this.filename = this.parseNameWithCompression(value, this.savedFileNames)
+        // The 'fl' needs to be stored in order to reset current filename upon
+        // consecutive 'fn' calls
+        this.currentFunctionFile = this.filename
         break
       }
 
       case 'fn': {
+        // the file for a function defined with 'fn' always comes from 'fl'
+        // It also resets the current filename to previous 'fl' value, as in KCacheGrind:
+        // https://github.com/KDE/kcachegrind/blob/ea4314db2785cb8f279fe884ee7f82445642b692/libcore/cachegrindloader.cpp#L808
+        if (this.filename !== this.currentFunctionFile) this.filename = this.currentFunctionFile
         this.functionName = this.parseNameWithCompression(value, this.savedFunctionNames)
+        // store function file associated with 'fn' function
+        this.functionFile = this.filename
         break
       }
 
