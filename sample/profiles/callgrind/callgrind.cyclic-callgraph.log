@@ -1,0 +1,20 @@
+# callgrind format
+events: Ir
+
+# funcA calls funcB, funcB calls funcA — fully cyclic, no natural root nodes.
+# The importer must fall back to residual-weight root finding (option 2).
+# funcA residual = 400 - 150 = 250  (positive → root)
+# funcB residual = 200 - 300 = -100 (negative → not a root)
+
+fl=main.c
+fn=funcA
+1 100
+cfn=funcB
+calls=1 10
+10 300
+
+fn=funcB
+10 50
+cfn=funcA
+calls=1 1
+1 150

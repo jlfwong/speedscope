@@ -19,3 +19,19 @@ test('importFromCallgrind subposition compression', async () => {
 test('importFromCallgrind cfn reset', async () => {
   await checkProfileSnapshot('./sample/profiles/callgrind/callgrind.cfn-reset.log')
 })
+
+test('importFromCallgrind positions instr line', async () => {
+  await checkProfileSnapshot('./sample/profiles/callgrind/callgrind.instr-line-positions.log')
+})
+
+test('importFromCallgrind positions instr', async () => {
+  await checkProfileSnapshot('./sample/profiles/callgrind/callgrind.positions-instr.log')
+})
+
+test('importFromCallgrind instr line subposition compression', async () => {
+  await checkProfileSnapshot('./sample/profiles/callgrind/callgrind.instr-line-subposition.log')
+})
+
+test('importFromCallgrind cyclic callgraph', async () => {
+  await checkProfileSnapshot('./sample/profiles/callgrind/callgrind.cyclic-callgraph.log')
+})

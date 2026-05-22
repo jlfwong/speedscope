@@ -1,0 +1,25 @@
+# callgrind format
+positions: instr line
+events: Instructions
+
+fl=file1.c
+fn=main
+0x00000100 16 20
+cfn=func1
+calls=1 0x00000200 50
+0x00000200 16 400
+cfi=file2.c
+cfn=func2
+calls=3 0x00000200 20
+* * *
+
+fn=func1
++16 +35 -300
+cfi=file2.c
+cfn=func2
+calls=2 0x00000330 20
++16 * +200
+
+fl=file2.c
+fn=func2
+0x00001000 20 700

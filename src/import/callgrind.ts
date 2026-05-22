@@ -153,11 +153,13 @@ class CallGraph {
 
     const currentStack = new Set<Frame>()
 
+    // Sum of root weights; used as the pruning threshold in visit().
     let maxWeight = 0
-    for (let [_, totalWeight] of this.totalWeights) {
-      maxWeight = Math.max(maxWeight, totalWeight)
-    }
 
+    // Tracks fully-expanded frames; subsequent visits collapse to a leaf to avoid exponential blowup in highly-connected graphs.
+    const visitedGlobally = new Set<Frame>()
+
+    let cycleDetected = false
     const visit = (frame: Frame, subtreeTotalWeight: number) => {
       if (currentStack.has(frame)) {
         // Call-graphs are allowed to have cycles. Call-trees are not. In case
@@ -165,6 +167,7 @@ class CallGraph {
         // more than once in a call stack. The result will be that the time
         // spent in the recursive call will instead be attributed as self time
         // in the parent.
+        cycleDetected = true
         return
       }
 
@@ -218,6 +221,17 @@ class CallGraph {
         return
       }
 
+      // If this frame has already been fully expanded from an earlier call
+      // path, show it as a leaf here (weight becomes self-time) rather than
+      // re-expanding its entire subtree a second time.
+      if (visitedGlobally.has(frame)) {
+        profile.enterFrame(frame, Math.round(totalCumulative * unitMultiplier))
+        totalCumulative += subtreeTotalWeight
+        profile.leaveFrame(frame, Math.round(totalCumulative * unitMultiplier))
+        return
+      }
+      visitedGlobally.add(frame)
+
       let selfWeightForNodeInCallTree = subtreeTotalWeight
 
       profile.enterFrame(frame, Math.round(totalCumulative * unitMultiplier))
@@ -255,7 +269,7 @@ class CallGraph {
     // Here are a few intuitive options, and reasons why they're not always
     // correct or good.
     //
-    // ## 1. Find nodes in the call graph that have no callers
+    // ## 1. (natural-roots) Find nodes in the call graph that have no callers
     //
     // This is probably right 99% of the time in practice, but since the
     // callgrind is totally general, it's totally valid to have a file
@@ -272,7 +286,7 @@ class CallGraph {
     // In this case, even though b has a caller, some of the real calltree for
     // an execution trace of the program will have b on the top of the stack.
     //
-    // ## 2. Find nodes in the call graph that still have weight if you
+    // ## 2. (residual-weight) Find nodes in the call graph that still have weight if you
     //       subtract all of the weight caused by callers.
     //
     // The callgraph format, in theory, provides inclusive times for every
@@ -303,7 +317,8 @@ class CallGraph {
     // a min-heap and then deletes and re-inserts nodes as their weights change,
     // but reasoning about the performance of that is a big pain in the butt.
     //
-    // Despite not always being correct, I'm opting for option (1).
+    // Despite not always being correct, I'm opting for option (1) (natural-roots), with a
+    // fallback to option (2) (residual-weight) when no natural roots exist (e.g. cyclic call graphs).
 
     const rootNodes = new Set<Frame>(this.frameSet)
 
@@ -313,10 +328,46 @@ class CallGraph {
       }
     }
 
-    for (let rootNode of rootNodes) {
-      visit(rootNode, this.totalWeights.get(rootNode)!)
+    let useResidualWeight = false
+    if (rootNodes.size === 0) {
+      useResidualWeight = true
     }
 
+    if (rootNodes.size > 0) {
+      for (let rootNode of rootNodes) {
+        maxWeight += this.totalWeights.get(rootNode)!
+      }
+      for (let rootNode of rootNodes) {
+        visit(rootNode, this.totalWeights.get(rootNode)!)
+      }
+    } else if (useResidualWeight) {
+      // Compute incoming call weights to find residual-weight entry points.
+      const incomingWeights = new Map<Frame, number>()
+      for (const childMap of this.childrenTotalWeights.values()) {
+        for (const [child, weight] of childMap) {
+          incomingWeights.set(child, (incomingWeights.get(child) || 0) + weight)
+        }
+      }
+      const residuals: Array<[Frame, number]> = []
+      for (const [frame, totalWeight] of this.totalWeights) {
+        const residual = totalWeight - (incomingWeights.get(frame) || 0)
+        if (residual > 0) residuals.push([frame, residual])
+      }
+      // Visit heaviest residual roots first so the flame graph is ordered.
+      residuals.sort((a, b) => b[1] - a[1])
+      for (const [, residual] of residuals) {
+        maxWeight += residual
+      }
+      for (const [frame, residual] of residuals) {
+        visit(frame, residual)
+      }
+    }
+
+    if (cycleDetected) {
+      console.warn(
+        `[callgrind] ${this.fileName} (${this.fieldName}): cycle(s) detected in call graph — recursive call weights are attributed as self time in the caller`,
+      )
+    }
     return profile.build()
   }
 }
@@ -334,8 +385,8 @@ class CallGraph {
 // So, instead, I'm not going to bother with a formal parse. Since there are no
 // real recursive structures in this file format, that should be okay.
 class CallgrindParser {
-  private lines: string[]
-  private lineNum: number
+  private lineIterator: Iterator<string>
+  private lineNum: number = 0
 
   private callGraphs: CallGraph[] | null = null
   private eventsLine: string | null = null
@@ -348,17 +399,35 @@ class CallgrindParser {
   private savedFileNames: {[id: string]: string} = {}
   private savedFunctionNames: {[id: string]: string} = {}
 
+  // Tracks the number of position fields per cost line (default 1 = "line" only).
+  // "positions: instr line" means 2 position fields; "positions: instr" means 1.
+  private numPositionFields: number = 1
+
   constructor(
     contents: TextFileContent,
     private importedFileName: string,
   ) {
-    this.lines = [...contents.splitLines()]
-    this.lineNum = 0
+    this.lineIterator = contents.splitLines()[Symbol.iterator]()
   }
 
-  parse(): ProfileGroup | null {
-    while (this.lineNum < this.lines.length) {
-      const line = this.lines[this.lineNum++]
+  private consumeLine(): string | null {
+    const result = this.lineIterator.next()
+    if (result.done) return null
+    this.lineNum++
+    return result.value
+  }
+
+  // Lines parsed per chunk before yielding to the event loop.
+  private static readonly YIELD_EVERY = 10_000
+
+  async parse(): Promise<ProfileGroup | null> {
+    let linesUntilYield = CallgrindParser.YIELD_EVERY
+    let line: string | null
+    while ((line = this.consumeLine()) !== null) {
+      if (--linesUntilYield <= 0) {
+        await new Promise<void>(resolve => setTimeout(resolve, 0))
+        linesUntilYield = CallgrindParser.YIELD_EVERY
+      }
 
       if (/^\s*#/.exec(line)) {
         // Line is a comment. Ignore it.
@@ -412,6 +481,16 @@ class CallgrindParser {
   private parseHeaderLine(line: string): boolean {
     const headerMatch = /^\s*(\w+):\s*(.*)+$/.exec(line)
     if (!headerMatch) return false
+
+    if (headerMatch[1] === 'positions') {
+      // "positions:" declares how many position columns appear before the cost
+      // values on each cost line. Each token is a position type: "line" or "instr".
+      // e.g. "positions: line"       => 1 position field  (default)
+      //      "positions: instr line" => 2 position fields
+      //      "positions: instr"      => 1 position field
+      this.numPositionFields = headerMatch[2].trim().split(/\s+/).length
+      return true
+    }
 
     if (headerMatch[1] !== 'events') {
       // We don't care about other headers. Ignore this line.
@@ -483,7 +562,8 @@ class CallgrindParser {
         // made. Accounting for the number of calls might be unhelpful anyway,
         // since it'll just be copying the exact same frame over-and-over again,
         // but that might be better than ignoring it.
-        this.parseCostLine(this.lines[this.lineNum++], 'child')
+        const callsLine = this.consumeLine()
+        if (callsLine !== null) this.parseCostLine(callsLine, 'child')
 
         // This isn't specified anywhere in the spec, but empirically the and
         // "cfn" scope should only persist for a single "call".
@@ -500,6 +580,27 @@ class CallgrindParser {
       case 'ob': {
         // We ignore these for now. They're valid lines, but we don't capture or
         // display information about them.
+        break
+      }
+
+      case 'jcnd':
+      case 'jump': {
+        // Jumps aren't modeled; consume the following cost line to stay in sync.
+        this.consumeLine()
+        break
+      }
+
+      case 'jfi':
+      case 'jfl': {
+        // Jump target file — analogous to cfi/cfl but for jumps.
+        // We ignore jump targets, but still parse the name for compression table.
+        this.parseNameWithCompression(value, this.savedFileNames)
+        break
+      }
+
+      case 'jfn': {
+        // Jump target function — analogous to cfn but for jumps. Ignored.
+        this.parseNameWithCompression(value, this.savedFunctionNames)
         break
       }
 
@@ -548,9 +649,11 @@ class CallgrindParser {
   private prevCostLineNumbers: number[] = []
 
   private parseCostLine(line: string, costType: 'self' | 'child'): boolean {
-    // TODO(jlfwong): Allow hexadecimal encoding
-
-    const parts = line.split(/\s+/)
+    // trimEnd() strips trailing whitespace before splitting. Without this,
+    // callgrind lines with trailing spaces produce a spurious empty token
+    // in the split result (e.g. "* * " -> ["*","*",""]), causing valid
+    // subposition-compressed cost lines to be incorrectly rejected.
+    const parts = line.replace(/\s+$/, '').split(/\s+/)
     const nums: number[] = []
 
     for (let i = 0; i < parts.length; i++) {
@@ -560,7 +663,7 @@ class CallgrindParser {
         return false
       }
 
-      if (part === '*' || part[0] === '-' || part[1] === '+') {
+      if (part === '*' || part[0] === '-' || part[0] === '+') {
         // This handles "Subposition compression"
         // See: https://valgrind.org/docs/manual/cl-format.html#cl-format.overview.compression2
         if (this.prevCostLineNumbers.length <= i) {
@@ -584,8 +687,13 @@ class CallgrindParser {
           }
           nums.push(prevCostForSubposition + offset)
         }
+      } else if (/^0x[0-9a-fA-F]+$/.test(part)) {
+        // Hexadecimal instruction address used as a position field.
+        // Parse it so subposition compression works on subsequent lines,
+        // but the value itself is only used as a position (not a cost).
+        nums.push(parseInt(part, 16))
       } else {
-        const asNum = parseInt(part)
+        const asNum = parseInt(part, 10)
         if (isNaN(asNum)) {
           return false
         }
@@ -597,8 +705,7 @@ class CallgrindParser {
       return false
     }
 
-    // TODO(jlfwong): Handle custom positions format w/ multiple parts
-    const numPositionFields = 1
+    const numPositionFields = this.numPositionFields
 
     // NOTE: We intentionally do not include the line number here because
     // callgrind uses the line number of the function invocation, not the
@@ -632,6 +739,6 @@ class CallgrindParser {
 export function importFromCallgrind(
   contents: TextFileContent,
   importedFileName: string,
-): ProfileGroup | null {
+): Promise<ProfileGroup | null> {
   return new CallgrindParser(contents, importedFileName).parse()
 }
