@@ -3,7 +3,8 @@ import {Sizes, FontSize, FontFamily, ZIndex} from './style'
 import {css, StyleSheet} from 'aphrodite'
 import {ComponentChildren, h} from 'preact'
 import {useTheme, withTheme} from './themes/theme'
-import {useCallback} from 'preact/hooks'
+import {useCallback, useRef, useEffect} from 'preact/hooks'
+import { getWH } from '../gl/canvas-context'
 
 interface HovertipProps {
   containerSize: Vec2
@@ -13,7 +14,8 @@ interface HovertipProps {
 
 export function Hovertip(props: HovertipProps) {
   const style = getStyle(useTheme())
-
+  const hoverRef = useRef<HTMLDivElement | null>(null);
+  const rafId = useRef<number | 0>(0);
   const {containerSize, offset} = props
   const containerWidth = containerSize.x
   const containerHeight = containerSize.y
@@ -21,10 +23,11 @@ export function Hovertip(props: HovertipProps) {
   const OFFSET_FROM_MOUSE = 7
 
   const updateLocation = useCallback(
-    (el: HTMLDivElement | null) => {
+    () => {
+      const el = hoverRef.current;
       if (!el) return
 
-      const clientRect = el.getBoundingClientRect()
+      const clientRect = getWH(el)
 
       // Place the hovertip to the right of the cursor.
       let leftEdgeX = offset.x + OFFSET_FROM_MOUSE
@@ -40,7 +43,6 @@ export function Hovertip(props: HovertipProps) {
           leftEdgeX = 1
         }
       }
-      el.style.left = `${leftEdgeX}px`
 
       // Place the tooltip below the cursor
       let topEdgeY = offset.y + OFFSET_FROM_MOUSE
@@ -58,13 +60,29 @@ export function Hovertip(props: HovertipProps) {
           topEdgeY = 1
         }
       }
-      el.style.top = `${topEdgeY}px`
+      // translate3d will utilize GPU to render the tooltip standalone
+      el.style.transform = `translate3d(${leftEdgeX}px, ${topEdgeY}px, 0)`;
     },
     [containerWidth, containerHeight, offset.x, offset.y],
   )
 
+  // avoid update whole preact tree, faster
+  useEffect(() => {
+    if (rafId.current) cancelAnimationFrame(rafId.current);
+    rafId.current = requestAnimationFrame(() => {
+      rafId.current = 0;
+      updateLocation();
+    });
+    return () => {
+      if(rafId.current) {
+        cancelAnimationFrame(rafId.current);
+        rafId.current = 0;
+      }
+    }
+  }, [updateLocation]);
+
   return (
-    <div className={css(style.hoverTip)} ref={updateLocation}>
+    <div className={css(style.hoverTip)} ref={hoverRef} style={{position: 'fixed', willChange: 'transform', pointerEvents: 'none', transform: 'translate3d(-9999px, -9999px, 0)'}}>
       <div className={css(style.hoverTipRow)}>{props.children}</div>
     </div>
   )

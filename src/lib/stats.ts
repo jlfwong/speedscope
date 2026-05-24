@@ -3,6 +3,8 @@
  * Heavily modified port of https://github.com/mrdoob/stats.js
  */
 
+import { speedscopeWindow } from "../widgetUtils"
+
 export class StatsPanel {
   private container: HTMLElement = document.createElement('div')
   private shown: number = 0
@@ -24,7 +26,12 @@ export class StatsPanel {
     })
     this.addPanel(this.msPanel)
     this.addPanel(this.fpsPanel)
-    document.body.appendChild(this.container)
+    if(speedscopeWindow) {
+      speedscopeWindow.appendChild(this.container)
+      console.warn('WARNING: StatsPanel included!', this.container)
+    } else {
+      console.warn('WARNING: StatsPanel not included!')
+    }
   }
 
   addPanel(panel: Panel) {
@@ -98,6 +105,7 @@ class Panel {
   }
 
   appendTo(el: HTMLElement) {
+    console.warn('canvas attached!', el)
     el.appendChild(this.canvas)
   }
 

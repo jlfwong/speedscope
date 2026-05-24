@@ -20,7 +20,7 @@ function getStoredPreference(): ColorScheme {
   } else if (storedPreference === 'LIGHT') {
     return ColorScheme.LIGHT
   } else {
-    return ColorScheme.SYSTEM
+    return ColorScheme.DARK
   }
 }
 

@@ -8,6 +8,7 @@ export function sortBy<T>(ts: T[], key: (t: T) => number | string): void {
     const keyB = key(b)
     return keyA < keyB ? -1 : keyA > keyB ? 1 : 0
   }
+
   ts.sort(comparator)
 }
 
@@ -45,8 +46,17 @@ export function getOrThrow<K, V>(map: Map<K, V>, k: K): V {
 export interface HasKey {
   readonly key: string | number
 }
+
 export class KeyedSet<T extends HasKey> implements Iterable<T> {
   private map = new Map<string | number, T>()
+
+  size(): number {
+    return this.map.size
+  }
+
+  get(k: string | number): T | undefined {
+    return this.map.get(k)
+  }
 
   getOrInsert(t: T): T {
     const key = t.key
@@ -55,9 +65,11 @@ export class KeyedSet<T extends HasKey> implements Iterable<T> {
     this.map.set(key, t)
     return t
   }
+
   forEach(fn: (t: T) => void) {
     this.map.forEach(fn)
   }
+
   [Symbol.iterator]() {
     return this.map.values()
   }
@@ -89,11 +101,12 @@ export function zeroPad(s: string, width: number) {
 
 export function formatPercent(percent: number) {
   let formattedPercent = `${percent.toFixed(0)}%`
-  if (percent === 100) formattedPercent = '100%'
+  if (percent === 0) formattedPercent = '0%'
+  else if (percent >= 100) formattedPercent = '100%'
   else if (percent > 99) formattedPercent = '>99%'
   else if (percent < 0.01) formattedPercent = '<0.01%'
-  else if (percent < 1) formattedPercent = `${percent.toFixed(2)}%`
-  else if (percent < 10) formattedPercent = `${percent.toFixed(1)}%`
+  else if (percent < 1) formattedPercent = `${parseFloat(percent.toFixed(2))}%`
+  else if (percent < 10) formattedPercent = `${parseFloat(percent.toFixed(1))}%`
   return formattedPercent
 }
 
@@ -106,13 +119,12 @@ export function triangle(x: number) {
 }
 
 export function findValueBisect(
-  lo: number,
-  hi: number,
-  f: (val: number) => number,
-  target: number,
-  targetRangeSize = 1,
+        lo: number,
+        hi: number,
+        f: (val: number) => number,
+        target: number,
+        targetRangeSize = 1,
 ): [number, number] {
-  console.assert(!isNaN(targetRangeSize) && !isNaN(target))
   while (true) {
     if (hi - lo <= targetRangeSize) return [lo, hi]
     const mid = (hi + lo) / 2
@@ -155,7 +167,8 @@ export function findIndexBisect<T>(ls: T[], f: (val: T) => boolean): number {
   return f(ls[hi]) ? hi : -1
 }
 
-export function noop(...args: any[]) {}
+export function noop(...args: any[]) {
+}
 
 export function objectsHaveShallowEquality<T extends object>(a: T, b: T): boolean {
   for (let key in a) {
@@ -168,16 +181,20 @@ export function objectsHaveShallowEquality<T extends object>(a: T, b: T): boolea
 }
 
 export function memoizeByShallowEquality<T extends object, U>(cb: (t: T) => U): (t: T) => U {
-  let last: {args: T; result: U} | null = null
+  let last: { args: T; result: U } | null = null
   return (args: T) => {
-    let result: U
     if (last == null) {
-      result = cb(args)
+      const result = cb(args)
       last = {args, result}
       return result
     } else if (objectsHaveShallowEquality(last.args, args)) {
       return last.result
     } else {
+      // automatically GC when loading a new profile
+      if ((last.result as any)?.dispose) {
+        (last.result as any).dispose();
+      }
+
       last.args = args
       last.result = cb(args)
       return last.result
@@ -186,7 +203,7 @@ export function memoizeByShallowEquality<T extends object, U>(cb: (t: T) => U): 
 }
 
 export function memoizeByReference<T, U>(cb: (t: T) => U): (t: T) => U {
-  let last: {args: T; result: U} | null = null
+  let last: { args: T; result: U } | null = null
   return (args: T) => {
     let result: U
     if (last == null) {
@@ -204,7 +221,7 @@ export function memoizeByReference<T, U>(cb: (t: T) => U): (t: T) => U {
 }
 
 export function lazyStatic<T>(cb: () => T): () => T {
-  let last: {result: T} | null = null
+  let last: { result: T } | null = null
   return () => {
     if (last == null) {
       last = {result: cb()}
@@ -245,7 +262,7 @@ export function decodeBase64(encoded: string): Uint8Array {
 
   if (encoded.length % 4 !== 0) {
     throw new Error(
-      `Invalid length for base64 encoded string. Expected length % 4 = 0, got length = ${encoded.length}`,
+            `Invalid length for base64 encoded string. Expected length % 4 = 0, got length = ${encoded.length}`,
     )
   }
 
@@ -306,10 +323,10 @@ export function decodeBase64(encoded: string): Uint8Array {
 
     if (sextet1 == null || sextet2 == null || sextet3 == null || sextet4 == null) {
       throw new Error(
-        `Invalid quartet at indices ${i * 4} .. ${i * 4 + 3}: ${encoded.substring(
-          i * 4,
-          i * 4 + 3,
-        )}`,
+              `Invalid quartet at indices ${i * 4} .. ${i * 4 + 3}: ${encoded.substring(
+                      i * 4,
+                      i * 4 + 3,
+              )}`,
       )
     }
 

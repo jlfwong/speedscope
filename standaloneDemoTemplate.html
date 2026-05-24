@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <title>Speedscope Widget Demo</title>
+    <style>
+        body, html {
+          height: 100%;
+          margin: 0;
+          overflow: hidden;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        #toolbar {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 6px 12px;
+          background: #1e1e2e;
+          color: #cdd6f4;
+          font-size: 13px;
+          border-bottom: 1px solid #313244;
+        }
+        #toolbar select, #toolbar button {
+          font-size: 12px;
+          padding: 3px 8px;
+          border-radius: 4px;
+          border: 1px solid #585b70;
+          background: #313244;
+          color: #cdd6f4;
+          cursor: pointer;
+        }
+        #toolbar button:hover { background: #45475a; }
+        #toolbar .separator { width: 1px; height: 18px; background: #585b70; }
+        #standalone {
+          width: 100vw;
+          height: calc(100vh - 38px);
+        }
+    </style>
+</head>
+<body>
+<div id="toolbar">
+    <strong>Speedscope Widget Demo</strong>
+    <span class="separator"></span>
+    <label>Profile:</label>
+    <select id="profileSelect">
+        <option value="sample">Sample Profile</option>
+        <option value="deep">Deep Call Stack</option>
+    </select>
+    <span class="separator"></span>
+    <label>View:</label>
+    <select id="viewSelect">
+        <option value="chrono">Time Order</option>
+        <option value="left-heavy">Left Heavy</option>
+        <option value="sandwich">Sandwich</option>
+    </select>
+</div>
+<div id="standalone"></div>
+[replaceMe]
+
+const SAMPLE_PROFILES = {
+sample:
+`total;app;com.example.main;com.example.service.handleRequest;com.example.db.query 50000000
+total;app;com.example.main;com.example.service.handleRequest;com.example.db.connect 12000000
+total;app;com.example.main;com.example.service.handleRequest;com.example.cache.lookup 8000000
+total;app;com.example.main;com.example.service.handleRequest;com.example.serializer.toJSON 15000000
+total;app;com.example.main;com.example.service.handleRequest;com.example.validator.validate 5000000
+total;app;com.example.main;com.example.auth.verifyToken;com.example.crypto.hmac 20000000
+total;app;com.example.main;com.example.auth.verifyToken;com.example.cache.getSession 6000000
+total;app;com.example.main;com.example.middleware.logging;com.example.io.write 3000000
+total;app;com.example.main;com.example.middleware.compress;com.example.zlib.deflate 18000000
+total;app;com.example.main;com.example.router.dispatch;com.example.controller.index 7000000
+total;app;com.example.main;com.example.router.dispatch;com.example.controller.show 9000000
+total;app;com.example.main;com.example.gc.collect 4000000`,
+deep:
+`main;app;server;router;middleware;auth;jwt.verify;crypto.sign;hmac.update;digest 30000000
+main;app;server;router;middleware;auth;jwt.verify;crypto.sign;hmac.update 5000000
+main;app;server;router;handler;db.pool.acquire;tcp.connect;dns.resolve;cache.miss;net.lookup 25000000
+main;app;server;router;handler;db.pool.acquire;tcp.connect;dns.resolve;cache.hit 8000000
+main;app;server;router;handler;db.query;sql.parse;optimizer.plan;index.scan;page.read;io.read 40000000
+main;app;server;router;handler;db.query;sql.parse;optimizer.plan;index.scan;page.read;buffer.hit 12000000
+main;app;server;router;handler;template.render;vdom.diff;patch;dom.update 20000000
+main;app;server;router;handler;template.render;vdom.diff;patch 6000000
+main;gc;mark;sweep;compact 10000000`
+};
+
+initApplication(document.getElementById('standalone'));
+setProfileFromInput(SAMPLE_PROFILES.sample);
+
+document.getElementById('profileSelect').addEventListener('change', (e) => {
+setProfileFromInput(SAMPLE_PROFILES[e.target.value]);
+});
+
+document.getElementById('viewSelect').addEventListener('change', (e) => {
+if (window.speedscopeAPI) {
+window.speedscopeAPI.setViewMode(e.target.value);
+}
+});
+</script>
+</body>
+</html>

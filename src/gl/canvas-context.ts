@@ -6,11 +6,12 @@ import {ViewportRectangleRenderer} from './overlay-rectangle-renderer'
 import {FlamechartColorPassRenderer} from './flamechart-color-pass-renderer'
 import {Color} from '../lib/color'
 import {Theme} from '../views/themes/theme'
+import { getSpeedscopeWindow } from '../widgetUtils'
 
 type FrameCallback = () => void
 
 export class CanvasContext {
-  public readonly gl: WebGL.Context
+  public gl: WebGL.Context
   public readonly rectangleBatchRenderer: RectangleBatchRenderer
   public readonly textureRenderer: TextureRenderer
   public readonly viewportRectangleRenderer: ViewportRectangleRenderer
@@ -55,6 +56,8 @@ export class CanvasContext {
   }
   private onBeforeFrame = () => {
     this.animationFrameRequest = null
+    if (!this.gl) return
+
     this.gl.setViewport(0, 0, this.gl.renderTargetWidthInPixels, this.gl.renderTargetHeightInPixels)
     const color = Color.fromCSSHex(this.theme.bgPrimaryColor)
     this.gl.clear(new Graphics.Color(color.r, color.g, color.b, color.a))
@@ -75,13 +78,45 @@ export class CanvasContext {
     this.gl.setViewport(x, y, width, height)
   }
 
-  renderBehind(el: Element, cb: () => void) {
-    const bounds = el.getBoundingClientRect()
-    const physicalBounds = new Rect(
-      new Vec2(bounds.left * window.devicePixelRatio, bounds.top * window.devicePixelRatio),
-      new Vec2(bounds.width * window.devicePixelRatio, bounds.height * window.devicePixelRatio),
-    )
+  parent = getSpeedscopeWindow()
+  getRelativePhysicalBounds(childElement: Element) {
+    const cached = graphRenderCache.get(childElement);
+    if (cached) return cached;
 
+    const childRect = getWH(childElement);
+    const parentRect = getWH(this.parent);
+
+    const relativeLeft = childRect.left - parentRect.left;
+    const relativeTop = childRect.top - parentRect.top;
+    const ratio = window.devicePixelRatio
+    const rect = new Rect(
+      new Vec2(relativeLeft * ratio, relativeTop * ratio),
+      new Vec2(childRect.width * ratio, childRect.height * ratio),
+    );
+
+    graphRenderCache.set(childElement, rect);
+    return  rect;
+  }
+
+  // render a single flamegraph frame
+  renderBehind(el: Element, cb: () => void) {
+    const physicalBounds =  this.getRelativePhysicalBounds(el)
     this.setViewport(physicalBounds, cb)
   }
+}
+
+// all canvas relative size operations should be cached
+export let graphRenderCache = new WeakMap<Element, Rect>();
+export let rectCache = new WeakMap<Element, DOMRect>();
+export function getWH(el: Element): DOMRect {
+  const cached = rectCache.get(el);
+  if(cached) return cached;
+  const rect = el.getBoundingClientRect();
+  rectCache.set(el, rect);
+  return rect;
+}
+export function cleanGraphRenderCache() { 
+  // console.log('cache cleaned!')
+  graphRenderCache = new WeakMap(); 
+  rectCache = new WeakMap();
 }

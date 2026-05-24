@@ -9,6 +9,8 @@ import {FlamechartColorPassRenderer} from './flamechart-color-pass-renderer'
 import {renderInto} from './utils'
 
 const MAX_BATCH_SIZE = 10000
+// this value is from OOM testing, based on several huge .json files with >2000k nodes
+export const MAX_RECTS_TO_Render = 2000000; // avoid glCanvas OOM
 
 interface RangeTreeNode {
   getBounds(): Rect
@@ -94,6 +96,7 @@ export interface FlamechartRendererProps {
   configSpaceSrcRect: Rect
   physicalSpaceDstRect: Rect
   renderOutlines: boolean
+  diffMode: boolean
 }
 
 interface FlamechartRowAtlasKeyInfo {
@@ -122,10 +125,16 @@ export class FlamechartRowAtlasKey {
 
 export interface FlamechartRendererOptions {
   inverted: boolean
+  diffMode?: boolean
 }
 
 export class FlamechartRenderer {
   private layers: RangeTreeNode[] = []
+
+  public dispose() {
+    // console.log('FlamechartRenderer disposed!')
+    this.layers = [];
+  }
 
   constructor(
     private gl: Graphics.Context,
@@ -136,6 +145,9 @@ export class FlamechartRenderer {
     private options: FlamechartRendererOptions = {inverted: false},
   ) {
     const nLayers = flamechart.getLayers().length
+    let renderedRectCount = 0;
+    let skippedCount = 0;
+
     for (let stackDepth = 0; stackDepth < nLayers; stackDepth++) {
       const leafNodes: RangeTreeLeafNode[] = []
       const y = options.inverted ? nLayers - 1 - stackDepth : stackDepth
@@ -150,6 +162,11 @@ export class FlamechartRenderer {
 
       for (let i = 0; i < layer.length; i++) {
         const frame = layer[i]
+        if (renderedRectCount >= MAX_RECTS_TO_Render) {
+          skippedCount++
+          continue;
+        }
+        renderedRectCount++
         if (batch.getRectCount() >= MAX_BATCH_SIZE) {
           leafNodes.push(
             new RangeTreeLeafNode(
@@ -172,12 +189,27 @@ export class FlamechartRenderer {
         // We'll use the red channel to indicate the index to allow
         // us to separate adjacent rectangles within a row from one another,
         // the green channel to indicate the row,
-        // and the blue channel to indicate the color bucket to render.
+        // the blue channel to indicate the color bucket (or diff ratio in diff mode).
         // We add one to each so we have zero reserved for the background color.
+        // Diff ratio is encoded to map [-1, 1] to [0.01, 1] to avoid 0 (reserved for background)
+        // In diff mode, the blue channel stores the encoded diff ratio instead of color bucket.
+        let blueChannel: number
+        if (this.options.diffMode) {
+          let diffRatio = this.flamechart.getDiffRatioForFrame(frame.node.frame)
+          // reverse the color when in Reg graph mode
+          // if (this.options.diffInverted) {
+          //   diffRatio = -diffRatio
+          // }
+          // Map [-1, 1] to [0.01, 1] to avoid 0 which is reserved for background
+          blueChannel = 0.01 + (diffRatio + 1) / 2 * 0.99
+        } else {
+          blueChannel = (1 + this.flamechart.getColorBucketForFrame(frame.node.frame)) / 256
+        }
         const color = new Color(
           (1 + (i % 255)) / 256,
           (1 + (stackDepth % 255)) / 256,
-          (1 + this.flamechart.getColorBucketForFrame(frame.node.frame)) / 256,
+                blueChannel,
+                1,
         )
         batch.addRect(configSpaceBounds, color)
         rectCount++
@@ -195,8 +227,12 @@ export class FlamechartRenderer {
 
       // TODO(jlfwong): Making this into a binary tree
       // range than a tree of always-height-two might make this run faster
-      this.layers.push(new RangeTreeInteriorNode(leafNodes))
+      if (leafNodes.length > 0) {
+        this.layers.push(new RangeTreeInteriorNode(leafNodes));
+      }
     }
+
+    console.debug("total rendered rects: ", renderedRectCount, " skipped: ", skippedCount);
   }
 
   private rectInfoTexture: Graphics.Texture | null = null
@@ -375,6 +411,7 @@ export class FlamechartRenderer {
       srcRect: new Rect(Vec2.zero, new Vec2(rectInfoTexture.width, rectInfoTexture.height)),
       dstRect: physicalSpaceDstRect,
       renderOutlines: props.renderOutlines,
+      diffMode: props.diffMode,
     })
   }
 }

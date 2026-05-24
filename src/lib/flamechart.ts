@@ -2,6 +2,7 @@ import {Frame, CallTreeNode} from './profile'
 
 import {lastOf} from './utils'
 import {clamp, Rect, Vec2} from './math'
+import { prettyPrintNumber } from './value-formatters'
 
 export interface FlamechartFrame {
   node: CallTreeNode
@@ -24,6 +25,10 @@ interface FlamechartDataSource {
   ): void
 
   getColorBucketForFrame(f: Frame): number
+
+  hasDiffData?(): boolean
+
+  getDiffRatioForFrame?(f: Frame): number
 }
 
 export class Flamechart {
@@ -31,6 +36,19 @@ export class Flamechart {
   private layers: StackLayer[] = []
   private totalWeight: number = 0
   private minFrameWidth: number = 1
+
+  public dispose() {
+    // console.log('Flamechart disposed!')
+    this.layers = []
+    this.totalWeight = 0
+    this.minFrameWidth = 1
+  }
+
+  public getTitle() {
+    let count = 0;
+    this.layers.forEach(layer => count += layer.length)
+    return `, ${prettyPrintNumber(count)} Nodes`
+  }
 
   getTotalWeight() {
     return this.totalWeight
@@ -40,6 +58,14 @@ export class Flamechart {
   }
   getColorBucketForFrame(frame: Frame) {
     return this.source.getColorBucketForFrame(frame)
+  }
+
+  hasDiffData(): boolean {
+    return this.source.hasDiffData?.() ?? false
+  }
+
+  getDiffRatioForFrame(frame: Frame): number {
+    return this.source.getDiffRatioForFrame?.(frame) ?? 0
   }
   getMinFrameWidth() {
     return this.minFrameWidth

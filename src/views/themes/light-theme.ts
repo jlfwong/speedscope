@@ -42,7 +42,49 @@ const colorForBucketGLSL = `
   }
 `
 
+// Differential flamegraph coloring: red for REG (new overhead), green for BAS (removed)
+// ratio is encoded as (ratio + 1) / 2 to map [-1, 1] to [0, 1]
+// 0% difference = light gray (0.9), 100% difference = saturated red/green (capped at 0.85)
+const colorForDiffRatio = (encodedRatio: number) => {
+  const ratio = encodedRatio * 2 - 1 // Decode from [0,1] to [-1,1]
+  const absRatio = Math.abs(ratio)
+  // Cap at 0.85 to avoid oversaturation
+  const intensity = absRatio * 0.85
+  // Base color is light gray (0.9) instead of pure white for better visibility
+  const baseColor = 0.9
+  if (ratio > 0) {
+    // Red for REG (new overhead): light gray -> red
+    return new Color(baseColor + (1 - baseColor) * intensity, baseColor - baseColor * intensity, baseColor - baseColor * intensity)
+  } else {
+    // Green for BAS (removed): light gray -> green
+    return new Color(baseColor - baseColor * intensity, baseColor + (1 - baseColor) * intensity, baseColor - baseColor * intensity)
+  }
+}
+
+const colorForDiffRatioGLSL = `
+  vec3 colorForDiffRatio(float encodedRatio) {
+    // Decode from [0.01, 1] to [-1, 1] (encoded range avoids 0 for background)
+    float normalized = (encodedRatio - 0.01) / 0.99;
+    float ratio = normalized * 2.0 - 1.0;
+    float absRatio = abs(ratio);
+    // Cap at 0.85 to avoid oversaturation
+    float intensity = absRatio * 0.85;
+    // Base color is light gray (0.9) instead of pure white for better visibility
+    float baseColor = 0.9;
+    // 0% difference = light gray, 100% difference = saturated red/green
+    if (ratio > 0.0) {
+      // Red for REG (new overhead): light gray -> red
+      return vec3(baseColor + (1.0 - baseColor) * intensity, baseColor - baseColor * intensity, baseColor - baseColor * intensity);
+    } else {
+      // Green for BAS (removed): light gray -> green
+      return vec3(baseColor - baseColor * intensity, baseColor + (1.0 - baseColor) * intensity, baseColor - baseColor * intensity);
+    }
+  }
+`
+
 export const lightTheme: Theme = {
+  frameNodeNameColor: Colors.BLACK,
+
   fgPrimaryColor: Colors.BLACK,
   fgSecondaryColor: Colors.LIGHT_GRAY,
 
@@ -61,9 +103,13 @@ export const lightTheme: Theme = {
   weightColor: Colors.GREEN,
 
   searchMatchTextColor: Colors.BLACK,
-  searchMatchPrimaryColor: Colors.ORANGE,
+  searchFadedTextColor: Colors.BLACK,
+  searchFadedFrameColor: Colors.LIGHT_GRAY,
+  searchBoxTextColor: Colors.WHITE,
   searchMatchSecondaryColor: Colors.YELLOW,
 
   colorForBucket,
   colorForBucketGLSL,
+  colorForDiffRatio,
+  colorForDiffRatioGLSL,
 }

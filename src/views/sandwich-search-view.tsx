@@ -2,10 +2,10 @@ import {memo} from 'preact/compat'
 import {useContext, useMemo} from 'preact/hooks'
 import {SearchView} from './search-view'
 import {h} from 'preact'
-import {SandwichViewContext} from './sandwich-view'
+import { TableViewContext } from './profile-table-view'
 
 export const SandwichSearchView = memo(() => {
-  const sandwichViewContext = useContext(SandwichViewContext)
+  const sandwichViewContext = useContext(TableViewContext)
 
   const rowList = sandwichViewContext != null ? sandwichViewContext.rowList : null
   const resultIndex =

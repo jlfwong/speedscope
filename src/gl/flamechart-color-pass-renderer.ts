@@ -21,11 +21,12 @@ const vert = `
   }
 `
 
-const frag = (colorForBucket: string) => `
+const frag = (colorForBucket: string, colorForDiffRatio: string) => `
   precision mediump float;
 
   uniform vec2 uvSpacePixelSize;
   uniform float renderOutlines;
+  uniform float diffMode;
 
   varying vec2 vUv;
   uniform sampler2D colorTexture;
@@ -51,6 +52,8 @@ const frag = (colorForBucket: string) => `
   }
 
   ${colorForBucket}
+
+  ${colorForDiffRatio}
 
   void main() {
     vec4 here = texture2D(colorTexture, vUv);
@@ -86,7 +89,9 @@ const frag = (colorForBucket: string) => `
       gl_FragColor = vec4(0, 0, 0, 0);
     } else {
       // Not on an edge. Draw the appropriate color.
-      gl_FragColor = vec4(colorForBucket(here.z), here.a);
+      // In diff mode, use blue channel which encodes diff ratio (alpha not passed through renderer)
+      vec3 color = diffMode > 0.5 ? colorForDiffRatio(here.z) : colorForBucket(here.z);
+      gl_FragColor = vec4(color, 1.0);
     }
   }
 `
@@ -94,6 +99,7 @@ const frag = (colorForBucket: string) => `
 export interface FlamechartColorPassRenderProps {
   rectInfoTexture: Graphics.Texture
   renderOutlines: boolean
+  diffMode: boolean
   srcRect: Rect
   dstRect: Rect
 }
@@ -122,11 +128,15 @@ export class FlamechartColorPassRenderer {
 
     this.buffer = gl.createVertexBuffer(vertexFormat.stride * vertices.length)
     this.buffer.uploadFloats(floats)
-    this.material = gl.createMaterial(vertexFormat, vert, frag(theme.colorForBucketGLSL))
+    this.material = gl.createMaterial(
+            vertexFormat,
+            vert,
+            frag(theme.colorForBucketGLSL, theme.colorForDiffRatioGLSL),
+    )
   }
 
   render(props: FlamechartColorPassRenderProps) {
-    const {srcRect, rectInfoTexture} = props
+    const {srcRect, rectInfoTexture, diffMode} = props
     const physicalToUV = AffineTransform.withTranslation(new Vec2(0, 1))
       .times(AffineTransform.withScale(new Vec2(1, -1)))
       .times(
@@ -154,6 +164,7 @@ export class FlamechartColorPassRenderer {
     this.material.setUniformSampler('colorTexture', props.rectInfoTexture, 0)
     setUniformAffineTransform(this.material, 'uvTransform', uvTransform)
     this.material.setUniformFloat('renderOutlines', props.renderOutlines ? 1.0 : 0.0)
+    this.material.setUniformFloat('diffMode', diffMode ? 1.0 : 0.0)
     this.material.setUniformVec2('uvSpacePixelSize', uvSpacePixelSize.x, uvSpacePixelSize.y)
     setUniformAffineTransform(this.material, 'positionTransform', positionTransform)
 

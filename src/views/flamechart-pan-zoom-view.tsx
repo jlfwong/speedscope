@@ -1,14 +1,13 @@
 import {Rect, AffineTransform, Vec2, clamp} from '../lib/math'
 import {CallTreeNode} from '../lib/profile'
 import {Flamechart, FlamechartFrame} from '../lib/flamechart'
-import {CanvasContext} from '../gl/canvas-context'
+import {CanvasContext, getWH} from '../gl/canvas-context'
 import {FlamechartRenderer} from '../gl/flamechart-renderer'
-import {Sizes, FontSize, FontFamily, commonStyle} from './style'
+import {Sizes, FontSize, FontFamily, commonStyle, ZIndex} from './style'
 import {
   cachedMeasureTextWidth,
-  ELLIPSIS,
-  trimTextMid,
   remapRangesToTrimmedText,
+  trimTextEnd,
 } from '../lib/text-utils'
 import {getFlamechartStyle} from './flamechart-style'
 import {h, Component} from 'preact'
@@ -17,7 +16,14 @@ import {ProfileSearchResults} from '../lib/profile-search'
 import {BatchCanvasTextRenderer, BatchCanvasRectRenderer} from '../lib/canvas-2d-batch-renderers'
 import {Color} from '../lib/color'
 import {Theme} from './themes/theme'
-import {minimapMousePositionAtom} from '../app-state'
+import {getSpeedscopeWindow, inSpeedscopeWindow} from '../widgetUtils'
+import {formatPercent} from '../lib/utils'
+import {moreInformationFrameAtom, profileGroupAtom, searchQueryAtom, viewModeAtom} from '../app-state'
+import {CopiedNotification} from './profile-table-view'
+import {ViewMode} from '../lib/view-mode'
+import {useAtom} from '../lib/atom'
+import {resizeApp} from './application-container'
+import {flamechartScheduler} from './sandwich-view'
 
 interface FlamechartFrameLabel {
   configSpaceBounds: Rect
@@ -47,10 +53,15 @@ export interface FlamechartPanZoomViewProps {
   canvasContext: CanvasContext
   flamechartRenderer: FlamechartRenderer
   renderInverted: boolean
+  displayMinimap: boolean
+  displayTable: boolean
   selectedNode: CallTreeNode | null
   theme: Theme
+  diffMode: boolean
+  useRegWeights?: boolean
+  isBothMode?: boolean
 
-  onNodeHover: (hover: {node: CallTreeNode; event: MouseEvent} | null) => void
+  onNodeHover: (hover: { node: CallTreeNode; event: MouseEvent } | null) => void
   onNodeSelect: (node: CallTreeNode | null) => void
 
   configSpaceViewportRect: Rect
@@ -63,16 +74,58 @@ export interface FlamechartPanZoomViewProps {
   searchResults: ProfileSearchResults | null
 }
 
-export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps, {}> {
+type FlamechartEvents = {
+  resetView: Array<() => void>;
+};
+
+const handlers: Partial<FlamechartEvents> = {
+  resetView: [],
+};
+
+export const FlamechartEventCallback = {
+  onResetView: (cb: () => void) => {
+    if (handlers.resetView) {
+      handlers.resetView.push(cb);
+    }
+  },
+  emitResetView: () => {
+    if (handlers.resetView) {
+      handlers.resetView.forEach(cb => cb());
+    }
+    profileGroupAtom.setSelectedFrame(null);
+    profileGroupAtom.setSelectedFrameName("");
+  },
+  resetViewKeepFrameName: () => {
+    if (handlers.resetView) {
+      handlers.resetView.forEach(cb => cb());
+    }
+  }
+};
+
+interface FlamechartPanZoomViewState {
+  contextMenuPos: null | { x: number; y: number }
+  rightClickedLabel: FlamechartFrameLabel | null
+  copied: boolean,
+}
+
+export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps, FlamechartPanZoomViewState> {
   private container: Element | null = null
   private containerRef = (element: Element | null) => {
     this.container = element || null
   }
 
+  // right click
+  state: FlamechartPanZoomViewState = {
+    contextMenuPos: null,
+    rightClickedLabel: null,
+    copied: false
+  };
+
   private overlayCanvas: HTMLCanvasElement | null = null
   private overlayCtx: CanvasRenderingContext2D | null = null
 
   private hoveredLabel: FlamechartFrameLabel | null = null
+  private currentMode = useAtom(viewModeAtom)
 
   private getStyle() {
     return getFlamechartStyle(this.props.theme)
@@ -95,15 +148,15 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
   private configSpaceSize() {
     return new Vec2(
-      this.props.flamechart.getTotalWeight(),
-      this.props.flamechart.getLayers().length,
+            this.props.flamechart.getTotalWeight(),
+            this.props.flamechart.getLayers().length,
     )
   }
 
   private physicalViewSize() {
     return new Vec2(
-      this.overlayCanvas ? this.overlayCanvas.width : 0,
-      this.overlayCanvas ? this.overlayCanvas.height : 0,
+            this.overlayCanvas ? this.overlayCanvas.width : 0,
+            this.overlayCanvas ? this.overlayCanvas.height : 0,
     )
   }
 
@@ -114,14 +167,14 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
       const physicalViewportHeight = this.physicalViewSize().y
       const physicalFlamegraphHeight =
-        (this.configSpaceSize().y + 1) *
-        this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT *
-        window.devicePixelRatio
+              (this.configSpaceSize().y + 1) *
+              this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT *
+              window.devicePixelRatio
 
       if (physicalFlamegraphHeight < physicalViewportHeight) {
         return new Rect(
-          new Vec2(0, physicalViewportHeight - physicalFlamegraphHeight),
-          this.physicalViewSize(),
+                new Vec2(0, physicalViewportHeight - physicalFlamegraphHeight),
+                this.physicalViewSize(),
         )
       }
     }
@@ -141,7 +194,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
   private resizeOverlayCanvasIfNeeded() {
     if (!this.overlayCanvas) return
-    let {width, height} = this.overlayCanvas.getBoundingClientRect()
+    let {width, height} = getWH(this.overlayCanvas)
     {
       /*
       We render text at a higher resolution then scale down to
@@ -165,6 +218,28 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     this.overlayCanvas.height = scaledHeight
   }
 
+
+  private formatValue(node: CallTreeNode) {
+    const weight = this.props.useRegWeights ? node.getRegTotalWeight() : node.getTotalWeight()
+    const diffStr = this.props.diffMode ? `, D: ${node.frame.getDiffPercStr()}` : ""
+    const totalWeight = this.props.flamechart.getTotalWeight()
+    const percent = (100 * weight) / totalWeight
+    const formattedPercent = formatPercent(percent)
+    return ` (${formattedPercent} ${this.props.flamechart.formatValue(weight)}${diffStr})`
+  }
+
+
+  // static overlays, without toolip
+  shouldRerenderOverlays = true;
+  labelBatch = new BatchCanvasTextRenderer()
+  fadedLabelBatch = new BatchCanvasTextRenderer()
+  matchedTextHighlightBatch = new BatchCanvasRectRenderer()
+  directlySelectedOutlineBatch = new BatchCanvasRectRenderer()
+  indirectlySelectedOutlineBatch = new BatchCanvasRectRenderer()
+  fadedRactBatch = new BatchCanvasRectRenderer()
+  tinyFadedRectBatch = new BatchCanvasRectRenderer()
+  highlightedRactBatch = new BatchCanvasRectRenderer()
+
   private renderOverlays() {
     const ctx = this.overlayCtx
     if (!ctx) return
@@ -174,186 +249,223 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
     const physicalViewSpaceFontSize = FontSize.LABEL * window.devicePixelRatio
     const physicalViewSpaceFrameHeight =
-      this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT * window.devicePixelRatio
+            this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT * window.devicePixelRatio
 
     const physicalViewSize = this.physicalViewSize()
 
     ctx.clearRect(0, 0, physicalViewSize.x, physicalViewSize.y)
 
-    ctx.font = `${physicalViewSpaceFontSize}px/${physicalViewSpaceFrameHeight}px ${FontFamily.MONOSPACE}`
+    ctx.font = `${physicalViewSpaceFontSize}px/${physicalViewSpaceFrameHeight}px ${FontFamily.FRAME}`
     ctx.textBaseline = 'alphabetic'
 
-    const minWidthToRender = cachedMeasureTextWidth(ctx, 'M' + ELLIPSIS + 'M')
+    const minWidthToRender = cachedMeasureTextWidth(ctx, 'op')
     const minConfigSpaceWidthToRender = (
-      configToPhysical.inverseTransformVector(new Vec2(minWidthToRender, 0)) || new Vec2(0, 0)
+            configToPhysical.inverseTransformVector(new Vec2(minWidthToRender, 0)) || new Vec2(0, 0)
     ).x
 
     const LABEL_PADDING_PX = 5 * window.devicePixelRatio
 
-    const labelBatch = new BatchCanvasTextRenderer()
-    const fadedLabelBatch = new BatchCanvasTextRenderer()
-    const matchedTextHighlightBatch = new BatchCanvasRectRenderer()
-    const directlySelectedOutlineBatch = new BatchCanvasRectRenderer()
-    const indirectlySelectedOutlineBatch = new BatchCanvasRectRenderer()
-    const matchedFrameBatch = new BatchCanvasRectRenderer()
+    const renderFrameLabelAndChildren = (frame: FlamechartFrame, bounds: Rect) => {
 
-    const renderFrameLabelAndChildren = (frame: FlamechartFrame, depth = 0) => {
-      const width = frame.end - frame.start
-      const y = this.props.renderInverted ? this.configSpaceSize().y - 1 - depth : depth
-      const configSpaceBounds = new Rect(new Vec2(frame.start, y), new Vec2(width, 1))
+      let physicalLabelBounds = bounds
 
-      if (width < minConfigSpaceWidthToRender) return
-      if (configSpaceBounds.left() > this.props.configSpaceViewportRect.right()) return
-      if (configSpaceBounds.right() < this.props.configSpaceViewportRect.left()) return
-
-      if (this.props.renderInverted) {
-        if (configSpaceBounds.bottom() < this.props.configSpaceViewportRect.top()) return
-      } else {
-        if (configSpaceBounds.top() > this.props.configSpaceViewportRect.bottom()) return
+      if (physicalLabelBounds.left() < 0) {
+        physicalLabelBounds = physicalLabelBounds
+                .withOrigin(physicalLabelBounds.origin.withX(0))
+                .withSize(
+                        physicalLabelBounds.size.withX(
+                                physicalLabelBounds.size.x + physicalLabelBounds.left(),
+                        ),
+                )
+      }
+      if (physicalLabelBounds.right() > physicalViewSize.x) {
+        physicalLabelBounds = physicalLabelBounds.withSize(
+                physicalLabelBounds.size.withX(physicalViewSize.x - physicalLabelBounds.left()),
+        )
       }
 
-      if (configSpaceBounds.hasIntersectionWith(this.props.configSpaceViewportRect)) {
-        let physicalLabelBounds = configToPhysical.transformRect(configSpaceBounds)
+      const match = this.props.searchResults?.getMatchForFrame(frame.node.frame, true)
+      const trimmedText = trimTextEnd(
+              ctx,
+              frame.node.frame.name + this.formatValue(frame.node),
+              physicalLabelBounds.width() - 2 * LABEL_PADDING_PX,
+      )
 
-        if (physicalLabelBounds.left() < 0) {
-          physicalLabelBounds = physicalLabelBounds
-            .withOrigin(physicalLabelBounds.origin.withX(0))
-            .withSize(
-              physicalLabelBounds.size.withX(
-                physicalLabelBounds.size.x + physicalLabelBounds.left(),
-              ),
-            )
-        }
-        if (physicalLabelBounds.right() > physicalViewSize.x) {
-          physicalLabelBounds = physicalLabelBounds.withSize(
-            physicalLabelBounds.size.withX(physicalViewSize.x - physicalLabelBounds.left()),
+      if (match) {
+        const rangesToHighlightInTrimmedText = remapRangesToTrimmedText(trimmedText, match)
+
+        // Once we have the character ranges to highlight, we need to
+        // actually do the highlighting.
+        let lastEndIndex = 0
+        let left = physicalLabelBounds.left() + LABEL_PADDING_PX
+
+        const padding = (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2 - 2
+        for (let [startIndex, endIndex] of rangesToHighlightInTrimmedText) {
+          left += cachedMeasureTextWidth(
+                  ctx,
+                  trimmedText.trimmedString.substring(lastEndIndex, startIndex),
           )
-        }
-
-        if (physicalLabelBounds.width() > minWidthToRender) {
-          const match = this.props.searchResults?.getMatchForFrame(frame.node.frame)
-
-          const trimmedText = trimTextMid(
-            ctx,
-            frame.node.frame.name,
-            physicalLabelBounds.width() - 2 * LABEL_PADDING_PX,
+          const highlightWidth = cachedMeasureTextWidth(
+                  ctx,
+                  trimmedText.trimmedString.substring(startIndex, endIndex),
           )
-
-          if (match) {
-            const rangesToHighlightInTrimmedText = remapRangesToTrimmedText(trimmedText, match)
-
-            // Once we have the character ranges to highlight, we need to
-            // actually do the highlighting.
-            let lastEndIndex = 0
-            let left = physicalLabelBounds.left() + LABEL_PADDING_PX
-
-            const padding = (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2 - 2
-            for (let [startIndex, endIndex] of rangesToHighlightInTrimmedText) {
-              left += cachedMeasureTextWidth(
-                ctx,
-                trimmedText.trimmedString.substring(lastEndIndex, startIndex),
-              )
-              const highlightWidth = cachedMeasureTextWidth(
-                ctx,
-                trimmedText.trimmedString.substring(startIndex, endIndex),
-              )
-              matchedTextHighlightBatch.rect({
-                x: left,
-                y: physicalLabelBounds.top() + padding,
-                w: highlightWidth,
-                h: physicalViewSpaceFrameHeight - 2 * padding,
-              })
-
-              left += highlightWidth
-              lastEndIndex = endIndex
-            }
-          }
-
-          const batch = this.props.searchResults != null && !match ? fadedLabelBatch : labelBatch
-          batch.text({
-            text: trimmedText.trimmedString,
-
-            // This is specifying the position of the starting text baseline.
-            x: physicalLabelBounds.left() + LABEL_PADDING_PX,
-            y: Math.round(
-              physicalLabelBounds.bottom() -
-                (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2,
-            ),
+          this.matchedTextHighlightBatch.rect({
+            x: left,
+            y: physicalLabelBounds.top() + padding,
+            w: highlightWidth,
+            h: physicalViewSpaceFrameHeight - 2 * padding,
           })
+
+          left += highlightWidth
+          lastEndIndex = endIndex
         }
       }
-      for (let child of frame.children) {
-        renderFrameLabelAndChildren(child, depth + 1)
+
+      const batch = this.props.searchResults != null && !match ? this.fadedLabelBatch : this.labelBatch
+      // In diff mode, use white text for red backgrounds (REG) when intensity is high
+      let textColor: string | undefined
+      if (this.props.diffMode) {
+        const diffRatio = frame.node.frame.getDiffRatio()
+        // Only for red (positive ratio / REG), use white text when over threshold
+        if (diffRatio > 0.75) {
+          textColor = '#ffffff'
+        }
       }
+      batch.text({
+        text: trimmedText.trimmedString,
+
+        // This is specifying the position of the starting text baseline.
+        x: physicalLabelBounds.left() + LABEL_PADDING_PX,
+        y: Math.round(
+                physicalLabelBounds.bottom() -
+                (physicalViewSpaceFrameHeight - physicalViewSpaceFontSize) / 2,
+        ),
+        color: textColor,
+      })
     }
 
+    const fadedMinRenderRatio = 0.1
+    const minWidth = 1 * window.devicePixelRatio
     const frameOutlineWidth = 2 * window.devicePixelRatio
+    const selectedRectOutlineWidth = 4 * window.devicePixelRatio
     ctx.strokeStyle = this.props.theme.selectionSecondaryColor
     const minConfigSpaceWidthToRenderOutline = (
-      configToPhysical.inverseTransformVector(new Vec2(1, 0)) || new Vec2(0, 0)
+            configToPhysical.inverseTransformVector(new Vec2(2, 0)) || new Vec2(0, 0)
     ).x
 
-    const renderSpecialFrameOutlines = (frame: FlamechartFrame, depth = 0) => {
-      if (!this.props.selectedNode && this.props.searchResults == null) return
-      const width = frame.end - frame.start
+    const renderSpecialFrameOutlines = (frame: FlamechartFrame, physicalRectBounds: Rect, width: number) => {
+      if (!this.props.searchResults?.getMatchForFrame(frame.node.frame) && !this.props.selectedNode && !this.dbClicked) {
+        const newFaded = {
+          x: Math.round(physicalRectBounds.left() + frameOutlineWidth / 2 - 1),
+          y: Math.round(physicalRectBounds.top() + frameOutlineWidth / 2),
+          w: Math.round(Math.max(minWidth, physicalRectBounds.width()) - 1),
+          h: Math.round(Math.max(minWidth, physicalRectBounds.height() - 1)),
+        }
+        if (width >= minConfigSpaceWidthToRenderOutline)
+          this.fadedRactBatch.rect(newFaded)
+        else if (width >= fadedMinRenderRatio * minConfigSpaceWidthToRenderOutline) this.tinyFadedRectBatch.rect(newFaded)
+      }
+
+      const shouldHighlight = this.props.searchResults?.getMatchForFrame(frame.node.frame) && !this.props.selectedNode
+      if (shouldHighlight && !this.dbClicked) {
+        const hightlightedRect = {
+          x: Math.round(physicalRectBounds.left() + frameOutlineWidth / 2 - 1),
+          y: Math.round(physicalRectBounds.top() + frameOutlineWidth / 2),
+          w: Math.round(Math.max(minWidth, physicalRectBounds.width() - 1)),
+          h: Math.round(Math.max(minWidth, physicalRectBounds.height() - 1)),
+        }
+        this.highlightedRactBatch.rect(hightlightedRect)
+      }
+
+      if (this.dbClicked) {
+        const selected = {
+          x: Math.round(physicalRectBounds.left() + 1 + frameOutlineWidth / 2),
+          y: Math.round(physicalRectBounds.top() + 1 + frameOutlineWidth / 2),
+          w: Math.round(Math.max(minWidth, physicalRectBounds.width() - 2 - frameOutlineWidth)),
+          h: Math.round(Math.max(minWidth, physicalRectBounds.height() - 2 - frameOutlineWidth)),
+        }
+        if (this.dbClicked === frame.node)
+          this.directlySelectedOutlineBatch.rect(selected)
+        if (shouldHighlight)
+          this.indirectlySelectedOutlineBatch.rect(selected)
+      }
+
+      if (this.props.selectedNode != null && frame.node.frame === this.props.selectedNode.frame) {
+        let batch =
+                frame.node === this.props.selectedNode
+                        ? this.directlySelectedOutlineBatch
+                        : this.indirectlySelectedOutlineBatch
+
+        batch.rect({
+          x: Math.round(physicalRectBounds.left() + 1 + frameOutlineWidth / 2),
+          y: Math.round(physicalRectBounds.top() + 1 + frameOutlineWidth / 2),
+          w: Math.round(Math.max(minWidth, physicalRectBounds.width() - 2 - frameOutlineWidth)),
+          h: Math.round(Math.max(minWidth, physicalRectBounds.height() - 2 - frameOutlineWidth)),
+        })
+      }
+    }
+
+
+    const layers = this.props.flamechart.getLayers()
+    if (!layers.length) return
+
+    const view = this.props.configSpaceViewportRect
+    const left = view.left()
+    const right = view.right()
+
+    const depthStart = this.props.renderInverted ? 0 : Math.max(0, Math.floor(view.top()))
+    this.props.searchResults?.searchQueryFromInputBox
+    const withSpecialOutlines = this.props.selectedNode != null || this.props.searchResults != null;
+
+    const renderVisiableNodesDFS = (node: FlamechartFrame, depth: number) => {
+      if (node.start > right || node.end < left) return;
+      const width = node.end - node.start;
+
       const y = this.props.renderInverted ? this.configSpaceSize().y - 1 - depth : depth
-      const configSpaceBounds = new Rect(new Vec2(frame.start, y), new Vec2(width, 1))
+      const configSpaceBounds = new Rect(new Vec2(node.start, y), new Vec2(width, 1))
+      const physicalRectBounds = configToPhysical.transformRect(configSpaceBounds)
+      if (!this.props.renderInverted && !configSpaceBounds.hasIntersectionWith(this.props.configSpaceViewportRect)) return;
 
-      if (width < minConfigSpaceWidthToRenderOutline) return
-      if (configSpaceBounds.left() > this.props.configSpaceViewportRect.right()) return
-      if (configSpaceBounds.right() < this.props.configSpaceViewportRect.left()) return
-      if (configSpaceBounds.top() > this.props.configSpaceViewportRect.bottom()) return
+      if (withSpecialOutlines) renderSpecialFrameOutlines(node, physicalRectBounds, width)
 
-      if (configSpaceBounds.hasIntersectionWith(this.props.configSpaceViewportRect)) {
-        if (this.props.searchResults?.getMatchForFrame(frame.node.frame)) {
-          const physicalRectBounds = configToPhysical.transformRect(configSpaceBounds)
-          matchedFrameBatch.rect({
-            x: Math.round(physicalRectBounds.left() + frameOutlineWidth / 2),
-            y: Math.round(physicalRectBounds.top() + frameOutlineWidth / 2),
-            w: Math.round(Math.max(0, physicalRectBounds.width() - frameOutlineWidth)),
-            h: Math.round(Math.max(0, physicalRectBounds.height() - frameOutlineWidth)),
-          })
-        }
+      const noLabel = physicalRectBounds.width() < minWidthToRender && width < minConfigSpaceWidthToRender
+      if (!noLabel) renderFrameLabelAndChildren(node, physicalRectBounds)
 
-        if (this.props.selectedNode != null && frame.node.frame === this.props.selectedNode.frame) {
-          let batch =
-            frame.node === this.props.selectedNode
-              ? directlySelectedOutlineBatch
-              : indirectlySelectedOutlineBatch
-
-          const physicalRectBounds = configToPhysical.transformRect(configSpaceBounds)
-          batch.rect({
-            x: Math.round(physicalRectBounds.left() + 1 + frameOutlineWidth / 2),
-            y: Math.round(physicalRectBounds.top() + 1 + frameOutlineWidth / 2),
-            w: Math.round(Math.max(0, physicalRectBounds.width() - 2 - frameOutlineWidth)),
-            h: Math.round(Math.max(0, physicalRectBounds.height() - 2 - frameOutlineWidth)),
-          })
-        }
-      }
-      for (let child of frame.children) {
-        renderSpecialFrameOutlines(child, depth + 1)
+      for (const kid of node.children) {
+        renderVisiableNodesDFS(kid, depth + 1)
       }
     }
 
-    for (let frame of this.props.flamechart.getLayers()[0] || []) {
-      renderSpecialFrameOutlines(frame)
-    }
+    if (this.shouldRerenderOverlays) {
+      this.labelBatch.clean()
+      this.fadedLabelBatch.clean()
+      this.matchedTextHighlightBatch.clean()
+      this.directlySelectedOutlineBatch.clean()
+      this.indirectlySelectedOutlineBatch.clean()
+      this.fadedRactBatch.clean()
+      this.tinyFadedRectBatch.clean()
+      this.highlightedRactBatch.clean()
 
-    for (let frame of this.props.flamechart.getLayers()[0] || []) {
-      renderFrameLabelAndChildren(frame)
+      const inViewRoots = this.props.flamechart.getLayers()[depthStart]
+      for (const f of inViewRoots) {
+        renderVisiableNodesDFS(f, depthStart)
+      }
     }
 
     const theme = this.props.theme
 
-    matchedFrameBatch.fill(ctx, theme.searchMatchPrimaryColor)
-    matchedTextHighlightBatch.fill(ctx, theme.searchMatchSecondaryColor)
-    fadedLabelBatch.fill(ctx, theme.fgSecondaryColor)
-    labelBatch.fill(
-      ctx,
-      this.props.searchResults != null ? theme.searchMatchTextColor : theme.fgPrimaryColor,
+    // render faded background before matched
+    this.tinyFadedRectBatch.columnFill(ctx, theme.searchFadedFrameColor)
+    this.fadedRactBatch.fill(ctx, theme.searchFadedFrameColor)
+    this.highlightedRactBatch.fill(ctx, theme.searchMatchSecondaryColor)
+    this.matchedTextHighlightBatch.fill(ctx, theme.searchMatchSecondaryColor)
+    this.fadedLabelBatch.fill(ctx, theme.searchFadedTextColor)
+    this.indirectlySelectedOutlineBatch.stroke(ctx, theme.selectionSecondaryColor, selectedRectOutlineWidth)
+    this.directlySelectedOutlineBatch.stroke(ctx, theme.selectionPrimaryColor, selectedRectOutlineWidth)
+    this.labelBatch.fill(
+            ctx,
+            this.props.searchResults != null ? theme.searchMatchTextColor : theme.frameNodeNameColor,
     )
-    indirectlySelectedOutlineBatch.stroke(ctx, theme.selectionSecondaryColor, frameOutlineWidth)
-    directlySelectedOutlineBatch.stroke(ctx, theme.selectionPrimaryColor, frameOutlineWidth)
 
     if (this.hoveredLabel) {
       let color: string = theme.fgPrimaryColor
@@ -366,14 +478,14 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
       const physicalViewBounds = configToPhysical.transformRect(this.hoveredLabel.configSpaceBounds)
       ctx.strokeRect(
-        Math.round(physicalViewBounds.left()),
-        Math.round(physicalViewBounds.top()),
-        Math.round(Math.max(0, physicalViewBounds.width())),
-        Math.round(Math.max(0, physicalViewBounds.height())),
+              Math.round(physicalViewBounds.left()),
+              Math.round(physicalViewBounds.top()),
+              Math.round(Math.max(0, physicalViewBounds.width())),
+              Math.round(Math.max(0, physicalViewBounds.height())),
       )
     }
 
-    this.renderTimeIndicators()
+    // this.renderTimeIndicators()
   }
 
   private renderTimeIndicators() {
@@ -381,7 +493,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     if (!ctx) return
 
     const physicalViewSpaceFrameHeight =
-      this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT * window.devicePixelRatio
+            this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT * window.devicePixelRatio
     const physicalViewSize = this.physicalViewSize()
     const configToPhysical = this.configSpaceToPhysicalViewSpace()
     const physicalViewSpaceFontSize = FontSize.LABEL * window.devicePixelRatio
@@ -393,7 +505,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     // 1eN, 2eN, or 5eN for some N
     // Ideally, we want an interval every 100 logical screen pixels
     const logicalToConfig = (
-      this.configSpaceToPhysicalViewSpace().inverted() || new AffineTransform()
+            this.configSpaceToPhysicalViewSpace().inverted() || new AffineTransform()
     ).times(this.logicalToPhysicalViewSpace())
     const targetInterval = logicalToConfig.transformVector(new Vec2(200, 1)).x
     const minInterval = Math.pow(10, Math.floor(Math.log10(targetInterval)))
@@ -417,7 +529,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
         const pos = Math.round(configToPhysical.transformPosition(new Vec2(x, 0)).x)
         const labelText = this.props.flamechart.formatValue(x)
         const textWidth = cachedMeasureTextWidth(ctx, labelText)
-        ctx.fillStyle = theme.fgPrimaryColor
+        ctx.fillStyle = theme.frameNodeNameColor
         ctx.fillText(labelText, pos - textWidth - labelPaddingPx, y + labelPaddingPx)
         ctx.fillStyle = theme.fgSecondaryColor
         ctx.fillRect(pos, 0, 1, physicalViewSize.y)
@@ -428,7 +540,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
   private updateConfigSpaceViewport() {
     if (!this.container) return
     const {logicalSpaceViewportSize} = this.props
-    const bounds = this.container.getBoundingClientRect()
+    const bounds = getWH(this.container)
     const {width, height} = bounds
 
     // Still initializing: don't resize yet
@@ -438,32 +550,33 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
       const configSpaceViewportHeight = height / this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT
       if (this.props.renderInverted) {
         this.setConfigSpaceViewportRect(
-          new Rect(
-            new Vec2(0, this.configSpaceSize().y - configSpaceViewportHeight + 1),
-            new Vec2(this.configSpaceSize().x, configSpaceViewportHeight),
-          ),
+                new Rect(
+                        new Vec2(0, this.configSpaceSize().y - configSpaceViewportHeight + 1),
+                        new Vec2(this.configSpaceSize().x, configSpaceViewportHeight),
+                ),
         )
       } else {
         this.setConfigSpaceViewportRect(
-          new Rect(new Vec2(0, -1), new Vec2(this.configSpaceSize().x, configSpaceViewportHeight)),
+                new Rect(new Vec2(0, -1), new Vec2(this.configSpaceSize().x, configSpaceViewportHeight)),
         )
       }
     } else if (
-      !logicalSpaceViewportSize.equals(Vec2.zero) &&
-      (logicalSpaceViewportSize.x !== width || logicalSpaceViewportSize.y !== height)
+            !logicalSpaceViewportSize.equals(Vec2.zero) &&
+            (logicalSpaceViewportSize.x !== width || logicalSpaceViewportSize.y !== height)
     ) {
       // Resize the viewport rectangle to match the window size aspect
       // ratio.
       this.setConfigSpaceViewportRect(
-        this.props.configSpaceViewportRect.withSize(
-          this.props.configSpaceViewportRect.size.timesPointwise(
-            new Vec2(width / logicalSpaceViewportSize.x, height / logicalSpaceViewportSize.y),
-          ),
-        ),
+              this.props.configSpaceViewportRect.withSize(
+                      this.props.configSpaceViewportRect.size.timesPointwise(
+                              new Vec2(width / logicalSpaceViewportSize.x, height / logicalSpaceViewportSize.y),
+                      ),
+              ),
       )
     }
 
     const newSize = new Vec2(width, height)
+
     if (!newSize.equals(logicalSpaceViewportSize)) {
       this.props.setLogicalSpaceViewportSize(newSize)
     }
@@ -480,11 +593,14 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
     if (this.props.configSpaceViewportRect.isEmpty()) return
 
+    if (this.props.searchResults && !this.props.selectedNode && !this.dbClicked) return
+
     this.props.canvasContext.renderBehind(this.container, () => {
       this.props.flamechartRenderer.render({
         physicalSpaceDstRect: this.physicalBounds(),
         configSpaceSrcRect: this.props.configSpaceViewportRect,
         renderOutlines: true,
+        diffMode: this.props.diffMode,
       })
     })
   }
@@ -545,76 +661,159 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     this.interactionLock = 'zoom'
 
     const physicalCenter =
-      this.logicalToPhysicalViewSpace().transformPosition(logicalViewSpaceCenter)
+            this.logicalToPhysicalViewSpace().transformPosition(logicalViewSpaceCenter)
     const configSpaceCenter =
-      this.configSpaceToPhysicalViewSpace().inverseTransformPosition(physicalCenter)
+            this.configSpaceToPhysicalViewSpace().inverseTransformPosition(physicalCenter)
     if (!configSpaceCenter) return
 
     const zoomTransform = AffineTransform.withTranslation(configSpaceCenter.times(-1))
-      .scaledBy(new Vec2(multiplier, 1))
-      .translatedBy(configSpaceCenter)
+            .scaledBy(new Vec2(multiplier, 1))
+            .translatedBy(configSpaceCenter)
 
     this.props.transformViewport(zoomTransform)
   }
 
   private lastDragPos: Vec2 | null = null
   private mouseDownPos: Vec2 | null = null
-  private currentMousePos: Vec2 | null = null
   private onMouseDown = (ev: MouseEvent) => {
     this.mouseDownPos = this.lastDragPos = new Vec2(ev.offsetX, ev.offsetY)
     this.updateCursor()
     window.addEventListener('mouseup', this.onWindowMouseUp)
   }
 
+  private dragging = false
+  private dragDelta: Vec2 | null = null
+  private dragThreshold = 10
+  private dragSpeed = 1.5
   private onMouseDrag = (ev: MouseEvent) => {
     if (!this.lastDragPos) return
     const logicalMousePos = new Vec2(ev.offsetX, ev.offsetY)
-    this.pan(this.lastDragPos.minus(logicalMousePos))
+    const delta = this.lastDragPos.minus(logicalMousePos)
+
+    if (Math.abs(delta.x) < this.dragThreshold && Math.abs(delta.y) < this.dragThreshold) return
+
+    this.dragDelta = new Vec2(delta.x * this.dragSpeed, delta.y * this.dragSpeed)
     this.lastDragPos = logicalMousePos
+
 
     // When panning by scrolling, the element under
     // the cursor will change, so clear the hovered label.
     if (this.hoveredLabel) {
       this.props.onNodeHover(null)
     }
+
+    if (!this.dragging) {
+      this.dragging = true
+      if (this.dragDelta) {
+        this.pan(this.dragDelta)
+        this.dragDelta = null
+      }
+      this.dragging = false
+    }
+
   }
 
-  private onDblClick = (ev: MouseEvent) => {
+  private prevZoomedNode: FlamechartFrameLabel | null = null;
+  private dbClicked: CallTreeNode | null = null;
+  private onDbClick = (ev: MouseEvent) => {
     if (this.hoveredLabel) {
+      this.dbClicked = this.hoveredLabel.node
+      if (this.prevZoomedNode?.node === this.hoveredLabel.node) {
+        this.prevZoomedNode = null;
+        this.resetView()
+        return
+      }
       const hoveredBounds = this.hoveredLabel.configSpaceBounds
       const viewportRect = new Rect(
-        hoveredBounds.origin.minus(new Vec2(0, 1)),
-        hoveredBounds.size.withY(this.props.configSpaceViewportRect.height()),
+              hoveredBounds.origin.minus(new Vec2(0, 1)),
+              hoveredBounds.size.withY(this.props.configSpaceViewportRect.height()),
       )
+      this.prevZoomedNode = this.hoveredLabel;
       this.props.setConfigSpaceViewportRect(viewportRect)
     }
   }
 
-  private onClick = (ev: MouseEvent) => {
-    const logicalMousePos = new Vec2(ev.offsetX, ev.offsetY)
-    const mouseDownPos = this.mouseDownPos
-    this.mouseDownPos = null
+  private openInSandwichView = (ev: MouseEvent) => {
+    ev.preventDefault();
+    const frame = this.state.rightClickedLabel?.node.frame;
 
-    if (mouseDownPos && logicalMousePos.minus(mouseDownPos).length() > 5) {
-      // If the cursor is more than 5 logical space pixels away from the mouse
-      // down location, then don't interpret this event as a click.
-      return
+    if (frame) {
+      profileGroupAtom.setSelectedFrameName(frame.name)
+      profileGroupAtom.setSelectedFrame(frame)
+      viewModeAtom.set(ViewMode.SANDWICH_VIEW)
+      this.closeMenu()
     }
+  }
+  private moreInformation = (ev: MouseEvent) => {
+    ev.preventDefault();
+    const name = this.state.rightClickedLabel?.node.frame.name;
+    if (!name) return '';
+    moreInformationFrameAtom.set(name);
+    this.closeMenu()
+  }
+  private searchFrameMethod = (ev: MouseEvent) => {
+    ev.preventDefault();
+    const name = this.state.rightClickedLabel?.node.frame.name;
+    if (!name) return '';
+    const lastDotIndex = name.lastIndexOf('.');
+    const methodName = lastDotIndex !== -1 ? name.substring(lastDotIndex + 1) : name;
 
+    if (methodName) {
+      searchQueryAtom.set(methodName)
+      this.closeMenu()
+    }
+  }
+  private copyRightClickedLabelName = (ev: MouseEvent) => {
+    ev.preventDefault();
+    const name = this.state.rightClickedLabel?.node.frame.name;
+
+    if (name) {
+      navigator.clipboard.writeText(name).then(() => {
+        this.setState({
+          contextMenuPos: null,
+          copied: true
+        })
+        setTimeout(() => this.setState({copied: false}), 2000);
+      });
+    }
+  }
+  private onRightClick = (ev: MouseEvent) => {
+    ev.preventDefault();
     if (this.hoveredLabel) {
-      this.props.onNodeSelect(this.hoveredLabel.node)
-      this.renderCanvas()
-    } else {
-      this.props.onNodeSelect(null)
+      this.setState(
+              {
+                contextMenuPos: {x: ev.clientX, y: ev.clientY},
+                rightClickedLabel: this.hoveredLabel,
+              }
+      );
     }
   }
 
+  // private onClick = (ev: MouseEvent) => {
+  //   const logicalMousePos = new Vec2(ev.offsetX, ev.offsetY)
+  //   const mouseDownPos = this.mouseDownPos
+  //   this.mouseDownPos = null
+
+  //   if (mouseDownPos && logicalMousePos.minus(mouseDownPos).length() > 5) {
+  //     // If the cursor is more than 5 logical space pixels away from the mouse
+  //     // down location, then don't interpret this event as a click.
+  //     return
+  //   }
+
+  //   if (this.hoveredLabel) {
+  //     this.props.onNodeSelect(this.hoveredLabel.node)
+  //     this.renderCanvas()
+  //   } else {
+  //     this.props.onNodeSelect(null)
+  //   }
+  // }
+
   private updateCursor() {
     if (this.lastDragPos) {
-      document.body.style.cursor = 'grabbing'
-      document.body.style.cursor = '-webkit-grabbing'
+      getSpeedscopeWindow().style.cursor = 'grabbing'
+      getSpeedscopeWindow().style.cursor = '-webkit-grabbing'
     } else {
-      document.body.style.cursor = 'default'
+      getSpeedscopeWindow().style.cursor = 'default'
     }
   }
 
@@ -624,27 +823,60 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     window.removeEventListener('mouseup', this.onWindowMouseUp)
   }
 
+  prevHoveredLabel: FlamechartFrameLabel | null = null
   private onMouseMove = (ev: MouseEvent) => {
-    this.currentMousePos = new Vec2(ev.offsetX, ev.offsetY)
+    this.shouldRerenderOverlays = false
     this.updateCursor()
     if (this.lastDragPos) {
       ev.preventDefault()
       this.onMouseDrag(ev)
+      this.shouldRerenderOverlays = true
       return
     }
 
     const logicalViewSpaceMouse = new Vec2(ev.offsetX, ev.offsetY)
     const physicalViewSpaceMouse =
-      this.logicalToPhysicalViewSpace().transformPosition(logicalViewSpaceMouse)
+            this.logicalToPhysicalViewSpace().transformPosition(logicalViewSpaceMouse)
     const configSpaceMouse =
-      this.configSpaceToPhysicalViewSpace().inverseTransformPosition(physicalViewSpaceMouse)
+            this.configSpaceToPhysicalViewSpace().inverseTransformPosition(physicalViewSpaceMouse)
 
     if (!configSpaceMouse) return
 
-    const setHoveredLabel = (frame: FlamechartFrame, depth = 0) => {
+    function binaryLocateFrame(frames: FlamechartFrame[], x: number): FlamechartFrame | null {
+      let lo = 0
+      let hi = frames.length - 1
+
+      while (lo <= hi) {
+        const mid = (lo + hi) >> 1
+        const frame = frames[mid]
+
+        if (x < frame.start) hi = mid - 1
+        else if (x > frame.end) lo = mid + 1
+        else return frame
+      }
+
+      return null
+    }
+
+    const setHoveredLabel = () => {
+      const mouseY = Math.floor(configSpaceMouse.y)
+      const depth = this.props.renderInverted ? this.configSpaceSize().y - 1 - mouseY : mouseY
+      const row = this.props.flamechart.getLayers()[depth] || []
+      if (!row) {
+        this.hoveredLabel = null
+        return
+      }
+
+      const frame = binaryLocateFrame(row, configSpaceMouse.x)
+      if (!frame) {
+        this.hoveredLabel = null
+        return
+      }
+
       const width = frame.end - frame.start
       const y = this.props.renderInverted ? this.configSpaceSize().y - 1 - depth : depth
       const configSpaceBounds = new Rect(new Vec2(frame.start, y), new Vec2(width, 1))
+
       if (configSpaceMouse.x < configSpaceBounds.left()) return null
       if (configSpaceMouse.x > configSpaceBounds.right()) return null
 
@@ -653,10 +885,6 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
           configSpaceBounds,
           node: frame.node,
         }
-      }
-
-      for (let child of frame.children) {
-        setHoveredLabel(child, depth + 1)
       }
     }
 
@@ -675,24 +903,26 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     }
     clearHoveredLabel()
 
-    for (let frame of this.props.flamechart.getLayers()[0] || []) {
-      setHoveredLabel(frame)
-    }
+    setHoveredLabel()
 
     if (this.hoveredLabel) {
       this.props.onNodeHover({node: this.hoveredLabel!.node, event: ev})
+      // only refresh flamegraph when label node actually updated, to avoid performance issue
+      if (this.hoveredLabel.node != this.prevHoveredLabel?.node) {
+        this.prevHoveredLabel = this.hoveredLabel // save last rendered label
+        this.renderOverlays()
+      }
     } else {
       this.props.onNodeHover(null)
     }
 
-    this.renderCanvas()
+    this.shouldRerenderOverlays = true
   }
 
   private onMouseLeave = (ev: MouseEvent) => {
-    this.currentMousePos = null
     this.hoveredLabel = null
     this.props.onNodeHover(null)
-    this.renderCanvas()
+    this.renderOverlays()
   }
 
   private onWheel = (ev: WheelEvent) => {
@@ -701,21 +931,21 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
 
     const isZoom = ev.metaKey || ev.ctrlKey
 
-    let deltaY = ev.deltaY
     let deltaX = ev.deltaX
+    let deltaY = ev.deltaY
     if (ev.deltaMode === ev.DOM_DELTA_LINE) {
       deltaY *= this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT
       deltaX *= this.LOGICAL_VIEW_SPACE_FRAME_HEIGHT
     }
 
     if (isZoom && this.interactionLock !== 'pan') {
-      let multiplier = 1 + deltaY / 100
+      let multiplier = 1 + deltaY / 400
 
       // On Chrome & Firefox, pinch-to-zoom maps to
       // WheelEvent + Ctrl Key. We'll accelerate it in
       // this case, since it feels a bit sluggish otherwise.
       if (ev.ctrlKey) {
-        multiplier = 1 + deltaY / 40
+        multiplier = 1 + deltaY / 240
       }
 
       multiplier = clamp(multiplier, 0.1, 10.0)
@@ -724,75 +954,114 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     } else if (this.interactionLock !== 'zoom') {
       this.pan(new Vec2(deltaX, deltaY))
     }
-
     this.renderCanvas()
+  }
+
+  public resetView(): void {
+    this.dbClicked = null;
+    if (!this.container) return
+    const {width, height} = getWH(this.container)
+    const zoomCenter = this.props.renderInverted ? new Vec2(0, height) : new Vec2(width / 2, 0)
+    const zoomMultiplier = 1e9
+    const panOffset = this.props.renderInverted ? new Vec2(0, 1000) : new Vec2(0, -1000)
+
+    const center = this.logicalToPhysicalViewSpace().transformPosition(zoomCenter)
+    const configSpaceCenter = this.configSpaceToPhysicalViewSpace().inverseTransformPosition(center)
+    if (!configSpaceCenter) return
+    const zoomTrans = AffineTransform.withTranslation(configSpaceCenter.times(-1))
+            .scaledBy(new Vec2(zoomMultiplier, 1))
+            .translatedBy(configSpaceCenter)
+    const merged = zoomTrans.translatedBy(panOffset)
+    this.props.transformViewport(merged)
+    this.props.onNodeSelect(null)
+    resizeApp(true)
+  }
+
+  private closeMenu = () => this.setState({contextMenuPos: null, rightClickedLabel: null, copied: false})
+
+  private handleGlobalClick = (ev: MouseEvent) => {
+    const menu = document.getElementById("context-menu")
+    if (menu && !menu.contains(ev.target as Node)) this.closeMenu()
+  }
+
+  private copiedNotification() {
+    const copied = this.state.copied
+    if (!copied) return null
+    return <CopiedNotification/>
+  }
+
+  private renderContextMenu() {
+    const pos = this.state.contextMenuPos
+    if (pos == null) return null
+
+    const isSandwich = this.currentMode === ViewMode.SANDWICH_VIEW
+    const commonItems = [
+      {key: "copy", label: "🗐 Copy Name", onClick: this.copyRightClickedLabelName},
+      {key: "explain", label: "💡 More Information", onClick: this.moreInformation},
+      {key: "search", label: "🔍 Search Similar Nodes", onClick: this.searchFrameMethod},
+    ]
+    const sandwichItems = commonItems
+    const flamegraphItems = [
+      ...commonItems,
+      {key: "toSandwich", label: "🥪 Open In Sandwich View", onClick: this.openInSandwichView}
+    ];
+    const items = isSandwich ? sandwichItems : flamegraphItems
+
+    const menuStyle = {
+      position: "fixed",
+      top: pos.y,
+      left: pos.x,
+      transform: "translate(6px, 6px)",
+      background: "rgba(28,31,38,0.96)",
+      color: "#fff",
+      borderRadius: 8,
+      border: "1px solid rgba(255,255,255,0.3)",
+      boxShadow: "0 10px 24px rgba(0,0,0,.35)",
+      padding: 4,
+      zIndex: ZIndex.MENU,
+      PointerEvents: "auto",
+      userSelect: "none"
+    }
+
+    const itemStyle = {
+      fontSize: "12px",
+      display: "block",
+      padding: "8px 12px",
+      borderRadius: 6,
+      whiteSpace: "nowrap",
+      cursor: "pointer",
+    }
+
+    const hoverStyle = {background: "rgba(255,255,255,0.1)"}
+
+    return <div id="context-menu" style={menuStyle} onContextMenu={e => e.preventDefault()}>
+      {items.map(item => (
+              <div
+                      key={item.key}
+                      style={itemStyle}
+                      onClick={item.onClick}
+                      onMouseEnter={e => Object.assign(e.currentTarget.style, hoverStyle)}
+                      onMouseLeave={e => Object.assign(e.currentTarget.style, {background: ""})}
+              >
+                {item.label}
+              </div>
+      ))}
+    </div>
   }
 
   onWindowKeyPress = (ev: KeyboardEvent) => {
     if (!this.container) return
-    const {width, height} = this.container.getBoundingClientRect()
 
-    // Check if we have a minimap mouse position (user is hovering over minimap)
-    // if we do, then pan the mouse to the minimap mouse position and then
-    // perform zoom from the center of the main view
-    //
-    // If we aren't hovering over the minimap, then use the main view and
-    // zoom around the mouse position, falling back to the center of
-    // the main view if it's not available.
-    const minimapMousePos = minimapMousePositionAtom.get()
-    let zoomCenter: Vec2
-    let shouldZoom = true
+    if (!inSpeedscopeWindow()) return;
 
-    if (minimapMousePos) {
-      const currentViewport = this.props.configSpaceViewportRect
+    const {width, height} = getWH(this.container)
 
-      // Check if the minimap mouse position is within the current viewport bounds
-      const isWithinViewport =
-        minimapMousePos.x >= currentViewport.left() &&
-        minimapMousePos.x <= currentViewport.right() &&
-        minimapMousePos.y >= currentViewport.top() &&
-        minimapMousePos.y <= currentViewport.bottom()
-
-      // Pan to the minimap mouse position
-      const newOrigin = new Vec2(
-        minimapMousePos.x - currentViewport.width() / 2,
-        minimapMousePos.y - currentViewport.height() / 2,
-      )
-      this.props.setConfigSpaceViewportRect(currentViewport.withOrigin(newOrigin))
-
-      // If the position was outside the viewport, just pan without zooming
-      // Next +/- press will do the zoom
-      if (!isWithinViewport) {
-        shouldZoom = false
-      }
-
-      zoomCenter = new Vec2(width / 2, height / 2)
-    } else {
-      zoomCenter = this.currentMousePos || new Vec2(width / 2, height / 2)
-    }
-
-    // By default the zoom multiplier is 1 (no transformation), if
-    // we are zooming in, scale the transform down by 0.5, else
-    // scale up by 2 (this moves us 1 full grid line chunk at a time)
-    let zoomMultiplier = 1
-
-    switch (ev.key) {
-      case '=':
-      case '+':
-        zoomMultiplier = 0.5
-        break
-      case '-':
-      case '_':
-        zoomMultiplier = 2
-        break
-    }
-
-    if (shouldZoom) {
-      // Slight delay to ensure we pan before zooming
-      requestAnimationFrame(() => {
-        this.zoom(zoomCenter, zoomMultiplier)
-        ev.preventDefault()
-      })
+    if (ev.key === '=' || ev.key === '+') {
+      this.zoom(new Vec2(width / 2, height / 2), 0.5)
+      ev.preventDefault()
+    } else if (ev.key === '-' || ev.key === '_') {
+      this.zoom(new Vec2(width / 2, height / 2), 2)
+      ev.preventDefault()
     }
 
     if (ev.ctrlKey || ev.shiftKey || ev.metaKey) return
@@ -803,7 +1072,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     //
     // See: https://github.com/jlfwong/speedscope/pull/184
     if (ev.key === '0') {
-      this.zoom(zoomCenter, 1e9)
+      this.resetView()
     } else if (ev.key === 'ArrowRight' || ev.code === 'KeyD') {
       this.pan(new Vec2(100, 0))
     } else if (ev.key === 'ArrowLeft' || ev.code === 'KeyA') {
@@ -818,9 +1087,8 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
     }
   }
 
-  shouldComponentUpdate() {
-    return false
-  }
+  private unsubscribe?: () => void;
+
   componentWillReceiveProps(nextProps: FlamechartPanZoomViewProps) {
     if (this.props.flamechart !== nextProps.flamechart) {
       this.hoveredLabel = null
@@ -831,6 +1099,14 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
       this.renderCanvas()
     } else if (this.props.configSpaceViewportRect !== nextProps.configSpaceViewportRect) {
       this.renderCanvas()
+    } else if (this.props.displayMinimap !== nextProps.displayMinimap) {
+      this.renderCanvas()
+      this.resetView()
+    } else if (this.props.displayTable !== nextProps.displayTable) {
+      this.renderCanvas()
+      setTimeout(() => {
+        this.resetView()
+      }, 50);
     } else if (this.props.canvasContext !== nextProps.canvasContext) {
       if (this.props.canvasContext) {
         this.props.canvasContext.removeBeforeFrameHandler(this.onBeforeFrame)
@@ -841,33 +1117,45 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
       }
     }
   }
+
   componentDidMount() {
     this.props.canvasContext.addBeforeFrameHandler(this.onBeforeFrame)
     window.addEventListener('resize', this.onWindowResize)
     window.addEventListener('keydown', this.onWindowKeyPress)
+    FlamechartEventCallback.onResetView(() => this.resetView())
+    document.addEventListener("click", this.handleGlobalClick)
+    this.unsubscribe = flamechartScheduler.subscribe(({reset}) => {
+      this.resetView()
+    })
   }
+
   componentWillUnmount() {
     this.props.canvasContext.removeBeforeFrameHandler(this.onBeforeFrame)
     window.removeEventListener('resize', this.onWindowResize)
     window.removeEventListener('keydown', this.onWindowKeyPress)
+    document.removeEventListener("click", this.handleGlobalClick)
+    this.unsubscribe?.()
   }
 
   render() {
     const style = this.getStyle()
 
     return (
-      <div
-        className={css(style.panZoomView, commonStyle.vbox)}
-        onMouseDown={this.onMouseDown}
-        onMouseMove={this.onMouseMove}
-        onMouseLeave={this.onMouseLeave}
-        onClick={this.onClick}
-        onDblClick={this.onDblClick}
-        onWheel={this.onWheel}
-        ref={this.containerRef}
-      >
-        <canvas width={1} height={1} ref={this.overlayCanvasRef} className={css(style.fill)} />
-      </div>
+            <div
+                    className={css(style.panZoomView, commonStyle.vbox)}
+                    onMouseDown={this.onMouseDown}
+                    onMouseMove={this.onMouseMove}
+                    onMouseLeave={this.onMouseLeave}
+                    // onClick={this.onDbClick}
+                    onDblClick={this.onDbClick}
+                    onContextMenu={this.onRightClick}
+                    onWheel={this.onWheel}
+                    ref={this.containerRef}
+            >
+              {this.copiedNotification()}
+              {this.renderContextMenu()}
+              <canvas width={1} height={1} ref={this.overlayCanvasRef} className={css(style.fill)}/>
+            </div>
     )
   }
 }

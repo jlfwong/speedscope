@@ -1,0 +1,367 @@
+{
+  "version": "0.1.2",
+  "$schema": "https://www.speedscope.app/file-format-schema.json",
+  "shared": {
+    "frames": [
+      {
+        "name": "root"
+      },
+      {
+        "name": "total"
+      },
+      {
+        "name": "@app.CancelNode"
+      },
+      {
+        "name": "@foo.bar.Actor.run_withCancellation_141_19"
+      },
+      {
+        "name": "@foo.bar.Runner.run"
+      },
+      {
+        "name": "@foo.bar.Runner.run.track_17_28"
+      },
+      {
+        "name": "@foo.bar.cycle.CycleRunner.singleCycle"
+      },
+      {
+        "name": "@foo.bar.cycle.CycleRunner.singleCycle.givenWithPluginTags_95_75"
+      },
+      {
+        "name": "@foo.bar.cycle.CycleRunner.singleCycle.givenWithPluginTags_95_75.impure_106_30"
+      },
+      {
+        "name": "@[map]"
+      },
+      {
+        "name": "@foo.bar.cycle.CycleRunner.singleCycle.givenWithPluginTags_95_75.impure_106_30.map_137_49"
+      },
+      {
+        "name": "@foo.bar.cycle.Task.runTask"
+      },
+      {
+        "name": "@foo.bar.cycle.Task.runTask.track_166_106"
+      },
+      {
+        "name": "@foo.bar.cycle.Task.runTask.track_166_106.givenWithPluginTag_166_106"
+      },
+      {
+        "name": "@foo.bar.cycle.Task.runTask.track_166_106.givenWithPluginTag_166_106.givenWithPluginTag_175_49"
+      },
+      {
+        "name": "@foo.bar.cycle.TaskRunner$.doTask~$"
+      },
+      {
+        "name": "@foo.bar.cycle.Task.doTaskWithNotes"
+      },
+      {
+        "name": "@[default]"
+      },
+      {
+        "name": "@foo.bar.cycle.Task.doTaskWithNotes.withNotes_187_45"
+      },
+      {
+        "name": "@foo.bar.cycle.TaskAliased.doTask"
+      },
+      {
+        "name": "@foo.baz.ComputeTask.doTask"
+      },
+      {
+        "name": "@foo.baz.ComputeTask.doTask.given_262_11"
+      },
+      {
+        "name": "@app.Params.param.NF"
+      },
+      {
+        "name": "@foo.baz.ComputeTask.doTask.given_262_11.apply0_264_27[node-function]"
+      },
+      {
+        "name": "@foo.baz.DeltasTask.doTask"
+      },
+      {
+        "name": "@foo.baz.MapReduceTask.doTask"
+      },
+      {
+        "name": "@foo.baz.MapReduceTask.doTask.given_278_50"
+      },
+      {
+        "name": "@foo.baz.MapReduceTask.doTask.given_278_50.captureBaseState_278_50"
+      },
+      {
+        "name": "@foo.baz.Computer$.calcResult"
+      },
+      {
+        "name": "@[convertByNameToByValue]$"
+      },
+      {
+        "name": "@foo.baz.Computer.calcResult.given_348_89"
+      },
+      {
+        "name": "@foo.baz.Computer$.calcResultInner"
+      },
+      {
+        "name": "@foo.baz.ComputeTask.doTask.given_262_11.apply0_263_29[node-function]"
+      },
+      {
+        "name": "@foo.baz.ComputeTask.doTask.given_253_11"
+      },
+      {
+        "name": "@foo.baz.ComputeTask.doTask.given_253_11.apply0_255_27[node-function]"
+      },
+      {
+        "name": "@foo.baz.ComputeTask.doTask.given_253_11.apply0_254_29[node-function]"
+      }
+    ]
+  },
+  "profiles": [
+    {
+      "type": "sampled",
+      "name": "CalcResultBatchingPlugin$, BAS:5m21s, REG:7m40s (+43%)",
+      "unit": "nanoseconds",
+      "startValue": 0,
+      "endValue": 100,
+      "samples": [
+        [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          20,
+          21,
+          22,
+          23,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          24,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ],
+        [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          20,
+          21,
+          22,
+          32,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          24,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ],
+        [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          20,
+          33,
+          22,
+          34,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          24,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ],
+        [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          20,
+          33,
+          22,
+          35,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          24,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ]
+      ],
+      "weights": [
+        193475000000,
+        127965000000,
+        0,
+        0
+      ],
+      "regWeights": [
+        0,
+        0,
+        416374000000,
+        44093000000
+      ]
+    }
+  ]
+}

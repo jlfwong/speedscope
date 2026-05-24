@@ -5,11 +5,11 @@ import {Rect, Vec2, AffineTransform, clamp} from '../lib/math'
 import {FlamechartRenderer} from '../gl/flamechart-renderer'
 import {getFlamechartStyle} from './flamechart-style'
 import {FontFamily, FontSize, Sizes, commonStyle} from './style'
-import {CanvasContext} from '../gl/canvas-context'
+import {CanvasContext, getWH} from '../gl/canvas-context'
 import {cachedMeasureTextWidth} from '../lib/text-utils'
 import {Color} from '../lib/color'
 import {Theme} from './themes/theme'
-import {minimapMousePositionAtom} from '../app-state'
+import { getSpeedscopeWindow } from '../widgetUtils'
 
 interface FlamechartMinimapViewProps {
   theme: Theme
@@ -19,6 +19,7 @@ interface FlamechartMinimapViewProps {
 
   canvasContext: CanvasContext
   flamechartRenderer: FlamechartRenderer
+  diffMode: boolean
 
   transformViewport: (transform: AffineTransform) => void
   setConfigSpaceViewportRect: (rect: Rect) => void
@@ -75,7 +76,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
 
   private windowToLogicalViewSpace() {
     if (!this.container) return new AffineTransform()
-    const bounds = this.container.getBoundingClientRect()
+    const bounds = getWH(this.container)
     return AffineTransform.withTranslation(new Vec2(-bounds.left, -bounds.top))
   }
 
@@ -93,6 +94,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
           this.physicalViewSize().minus(this.minimapOrigin()),
         ),
         renderOutlines: false,
+        diffMode: this.props.diffMode,
       })
 
       this.props.canvasContext.viewportRectangleRenderer.render({
@@ -194,7 +196,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
 
   private resizeOverlayCanvasIfNeeded() {
     if (!this.overlayCanvas) return
-    let {width, height} = this.overlayCanvas.getBoundingClientRect()
+    let {width, height} = getWH(this.overlayCanvas)
     {
       /*
       We render text at a higher resolution then scale down to
@@ -222,7 +224,7 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     this.maybeClearInteractionLock()
     this.resizeOverlayCanvasIfNeeded()
     this.renderRects()
-    this.renderOverlays()
+   // this.renderOverlays()
   }
 
   private renderCanvas = () => {
@@ -377,34 +379,33 @@ export class FlamechartMinimapView extends Component<FlamechartMinimapViewProps,
     }
   }
 
+
+  spWindow = getSpeedscopeWindow()
+
   private updateCursor = (configSpaceMouse: Vec2) => {
     if (this.draggingMode === DraggingMode.TRANSLATE_VIEWPORT) {
-      document.body.style.cursor = 'grabbing'
-      document.body.style.cursor = '-webkit-grabbing'
+      this.spWindow.style.cursor = 'grabbing'
+      this.spWindow.style.cursor = '-webkit-grabbing'
     } else if (this.draggingMode === DraggingMode.DRAW_NEW_VIEWPORT) {
-      document.body.style.cursor = 'col-resize'
+      this.spWindow.style.cursor = 'col-resize'
     } else if (this.props.configSpaceViewportRect.contains(configSpaceMouse)) {
-      document.body.style.cursor = 'grab'
-      document.body.style.cursor = '-webkit-grab'
+      this.spWindow.style.cursor = 'grab'
+      this.spWindow.style.cursor = '-webkit-grab'
     } else {
-      document.body.style.cursor = 'col-resize'
+      this.spWindow.style.cursor = 'col-resize'
     }
   }
 
   private onMouseLeave = () => {
     if (this.draggingMode == null) {
-      document.body.style.cursor = 'default'
+      this.spWindow.style.cursor = 'default'
     }
-    // Clear the minimap mouse position when leaving the minimap
-    minimapMousePositionAtom.set(null)
   }
 
   private onMouseMove = (ev: MouseEvent) => {
     const configSpaceMouse = this.configSpaceMouse(ev)
     if (!configSpaceMouse) return
     this.updateCursor(configSpaceMouse)
-    // Update the global minimap mouse position for zoom origin
-    minimapMousePositionAtom.set(configSpaceMouse)
   }
 
   private onWindowMouseUp = (ev: MouseEvent) => {

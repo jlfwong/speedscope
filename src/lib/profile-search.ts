@@ -1,6 +1,7 @@
 import {Profile, Frame, CallTreeNode} from './profile'
 import {Flamechart, FlamechartFrame} from './flamechart'
 import {Rect, Vec2} from './math'
+import { ViewMode } from './view-mode'
 
 export enum FlamechartType {
   CHRONO_FLAME_CHART,
@@ -41,19 +42,46 @@ export function exactMatchStrings(text: string, pattern: string): [number, numbe
 export class ProfileSearchResults {
   constructor(
     readonly profile: Profile,
-    readonly searchQuery: string,
+    readonly searchQueryFromInputBox: string,
+    readonly selectedRowName: string | undefined,
+    readonly currentMode: ViewMode
   ) {}
 
   private matches: Map<Frame, [number, number][] | null> | null = null
-  getMatchForFrame(frame: Frame): [number, number][] | null {
+
+  cleanUpMatches() {this.matches = new Map()}
+
+  getMatchFromInputBoxForFrame(frame: Frame): [number, number][] | null {
     if (!this.matches) {
       this.matches = new Map()
       this.profile.forEachFrame(frame => {
-        const match = exactMatchStrings(frame.name, this.searchQuery)
+        const match = exactMatchStrings(frame.name, this.searchQueryFromInputBox)
         this.matches!.set(frame, match.length === 0 ? null : match)
       })
     }
     return this.matches.get(frame) || null
+  }
+
+  getMatchForFrame(frame: Frame, fromPanZoom: boolean = false): [number, number][] | null {
+    const fromTableSelect = !!this.selectedRowName
+    const isNonSandwichTableRowSelected = this.currentMode !== ViewMode.SANDWICH_VIEW && fromTableSelect
+    if (!this.matches) {
+      this.matches = new Map()
+      const query = isNonSandwichTableRowSelected ? this.selectedRowName! : this.searchQueryFromInputBox
+
+      this.profile.forEachFrame(frame => {
+        const match = !isNonSandwichTableRowSelected ? exactMatchStrings(frame.name, query) :
+          frame.name === this.selectedRowName 
+          ? Array<[number, number]>([0, frame.name.length]) 
+          : [];
+        this.matches!.set(frame, match.length === 0 ? null : match)
+      })
+    }
+    if(fromPanZoom)
+      return isNonSandwichTableRowSelected ? 
+        this.selectedRowName === frame.name ? this.matches.get(frame) || null : null 
+        : this.matches.get(frame) || null;
+    else return this.matches.get(frame) || null
   }
 }
 
@@ -80,7 +108,7 @@ export class FlamechartSearchResults {
       const indexForNode = new Map<CallTreeNode, number>()
       const visit = (frame: FlamechartFrame, depth: number) => {
         const {node} = frame
-        if (this.profileResults.getMatchForFrame(node.frame)) {
+        if (this.profileResults.getMatchForFrame(node.frame, true)) {
           const configSpaceBounds = new Rect(
             new Vec2(frame.start, depth),
             new Vec2(frame.end - frame.start, 1),

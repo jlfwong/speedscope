@@ -1,3 +1,4 @@
+import {diffModeAtom, profileGroupAtom, selectedFrameNameAtom} from '.'
 import {Atom} from '../lib/atom'
 import {clamp, Rect, Vec2} from '../lib/math'
 import {CallTreeNode, Frame, Profile, ProfileGroup} from '../lib/profile'
@@ -9,6 +10,7 @@ export interface FlamechartViewState {
     event: MouseEvent
   } | null
   selectedNode: CallTreeNode | null
+  selectedFrameName: string | null
   logicalSpaceViewportSize: Vec2
   configSpaceViewportRect: Rect
 }
@@ -17,6 +19,8 @@ export interface CallerCalleeState {
   selectedFrame: Frame
   invertedCallerFlamegraph: FlamechartViewState
   calleeFlamegraph: FlamechartViewState
+  invertedCallerFlamegraphReg: FlamechartViewState
+  calleeFlamegraphReg: FlamechartViewState
 }
 
 export interface SandwichViewState {
@@ -27,6 +31,7 @@ export interface ProfileState {
   profile: Profile
   chronoViewState: FlamechartViewState
   leftHeavyViewState: FlamechartViewState
+  leftHeavyViewStateReg: FlamechartViewState
   sandwichViewState: SandwichViewState
 }
 
@@ -41,14 +46,18 @@ export type ProfileGroupState = {
 
 export enum FlamechartID {
   LEFT_HEAVY = 'LEFT_HEAVY',
+  LEFT_HEAVY_REG = 'LEFT_HEAVY_REG',
   CHRONO = 'CHRONO',
   SANDWICH_INVERTED_CALLERS = 'SANDWICH_INVERTED_CALLERS',
   SANDWICH_CALLEES = 'SANDWICH_CALLEES',
+  SANDWICH_INVERTED_CALLERS_REG = 'SANDWICH_INVERTED_CALLERS_REG',
+  SANDWICH_CALLEES_REG = 'SANDWICH_CALLEES_REG',
 }
 
 let initialFlameChartViewState: FlamechartViewState = {
   hover: null,
   selectedNode: null,
+  selectedFrameName: null,
   configSpaceViewportRect: Rect.empty,
   logicalSpaceViewportSize: Vec2.zero,
 }
@@ -75,9 +84,17 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
         profile: p,
         chronoViewState: initialFlameChartViewState,
         leftHeavyViewState: initialFlameChartViewState,
+        leftHeavyViewStateReg: initialFlameChartViewState,
         sandwichViewState: {callerCallee: null},
       })),
     })
+    // Enable diff mode by default when profile has diff data, disable otherwise
+    const activeProfile = group.profiles[group.indexToView]
+    if (activeProfile?.hasDiffData()) {
+      diffModeAtom.set(true)
+    } else {
+      diffModeAtom.set(false)
+    }
   }
 
   setProfileIndexToView = (indexToView: number) => {
@@ -114,12 +131,9 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
 
   setSelectedFrame = (frame: Frame | null) => {
     if (this.state == null) return
-
     const profile = this.getActiveProfile()
-    if (profile == null) {
-      return
-    }
-
+    if (profile == null) return
+    
     this.updateActiveSandwichViewState(sandwichViewState => {
       if (frame == null) {
         return {callerCallee: null}
@@ -128,10 +142,17 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
         callerCallee: {
           invertedCallerFlamegraph: initialFlameChartViewState,
           calleeFlamegraph: initialFlameChartViewState,
+          invertedCallerFlamegraphReg: initialFlameChartViewState,
+          calleeFlamegraphReg: initialFlameChartViewState,
           selectedFrame: frame,
         },
       }
     })
+  }
+
+  getSelectedNode(): CallTreeNode | null {
+    const profile = this.getActiveProfile()
+     return profile ? profile.leftHeavyViewState.selectedNode : null
   }
 
   private updateFlamechartState(
@@ -151,6 +172,14 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
         this.updateActiveProfileState(p => ({
           ...p,
           leftHeavyViewState: fn(p.leftHeavyViewState),
+        }))
+        break
+      }
+
+      case FlamechartID.LEFT_HEAVY_REG: {
+        this.updateActiveProfileState(p => ({
+          ...p,
+          leftHeavyViewStateReg: fn(p.leftHeavyViewStateReg),
         }))
         break
       }
@@ -182,6 +211,34 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
         }))
         break
       }
+
+      case FlamechartID.SANDWICH_CALLEES_REG: {
+        this.updateActiveSandwichViewState(s => ({
+          ...s,
+          callerCallee:
+                  s.callerCallee == null
+                          ? null
+                          : {
+                            ...s.callerCallee,
+                            calleeFlamegraphReg: fn(s.callerCallee.calleeFlamegraphReg),
+                          },
+        }))
+        break
+      }
+
+      case FlamechartID.SANDWICH_INVERTED_CALLERS_REG: {
+        this.updateActiveSandwichViewState(s => ({
+          ...s,
+          callerCallee:
+                  s.callerCallee == null
+                          ? null
+                          : {
+                            ...s.callerCallee,
+                            invertedCallerFlamegraphReg: fn(s.callerCallee.invertedCallerFlamegraphReg),
+                          },
+        }))
+        break
+      }
     }
   }
 
@@ -200,6 +257,30 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
       ...f,
       selectedNode,
     }))
+  }
+
+  setSelectedFrameName(selectedFrameName: string | null) {
+    selectedFrameName ? selectedFrameNameAtom.set(selectedFrameName) : selectedFrameNameAtom.set('')
+    const ids = Array(FlamechartID.CHRONO, FlamechartID.LEFT_HEAVY)
+    ids.forEach(id => this.updateFlamechartState(id, f => ({
+        ...f,
+        selectedFrameName,
+      }))
+    )
+  }
+
+  setSelectedFrameByApi(selectedFrameName: string) {
+    const curProfileState = this.getActiveProfile()
+    if(curProfileState && curProfileState.leftHeavyViewState.selectedFrameName != selectedFrameName){
+      if(selectedFrameName.length < 1) this.setSelectedFrame(null)
+      else {
+        const searchFrame = curProfileState.profile.getFrameByName(selectedFrameName)
+        if(searchFrame){          
+          this.setSelectedFrame(searchFrame)
+        }
+      }
+      this.setSelectedFrameName(selectedFrameName)
+    }
   }
 
   setConfigSpaceViewportRect(id: FlamechartID, configSpaceViewportRect: Rect) {
@@ -221,7 +302,10 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
     // fine, since I hope that Preact/React are smart about batching re-renders?
     this.setFlamechartHoveredNode(FlamechartID.CHRONO, null)
     this.setFlamechartHoveredNode(FlamechartID.LEFT_HEAVY, null)
+    this.setFlamechartHoveredNode(FlamechartID.LEFT_HEAVY_REG, null)
     this.setFlamechartHoveredNode(FlamechartID.SANDWICH_CALLEES, null)
     this.setFlamechartHoveredNode(FlamechartID.SANDWICH_INVERTED_CALLERS, null)
+    this.setFlamechartHoveredNode(FlamechartID.SANDWICH_CALLEES_REG, null)
+    this.setFlamechartHoveredNode(FlamechartID.SANDWICH_INVERTED_CALLERS_REG, null)
   }
 }

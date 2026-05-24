@@ -9,11 +9,13 @@ import {
 } from './profile'
 import {TimeFormatter, ByteFormatter, RawValueFormatter} from './value-formatters'
 import {FileFormat} from './file-format-spec'
+import {speedscopeWindow} from '../widgetUtils'
 
 export function exportProfileGroup(profileGroup: ProfileGroup): FileFormat.File {
   const frames: FileFormat.Frame[] = []
 
   const indexForFrame = new Map<Frame, number>()
+
   function getIndexForFrame(frame: Frame): number {
     let index = indexForFrame.get(frame)
     if (index == null) {
@@ -73,9 +75,15 @@ function exportProfile(profile: Profile, getIndexForFrame: (frame: Frame) => num
   return eventedProfile
 }
 
+export interface ImportOptions {
+  diffInverted?: boolean
+  diffNormalized?: boolean
+}
+
 function importSpeedscopeProfile(
-  serialized: FileFormat.Profile,
-  frames: FileFormat.Frame[],
+        serialized: FileFormat.Profile,
+        frames: FileFormat.Frame[],
+        options: ImportOptions = {},
 ): Profile {
   function setCommonProperties(p: Profile) {
     const {name, unit} = serialized
@@ -123,7 +131,7 @@ function importSpeedscopeProfile(
   }
 
   function importSampledProfile(sampled: FileFormat.SampledProfile) {
-    const {startValue, endValue, samples, weights} = sampled
+    const {startValue, endValue, samples, weights, regWeights} = sampled
     const profile = new StackListProfileBuilder(endValue - startValue)
     setCommonProperties(profile)
 
@@ -131,20 +139,46 @@ function importSpeedscopeProfile(
 
     if (samples.length !== weights.length) {
       throw new Error(
-        `Expected samples.length (${samples.length}) to equal weights.length (${weights.length})`,
+              `Expected samples.length (${samples.length}) to equal weights.length (${weights.length})`,
       )
+    }
+
+    const hasRegWeights = regWeights && regWeights.length === weights.length
+
+    // Calculate normalization scale factor if normalization is enabled
+    // We scale regWeights to match the total of weights (baseline)
+    let regScaleFactor = 1.0
+    if (options.diffNormalized && hasRegWeights) {
+      const totalBas = weights.reduce((sum, w) => sum + w, 0)
+      const totalReg = regWeights.reduce((sum, w) => sum + w, 0)
+      if (totalReg > 0) {
+        regScaleFactor = totalBas / totalReg
+      }
     }
 
     for (let i = 0; i < samples.length; i++) {
       const stack = samples[i]
-      const weight = weights[i]
+      const basWeight = weights[i]
+      const rawRegWeight = hasRegWeights ? regWeights[i] : 0
+      // Apply normalization scale to regression weights
+      const scaledRegWeight = options.diffNormalized ? rawRegWeight * regScaleFactor : rawRegWeight
+
       profile.appendSampleWithWeight(
-        stack.map(n => frameInfos[n]),
-        weight,
+              stack.map(n => frameInfos[n]),
+              basWeight,
+              scaledRegWeight,
       )
     }
 
-    return profile.build()
+    const builtProfile = profile.build()
+    if (options.diffInverted) {
+      builtProfile.setInverted(true)
+    }
+    if (hasRegWeights) {
+      const rawRegTotal = regWeights.reduce((sum, w) => sum + w, 0)
+      builtProfile.setRawRegTotalWeight(rawRegTotal)
+    }
+    return builtProfile
   }
 
   switch (serialized.type) {
@@ -155,11 +189,11 @@ function importSpeedscopeProfile(
   }
 }
 
-export function importSpeedscopeProfiles(serialized: FileFormat.File): ProfileGroup {
+export function importSpeedscopeProfiles(serialized: FileFormat.File, options: ImportOptions = {}): ProfileGroup {
   return {
     name: serialized.name || serialized.profiles[0].name || 'profile',
     indexToView: serialized.activeProfileIndex || 0,
-    profiles: serialized.profiles.map(p => importSpeedscopeProfile(p, serialized.shared.frames)),
+    profiles: serialized.profiles.map(p => importSpeedscopeProfile(p, serialized.shared.frames, options)),
   }
 }
 
@@ -178,7 +212,7 @@ export function saveToFile(profileGroup: ProfileGroup): void {
   a.dataset.downloadurl = ['text/json', a.download, a.href].join(':')
 
   // For this to work in Firefox, the <a> must be in the DOM
-  document.body.appendChild(a)
+  speedscopeWindow?.appendChild(a)
   a.click()
-  document.body.removeChild(a)
+  speedscopeWindow?.removeChild(a)
 }

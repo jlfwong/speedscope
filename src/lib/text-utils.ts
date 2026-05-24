@@ -18,13 +18,12 @@ export function cachedMeasureTextWidth(ctx: CanvasRenderingContext2D, text: stri
   return measureTextCache.get(text)!
 }
 
-interface TrimmedTextResult {
+export interface TrimmedTextResult {
   trimmedString: string
   trimmedLength: number
   prefixLength: number
   suffixLength: number
   originalLength: number
-  originalString: string
 }
 
 // Trim text, placing an ellipsis in the middle, with a slight bias towards
@@ -36,7 +35,6 @@ export function buildTrimmedText(text: string, length: number): TrimmedTextResul
       trimmedLength: text.length,
       prefixLength: text.length,
       suffixLength: 0,
-      originalString: text,
       originalLength: text.length,
     }
   }
@@ -45,19 +43,18 @@ export function buildTrimmedText(text: string, length: number): TrimmedTextResul
   const suffixLength = length - prefixLength - 1
   const prefix = text.substring(0, prefixLength)
   const suffix = text.substring(text.length - suffixLength, text.length)
-  const trimmedString = prefix + ELLIPSIS + suffix
+  const trimmedString = text.substring(0, length)
   return {
     trimmedString,
     trimmedLength: trimmedString.length,
     prefixLength: prefix.length,
     suffixLength: suffix.length,
-    originalString: text,
     originalLength: text.length,
   }
 }
 
 // Trim text to fit within the given number of pixels on the canvas
-export function trimTextMid(
+export function trimTextEnd(
   ctx: CanvasRenderingContext2D,
   text: string,
   maxWidth: number,

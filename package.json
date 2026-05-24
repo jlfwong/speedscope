@@ -1,50 +1,56 @@
 {
-  "name": "speedscope",
-  "version": "1.25.0",
-  "description": "",
-  "repository": "jlfwong/speedscope",
-  "main": "index.js",
+  "name": "speedscope-widget",
+  "version": "1.0.0",
+  "description": "Embeddable flamegraph widget based on speedscope",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TLin-Y/speedscope-widget.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TLin-Y/speedscope-widget/issues"
+  },
+  "homepage": "https://github.com/TLin-Y/speedscope-widget#readme",
+  "main": "dist/speedscopeWidget.js",
+  "module": "dist/speedscopeWidget.js",
   "bin": {
     "speedscope": "./bin/cli.mjs"
   },
   "scripts": {
-    "deploy": "./scripts/deploy.sh",
-    "prepack": "./scripts/prepack.sh --outdir \"$(pwd)/dist/release\" --protocol file",
-    "prettier": "prettier --write 'src/**/*.ts' 'src/**/*.tsx'",
-    "lint": "eslint 'src/**/*.ts' 'src/**/*.tsx'",
-    "jest": "./scripts/test-setup.sh && jest --runInBand",
-    "coverage": "npm run jest -- --coverage",
-    "typecheck": "tsc --noEmit",
-    "test": "./scripts/ci.sh",
-    "serve": "tsx scripts/dev-server.ts"
+    "lint": "eslint src",
+    "build": "rm -rf dist && esbuild src/speedscopeWidget.ts --outdir=dist --format=esm --platform=browser --bundle --splitting --chunk-names=libs/[name]-[hash] --loader:.wasm=binary",
+    "test": "rm -rf dist && esbuild src/widgetApiLocalTestMain.ts --outdir=dist --format=esm --platform=browser --bundle --splitting --chunk-names=libs/[name]-[hash] --loader:.wasm=binary",
+    "local": "npx serve -l 64906 && npm run test",
+    "update-standalone": "rm -rf dist && esbuild src/widgetUtils.tsx --outdir=dist --format=esm --platform=browser --bundle --loader:.wasm=binary && node scripts/standaloneTest.js",
+    "build-standalone": "rm -rf dist/standalone && esbuild src/widget.tsx --outdir=dist/standalone --format=esm --platform=browser --bundle --loader:.wasm=binary && node scripts/standalone.js",
+    "build-demo": "rm -rf dist && esbuild src/widgetUtils.tsx --outdir=dist --format=esm --platform=browser --bundle --loader:.wasm=binary && node scripts/build-demo.js",
+    "prepublishOnly": "npm run build",
+    "publish-widget": "node scripts/publish-widget.mjs"
   },
   "files": [
+    "dist/speedscopeWidget.js",
+    "dist/speedscopeWidget.css",
+    "dist/libs/**",
     "bin/cli.mjs",
-    "dist/release/**",
-    "!*.map"
+    "README-WIDGET.md"
   ],
   "browserslist": [
     "last 2 Chrome versions",
     "last 2 Firefox versions"
   ],
-  "author": "",
+  "author": "TLin-Y",
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "22.2.3",
     "@types/jszip": "3.1.4",
     "@types/node": "14.0.1",
     "@types/pako": "1.0.0",
-    "@typescript-eslint/eslint-plugin": "6.16.0",
-    "@typescript-eslint/parser": "6.16.0",
+    "@typescript-eslint/eslint-plugin": "^8.39.1",
+    "@typescript-eslint/parser": "^8.39.1",
     "acorn": "7.2.0",
     "aphrodite": "2.1.0",
-    "esbuild": "0.27.0",
-    "esbuild-jest": "0.5.0",
-    "eslint": "8.0.0",
-    "eslint-plugin-prettier": "5.1.2",
-    "eslint-plugin-react-hooks": "4.6.0",
-    "jest": "30.2.0",
-    "jest-environment-jsdom": "29.7.0",
+    "esbuild": "^0.25.8",
+    "eslint": "^8.57.1",
+    "jest": "24.3.0",
     "jfrview": "0.2.0",
     "jsverify": "0.8.3",
     "jszip": "3.1.5",
@@ -53,31 +59,28 @@
     "prettier": "3.1.1",
     "protobufjs": "6.8.8",
     "source-map": "0.6.1",
-    "ts-jest": "29.4.6",
+    "ts-jest": "24.3.0",
     "tsx": "4.19.2",
-    "typescript": "5.9.3",
-    "typescript-json-schema": "0.67.0",
+    "typescript": "5.3.3",
+    "typescript-json-schema": "0.42.0",
     "uglify-es": "3.2.2",
     "uint8array-json-parser": "0.0.2"
   },
   "jest": {
-    "testEnvironment": "jsdom",
     "transform": {
-      "^.+\\.tsx?$": "ts-jest",
-      "^.+\\.js$": "esbuild-jest"
+      "^.+\\.tsx?$": "ts-jest"
     },
-    "transformIgnorePatterns": [],
     "setupFilesAfterEnv": [
       "./src/jest-setup.js"
     ],
-    "moduleNameMapper": {
-      "\\jfrview_bg.wasm$": "<rootDir>/src/import/java-flight-record.mock.ts"
-    },
     "testRegex": "\\.test\\.tsx?$",
     "collectCoverageFrom": [
       "**/*.{ts,tsx}",
       "!**/*.d.{ts,tsx}"
     ],
+    "moduleNameMapper": {
+      "\\jfrview_bg.wasm$": "<rootDir>/src/import/java-flight-record.mock.ts"
+    },
     "moduleFileExtensions": [
       "ts",
       "tsx",

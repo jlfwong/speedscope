@@ -109,15 +109,18 @@ export namespace FileFormat {
     // The weight of the sample at the given index. Should have
     // the same length as the samples array.
     weights: number[]
+
+    // The weight of the Reg sample, for differential flamegraph
+    regWeights: number[]
   }
 
   export type ValueUnit =
-    | 'none'
-    | 'nanoseconds'
-    | 'microseconds'
-    | 'milliseconds'
-    | 'seconds'
-    | 'bytes'
+          | 'none'
+          | 'nanoseconds'
+          | 'microseconds'
+          | 'milliseconds'
+          | 'seconds'
+          | 'bytes'
 
   export enum EventType {
     OPEN_FRAME = 'O',

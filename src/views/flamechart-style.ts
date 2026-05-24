@@ -21,12 +21,11 @@ export const getFlamechartStyle = withTheme(theme =>
     panZoomView: {
       flex: 1,
     },
-
     detailView: {
       display: 'grid',
       height: Sizes.DETAIL_VIEW_HEIGHT,
       overflow: 'hidden',
-      gridTemplateColumns: '120px 120px 1fr',
+      gridTemplateColumns: '100px 100px 1fr',
       gridTemplateRows: 'repeat(4, 1fr)',
       borderTop: `${Sizes.SEPARATOR_HEIGHT}px solid ${theme.fgSecondaryColor}`,
       fontSize: FontSize.LABEL,

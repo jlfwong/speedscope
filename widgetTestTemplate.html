@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <script type="module" src="/dist/widgetApiLocalTestMain.js"></script>
+    <title>Speedscope Widget</title>
+    <style>
+        body, html {
+          height: 100%;
+          margin: 0;
+          overflow: hidden;
+        }
+        speedscope-widget {
+          display: block;
+          height: 70vh;
+          width: 100vw;
+          line-height: 0;
+        }
+        input[type="text"] { width: 200px; }
+    </style>
+</head>
+<body>
+<div id="homepage">
+    <div id="menu">
+        fake menu bar placeholder<br>
+        <input id="q" type="text" placeholder="search query"/>
+        <button id="search">search</button>
+        <input id="f" type="text" placeholder="select frame"/>
+        <button id="frame">selectFrame</button>
+        <button id="reload">reload</button>
+        <button id="reloadError">tryError</button>
+        <button id="reloadEmpty">tryEmpty</button>
+        <button id="reloadDiff">tryDiff</button>
+        <button id="minimap">minimap</button>
+        <button id="table">table</button>
+    </div>
+    <div id="timetable">
+        fake time series table placeholder<br>
+        line1<br>
+        line2<br>
+        line3<br>
+        line4<br>
+        line5<br>
+        line6<br>
+        line7<br>
+        line8<br>
+    </div>
+    <div id="widget"></div>
+</div>
+</body>
+</html>

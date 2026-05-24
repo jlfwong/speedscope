@@ -11,7 +11,7 @@ import {importFromStackprof} from './stackprof'
 import {importFromInstrumentsDeepCopy, importFromInstrumentsTrace} from './instruments'
 import {importFromBGFlameGraph} from './bg-flamegraph'
 import {importFromFirefox} from './firefox'
-import {importSpeedscopeProfiles} from '../lib/file-format'
+import {importSpeedscopeProfiles, ImportOptions} from '../lib/file-format'
 import {importFromV8ProfLog} from './v8proflog'
 import {importFromLinuxPerf} from './linux-tools-perf'
 import {importFromHaskell} from './haskell'
@@ -25,6 +25,7 @@ import {importFromCallgrind} from './callgrind'
 import {importFromPapyrus} from './papyrus'
 import {importFromPMCStatCallGraph} from './pmcstat-callgraph'
 import {importFromJfr, isJfrRecording} from './java-flight-recorder'
+import {disposeProfileAtom, diffNormalizedAtom} from '../app-state'
 
 export async function importProfileGroupFromText(
   fileName: string,
@@ -38,10 +39,7 @@ export async function importProfileGroupFromBase64(
   b64contents: string,
 ): Promise<ProfileGroup | null> {
   return await importProfileGroup(
-    MaybeCompressedDataReader.fromArrayBuffer(
-      fileName,
-      decodeBase64(b64contents).buffer as ArrayBuffer,
-    ),
+    MaybeCompressedDataReader.fromArrayBuffer(fileName, decodeBase64(b64contents).buffer),
   )
 }
 
@@ -57,6 +55,7 @@ export async function importProfilesFromArrayBuffer(
 }
 
 async function importProfileGroup(dataSource: ProfileDataSource): Promise<ProfileGroup | null> {
+  disposeProfileAtom()
   const fileName = await dataSource.name()
 
   const profileGroup = await _importProfileGroup(dataSource)
@@ -95,9 +94,10 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
   const contents = await dataSource.readAsText()
 
   // First pass: Check known file format names to infer the file type
+  const defaultImportOptions: ImportOptions = {diffNormalized: diffNormalizedAtom.get()}
   if (fileName.endsWith('.speedscope.json')) {
     console.log('Importing as speedscope json file')
-    return importSpeedscopeProfiles(contents.parseAsJSON())
+    return importSpeedscopeProfiles(contents.parseAsJSON(), defaultImportOptions)
   } else if (/Trace-\d{8}T\d{6}/.exec(fileName)) {
     console.log('Importing as Chrome Timeline Object')
     return importFromChromeTimeline(contents.parseAsJSON().traceEvents, fileName)
@@ -144,7 +144,7 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
   if (parsed) {
     if (parsed['$schema'] === 'https://www.speedscope.app/file-format-schema.json') {
       console.log('Importing as speedscope json file')
-      return importSpeedscopeProfiles(parsed)
+      return importSpeedscopeProfiles(parsed, defaultImportOptions)
     } else if (parsed['systemHost'] && parsed['systemHost']['name'] == 'Firefox') {
       console.log('Importing as Firefox profile')
       return toGroup(importFromFirefox(parsed))
@@ -234,4 +234,17 @@ async function _importProfileGroup(dataSource: ProfileDataSource): Promise<Profi
 
 export async function importFromFileSystemDirectoryEntry(entry: FileSystemDirectoryEntry) {
   return importFromInstrumentsTrace(entry)
+}
+
+// Import speedscope JSON with options (e.g., diffNormalized)
+export function importSpeedscopeJsonWithOptions(jsonString: string, options: ImportOptions = {}): ProfileGroup | null {
+  try {
+    const parsed = JSON.parse(jsonString)
+    if (parsed['$schema'] === 'https://www.speedscope.app/file-format-schema.json') {
+      return importSpeedscopeProfiles(parsed, options)
+    }
+  } catch (e) {
+    console.error('Failed to parse speedscope JSON', e)
+  }
+  return null
 }

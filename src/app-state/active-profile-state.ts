@@ -11,6 +11,7 @@ export interface ActiveProfileState {
   index: number
   chronoViewState: FlamechartViewState
   leftHeavyViewState: FlamechartViewState
+  leftHeavyViewStateReg: FlamechartViewState
   sandwichViewState: SandwichViewState
 }
 

@@ -1,18 +1,20 @@
 import {StyleSheet} from 'aphrodite'
 
 export enum FontFamily {
-  MONOSPACE = '"Source Code Pro", Courier, monospace',
+  MONOSPACE = 'Arial, sans-serif, Courier, monospace',
+  FRAME = 'Inter, sans-serif',
 }
 
 export enum FontSize {
-  LABEL = 10,
-  TITLE = 12,
+  SEARCH_BAR = 13,
+  LABEL = 12,
+  TITLE = 13,
   BIG_BUTTON = 36,
 }
 
 export enum Sizes {
-  MINIMAP_HEIGHT = 100,
-  DETAIL_VIEW_HEIGHT = 150,
+  MINIMAP_HEIGHT = 80,
+  DETAIL_VIEW_HEIGHT = 100,
   TOOLTIP_WIDTH_MAX = 900,
   TOOLTIP_HEIGHT_MAX = 80,
   SEPARATOR_HEIGHT = 2,
@@ -26,8 +28,13 @@ export enum Duration {
 }
 
 export enum ZIndex {
-  PROFILE_SELECT = 1,
-  HOVERTIP = 2,
+  GRAPH = 0,
+  TABLE = 1,
+  TOOLBAR = 2,
+  PROFILE_SELECT = 3,
+  HOVERTIP = 4,
+  MENU = 9998,
+  INFO = 9999,
 }
 
 export const commonStyle = StyleSheet.create({

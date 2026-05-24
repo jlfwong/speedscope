@@ -2,21 +2,72 @@ import {Atom} from '../lib/atom'
 import {ViewMode} from '../lib/view-mode'
 import {getHashParams, HashParams} from '../lib/hash-params'
 import {ProfileGroupAtom} from './profile-group'
-import {Vec2} from '../lib/math'
+import {TimeFormatter} from '../lib/value-formatters'
+
+export const defaultFormatter = new TimeFormatter('nanoseconds')
+
+export const copiedUrlAtom = new Atom<string>('', 'copiedUrlAtom')
+
+export const selectedFrameNameAtom = new Atom<string>('', 'selectedFrameName')
+
+export const initSearchIndexAtom = new Atom<number>(-1, 'initSearchIndex')
+export const selectedSearchIndexAtom = new Atom<number>(0, 'selectedSearchIndex')
+
+// Atom to hold special frame -> colorIndex overrides mapping
+export const frameColorOverridesAtom = new Atom<Record<string, number>>({
+  total: 5,
+  App: 1,
+  GC: 12,
+  Compiler: 16,
+}, 'frameColorOverrides');
 
 // True if recursion should be flattened when viewing flamegraphs
 export const flattenRecursionAtom = new Atom<boolean>(false, 'flattenRecursion')
+
+// True if diff mode should be used for flamegraph coloring (red/blue differential)
+export const diffModeAtom = new Atom<boolean>(false, 'diffMode')
+
+// Diff view modes for differential flamegraph
+export enum DiffViewMode {
+  // Flamegraph structure based on Baseline
+  BAS = 'bas',
+  // Flamegraph structure based on Regression
+  REG = 'reg',
+  // Both: BAS and REG flamegraphs displayed side by side
+  BOTH = 'both',
+}
+
+// Current diff view mode
+export const diffViewModeAtom = new Atom<DiffViewMode>(DiffViewMode.BOTH, 'diffViewMode')
+
+// True if samples should be normalized between profiles in diff mode
+// When enabled, scales weights so both profiles have the same total samples
+export const diffNormalizedAtom = new Atom<boolean>(true, 'diffNormalized')
+
+// Cache the original JSON data to allow reloading with inverted weights
+export const cachedJsonDataAtom = new Atom<string>('', 'cachedJsonData')
+
+// True if the dragable minimap should be displayed by default
+export const displayMinimapAtom = new Atom<boolean>(false, 'displayMinimap')
+
+// Allow speedscope subsriber do something when user right clicked a frame
+export const moreInformationFrameAtom = new Atom<string>('', 'moreInformationFrame')
+
+// True to display LHS table
+export const displayTableAtom = new Atom<boolean>(true, 'displayTable')
+export const scrollToAtom = new Atom<boolean>(false, 'scrollTo')
+export const reverseFlamegraphAtom = new Atom<boolean>(false, 'reverse')
 
 // The query used in top-level views
 //
 // An empty string indicates that the search is open by no filter is applied.
 // searchIsActive is stored separately, because we may choose to persist the
 // query even when the search input is closed.
-export const searchIsActiveAtom = new Atom<boolean>(false, 'searchIsActive')
+export const searchIsActiveAtom = new Atom<boolean>(true, 'searchIsActive')
 export const searchQueryAtom = new Atom<string>('', 'searchQueryAtom')
 
 // Which top-level view should be displayed
-export const viewModeAtom = new Atom<ViewMode>(ViewMode.CHRONO_FLAME_CHART, 'viewMode')
+export const viewModeAtom = new Atom<ViewMode>(ViewMode.LEFT_HEAVY_FLAME_GRAPH, 'viewMode')
 
 // The top-level profile group from which most other data will be derived
 export const profileGroupAtom = new ProfileGroupAtom(null, 'profileGroup')
@@ -52,13 +103,12 @@ export const loadingAtom = new Atom<boolean>(isImmediatelyLoading, 'loading')
 // imported was invalid.
 export const errorAtom = new Atom<boolean>(false, 'error')
 
-// Minimap mouse position so we can zoom around mouse origin relative to minimap
-export const minimapMousePositionAtom = new Atom<Vec2 | null>(null, 'minimapMousePosition')
-
 export enum SortField {
   SYMBOL_NAME,
   SELF,
   TOTAL,
+  COUNT,
+  DIFF
 }
 
 export enum SortDirection {
@@ -74,9 +124,17 @@ export interface SortMethod {
 // The table sorting method using for the sandwich view, specifying the column
 // to sort by, and the direction to sort that clumn.
 export const tableSortMethodAtom = new Atom<SortMethod>(
-  {
-    field: SortField.SELF,
-    direction: SortDirection.DESCENDING,
-  },
-  'tableSortMethod',
+        {
+          field: SortField.TOTAL,
+          direction: SortDirection.DESCENDING,
+        },
+        'tableSortMethod',
 )
+
+// True if name column should be right-aligned (tail first) instead of left-aligned (head first)
+export const nameAlignRightAtom = new Atom<boolean>(false, 'nameAlignRight')
+
+export function disposeProfileAtom() {
+  profileGroupAtom.clearHoverNode();
+  profileGroupAtom.set(null);
+}

@@ -1,25 +1,50 @@
 import '../../assets/reset.css'
-import '../../assets/source-code-pro.css'
 
 import {h} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 
 import {ProfileGroup, SymbolRemapper} from '../lib/profile'
-import {FontFamily, FontSize, Duration} from './style'
+import {FontFamily, FontSize, Duration, ZIndex} from './style'
 import {importEmscriptenSymbolMap as importEmscriptenSymbolRemapper} from '../lib/emscripten'
 import {saveToFile} from '../lib/file-format'
 import {ActiveProfileState} from '../app-state/active-profile-state'
-import {LeftHeavyFlamechartView, ChronoFlamechartView} from './flamechart-view-container'
-import {CanvasContext} from '../gl/canvas-context'
+import {
+  LeftHeavyFlamechartView,
+  ChronoFlamechartView,
+  getLeftHeavyFlamechart,
+  getLeftHeavyFlamechartByRegWeight,
+  useFlamechartSetters,
+  getChronoViewFlamechart
+} from './flamechart-view-container'
+import {CanvasContext, cleanGraphRenderCache} from '../gl/canvas-context'
 import {Toolbar} from './toolbar'
 import {importJavaScriptSourceMapSymbolRemapper} from '../lib/js-source-map'
 import {Theme, withTheme} from './themes/theme'
 import {ViewMode} from '../lib/view-mode'
-import {canUseXHR} from '../app-state'
-import {ProfileGroupState} from '../app-state/profile-group'
+import {
+  cachedJsonDataAtom,
+  canUseXHR,
+  diffModeAtom,
+  diffViewModeAtom,
+  DiffViewMode,
+  disposeProfileAtom,
+  initSearchIndexAtom,
+  moreInformationFrameAtom,
+  profileGroupAtom,
+  reverseFlamegraphAtom,
+  scrollToAtom,
+  searchQueryAtom,
+  selectedFrameNameAtom
+} from '../app-state'
+import {FlamechartID, ProfileGroupState} from '../app-state/profile-group'
 import {HashParams} from '../lib/hash-params'
 import {StatelessComponent} from '../lib/preact-helpers'
 import {SandwichViewContainer} from './sandwich-view'
+import { createGetColorBucketForFrame, getFrameToColorBucket } from '../app-state/getters'
+import { FlamechartSearchContextProvider } from './flamechart-search-view'
+import { getSpeedscopeWindow, inSpeedscopeWindow, windowHeightCache, windowWidthCache } from '../widgetUtils'
+import { useRef } from 'preact/hooks'
+import { Flamechart } from '../lib/flamechart'
 
 const importModule = import('../import')
 
@@ -60,7 +85,6 @@ async function importFromFileSystemDirectoryEntry(entry: FileSystemDirectoryEntr
 }
 
 declare function require(x: string): any
-const exampleProfileURL = require('../../sample/profiles/stackcollapse/perf-vertx-stacks-01-collapsed-all.txt')
 
 function isFileSystemDirectoryEntry(entry: FileSystemEntry): entry is FileSystemDirectoryEntry {
   return entry != null && entry.isDirectory
@@ -71,6 +95,12 @@ interface GLCanvasProps {
   theme: Theme
   setGLCanvas: (canvas: HTMLCanvasElement | null) => void
 }
+
+export type GLCanvasHandle = {
+  resize: (force: boolean) => void;
+  getCanvas: () => HTMLCanvasElement | null;
+}
+
 export class GLCanvas extends StatelessComponent<GLCanvasProps> {
   private canvas: HTMLCanvasElement | null = null
 
@@ -80,8 +110,9 @@ export class GLCanvas extends StatelessComponent<GLCanvasProps> {
     } else {
       this.canvas = null
     }
-
-    this.props.setGLCanvas(this.canvas)
+    if (this.canvas) {
+      this.props.setGLCanvas(this.canvas)
+    }
   }
 
   private container: HTMLElement | null = null
@@ -93,23 +124,43 @@ export class GLCanvas extends StatelessComponent<GLCanvasProps> {
     }
   }
 
-  private maybeResize = () => {
+  public resize = (force: boolean = false) => { this.maybeResize(force); };
+  public getCanvas = () => this.canvas;
+
+  // init states
+  prevWidth = 0
+  prevHeight = 0
+  prevTheme = this.props.theme
+
+  private maybeResize = (force: boolean = false) => {
     if (!this.container) return
     if (!this.props.canvasContext) return
 
-    let {width, height} = this.container.getBoundingClientRect()
+    // gl.resize will transitively rerender the flamegraph
+    const internalResized = this.props.theme != this.prevTheme
+    const sizeChanged = windowWidthCache != this.prevWidth || windowHeightCache != this.prevHeight
+    const shouldForceRerender = force || internalResized || sizeChanged
+    
+    if(shouldForceRerender){
+      // console.log('speedscope-internal resizing...', 'force', force, 'internalResized', internalResized, 'sizeChanged', sizeChanged)
+      // update current cache settings
+      this.prevTheme = this.props.theme
+      this.prevWidth = windowWidthCache
+      this.prevHeight = windowHeightCache
+      cleanGraphRenderCache()
 
-    const widthInAppUnits = width
-    const heightInAppUnits = height
-    const widthInPixels = width * window.devicePixelRatio
-    const heightInPixels = height * window.devicePixelRatio
+      const widthInAppUnits = windowWidthCache
+      const heightInAppUnits = windowHeightCache
+      const widthInPixels = windowWidthCache * window.devicePixelRatio
+      const heightInPixels = windowHeightCache * window.devicePixelRatio
 
-    this.props.canvasContext.gl.resize(
-      widthInPixels,
-      heightInPixels,
-      widthInAppUnits,
-      heightInAppUnits,
-    )
+      this.props.canvasContext.gl.resize(
+        widthInPixels,
+        heightInPixels,
+        widthInAppUnits,
+        heightInAppUnits,
+      )
+    }
   }
 
   onWindowResize = () => {
@@ -128,14 +179,41 @@ export class GLCanvas extends StatelessComponent<GLCanvasProps> {
       }
     }
   }
+
+  // keep in sync with widgetUtils speedscopeWindow()
+  speedscopeWindowElement = document.getElementById('speedscope');
   componentDidMount() {
-    window.addEventListener('resize', this.onWindowResize)
+    if(this.speedscopeWindowElement){
+      this.speedscopeWindowElement.addEventListener('resize', this.onWindowResize)
+      // isolate internal events
+      this.speedscopeWindowElement.addEventListener('wheel', (e) => {
+        e.stopPropagation();
+      }, { passive: true});
+      this.speedscopeWindowElement.addEventListener('pointermove', (e) => {
+        e.stopPropagation();
+      }, { passive: true});
+      this.speedscopeWindowElement.addEventListener('pointerover', (e) => {
+        e.stopPropagation();
+      }, { passive: true});
+    } else window.addEventListener('resize', this.onWindowResize)
   }
   componentWillUnmount() {
     if (this.props.canvasContext) {
       this.props.canvasContext.removeBeforeFrameHandler(this.maybeResize)
     }
-    window.removeEventListener('resize', this.onWindowResize)
+    if(this.speedscopeWindowElement){
+      this.speedscopeWindowElement.removeEventListener('resize', this.onWindowResize)
+      // isolate internal events
+      this.speedscopeWindowElement.removeEventListener('wheel', (e) => {
+        e.stopPropagation();
+      });
+      this.speedscopeWindowElement.removeEventListener('pointermove', (e) => {
+        e.stopPropagation();
+      });
+      this.speedscopeWindowElement.removeEventListener('pointerover', (e) => {
+        e.stopPropagation();
+      });
+    } else window.removeEventListener('resize', this.onWindowResize)
   }
   render() {
     const style = getStyle(this.props.theme)
@@ -155,12 +233,16 @@ export type ApplicationProps = {
   setDragActive: (dragActive: boolean) => void
   setViewMode: (viewMode: ViewMode) => void
   setFlattenRecursion: (flattenRecursion: boolean) => void
+  setDisplayMinimap: (displayMinimap: boolean) => void
+  setDisplayTable: (displayTable: boolean) => void
   setProfileIndexToView: (profileIndex: number) => void
   activeProfileState: ActiveProfileState | null
   canvasContext: CanvasContext | null
   theme: Theme
   profileGroup: ProfileGroupState
   flattenRecursion: boolean
+  displayMinimap: boolean
+  displayTable: boolean
   viewMode: ViewMode
   hashParams: HashParams
   dragActive: boolean
@@ -169,8 +251,122 @@ export type ApplicationProps = {
   error: boolean
 }
 
+export type ApplicationAPI = {
+  resize: (force: boolean) => void;
+  loadFoldedStr: (folded: string) => void;
+  reloadWithInvertedDiff: (inverted: boolean) => void;
+  reloadDiffProfile: (options: {
+    diffNormalized?: boolean,
+    diffInverted?: boolean,
+    keepSelectedFrame?: boolean
+  }) => void;
+  setInitStates: (frameName: string, searchQuery: string, viewMode: string, reverse: boolean, searchIndex: number) => void;
+  setLoadingState: (loading: boolean) => void;
+};
+
 export class Application extends StatelessComponent<ApplicationProps> {
+  // app level api for external control
+  public glRef = useRef<GLCanvasHandle>(null);
+  public resize = (force: boolean = false) => {
+    this.glRef.current?.resize(force);
+  }
+
+  private displayErrorMsg = '';
+
+  
+  private newDataLoaded() {
+    if(this.afterLoad) {
+      this.afterLoad()
+      this.afterLoad = undefined;
+    }
+    setTimeout(() => {requestAnimationFrame(() => {
+          getSpeedscopeWindow().dispatchEvent(new CustomEvent("speedscope:loaded", {
+              composed:true,
+              bubbles: true,
+              detail: { element: this }
+          }))
+      });
+    }, 200);
+  }
+
+  public loadFoldedStr(folded: string) {
+    // Cache the JSON for potential reload with inverted diff
+    cachedJsonDataAtom.set(folded)
+    this.loadProfile(async () => {
+      return await importProfilesFromText(`from api at ${new Date().toISOString()}`, folded)
+    })
+  }
+
+  public reloadWithInvertedDiff(inverted: boolean) {
+    this.reloadDiffProfile({diffInverted: inverted})
+  }
+
+  public reloadDiffProfile(options: { diffNormalized?: boolean, diffInverted?: boolean, keepSelectedFrame?: boolean }) {
+    const cachedJson = cachedJsonDataAtom.get()
+    if (!cachedJson) {
+      console.warn('No cached JSON data to reload')
+      return
+    }
+    // Save selected frame name before reload if keepSelectedFrame is true
+    const savedFrameName = options.keepSelectedFrame ? selectedFrameNameAtom.get() : ''
+    
+    this.loadProfile(async () => {
+      const module = await importModule
+      return module.importSpeedscopeJsonWithOptions(cachedJson, options)
+    })
+
+    // Restore selected frame after reload
+    if (savedFrameName) {
+      this.afterLoad = () => {
+        setTimeout(() => {
+          selectedFrameNameAtom.set(savedFrameName)
+          profileGroupAtom.setSelectedFrameByApi(savedFrameName)
+        }, 200)
+      }
+    }
+  }
+
+  public setLoadingState(loading: boolean) {
+    console.log("waiting new flamegraph data...")
+    this.props.setLoading(loading)
+  }
+
+  afterLoad: (() => void) | undefined
+  public setInitStates(frameName: string, searchQuery: string, viewMode: string, reverse: boolean, searchIndex: number) {
+    this.afterLoad = () => {
+        if (viewMode.length > 0) {
+          switch (viewMode) {
+              case "2":
+                  this.props.setViewMode(ViewMode.SANDWICH_VIEW);
+                  break;
+              case "1":
+                  this.props.setViewMode(ViewMode.LEFT_HEAVY_FLAME_GRAPH);
+                  break;
+              case "0":
+                  this.props.setViewMode(ViewMode.CHRONO_FLAME_CHART);
+                  break;
+              default:
+                  this.props.setViewMode(ViewMode.LEFT_HEAVY_FLAME_GRAPH);
+                  break;
+          }
+        }
+        reverseFlamegraphAtom.set(reverse)
+        if (searchQuery.length > 0) searchQueryAtom.set(searchQuery);
+        if (frameName.length > 0) {
+          setTimeout(() => {
+            selectedFrameNameAtom.set(frameName);
+            profileGroupAtom.setSelectedFrameByApi(frameName);
+          }, 200); // wait GPU 200ms then init the selected item
+          setTimeout(() => {
+            initSearchIndexAtom.set(searchIndex);
+            scrollToAtom.set(true);
+          }, 200); // wait another 200ms then render zoomed view
+        }
+    }
+  }
+
   private async loadProfile(loader: () => Promise<ProfileGroup | null>) {
+    moreInformationFrameAtom.set('')
     this.props.setError(false)
     this.props.setLoading(true)
     await new Promise(resolve => setTimeout(resolve, 0))
@@ -184,20 +380,25 @@ export class Application extends StatelessComponent<ApplicationProps> {
       profileGroup = await loader()
     } catch (e) {
       console.log('Failed to load format', e)
+      this.displayErrorMsg = 'Failed to load format. ' + String(e)
       this.props.setError(true)
       return
     }
 
     // TODO(jlfwong): Make these into nicer overlays
     if (profileGroup == null) {
-      alert('Unrecognized format! See documentation about supported formats.')
+      this.displayErrorMsg = 'Invalid input! Perhaps the input was empty or corrupted.'
       this.props.setLoading(false)
+      this.props.setError(true)
       return
     } else if (profileGroup.profiles.length === 0) {
-      alert("Successfully imported profile, but it's empty!")
+      this.displayErrorMsg = "Successfully imported profile, but it's empty!"
       this.props.setLoading(false)
+      this.props.setError(true)
       return
     }
+    this.displayErrorMsg = ''
+    this.props.setError(false)
 
     if (this.props.hashParams.title) {
       profileGroup = {
@@ -205,7 +406,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
         name: this.props.hashParams.title,
       }
     }
-    document.title = `${profileGroup.name} - speedscope`
+    // document.title = `${profileGroup.name} - speedscope`
 
     if (this.props.hashParams.viewMode) {
       this.props.setViewMode(this.props.hashParams.viewMode)
@@ -224,6 +425,9 @@ export class Application extends StatelessComponent<ApplicationProps> {
 
     this.props.setProfileGroup(profileGroup)
     this.props.setLoading(false)
+    
+    // Dispatch the event after the profile is loaded
+    this.newDataLoaded();
   }
 
   getStyle(): ReturnType<typeof getStyle> {
@@ -299,8 +503,8 @@ export class Application extends StatelessComponent<ApplicationProps> {
 
   loadExample = () => {
     this.loadProfile(async () => {
-      const filename = 'perf-vertx-stacks-01-collapsed-all.txt'
-      const data = await fetch(exampleProfileURL).then(resp => resp.text())
+      const filename = 'example.txt'
+      const data = 'a;b;c 100'
       return await importProfilesFromText(filename, data)
     })
   }
@@ -347,6 +551,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   onWindowKeyPress = async (ev: KeyboardEvent) => {
+    if(!inSpeedscopeWindow()) return;
     if (ev.key === '1') {
       this.props.setViewMode(ViewMode.CHRONO_FLAME_CHART)
     } else if (ev.key === '2') {
@@ -356,6 +561,9 @@ export class Application extends StatelessComponent<ApplicationProps> {
     } else if (ev.key === 'r') {
       const {flattenRecursion} = this.props
       this.props.setFlattenRecursion(!flattenRecursion)
+    } else if (ev.key === 'm') {
+      const {displayMinimap} = this.props
+      this.props.setDisplayMinimap(!displayMinimap)
     } else if (ev.key === 'n') {
       const {activeProfileState} = this.props
       if (activeProfileState) {
@@ -389,6 +597,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   private onWindowKeyDown = async (ev: KeyboardEvent) => {
+    if(!inSpeedscopeWindow()) return;
     // This has to be handled on key down in order to prevent the default
     // page save action.
     if (ev.key === 's' && (ev.ctrlKey || ev.metaKey)) {
@@ -400,31 +609,41 @@ export class Application extends StatelessComponent<ApplicationProps> {
     }
   }
 
-  onDocumentPaste = (ev: Event) => {
-    if (document.activeElement != null && document.activeElement.nodeName === 'INPUT') return
+  // onDocumentPaste = (ev: Event) => {
+  //   if (document.activeElement != null && document.activeElement.nodeName === 'INPUT') return
 
-    ev.preventDefault()
-    ev.stopPropagation()
+  //   ev.preventDefault()
+  //   ev.stopPropagation()
 
-    const clipboardData = (ev as ClipboardEvent).clipboardData
-    if (!clipboardData) return
-    const pasted = clipboardData.getData('text')
-    this.loadProfile(async () => {
-      return await importProfilesFromText('From Clipboard', pasted)
-    })
-  }
+  //   const clipboardData = (ev as ClipboardEvent).clipboardData
+  //   if (!clipboardData) return
+  //   const pasted = clipboardData.getData('text')
+  //   this.loadProfile(async () => {
+  //     return await importProfilesFromText('From Clipboard', pasted)
+  //   })
+  // }
 
   componentDidMount() {
     window.addEventListener('keydown', this.onWindowKeyDown)
     window.addEventListener('keypress', this.onWindowKeyPress)
-    document.addEventListener('paste', this.onDocumentPaste)
+    //document.addEventListener('paste', this.onDocumentPaste)
     this.maybeLoadHashParamProfile()
   }
 
   componentWillUnmount() {
     window.removeEventListener('keydown', this.onWindowKeyDown)
     window.removeEventListener('keypress', this.onWindowKeyPress)
-    document.removeEventListener('paste', this.onDocumentPaste)
+    //document.removeEventListener('paste', this.onDocumentPaste)
+    disposeProfileAtom()
+    this.props.activeProfileState?.profile.dispose()
+    // this.props.canvasContext?.dispose() // allow user change Theme
+    console.log("speedscope app closed!")
+  }
+
+  componentDidUpdate(previousProps: ApplicationProps) {
+    const internalSizeChanged = previousProps.displayMinimap !== this.props.displayMinimap ||
+      previousProps.displayTable !== this.props.displayTable || previousProps.profileGroup?.name !== this.props.profileGroup?.name
+    if(internalSizeChanged) this.glRef.current?.resize(true)
   }
 
   async maybeLoadHashParamProfile() {
@@ -542,11 +761,11 @@ export class Application extends StatelessComponent<ApplicationProps> {
 
   renderError() {
     const style = this.getStyle()
-
+    this.resize(true)
     return (
       <div className={css(style.error)}>
         <div>😿 Something went wrong.</div>
-        <div>Check the JS console for more details.</div>
+        <div>{this.displayErrorMsg}</div>
       </div>
     )
   }
@@ -570,18 +789,102 @@ export class Application extends StatelessComponent<ApplicationProps> {
     if (!activeProfileState || !glCanvas) {
       return this.renderLanding()
     }
+    
+    const {profile, leftHeavyViewState, chronoViewState} = activeProfileState
+    const frameToColorBucket = getFrameToColorBucket(profile)
+    const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
+    const style = this.getStyle()
 
+    const toolBar = (flamechart: Flamechart) => (
+      <Toolbar
+      flamechart={flamechart}
+        saveFile={this.saveFile}
+        browseForFile={this.browseForFile}
+        {...(this.props as ApplicationProps)}
+      />
+    )
+  
     switch (viewMode) {
       case ViewMode.CHRONO_FLAME_CHART: {
-        return <ChronoFlamechartView activeProfileState={activeProfileState} glCanvas={glCanvas} />
+        const flamechart = getChronoViewFlamechart({
+          profile,
+          getColorBucketForFrame,
+        })
+        const setters = useFlamechartSetters(FlamechartID.CHRONO)
+
+        return (
+          <FlamechartSearchContextProvider
+            flamechart={flamechart}
+            selectedNode={chronoViewState.selectedNode}
+            setSelectedNode={setters.setSelectedNode}
+            configSpaceViewportRect={chronoViewState.configSpaceViewportRect}
+            setConfigSpaceViewportRect={setters.setConfigSpaceViewportRect}
+          >
+            {toolBar(flamechart)}
+            <div className={css(style.contentContainer)}>
+              <ChronoFlamechartView activeProfileState={activeProfileState} glCanvas={glCanvas} 
+              displayMinimap ={this.props.displayMinimap} displayTable={this.props.displayTable} flamechart={flamechart} setters={setters}/>
+            </div>
+          </FlamechartSearchContextProvider>
+        )
       }
       case ViewMode.LEFT_HEAVY_FLAME_GRAPH: {
+        const flamechart = getLeftHeavyFlamechart({
+          profile,
+          getColorBucketForFrame,
+        })
+        const setters = useFlamechartSetters(FlamechartID.LEFT_HEAVY)
+
+        // Check for Both mode to set up REG flamechart props
+        const diffMode = diffModeAtom.get()
+        const diffViewMode = diffViewModeAtom.get()
+        const isBothMode = diffViewMode === DiffViewMode.BOTH && diffMode && flamechart.hasDiffData()
+
+        const flamechartReg = isBothMode ? getLeftHeavyFlamechartByRegWeight({profile, getColorBucketForFrame}) : null
+        const settersReg = useFlamechartSetters(FlamechartID.LEFT_HEAVY_REG)
+        const leftHeavyViewStateReg = activeProfileState.leftHeavyViewStateReg
+
         return (
-          <LeftHeavyFlamechartView activeProfileState={activeProfileState} glCanvas={glCanvas} />
+          <FlamechartSearchContextProvider
+            flamechart={flamechart}
+            selectedNode={leftHeavyViewState.selectedNode}
+            setSelectedNode={setters.setSelectedNode}
+            configSpaceViewportRect={leftHeavyViewState.configSpaceViewportRect}
+            setConfigSpaceViewportRect={setters.setConfigSpaceViewportRect}
+            flamechartReg={flamechartReg}
+            configSpaceViewportRectReg={leftHeavyViewStateReg?.configSpaceViewportRect}
+            setConfigSpaceViewportRectReg={settersReg.setConfigSpaceViewportRect}
+            setSelectedNodeReg={settersReg.setSelectedNode}
+          >
+            {toolBar(flamechart)}
+            <div className={css(style.contentContainer)}>
+              <LeftHeavyFlamechartView activeProfileState={activeProfileState} glCanvas={glCanvas} 
+              displayMinimap ={this.props.displayMinimap} displayTable={this.props.displayTable} flamechart={flamechart} setters={setters}/>
+            </div>
+          </FlamechartSearchContextProvider>
         )
       }
       case ViewMode.SANDWICH_VIEW: {
-        return <SandwichViewContainer activeProfileState={activeProfileState} glCanvas={glCanvas} />
+        const flamechart = getChronoViewFlamechart({
+          profile,
+          getColorBucketForFrame,
+        })
+        const setters = useFlamechartSetters(FlamechartID.CHRONO)
+
+        return (
+          <FlamechartSearchContextProvider
+            flamechart={flamechart}
+            selectedNode={chronoViewState.selectedNode}
+            setSelectedNode={setters.setSelectedNode}
+            configSpaceViewportRect={chronoViewState.configSpaceViewportRect}
+            setConfigSpaceViewportRect={setters.setConfigSpaceViewportRect}
+          >
+            {toolBar(flamechart)}
+            <div className={css(style.contentContainer)}>
+              <SandwichViewContainer activeProfileState={activeProfileState} glCanvas={glCanvas} />
+            </div>
+          </FlamechartSearchContextProvider>
+        )
       }
     }
   }
@@ -596,16 +899,12 @@ export class Application extends StatelessComponent<ApplicationProps> {
         className={css(style.root, this.props.dragActive && style.dragTargetRoot)}
       >
         <GLCanvas
+          ref={this.glRef}
           setGLCanvas={this.props.setGLCanvas}
           canvasContext={this.props.canvasContext}
           theme={this.props.theme}
         />
-        <Toolbar
-          saveFile={this.saveFile}
-          browseForFile={this.browseForFile}
-          {...(this.props as ApplicationProps)}
-        />
-        <div className={css(style.contentContainer)}>{this.renderContent()}</div>
+        {this.renderContent()}
         {this.props.dragActive && <div className={css(style.dragTarget)} />}
       </div>
     )
@@ -616,10 +915,10 @@ const getStyle = withTheme(theme =>
   StyleSheet.create({
     glCanvasView: {
       position: 'absolute',
-      width: '100vw',
-      height: '100vh',
-      zIndex: -1,
-      pointerEvents: 'none',
+      width: '100%',
+      height: '100%',
+      zIndex: ZIndex.GRAPH,
+      pointerEvents: 'none'
     },
     error: {
       display: 'flex',
@@ -627,6 +926,8 @@ const getStyle = withTheme(theme =>
       alignItems: 'center',
       justifyContent: 'center',
       height: '100%',
+      background: "rgba(0, 0, 0, 0.75)",
+      zIndex: ZIndex.INFO,
     },
     loading: {
       height: 3,
@@ -647,8 +948,8 @@ const getStyle = withTheme(theme =>
       animationDuration: '30s',
     },
     root: {
-      width: '100vw',
-      height: '100vh',
+      width: '100%',
+      height: '100%',
       overflow: 'hidden',
       display: 'flex',
       flexDirection: 'column',

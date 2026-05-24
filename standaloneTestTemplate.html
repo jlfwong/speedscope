@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <title>Speedscope Standalone</title>
+<body>
+<div id="standalone"></div>
+[replaceMe]
+
+
+const defaultData =
+`total;app;com.example.main;@com.example.main.run_16_1;com.example.$profiler 24681262
+a;b;c 24681262
+@aa;@b;@c;@async.$node.foo.apply_123_321.bar$t 2468122
+aaa;x 24681262
+superLongNameHere1111111111111111111111111111111111111111111111111111111111111111111111 2000000
+@a;@b;@c;@d;@e;@f;@g;h;i;j;k;l;m;n;o;p;q;r;s;t;u;v;w;x;y;z;1;2;3;4;5;6;7;8;9;0;!;@;#;$;%;aa;cc;asd;zxc;@asd;@qwesad;@zzxc;asdasd;end
+24681262`;
+const unit = `ns`;
+loadFromText(defaultData, unit);
+</script>
+</body>
+</html>

@@ -3,6 +3,9 @@
 
 import {h, JSX} from 'preact'
 import {useState, useCallback, useRef, useMemo, useEffect} from 'preact/hooks'
+import { getWH } from '../gl/canvas-context'
+import { useAtom } from '../lib/atom'
+import { scrollToAtom } from '../app-state'
 
 export interface ListItem {
   size: number
@@ -47,14 +50,21 @@ export const ScrollableListView = ({
     : 0
   const initialScroll = useRef<number | null>(offset)
 
+  const scrollToEnabled = useAtom(scrollToAtom)
   const viewportCallback = useCallback(
     (viewport: HTMLDivElement | null) => {
       if (viewport) {
         requestAnimationFrame(() => {
-          setViewportSize(viewport.getBoundingClientRect()[widthOrHeight])
+          setViewportSize(getWH(viewport)[widthOrHeight])
+          // init the scroll bar location
           if (initialScroll.current != null) {
             viewport.scrollTo({[leftOrTop]: initialScroll.current})
             initialScroll.current = null
+          }
+          // scroll to current selected frame by global flag
+          if (scrollToEnabled) {
+            viewport.scrollTo({[leftOrTop]: offset})
+            scrollToAtom.set(false)
           }
         })
       } else {
@@ -62,7 +72,7 @@ export const ScrollableListView = ({
       }
       viewportRef.current = viewport
     },
-    [setViewportSize, widthOrHeight, leftOrTop],
+    [setViewportSize, widthOrHeight, leftOrTop, scrollToEnabled],
   )
 
   const rangeResult: RangeResult | null = useMemo(() => {
@@ -118,7 +128,7 @@ export const ScrollableListView = ({
   useEffect(() => {
     const resizeListener = () => {
       if (viewportRef.current != null) {
-        setViewportSize(viewportRef.current.getBoundingClientRect()[widthOrHeight])
+        setViewportSize(getWH(viewportRef.current)[widthOrHeight])
       }
     }
 

@@ -328,8 +328,13 @@ export namespace WebGL {
       return this._height
     }
 
-    constructor(canvas: HTMLCanvasElement = document.createElement('canvas')) {
+    public dispose() {
+      this._gl.getExtension("WEBGL_lose_context")?.loseContext()
+    }
+
+    constructor(canvas: HTMLCanvasElement | null) {
       super()
+      if(!canvas) return;
       let gl = canvas.getContext('webgl', {
         alpha: false,
         antialias: false,
@@ -466,26 +471,30 @@ export namespace WebGL {
       this._forceStateUpdate = false
     }
 
+    // avoid resize deadlock
+    private _isResizing = false;
+
     resize(
       widthInPixels: number,
       heightInPixels: number,
       widthInAppUnits: number,
       heightInAppUnits: number,
     ) {
-      let canvas = this._gl.canvas as HTMLCanvasElement
-      const bounds = canvas.getBoundingClientRect()
-
+      if(this._isResizing) return;
+      this._isResizing = true;
+      
       if (
         this._width === widthInPixels &&
-        this._height === heightInPixels &&
-        // Compare floats with margin error
-        Math.abs(bounds.width - widthInAppUnits) < 0.02 &&
-        Math.abs(bounds.height - heightInAppUnits) < 0.02
+        this._height === heightInPixels
       ) {
         // Nothing to do here!
+        this._isResizing = false;
         return
       }
 
+      // console.log('resizing...widthInPixels:', widthInPixels, 'heightInPixels:', heightInPixels, 'widthInAppUnits:', widthInAppUnits, 'heightInAppUnits:', heightInAppUnits)
+
+      let canvas = this._gl.canvas as HTMLCanvasElement
       let style = canvas.style
       canvas.width = widthInPixels
       canvas.height = heightInPixels
@@ -496,6 +505,7 @@ export namespace WebGL {
       this._height = heightInPixels
 
       this.resizeEventHandlers.forEach(cb => cb())
+      this._isResizing = false;
     }
 
     clear(color: Graphics.Color) {

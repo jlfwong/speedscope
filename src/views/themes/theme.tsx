@@ -8,6 +8,8 @@ import {darkTheme} from './dark-theme'
 import {lightTheme} from './light-theme'
 
 export interface Theme {
+  frameNodeNameColor: string
+
   fgPrimaryColor: string
   fgSecondaryColor: string
   bgPrimaryColor: string
@@ -24,11 +26,16 @@ export interface Theme {
   weightColor: string
 
   searchMatchTextColor: string
-  searchMatchPrimaryColor: string
+  searchFadedTextColor: string
+  searchFadedFrameColor: string
+  searchBoxTextColor: string
   searchMatchSecondaryColor: string
 
   colorForBucket: (t: number) => Color
   colorForBucketGLSL: string
+
+  colorForDiffRatio: (ratio: number) => Color
+  colorForDiffRatioGLSL: string
 }
 
 export const ThemeContext = createContext<Theme>(lightTheme)

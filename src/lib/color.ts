@@ -8,6 +8,10 @@ export class Color {
     readonly a: number = 1,
   ) {}
 
+  static fromRGB(r: number, g:number, b: number) {
+    return new Color(r / 255, g / 255, b / 255)
+  }
+
   static fromLumaChromaHue(L: number, C: number, H: number) {
     // 0 <= L <= 1
     // 0 <= C <= 1
@@ -57,3 +61,7 @@ export class Color {
     ).toFixed()}, ${this.a.toFixed(2)})`
   }
 }
+
+// BAS/REG comparison colors for diff view
+export const BAS_COLOR = 'rgb(64, 176, 255)'
+export const REG_COLOR = 'rgb(255, 159, 10)'

@@ -5,6 +5,7 @@ export function setUniformAffineTransform(
   material: Graphics.Material,
   name: string,
   transform: AffineTransform,
+  displayMinimun: boolean = false
 ) {
   let {m00, m01, m02, m10, m11, m12} = transform
   material.setUniformMat3(name, m00, m01, m02, m10, m11, m12, 0, 0, 1)

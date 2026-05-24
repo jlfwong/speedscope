@@ -7,8 +7,10 @@ import {ProfileSearchResults} from '../lib/profile-search'
 import {Profile} from '../lib/profile'
 import {useActiveProfileState} from '../app-state/active-profile-state'
 import {useTheme, withTheme} from './themes/theme'
-import {searchIsActiveAtom, searchQueryAtom} from '../app-state'
+import {profileGroupAtom, searchIsActiveAtom, searchQueryAtom, viewModeAtom} from '../app-state'
 import {useAtom} from '../lib/atom'
+import { ViewMode } from '../lib/view-mode'
+import { FlamechartEventCallback } from './flamechart-pan-zoom-view'
 
 function stopPropagation(ev: Event) {
   ev.stopPropagation()
@@ -20,14 +22,32 @@ export const ProfileSearchContextProvider = ({children}: {children: ComponentChi
   const activeProfileState = useActiveProfileState()
   const profile: Profile | null = activeProfileState ? activeProfileState.profile : null
   const searchIsActive = useAtom(searchIsActiveAtom)
-  const searchQuery = useAtom(searchQueryAtom)
+  const currentMode = useAtom(viewModeAtom)
+  const selectedRowName = (activeProfileState?.chronoViewState.selectedFrameName || activeProfileState?.leftHeavyViewState.selectedFrameName)?.trim()
+  const searchQueryFromInputBox = useAtom(searchQueryAtom)
+  
+  const searchQuery = currentMode === ViewMode.SANDWICH_VIEW ? searchQueryFromInputBox : selectedRowName ? selectedRowName : searchQueryFromInputBox
 
   const searchResults = useMemo(() => {
     if (!profile || !searchIsActive || searchQuery.length === 0) {
       return null
     }
-    return new ProfileSearchResults(profile, searchQuery)
-  }, [searchIsActive, searchQuery, profile])
+    const results = new ProfileSearchResults(profile, searchQueryFromInputBox, selectedRowName, currentMode)
+    // If selectedRowName is set but doesn't match any frame in the profile,
+    // return null so the flamegraph displays with normal colors instead of gray overlay
+    if (selectedRowName && currentMode !== ViewMode.SANDWICH_VIEW) {
+      let hasMatch = false
+      profile.forEachFrame(frame => {
+        if (frame.name === selectedRowName) {
+          hasMatch = true
+        }
+      })
+      if (!hasMatch) {
+        return null
+      }
+    }
+    return results
+  }, [searchIsActive, searchQuery, searchQueryFromInputBox, selectedRowName, currentMode, profile])
 
   return (
     <ProfileSearchContext.Provider value={searchResults}>{children}</ProfileSearchContext.Provider>
@@ -54,13 +74,18 @@ export const SearchView = memo(
       (ev: Event) => {
         const value = (ev.target as HTMLInputElement).value
         setSearchQuery(value)
+        profileGroupAtom.setSelectedFrame(null)
+        profileGroupAtom.setSelectedFrameName(null)
       },
       [setSearchQuery],
     )
 
     const inputRef = useRef<HTMLInputElement | null>(null)
 
-    const close = useCallback(() => setSearchIsActive(false), [setSearchIsActive])
+    const close = useCallback(() => {
+      FlamechartEventCallback.emitResetView();
+      setSearchQuery("");
+    }, [setSearchQuery]);
 
     const selectPrevOrNextResult = useCallback(
       (ev: KeyboardEvent) => {
@@ -79,7 +104,7 @@ export const SearchView = memo(
 
         // Hitting Esc should close the search box
         if (ev.key === 'Escape') {
-          setSearchIsActive(false)
+          setSearchIsActive(true)
         }
 
         if (ev.key === 'Enter') {
@@ -102,33 +127,37 @@ export const SearchView = memo(
     )
 
     useEffect(() => {
-      const onWindowKeyDown = (ev: KeyboardEvent) => {
-        // Cmd+F or Ctrl+F open the search box
-        if (ev.key == 'f' && (ev.metaKey || ev.ctrlKey)) {
-          // Prevent the browser's search menu from appearing
-          ev.preventDefault()
+      if (numResults === 1) selectNext();
+    }, [numResults]);
 
-          if (inputRef.current) {
-            // If the search box is already open, then re-select it immediately.
-            inputRef.current.select()
-          } else {
-            // Otherwise, focus the search, then focus the input on the next
-            // frame, when the search box should have mounted.
-            setSearchIsActive(true)
-            requestAnimationFrame(() => {
-              if (inputRef.current) {
-                inputRef.current.select()
-              }
-            })
-          }
-        }
-      }
+    // useEffect(() => {
+    //   const onWindowKeyDown = (ev: KeyboardEvent) => {
+    //     // Cmd+F or Ctrl+F open the search box
+    //     if (ev.key == 'f' && (ev.metaKey || ev.ctrlKey)) {
+    //       // Prevent the browser's search menu from appearing
+    //       ev.preventDefault()
 
-      window.addEventListener('keydown', onWindowKeyDown)
-      return () => {
-        window.removeEventListener('keydown', onWindowKeyDown)
-      }
-    }, [setSearchIsActive])
+    //       if (inputRef.current) {
+    //         // If the search box is already open, then re-select it immediately.
+    //         inputRef.current.select()
+    //       } else {
+    //         // Otherwise, focus the search, then focus the input on the next
+    //         // frame, when the search box should have mounted.
+    //         setSearchIsActive(true)
+    //         requestAnimationFrame(() => {
+    //           if (inputRef.current) {
+    //             inputRef.current.select()
+    //           }
+    //         })
+    //       }
+    //     }
+    //   }
+
+    //   window.addEventListener('keydown', onWindowKeyDown)
+    //   return () => {
+    //     window.removeEventListener('keydown', onWindowKeyDown)
+    //   }
+    // }, [setSearchIsActive])
 
     if (!searchIsActive) return null
 
@@ -139,6 +168,7 @@ export const SearchView = memo(
           <input
             className={css(style.input)}
             value={searchQuery}
+            placeholder='Search frames...'
             onInput={onInput}
             onKeyDown={onKeyDown}
             onKeyUp={stopPropagation}
@@ -159,20 +189,7 @@ export const SearchView = memo(
             </button>
           </Fragment>
         )}
-        <svg
-          className={css(style.icon)}
-          onClick={close}
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M4.99999 4.16217L11.6427 10.8048M11.6427 4.16217L4.99999 10.8048"
-            stroke={theme.altFgSecondaryColor}
-          />
-        </svg>
+        {searchQuery.length > 0 && <span className={css(style.icon)} onClick={close}>✖</span>}
       </div>
     )
   },
@@ -181,20 +198,18 @@ export const SearchView = memo(
 const getStyle = withTheme(theme =>
   StyleSheet.create({
     searchView: {
-      position: 'absolute',
-      top: 0,
-      right: 10,
       height: Sizes.TOOLBAR_HEIGHT,
-      width: 16 * 13,
+      width: 16 * FontSize.SEARCH_BAR,
       borderWidth: 2,
-      borderColor: theme.altFgPrimaryColor,
+      borderColor: theme.bgSecondaryColor,
       borderStyle: 'solid',
-      fontSize: FontSize.LABEL,
+      fontSize: FontSize.SEARCH_BAR,
       boxSizing: 'border-box',
       background: theme.altBgSecondaryColor,
       color: theme.altFgPrimaryColor,
       display: 'flex',
       alignItems: 'center',
+      marginLeft: 8
     },
     inputContainer: {
       flexShrink: 1,
@@ -205,9 +220,9 @@ const getStyle = withTheme(theme =>
       width: '100%',
       border: 'none',
       background: 'none',
-      fontSize: FontSize.LABEL,
+      fontSize: FontSize.SEARCH_BAR,
       lineHeight: `${Sizes.TOOLBAR_HEIGHT}px`,
-      color: theme.altFgPrimaryColor,
+      color: theme.searchBoxTextColor,
       ':focus': {
         border: 'none',
         outline: 'none',
@@ -219,13 +234,14 @@ const getStyle = withTheme(theme =>
     },
     resultCount: {
       verticalAlign: 'middle',
+      fontSize: FontSize.SEARCH_BAR
     },
     icon: {
       flexShrink: 0,
       verticalAlign: 'middle',
       height: '100%',
       margin: '0px 2px 0px 2px',
-      fontSize: FontSize.LABEL,
+      fontSize: FontSize.SEARCH_BAR,
     },
     button: {
       display: 'inline',
@@ -235,6 +251,7 @@ const getStyle = withTheme(theme =>
       ':focus': {
         outline: 'none',
       },
+      fontSize: FontSize.SEARCH_BAR
     },
   }),
 )
