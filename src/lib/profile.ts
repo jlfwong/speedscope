@@ -497,12 +497,9 @@ export class StackListProfileBuilder extends Profile {
   }
 
   appendSampleWithWeight(stack: FrameInfo[], weight: number) {
-    if (weight === 0) {
-      // Samples with zero weight have no effect, so let's ignore them
+    if (weight === 0 || weight < 0) {
+      // Samples with zero or negative weight have no effect, so let's ignore them
       return
-    }
-    if (weight < 0) {
-      throw new Error('Samples must have positive weights')
     }
 
     const frames = stack.map(fr => Frame.getOrInsert(this.frames, fr))
