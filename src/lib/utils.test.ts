@@ -296,3 +296,17 @@ test('StringBackedTextFileContent.parseAsJSON', async () => {
   const content = new StringBackedTextFileContent(str)
   expect(content.parseAsJSON()).toEqual([200, 300, 400])
 })
+
+test('StringBackedTextFileContent.parseAsJSON.includesV8Warning', () => {
+  // Test if permissivelyParseJSONString properly removes the 'Testing v8 version different from logging version'
+  // line that appears in some V8 logs.
+  const str = `
+Testing v8 version different from logging version
+{
+  "code": [],
+  "functions": [],
+  "ticks": []
+}`
+  const content = new StringBackedTextFileContent(str)
+  expect(content.parseAsJSON()).toEqual({code: [], functions: [], ticks: []})
+})
