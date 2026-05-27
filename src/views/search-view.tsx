@@ -7,7 +7,7 @@ import {ProfileSearchResults} from '../lib/profile-search'
 import {Profile} from '../lib/profile'
 import {useActiveProfileState} from '../app-state/active-profile-state'
 import {useTheme, withTheme} from './themes/theme'
-import {searchIsActiveAtom, searchQueryAtom} from '../app-state'
+import {searchIsActiveAtom, onlyMatchesAtom, searchQueryAtom} from '../app-state'
 import {useAtom} from '../lib/atom'
 
 function stopPropagation(ev: Event) {
@@ -21,13 +21,14 @@ export const ProfileSearchContextProvider = ({children}: {children: ComponentChi
   const profile: Profile | null = activeProfileState ? activeProfileState.profile : null
   const searchIsActive = useAtom(searchIsActiveAtom)
   const searchQuery = useAtom(searchQueryAtom)
+  const onlyMatches = useAtom(onlyMatchesAtom)
 
   const searchResults = useMemo(() => {
     if (!profile || !searchIsActive || searchQuery.length === 0) {
       return null
     }
-    return new ProfileSearchResults(profile, searchQuery)
-  }, [searchIsActive, searchQuery, profile])
+    return new ProfileSearchResults(profile, searchQuery, onlyMatches)
+  }, [searchIsActive, searchQuery, profile, onlyMatches])
 
   return (
     <ProfileSearchContext.Provider value={searchResults}>{children}</ProfileSearchContext.Provider>
@@ -39,10 +40,11 @@ interface SearchViewProps {
   numResults: number | null
   selectNext: () => void
   selectPrev: () => void
+  toggleOnlyMatches: (() => void) | null
 }
 
 export const SearchView = memo(
-  ({numResults, resultIndex, selectNext, selectPrev}: SearchViewProps) => {
+  ({numResults, resultIndex, selectNext, selectPrev, toggleOnlyMatches}: SearchViewProps) => {
     const theme = useTheme()
     const style = getStyle(theme)
     const searchIsActive = useAtom(searchIsActiveAtom)
@@ -157,6 +159,11 @@ export const SearchView = memo(
             <button className={css(style.icon, style.button)} onClick={selectNext}>
               ➡️
             </button>
+            {toggleOnlyMatches && (
+              <button className={css(style.icon, style.button)} onClick={toggleOnlyMatches}>
+                🎯
+              </button>
+            )}
           </Fragment>
         )}
         <svg

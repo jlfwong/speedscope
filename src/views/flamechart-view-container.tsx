@@ -13,12 +13,14 @@ import {
   getFrameToColorBucket,
 } from '../app-state/getters'
 import {Vec2, Rect} from '../lib/math'
-import {memo, useCallback} from 'preact/compat'
+import {memo, useCallback, useContext} from 'preact/compat'
 import {ActiveProfileState} from '../app-state/active-profile-state'
 import {FlamechartSearchContextProvider} from './flamechart-search-view'
 import {Theme, useTheme} from './themes/theme'
 import {FlamechartID, FlamechartViewState} from '../app-state/profile-group'
 import {profileGroupAtom} from '../app-state'
+import {ProfileSearchContext} from './search-view'
+import {ProfileSearchResults} from '../lib/profile-search'
 
 interface FlamechartSetters {
   setLogicalSpaceViewportSize: (logicalSpaceViewportSize: Vec2) => void
@@ -70,15 +72,19 @@ export const getChronoViewFlamechart = memoizeByShallowEquality(
   ({
     profile,
     getColorBucketForFrame,
+    searchResults,
   }: {
     profile: Profile
     getColorBucketForFrame: (frame: Frame) => number
+    searchResults: ProfileSearchResults | null
   }): Flamechart => {
     return new Flamechart({
       getTotalWeight: profile.getTotalWeight.bind(profile),
-      forEachCall: profile.forEachCall.bind(profile),
       formatValue: profile.formatValue.bind(profile),
       getColorBucketForFrame,
+      forEachCall: profile
+        .filteredTraversal(searchResults, profile.forEachCall.bind(profile))
+        .bind(profile),
     })
   },
 )
@@ -115,13 +121,18 @@ export const ChronoFlamechartView = memo((props: FlamechartViewContainerProps) =
   const {profile, chronoViewState} = activeProfileState
 
   const theme = useTheme()
+  const profileSearchResults = useContext(ProfileSearchContext)
 
   const canvasContext = getCanvasContext({theme, canvas: glCanvas})
   const frameToColorBucket = getFrameToColorBucket(profile)
   const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
   const getCSSColorForFrame = createGetCSSColorForFrame({theme, frameToColorBucket})
 
-  const flamechart = getChronoViewFlamechart({profile, getColorBucketForFrame})
+  const flamechart = getChronoViewFlamechart({
+    profile,
+    getColorBucketForFrame,
+    searchResults: profileSearchResults,
+  })
   const flamechartRenderer = getChronoViewFlamechartRenderer({
     canvasContext,
     flamechart,
@@ -155,15 +166,19 @@ export const getLeftHeavyFlamechart = memoizeByShallowEquality(
   ({
     profile,
     getColorBucketForFrame,
+    searchResults,
   }: {
     profile: Profile
     getColorBucketForFrame: (frame: Frame) => number
+    searchResults: ProfileSearchResults | null
   }): Flamechart => {
     return new Flamechart({
       getTotalWeight: profile.getTotalNonIdleWeight.bind(profile),
-      forEachCall: profile.forEachCallGrouped.bind(profile),
       formatValue: profile.formatValue.bind(profile),
       getColorBucketForFrame,
+      forEachCall: profile
+        .filteredTraversal(searchResults, profile.forEachCallGrouped.bind(profile))
+        .bind(profile),
     })
   },
 )
@@ -176,7 +191,7 @@ export const LeftHeavyFlamechartView = memo((ownProps: FlamechartViewContainerPr
   const {profile, leftHeavyViewState} = activeProfileState
 
   const theme = useTheme()
-
+  const profileSearchResults = useContext(ProfileSearchContext)
   const canvasContext = getCanvasContext({theme, canvas: glCanvas})
   const frameToColorBucket = getFrameToColorBucket(profile)
   const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
@@ -185,6 +200,7 @@ export const LeftHeavyFlamechartView = memo((ownProps: FlamechartViewContainerPr
   const flamechart = getLeftHeavyFlamechart({
     profile,
     getColorBucketForFrame,
+    searchResults: profileSearchResults,
   })
   const flamechartRenderer = getLeftHeavyFlamechartRenderer({
     canvasContext,
