@@ -5,6 +5,26 @@ import {ComponentChildren, h} from 'preact'
 import {useTheme, withTheme} from './themes/theme'
 import {useCallback} from 'preact/hooks'
 
+// The hovertip is placed below and to the right of the cursor, so this offset
+// needs to be large enough that the cursor doesn't obscure the hovertip's
+// contents. Browsers give us no way of knowing how large the cursor is, so we
+// instead use the smallest offset which avoids overlap when the OS-default
+// cursor size is used. See https://github.com/jlfwong/speedscope/issues/444
+function getOffsetFromMouse(): number {
+  const userAgent = typeof navigator === 'undefined' ? '' : navigator.userAgent
+
+  // The default macOS arrow cursor is small enough to allow a tight offset.
+  if (/Mac OS X|iPhone|iPad/.test(userAgent)) return 7
+
+  // The default Windows arrow cursor is 16px wide.
+  if (/Windows/.test(userAgent)) return 16
+
+  // Linux & everything else. GNOME, for instance, defaults to a 24px cursor.
+  return 20
+}
+
+const OFFSET_FROM_MOUSE = getOffsetFromMouse()
+
 interface HovertipProps {
   containerSize: Vec2
   offset: Vec2
@@ -17,8 +37,6 @@ export function Hovertip(props: HovertipProps) {
   const {containerSize, offset} = props
   const containerWidth = containerSize.x
   const containerHeight = containerSize.y
-
-  const OFFSET_FROM_MOUSE = 7
 
   const updateLocation = useCallback(
     (el: HTMLDivElement | null) => {
