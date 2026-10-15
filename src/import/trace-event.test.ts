@@ -138,3 +138,7 @@ test('importTraceEvents simple profile with samples', async () => {
 test('importTraceEvents multi-thread profile with samples', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/multi-thread-with-samples.json')
 })
+
+test('importTraceEvents missing pid', async () => {
+  await checkProfileSnapshot('./sample/profiles/trace-event/missing-pid.json')
+})

@@ -565,6 +565,30 @@ exports[`importTraceEvents mismatched name: indexToView 1`] = `0`;
 
 exports[`importTraceEvents mismatched name: profileGroup.name 1`] = `"mismatched-name.json"`;
 
+exports[`importTraceEvents missing pid 1`] = `
+{
+  "frames": [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "TT-UiMapAtlas5",
+      "line": undefined,
+      "name": "TT-UiMapAtlas5",
+      "selfWeight": 5593344,
+      "totalWeight": 5593344,
+    },
+  ],
+  "name": "SkyPools.json (pid 0), T0 b0 2 (tid 0)",
+  "stacks": [
+    "TT-UiMapAtlas5 5.59s",
+  ],
+}
+`;
+
+exports[`importTraceEvents missing pid: indexToView 1`] = `0`;
+
+exports[`importTraceEvents missing pid: profileGroup.name 1`] = `"missing-pid.json"`;
+
 exports[`importTraceEvents multi-thread profile with samples 1`] = `
 {
   "frames": [

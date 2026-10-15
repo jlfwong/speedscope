@@ -140,18 +140,25 @@ interface TraceEventObject {
 
 type Trace = TraceEvent[] | TraceEventObject | TraceWithSamples
 
+// Some producers omit "pid" or "tid" (e.g. only emitting a tid to keep the file
+// small). Treat a missing value as 0 so that events, process names and thread
+// names still line up.
+function normalizeId(id: number | string | null | undefined): number {
+  return Number(id ?? 0)
+}
+
 function pidTidKey(pid: number, tid: number): string {
   // We zero-pad the PID and TID to make sorting them by pid/tid pair later easier.
   return `${zeroPad('' + pid, 10)}:${zeroPad('' + tid, 10)}`
 }
 
-function partitionByPidTid<T extends {tid: number | string; pid: number | string}>(
+function partitionByPidTid<T extends {tid?: number | string | null; pid?: number | string | null}>(
   events: T[],
 ): Map<string, T[]> {
   const map = new Map<string, T[]>()
 
   for (let ev of events) {
-    const list = getOrInsert(map, pidTidKey(Number(ev.pid), Number(ev.tid)), () => [])
+    const list = getOrInsert(map, pidTidKey(normalizeId(ev.pid), normalizeId(ev.tid)), () => [])
     list.push(ev)
   }
 
@@ -288,7 +295,7 @@ function getProcessNamesByPid(events: TraceEvent[]): Map<number, string> {
   const processNamesByPid = new Map<number, string>()
   for (let ev of events) {
     if (ev.ph === 'M' && ev.name === 'process_name' && ev.args && ev.args.name) {
-      processNamesByPid.set(ev.pid, ev.args.name)
+      processNamesByPid.set(normalizeId(ev.pid), ev.args.name)
     }
   }
   return processNamesByPid
@@ -299,7 +306,7 @@ function getThreadNamesByPidTid(events: TraceEvent[]): Map<string, string> {
 
   for (let ev of events) {
     if (ev.ph === 'M' && ev.name === 'thread_name' && ev.args && ev.args.name) {
-      threadNameByPidTid.set(pidTidKey(ev.pid, ev.tid), ev.args.name)
+      threadNameByPidTid.set(pidTidKey(normalizeId(ev.pid), normalizeId(ev.tid)), ev.args.name)
     }
   }
   return threadNameByPidTid
@@ -378,8 +385,8 @@ function getProfileNamesFromSamples(
   partitionedSamples.forEach(samples => {
     if (samples.length === 0) return
 
-    const pid = Number(samples[0].pid)
-    const tid = Number(samples[0].tid)
+    const pid = normalizeId(samples[0].pid)
+    const tid = normalizeId(samples[0].tid)
 
     const profileKey = pidTidKey(pid, tid)
     const processName = processNamesByPid.get(pid)
@@ -404,7 +411,8 @@ function getProfileNamesFromTraceEvents(
   partitionedTraceEvents.forEach(importableEvents => {
     if (importableEvents.length === 0) return
 
-    const {pid, tid} = importableEvents[0]
+    const pid = normalizeId(importableEvents[0].pid)
+    const tid = normalizeId(importableEvents[0].tid)
 
     const profileKey = pidTidKey(pid, tid)
     const processName = processNamesByPid.get(pid)

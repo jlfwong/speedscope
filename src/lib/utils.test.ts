@@ -296,3 +296,20 @@ test('StringBackedTextFileContent.parseAsJSON', async () => {
   const content = new StringBackedTextFileContent(str)
   expect(content.parseAsJSON()).toEqual([200, 300, 400])
 })
+
+test('StringBackedTextFileContent.parseAsJSON trailing commas', async () => {
+  expect(new StringBackedTextFileContent('{"a":[1,2,],}').parseAsJSON()).toEqual({a: [1, 2]})
+  expect(new StringBackedTextFileContent('{"a": [1,\n 2 , \n],\n}').parseAsJSON()).toEqual({
+    a: [1, 2],
+  })
+
+  // String contents must be left intact
+  expect(new StringBackedTextFileContent('{"a":",]","b":"\\",}",}').parseAsJSON()).toEqual({
+    a: ',]',
+    b: '",}',
+  })
+
+  // Invalid JSON still throws
+  expect(() => new StringBackedTextFileContent('{"a":').parseAsJSON()).toThrow()
+  expect(() => new StringBackedTextFileContent('{"a":,}').parseAsJSON()).toThrow()
+})
