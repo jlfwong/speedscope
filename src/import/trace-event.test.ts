@@ -1,3 +1,5 @@
+import * as fs from 'fs'
+import {importProfilesFromArrayBuffer} from '../import'
 import {checkProfileSnapshot} from '../lib/test-utils'
 import {withMockedFileChunkSizeForTests} from './utils'
 
@@ -141,4 +143,25 @@ test('importTraceEvents multi-thread profile with samples', async () => {
 
 test('importTraceEvents missing pid', async () => {
   await checkProfileSnapshot('./sample/profiles/trace-event/missing-pid.json')
+})
+
+test('importTraceEvents samples with missing pid', async () => {
+  const buffer = fs.readFileSync('./sample/profiles/trace-event/samples-missing-pid.json')
+  const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
+  const profileGroup = await importProfilesFromArrayBuffer('samples-missing-pid.json', arrayBuffer)
+
+  if (!profileGroup) {
+    fail('Failed to extract profile')
+    return
+  }
+
+  // Samples without a pid and samples with "pid": 0 belong to the same profile.
+  expect(profileGroup.profiles.length).toEqual(1)
+
+  // The missing pid on the process_name/thread_name metadata events is treated
+  // as 0 too, so the profile name is built from them.
+  expect(profileGroup.profiles[0].getName()).toEqual('myproc (pid 0), mythread (tid 7)')
+
+  // 4 samples spaced 1000us apart: the deltas sum to 3000us.
+  expect(profileGroup.profiles[0].getTotalWeight()).toEqual(3000)
 })

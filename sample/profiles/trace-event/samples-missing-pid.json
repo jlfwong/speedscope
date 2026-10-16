@@ -1,0 +1,16 @@
+{
+  "traceEvents": [
+    {"name": "process_name", "ph": "M", "cat": "__metadata", "ts": "0", "tid": "7", "args": {"name": "myproc"}},
+    {"name": "thread_name", "ph": "M", "cat": "__metadata", "ts": "0", "tid": "7", "args": {"name": "mythread"}}
+  ],
+  "samples": [
+    {"cpu": "-1", "name": "", "ts": "1000", "tid": "7", "weight": "1", "sf": 1},
+    {"cpu": "-1", "name": "", "ts": "2000", "pid": 0, "tid": "7", "weight": "1", "sf": 2},
+    {"cpu": "-1", "name": "", "ts": "3000", "tid": "7", "weight": "1", "sf": 2},
+    {"cpu": "-1", "name": "", "ts": "4000", "pid": 0, "tid": "7", "weight": "1", "sf": 1}
+  ],
+  "stackFrames": {
+    "1": {"name": "main", "category": "JavaScript"},
+    "2": {"name": "work", "category": "JavaScript", "parent": 1}
+  }
+}
