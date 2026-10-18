@@ -1,0 +1,34 @@
+{
+"displayTimeUnit": "ms",
+"systemTraceEvents": "SystemTraceData",
+"traceEvents": [
+
+{
+"name": "process_name",
+"ph": "M",
+"pid": 0,
+"args": {
+"name": "SkyPools.json"
+}
+},
+
+{
+"name": "thread_name",
+"ph": "M",
+"tid": 0,
+"args": {
+"name": "T0 b0 2"
+}
+},
+
+{
+"name": "TT-UiMapAtlas5",
+"ph": "X",
+"ts": 0,
+"dur": 5593344,
+"tid": 0,
+"cat": "TT"
+},
+
+]
+}

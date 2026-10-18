@@ -60,7 +60,45 @@ function permissivelyParseJSONString(content: string) {
       content += ']'
     }
   }
-  return JSON.parse(content)
+  try {
+    return JSON.parse(content)
+  } catch (e) {
+    // Some producers leave a trailing comma before a closing bracket or brace.
+    // Retry once with those removed. If that still fails, report the original
+    // error, since it points at the real input.
+    const stripped = stripTrailingCommas(content)
+    if (stripped === content) throw e
+    try {
+      return JSON.parse(stripped)
+    } catch {
+      throw e
+    }
+  }
+}
+
+// Remove commas that are directly followed (ignoring whitespace) by a ']' or
+// '}'. Contents of string literals are never modified.
+function stripTrailingCommas(content: string): string {
+  let out = ''
+  let segmentStart = 0
+  let inString = false
+  for (let i = 0; i < content.length; i++) {
+    const c = content[i]
+    if (inString) {
+      if (c === '\\') i++
+      else if (c === '"') inString = false
+    } else if (c === '"') {
+      inString = true
+    } else if (c === ',') {
+      let j = i + 1
+      while (j < content.length && /\s/.test(content[j])) j++
+      if (content[j] === ']' || content[j] === '}') {
+        out += content.slice(segmentStart, i)
+        segmentStart = i + 1
+      }
+    }
+  }
+  return segmentStart === 0 ? content : out + content.slice(segmentStart)
 }
 
 function permissivelyParseJSONUint8Array(byteArray: Uint8Array) {
