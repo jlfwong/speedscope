@@ -50,7 +50,19 @@ export class ProfileSearchResults {
       this.matches = new Map()
       this.profile.forEachFrame(frame => {
         const match = exactMatchStrings(frame.name, this.searchQuery)
-        this.matches!.set(frame, match.length === 0 ? null : match)
+        if (match.length > 0) {
+          this.matches!.set(frame, match)
+        } else if (
+          frame.file != null &&
+          exactMatchStrings(frame.file, this.searchQuery).length > 0
+        ) {
+          // The frame matched by file only. Highlight ranges always index into
+          // frame.name, so there's nothing to highlight, but an empty (truthy)
+          // array still marks the frame as matched.
+          this.matches!.set(frame, [])
+        } else {
+          this.matches!.set(frame, null)
+        }
       })
     }
     return this.matches.get(frame) || null
